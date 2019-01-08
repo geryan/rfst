@@ -1,0 +1,29 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+## Prelude
+
+### Packages
+```{r load packages}
+library("raster")
+```
+### Functions
+```{r load functions}
+
+```
+
+### Data
+```{r load data}
+
+```
+
+
+## Main event
+get filenames then read in en masse, format to appropriate grid and go from there.
+```{r}
+xx <- raster(x = "landis_output/biomass/bio-eucaregn-19.img")
+plot(xx)
+```
+
