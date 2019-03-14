@@ -20,10 +20,134 @@ library("raster")
 ```
 
 
-## Main event
-get filenames then read in en masse, format to appropriate grid and go from there.
+## ch
+
+### input images
+
+#### Ecoregions
 ```{r}
-xx <- raster(x = "landis_output/biomass/bio-eucaregn-19.img")
-plot(xx)
+ch_ecoreg <- raster(x = "landis_ch/eco_v12.img")
+
+plot(ch_ecoreg)
+```
+
+#### Aspect
+```{r}
+ch_aspect <- raster(x = "landis_ch/aspect_v5.img")
+
+plot(ch_aspect)
+```
+
+#### Slope
+```{r}
+ch_slope <- raster(x = "landis_ch/Slope_V7.img")
+
+plot(ch_slope)
+```
+
+
+#### Initial Fire
+```{r}
+ch_fireeco <- raster(x = "landis_ch/fire_eco_v7.img")
+
+plot(ch_fireeco)
+```
+
+#### Initial Communities
+```{r}
+ch_initcom <- raster(x = "landis_ch/IC_V21.img")
+
+plot(ch_initcom)
+```
+
+#### Management Zones
+```{r}
+ch_mgtzon <- raster(x = "landis_ch/mgt_zone_V2.img")
+
+plot(ch_mgtzon)
+```
+
+#### Stands
+```{r}
+ch_stand <- raster(x = "landis_ch/stands_CHR_V2.img")
+
+plot(ch_stand)
+```
+
+### Output
+
+#### Biomass
+
+##### Acacia dealbata
+```{r}
+ch_biom_acacdeal <- list.files(path = "landis_output/output/biomass/",
+                              pattern = "bio-acacdeal")
+ch_biom_acacdeal <- paste0("landis_output/output/biomass/", ch_biom_acacdeal)
+ch_biom_acacdeal <- stack(ch_biom_acacdeal)
+plot(ch_biom_acacdeal)
+```
+
+#### cohort
+
+##### Acacia dealbata
+```{r}
+ch_coh_acacdeal <- list.files(path = "landis_output/output/cohort-stats/",
+                              pattern = "acacdeal")
+ch_coh_acacdeal <- paste0("landis_output/output/cohort-stats/", ch_coh_acacdeal)
+ch_coh_acacdeal <- stack(ch_coh_acacdeal)
+plot(ch_coh_acacdeal)
+```
+
+
+#### mx spp age
+
+##### Acacia dealbata
+```{r}
+ch_age_acacdeal <- list.files(path = "landis_output/output/max-spp-age/",
+                              pattern = "acacdeal")
+ch_age_acacdeal <- paste0("landis_output/output/max-spp-age/", ch_age_acacdeal)
+ch_age_acacdeal <- stack(ch_age_acacdeal)
+plot(ch_age_acacdeal)
+```
+
+
+```{r}
+ch_coh_acacdeal <- list.files(path = "landis_output/fire/",
+                              pattern = "severity")
+ch_coh_acacdeal <- paste0("landis_output/fire/", ch_coh_acacdeal)
+ch_coh_acacdeal <- stack(ch_coh_acacdeal)
+plot(ch_coh_acacdeal)
+```
+
+```{r}
+plot(ch_coh_acacdeal[[16]]) ## always -1 from fire severity, so background = 0, i.e.
+#unburnt holes are inactive veg, but are active for fire. prob grasslands or lakes/reservoirs
+```
+
+```{r}
+ch_coh_acacdeal <- list.files(path = "landis_output/DFFS-output/",
+                              pattern = "Time")
+ch_coh_acacdeal <- paste0("landis_output/DFFS-output/", ch_coh_acacdeal)
+ch_coh_acacdeal <- stack(ch_coh_acacdeal)
+plot(ch_coh_acacdeal)
+
+```
+
+```{r}
+plot(ch_coh_acacdeal[[13]]) # NB so this includes fires prior to the time step, and also trees that are from old cohorts but may be standing despite fires going through historically. +ve numbers represent accurate time since fire
+#prob combine with other fire history map
+```
+
+```{r}
+ch_coh_acacdeal <- list.files(path = "landis_output/harvest/",
+                              pattern = "prescripts")
+ch_coh_acacdeal <- paste0("landis_output/harvest/", ch_coh_acacdeal)
+ch_coh_acacdeal <- stack(ch_coh_acacdeal)
+plot(ch_coh_acacdeal)
+
+```
+
+```{r}
+plot(ch_coh_acacdeal[[2]]) # correspond to the order of listing in the HarvestImplementations table in the biomass harvest module
 ```
 

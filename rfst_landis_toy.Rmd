@@ -1,0 +1,273 @@
+---
+title: "Glider Landis Toy Model"
+output: html_notebook
+---
+
+## Prelims
+
+
+### Packages
+```{r}
+library("purrr")
+library("raster")
+library("dplyr")
+library("tidyr")
+library("tibble")
+library(raster)
+library(viridis)
+library(pROC)
+library(boot)
+library(caret)
+library(ROCR)
+library(cvTools)
+library(randomForest)
+library(dismo)
+library(gbm)
+```
+
+## Landis
+
+## Initial communities
+```{r l_ic}
+l_ic <- raster(x = "landis_gg_output/IC_V21.img")
+l_ic
+```
+
+```{r plot l_ic}
+plot(l_ic)
+```
+
+### Ecoregions
+```{r l_ec}
+l_ec <- raster(x = "landis_gg_output/eco_v12.img")
+l_ec
+```
+```{r plot l_ec}
+plot(l_ec)
+```
+
+### Max species age
+```{r}
+l_max_age <- list.files(path = "landis_gg_output/output/max-spp-age/",
+                         pattern = "AllSppMaxAge")
+
+l_max_age %<>% 
+  enframe(name = NULL) %>% 
+  mutate(year = gsub("[^0-9]","", value),
+         year = as.integer(year)) %>% 
+  arrange(year) %>% 
+  select(value)
+
+l_max_age <- l_max_age$value
+
+l_max_age
+```
+
+```{r}
+l_max_age <- paste0("landis_gg_output/output/max-spp-age/", l_max_age) %>% 
+  stack
+
+l_max_age
+```
+```{r}
+proj4string(l_max_age) <- crs(l_ic)
+extent(l_max_age) <- extent(l_ic)
+res(l_max_age) <- res(l_ic)
+l_max_age
+```
+```{r}
+plot(l_max_age)
+```
+
+
+```{r}
+#ch_l_max_age <- projectRaster(from = l_max_age, to = ch_rst)
+#ch_l_max_age
+```
+
+```{r}
+ #writeRaster(ch_l_max_age, filename = "data/grids/landis_processed/landis_ch_max_age.tif", bylayer = TRUE) 
+```
+
+```{r}
+#ch_l_max_age <- list.files(path = "data/grids/landis_processed",
+#                         pattern = "landis_ch_max_age")
+
+#ch_l_max_age %<>% 
+#  as_tibble %>% 
+#  mutate(year = gsub("[^0-9]","", value),
+#         year = as.integer(year)) %>% 
+#  arrange(year) %>% 
+#  select(value)
+
+#ch_l_max_age <- ch_l_max_age$value
+
+#ch_l_max_age
+```
+
+```{r}
+ch_max_age <- stack(x = "data/grids/landis_processed/landis_ch_max_age.tif")
+```
+
+```{r}
+plot(ch_max_age[[1]])
+```
+
+```{r}
+plot(ch_max_age)
+```
+
+
+```{r}
+plot(ch_max_age[[1]])
+```
+
+```{r}
+plot(ch_max_age[[1]])
+plot(rfa_boundary, add = TRUE)
+points(GG_POINTS[GG_POINTS$PA == 0, 2:3], col = "darkred")
+points(GG_POINTS[GG_POINTS$PA == 1, 2:3], pch = 2)
+```
+
+*won't work - need to do raster by raster?*
+```{r}
+ch_l_max_age_focal <- focal(x = ch_max_age,
+                            w = window,
+                            fun = max)
+```
+
+## data extract for gg model
+```{r}
+cov_sample_l_mat <- raster::extract(ch_max_age, GG_POINTS[,2:3])
+head(cov_sample_l_mat)
+```
+
+```{r}
+env_covs_long <-  bind_rows(replicate(51, cov_sample, simplify = FALSE))
+gg_pa_long <- rep(x = GG_POINTS$PA, times = 51)
+```
+
+```{r}
+gg_model_data_l <- cov_sample_l_mat %>% 
+  as_tibble %>% 
+  gather(key = "year_str",
+         value = "MaxAge") %>% 
+  mutate(year = gsub("[^0-9]","", year_str),
+         year = as.integer(year)) %>% 
+  dplyr::select(-year_str) %>% 
+  bind_cols(env_covs_long) %>% 
+  mutate(PA = gg_pa_long) %>% 
+  select(year, PA, MaxAge, PROP_WF, PROP_OG, PROP_TF) %>% 
+  na.omit %>% 
+  nest(-year) %>% 
+  mutate(dd = data.frame(data))
+
+gg_model_data_l
+```
+
+Review pairwise correlations
+```{r}
+cor(gg_model_data_l$data[[1]][, 2:5])
+```
+
+Review covariate data types
+```{r}
+str(gg_model_data_l$data[[1]][, 2:5])
+```
+
+Review data ranges
+```{r}
+apply(gg_model_data_l$data[[1]][, 2:5], 2, range)
+```
+
+## Model
+
+```{r}
+gg_brt_l <- gbm.step(data = data.frame(gg_model_data_l$data[[1]]),
+         gbm.x = 2:5,
+         gbm.y = 1,
+         family = "bernoulli",
+         tree.complexity = 2,
+         learning.rate = 0.15,
+         bag.fraction = 0.5,
+         prev.stratify = FALSE)
+
+gg_brt_l
+```
+
+
+```{r}
+(brt.roc <- paste(round(gg_brt[["cv.statistics"]][["discrimination.mean"]],2)," +/- ",round(gg_brt[["cv.statistics"]][["discrimination.se"]],2),sep=""))
+```
+
+```{r}
+brt_dev_exp(gg_brt_l)
+```
+
+```{r}
+brt_auc(gg_brt_l)
+```
+
+```{r}
+summary(gg_brt_l)
+```
+
+
+
+```{r}
+summary(glm(gg_model_data_l$data[[1]]$PA ~ predict(gg_brt_l, gg_model_data_l$data[[1]], n.trees = gg_brt_l$gbm.call$best.trees, type="link"), family = binomial(link = "logit")))  #slope is close to one therefore model is well calibrated to held-out data
+```
+
+```{r}
+gg_env_var_l <- stack(gg_env_vars, ch_max_age)
+names(gg_env_var_l)[4] <- "MaxAge"
+
+gg_env_var_l
+```
+
+```{r}
+gg_pred_map_l <- predict(gg_env_var_l, gg_brt_l, type = "response", n.trees = gg_brt_l$gbm.call$best.trees)
+```
+ 
+
+```{r}
+plot(gg_pred_map_l)
+```
+
+
+```{r}
+l_brt_gg_pred <- l_brt_gg %>% 
+  mutate(preds = map(.x = brt,
+                     .f = df_predict.gbm,
+                     y = data,
+                     type = "response"))
+
+l_brt_gg_pred
+```
+
+```{r}
+predbrt <- function(x, ...){
+  dismo::predict(x = data.frame(x), ...)
+}
+```
+
+
+```{r}
+l_brt_pred <- gg_model_data_l %>% 
+  mutate(
+    preds = map(
+      .x = data,
+      .f = predbrt,
+      object = gg_brt_l,
+      type = "response",
+      n.trees = gg_brt_l$gbm.call$best.trees
+    )
+  )
+```
+
+
+```{r}
+plot(l_brt_gg_pred$preds[[1]])
+```
+
+
