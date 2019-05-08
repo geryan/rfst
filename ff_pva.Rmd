@@ -1,0 +1,105 @@
+---
+title: "Victorian Forest Futures Population Vability Analysis"
+output: 
+  html_notebook: 
+    toc: yes
+    number_sections: true
+author: GE Ryan
+date: 2019-08-05
+---
+
+
+
+# Preparations
+
+### Packages
+Load packages
+```{r packages}
+library(dplyr)
+library(tibble)
+library(raster)
+library(sf)
+library(rgdal)
+library(readxl)
+library(ggplot2)
+```
+
+### Functions
+```{r functions}
+source(file = "R/functions/gsfplot.R")
+source(file = "R/functions/grplot.R") # fugly
+```
+
+
+# Prepare variables
+
+## Geographic data
+
+### Landscape
+Set up base landscape layer
+```{r ch_rst}
+ch_rst <- raster(x = "data/grids/eco_v12.img")
+ch_rst
+```
+```{r}
+ch_proj <- crs(ch_rst)
+```
+
+
+```{r plot ch_rst}
+plot(ch_rst)
+```
+
+### Boundaries
+```{r rfa}
+rfa <- read_sf("data/shapefiles/RFA/")
+rfa
+```
+
+```{r}
+gsfplot(rfa)
+```
+
+
+```{r ch_rfa}
+ch_rfa <- rfa[rfa$NAME== "CENTRAL HIGHLANDS",] %>%
+  st_transform(crs = ch_proj)
+
+ch_rfa
+```
+
+```{r}
+gsfplot(ch_rfa)
+```
+
+
+```{ch_mask}
+ch_mask <- rasterize(ch_rfa, ch_rst, field = 1)
+```
+
+```{r}
+plot(ch_mask)
+```
+
+
+
+```{r}
+grplot(ch_mask)
+```
+
+
+
+## Occupancy data
+```{r}
+
+```
+
+## Landis output
+
+## Climactic data
+
+## Distribution model variables
+
+# Distribution model fit and prediction
+
+# Population viability analysis
