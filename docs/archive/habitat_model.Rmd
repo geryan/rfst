@@ -1,0 +1,145 @@
+---
+title: "Habitat Model Landis"
+author: "Casey Visintin"
+date: "26 February 2019"
+output: html_document
+---
+
+```{r setup, include = FALSE, cache = FALSE}
+library(raster)
+library(viridis)
+library(pROC)
+library(boot)
+library(caret)
+library(ROCR)
+#library(cvTools)
+library(dismo)
+library(gbm)
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = "../")
+```
+
+```{r load, echo = FALSE}
+load(file = "/home/landis/landis_steps/data/gb_model_datasets")
+load(file = "/home/landis/landis_steps/data/lb_model_datasets")
+```
+
+
+# GG
+
+```{r}
+#set.seed(333) #Set random seed to make results of gradient boosted regressions identical for each run
+
+gg_brt <- gbm.step(data = gg_model_data, gbm.x = 2:5, gbm.y = 1, family = "bernoulli", tree.complexity = 4, learning.rate = 0.1, bag.fraction = 0.5, prev.stratify = FALSE, verbose = FALSE) #Create boosted regression tree model
+```
+```{r}
+summary(gg_brt)
+```
+
+```{r}
+#Report reduction in deviance on null model (percent of error explained by model)
+(brt.devexp <- paste(round(((gg_brt[["self.statistics"]][["mean.null"]] - gg_brt[["cv.statistics"]][["deviance.mean"]])/gg_brt[["self.statistics"]][["mean.null"]])*100,2)," +/- ",round((gg_brt[["cv.statistics"]][["deviance.se"]]/gg_brt[["self.statistics"]][["mean.null"]])*100,2),sep=""))
+
+```
+
+
+```{r}
+#Report discrimination performance of model in area under receiver operator characteristic curve
+(brt.roc <- paste(round(gg_brt[["cv.statistics"]][["discrimination.mean"]],2)," +/- ",round(gg_brt[["cv.statistics"]][["discrimination.se"]],2),sep=""))
+
+```
+
+```{r}
+summary(glm(gg_model_data$PA ~ predict(gg_brt, gg_model_data, n.trees=gg_brt$gbm.call$best.trees, type="link"), family = binomial(link = "logit")))  #slope is close to one therefore model is well calibrated to held-out data
+
+```
+
+Prediction habitat suitability and produce intital suitability maps:
+
+```{r}
+load(file="data/gg_init_env_vars")
+
+ch_mask<- raster(paste0(path, "../../ch_mask.tif"))
+
+gg_pred_brt <- predict(gg_init_env_vars, gg_brt, type="response", n.trees=gg_brt$gbm.call$best.trees)
+plot(gg_pred_brt)
+writeRaster(gg_pred_brt, "data/grids/habitat/gg_init_pred_map_brt.tif", overwrite = TRUE)
+
+gg_pred_map_t <- gg_pred_brt
+gg_pred_map_t[gg_pred_map_t < .9] <- NA
+plot(gg_pred_map_t)
+```
+
+## LB
+
+```{r}
+set.seed(333) #Set random seed to make results of gradient boosted regressions identical for each run
+
+lb_brt <- gbm.step(data = lb_model_data, gbm.x = 2:7, gbm.y = 1, family = "bernoulli", tree.complexity = 4, learning.rate = 0.1, bag.fraction = 0.5, prev.stratify = FALSE, verbose = FALSE) #Create boosted regression tree model
+```
+
+```{r}
+summary(lb_brt)
+```
+Report reduction in deviance on null model (percent of error explained by model)
+```{r}
+(brt.devexp <- paste(round(((lb_brt[["self.statistics"]][["mean.null"]] - lb_brt[["cv.statistics"]][["deviance.mean"]])/lb_brt[["self.statistics"]][["mean.null"]])*100,2)," +/- ",round((lb_brt[["cv.statistics"]][["deviance.se"]]/lb_brt[["self.statistics"]][["mean.null"]])*100,2),sep=""))
+
+```
+
+
+```{r}
+#Report discrimination performance of model in area under receiver operator characteristic curve
+(brt.roc <- paste(round(lb_brt[["cv.statistics"]][["discrimination.mean"]],2)," +/- ",round(lb_brt[["cv.statistics"]][["discrimination.se"]],2),sep=""))
+
+```
+
+```{r}
+summary(glm(lb_model_data$PA ~ predict(lb_brt, lb_model_data, n.trees=lb_brt$gbm.call$best.trees, type="link"), family = binomial(link = "logit")))  #slope is close to one therefore model is well calibrated to held-out data
+
+```
+
+
+```{r}
+preds <- predict.gbm(lb_brt, lb_model_data, n.trees=lb_brt$gbm.call$best.trees, type="response")
+calc.deviance(obs = lb_model_data[, 1], pred = preds, calc.mean = TRUE)
+d <- cbind(lb_model_data[, 1], preds)
+pres <- d[d[,1]==1, 2]
+abs <- d[d[,1]==0, 2]
+e <- evaluate(p=pres, a=abs)
+e
+```
+
+Prediction habitat suitability and produce intital suitability maps:
+
+```{r}
+#load(file="data/lb_init_env_vars")
+
+#ch_mask<- raster(paste0(path, "../../ch_mask.tif"))
+
+lb_pred_brt <- predict(lb_init_env_vars, lb_brt, type="response", n.trees=lb_brt$gbm.call$best.trees)
+plot(lb_pred_brt)
+writeRaster(lb_pred_brt, "data/grids/habitat/lb_init_pred_map_brt.tif", overwrite = TRUE)
+
+lb_pred_map_t <- lb_pred_brt
+lb_pred_map_t[lb_pred_map_t < .9] <- NA
+plot(lb_pred_map_t)
+```
+
+## Predict future
+
+Predict habitat suitability over time with forest change:
+
+```{r}
+load(file="data/lb_fut_env_vars")
+
+for (i in seq_len(length(lb_fut_env_vars))) {
+  predict(lb_fut_env_vars[[i]],
+          lb_brt,
+          type = "response",
+          n.trees = lb_brt$gbm.call$best.trees,
+          filename = paste0("data/grids/habitat/lb_pred_map_brt-", sprintf("%02d", i), ".tif"),
+          overwrite = TRUE)
+}
+
+```

@@ -1,0 +1,123 @@
+---
+title: "Bioclim variables"
+author: "GE Ryan"
+output: html_notebook
+---
+
+## Prelims
+
+### Packages
+```{r}
+library(tidyr)
+library(dplyr)
+library(raster)
+```
+
+### Functions
+```{r}
+source(file = "R/functions/rascc.R")
+source(file = "R/functions/read.multi.line.header.R")
+```
+
+### Mask
+```{r}
+proj_mask <- raster(x = "~/landis_steps/")
+proj_mask <- raster(x = "~/landis_steps/data/grids/ch_mask.tif")
+```
+
+## Future Climate Data
+Data from [Climate Change in Australia](https://www.climatechangeinaustralia.gov.au/en/)
+pc ~ percentage change
+ac ~ absolute change
+
+tmax ~ max temperature
+tmin ~ minimum temperature
+rain ~ precipitation
+evtr ~ evapotranspiration
+
+jan ~ January
+jul ~ July
+
+4.5 ~ rcp 4.5
+8.5 ~ rcp 8.5
+
+Absolute change in temperature
+```{r}
+#absolute change in temp
+raw_tmax_jan_4.5_ac <- read.multi.line.header(file = "http://nrm-erddap.nci.org.au/erddap/griddap/tasmax_Amon_CSIRO-Mk3-6-0_rcp45_r1i1p1_abs-change-wrt-seasavg-clim_native.csv?tasmax_january[(2025-01-01T12:00:00Z):1:(2090-01-01T12:00:00Z)][(-40.10297775):1:(-32.64199448)][(140.625):1:(150)]")
+
+raw_tmax_jan_8.5_ac <- read.multi.line.header(file = "http://nrm-erddap.nci.org.au/erddap/griddap/tasmax_Amon_CSIRO-Mk3-6-0_rcp85_r1i1p1_abs-change-wrt-seasavg-clim_native.csv?tasmax_january[(2025-01-01T12:00:00Z):1:(2090-01-01T12:00:00Z)][(-40.10297775):1:(-32.64199448)][(140.625):1:(150)]")
+
+raw_tmin_jul_4.5_ac <- read.multi.line.header(file = "http://nrm-erddap.nci.org.au/erddap/griddap/tasmin_Amon_CSIRO-Mk3-6-0_rcp45_r1i1p1_abs-change-wrt-seasavg-clim_native.csv?tasmin_july[(2025-01-01T12:00:00Z):1:(2090-01-01T12:00:00Z)][(-40.10297775):1:(-32.64199448)][(140.625):1:(150)]") 
+
+raw_tmin_jul_8.5_ac <- read.multi.line.header(file = "http://nrm-erddap.nci.org.au/erddap/griddap/tasmin_Amon_CSIRO-Mk3-6-0_rcp85_r1i1p1_abs-change-wrt-seasavg-clim_native.csv?tasmin_july[(2025-01-01T12:00:00Z):1:(2090-01-01T12:00:00Z)][(-40.10297775):1:(-32.64199448)][(140.625):1:(150)]")
+```
+
+Percentage change in rainfall
+```{r}
+raw_rain_jan_4.5_pc <- read.multi.line.header(file = "http://nrm-erddap.nci.org.au/erddap/griddap/pr_Amon_CSIRO-Mk3-6-0_rcp45_r1i1p1_perc-change-wrt-seassum-clim_native.csv?pr_january[(2025-01-01T12:00:00Z):1:(2090-01-01T12:00:00Z)][(-40.10297775):1:(-32.64199448)][(140.625):1:(150)]")
+
+raw_rain_jan_8.5_pc <- read.multi.line.header(file = "http://nrm-erddap.nci.org.au/erddap/griddap/pr_Amon_CSIRO-Mk3-6-0_rcp85_r1i1p1_perc-change-wrt-seassum-clim_native.csv?pr_january[(2025-01-01T12:00:00Z):1:(2090-01-01T12:00:00Z)][(-40.10297775):1:(-32.64199448)][(140.625):1:(150)]")
+
+raw_rain_jul_4.5_pc <- read.multi.line.header(file = "http://nrm-erddap.nci.org.au/erddap/griddap/pr_Amon_CSIRO-Mk3-6-0_rcp45_r1i1p1_perc-change-wrt-seassum-clim_native.csv?pr_july[(2025-01-01T12:00:00Z):1:(2090-01-01T12:00:00Z)][(-40.10297775):1:(-32.64199448)][(140.625):1:(150)]")
+
+raw_rain_jul_8.5_pc <- read.multi.line.header(file = "http://nrm-erddap.nci.org.au/erddap/griddap/pr_Amon_CSIRO-Mk3-6-0_rcp85_r1i1p1_perc-change-wrt-seassum-clim_native.csv?pr_july[(2025-01-01T12:00:00Z):1:(2090-01-01T12:00:00Z)][(-40.10297775):1:(-32.64199448)][(140.625):1:(150)]")
+```
+
+Percentage change evapotranspiration
+```{r}
+raw_evtr_jan_4.5_pc <- read.multi.line.header(file = "http://nrm-erddap.nci.org.au/erddap/griddap/wvap-morton_Amon_CSIRO-Mk3-6-0_rcp45_r1i1p1_perc-change-wrt-seassum-clim_native.csv?wvap_january[(2025-01-01T12:00:00Z):1:(2090-01-01T12:00:00Z)][(-40.10297775):1:(-32.64199448)][(140.625):1:(150)]")
+
+raw_evtr_jan_8.5_pc <- read.multi.line.header(file = "http://nrm-erddap.nci.org.au/erddap/griddap/wvap-morton_Amon_CSIRO-Mk3-6-0_rcp85_r1i1p1_perc-change-wrt-seassum-clim_native.csv?wvap_january[(2025-01-01T12:00:00Z):1:(2090-01-01T12:00:00Z)][(-40.10297775):1:(-32.64199448)][(140.625):1:(150)]")
+
+raw_evtr_jul_4.5_pc <- read.multi.line.header(file = "http://nrm-erddap.nci.org.au/erddap/griddap/wvap-morton_Amon_CSIRO-Mk3-6-0_rcp45_r1i1p1_perc-change-wrt-seassum-clim_native.csv?wvap_july[(2025-01-01T12:00:00Z):1:(2090-01-01T12:00:00Z)][(-40.10297775):1:(-32.64199448)][(140.625):1:(150)]")
+
+raw_evtr_jul_8.5_pc <- read.multi.line.header(file = "http://nrm-erddap.nci.org.au/erddap/griddap/wvap-morton_Amon_CSIRO-Mk3-6-0_rcp85_r1i1p1_perc-change-wrt-seassum-clim_native.csv?wvap_july[(2025-01-01T12:00:00Z):1:(2090-01-01T12:00:00Z)][(-40.10297775):1:(-32.64199448)][(140.625):1:(150)]")
+```
+
+Convert data frames to rasters
+```{r}
+r_tmax_jan_4.5_ac <- rascc(raw_tmax_jan_4.5_ac, new.proj.layer = proj_mask)
+r_tmax_jan_8.5_ac <- rascc(raw_tmax_jan_8.5_ac, new.proj.layer = proj_mask)
+r_tmin_jul_4.5_ac <- rascc(raw_tmin_jul_4.5_ac, new.proj.layer = proj_mask)
+r_tmin_jul_8.5_ac <- rascc(raw_tmin_jul_8.5_ac, new.proj.layer = proj_mask)
+
+r_rain_jan_4.5_pc <- rascc(raw_rain_jan_4.5_pc, new.proj.layer = proj_mask)
+r_rain_jan_8.5_pc <- rascc(raw_rain_jan_8.5_pc, new.proj.layer = proj_mask)
+r_rain_jul_4.5_pc <- rascc(raw_rain_jul_4.5_pc, new.proj.layer = proj_mask)
+r_rain_jul_8.5_pc <- rascc(raw_rain_jul_8.5_pc, new.proj.layer = proj_mask)
+
+r_evtr_jan_4.5_pc <- rascc(raw_evtr_jan_4.5_pc, new.proj.layer = proj_mask)
+r_evtr_jan_8.5_pc <- rascc(raw_evtr_jan_8.5_pc, new.proj.layer = proj_mask)
+r_evtr_jul_4.5_pc <- rascc(raw_evtr_jul_4.5_pc, new.proj.layer = proj_mask)
+r_evtr_jul_8.5_pc <- rascc(raw_evtr_jul_8.5_pc, new.proj.layer = proj_mask)
+```
+
+
+
+```{r}
+plot(r_tmax_jan_4.5_ac[[1]])
+```
+
+```{r}
+n_tmax_jan_4.5 <- as.numeric(sub("-.*", "", unique(raw_tmax_jan_4.5_ac$time)))
+n_tmax_jan_8.5 <- as.numeric(sub("-.*", "", unique(raw_tmax_jan_8.5_ac$time)))
+n_tmin_jul_4.5 <- as.numeric(sub("-.*", "", unique(raw_tmin_jul_4.5_ac$time)))
+n_tmin_jul_8.5 <- as.numeric(sub("-.*", "", unique(raw_tmin_jul_8.5_ac$time)))
+
+n_rain_jan_4.5 <- as.numeric(sub("-.*", "", unique(raw_rain_jan_4.5_pc$time)))
+n_rain_jan_8.5 <- as.numeric(sub("-.*", "", unique(raw_rain_jan_4.5_pc$time)))
+n_rain_jul_4.5 <- as.numeric(sub("-.*", "", unique(raw_rain_jul_4.5_pc$time)))
+n_rain_jul_8.5 <- as.numeric(sub("-.*", "", unique(raw_rain_jul_4.5_pc$time)))
+
+n_evtr_jan_4.5 <- as.numeric(sub("-.*", "", unique(raw_evtr_jan_4.5_pc$time)))
+n_evtr_jan_8.5 <- as.numeric(sub("-.*", "", unique(raw_evtr_jan_4.5_pc$time)))
+n_evtr_jul_4.5 <- as.numeric(sub("-.*", "", unique(raw_evtr_jul_4.5_pc$time)))
+n_evtr_jul_8.5 <- as.numeric(sub("-.*", "", unique(raw_evtr_jul_4.5_pc$time)))
+```
+
+
+```{r}
+
+```
+

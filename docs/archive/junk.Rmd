@@ -1,0 +1,13 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+lev <- c(131, 132)
+xx <- ch_rst
+xx[any(xx != lev)] <- 0
+xx[any(xx == lev)] <- 1
+
+plot(xx)
+```

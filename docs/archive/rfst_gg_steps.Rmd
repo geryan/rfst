@@ -1,0 +1,213 @@
+---
+title: "Steps Model Landis"
+author: "Casey Visintin"
+date: "26 February 2019"
+output: html_document
+---
+
+```{r setup, include = FALSE, cache = FALSE}
+library(steps)
+library(raster)
+library(viridis)
+library(doMC)
+library(foreach)
+library(future)
+#plan(multiprocess, workers = 20)
+#plan(sequential)
+plan(multisession, workers = 3)
+#knitr::opts_chunk$set(echo = TRUE)
+#
+```
+
+Define cropping boundary to speed up calculations:
+```{r}
+#ch_extent <- extent(c(375000, 425000, 5825000, 5875000))
+#ch_extent <- extent(rfa_boundary)
+ch_extent <- extent(c(318074.270241066697053611278533935546875,
+                      452175.73770814645104110240936279296875,
+                      5770574.760808147490024566650390625,
+                      5906852.2654052078723907470703125))
+```
+
+Generate model inputs:
+
+```{r}
+#Note, this is an age-structured matrix and is not generic
+gg_trans_mat <- matrix(c(0.00,0.00,0.50,
+                         0.50,0.00,0.00,
+                         0.00,0.85,0.85),
+                       nrow = 3, ncol = 3, byrow = TRUE)
+colnames(gg_trans_mat) <- rownames(gg_trans_mat) <- c('Newborn','Juvenile','Adult')
+
+gg_stable_states <- abs( eigen(gg_trans_mat)$vectors[,1] / base::sum(eigen(gg_trans_mat)$vectors[,1]) ) 
+
+file_list <- list.files("data/grids/habitat", pattern = "-{1}.{1,2}\\.tif")
+
+gg_hab_suit <- stack()
+
+for (i in seq_len(length(file_list))) {
+  rst <- raster(paste0("data/grids/habitat/", file_list[[i]]))
+  rst <- crop(rst, ch_extent)
+  gg_hab_suit <- stack(gg_hab_suit, rst)
+  names(gg_hab_suit[[i]]) <- paste0("Habitat_", i)  
+}
+```
+
+```{r}
+#plot(gg_hab_suit, box = FALSE, axes = FALSE, col = viridis(100))
+#plot(gg_hab_suit[[1]], box = FALSE, axes = FALSE, col = viridis(100))
+plot(gg_hab_suit[[1]])
+plot(rfa_boundary, add = TRUE)
+```
+
+```{r}
+plot(gg_hab_suit[[50]])
+plot(rfa_boundary, add = TRUE)
+```
+
+
+```{r}
+#gg_hab_k <- calc(gg_hab_suit[[1]], fun = function(x){if(is.na(x)) x else rbinom(prob = x, size = 3, n = 1)})
+#gg_hab_k[is.na(gg_hab_k)] <- 0
+gg_hab_k <- gg_hab_suit[[1]]
+gg_hab_k[!is.na(gg_hab_k)] <- 3
+names(gg_hab_k) <- "Carrying Capacity"
+#plot(gg_hab_k, box = FALSE, axes = FALSE, col = viridis(3))
+
+gg_popN <- stack(replicate(ncol(gg_trans_mat), gg_hab_k))
+#gg_popN <- stack(replicate(ncol(gg_trans_mat), floor(gg_hab_suit*200)))
+
+gg_popN <- gg_popN*gg_stable_states
+
+idx <- which(!is.na(gg_hab_suit[[1]][]) & gg_hab_suit[[1]][] < 0.95)
+
+gg_p <- foreach(i = 1:nlayers(gg_popN)) %do% {
+  m <- ceiling(cellStats(gg_popN[[i]], max, na.rm = TRUE))
+    pop <- calc(gg_popN[[i]], fun = function(x){if(is.na(x)) x else rbinom(prob = (x/m), size = m, n = 1)})
+    pop[idx] <- 0
+    pop
+} ## Not working right investigate why no integeers
+
+gg_pop <- stack(gg_p)
+
+
+gg_pop <- gg_popN
+gg_pop[!is.na(gg_pop)] <- 0
+gg_pop[[1]][sample(idx, 10000)] <- 1
+gg_pop[[2]][sample(idx, 10000)] <- 1
+gg_pop[[3]][sample(idx, 10000)] <- 1
+
+
+#registerDoMC(cores = 4)
+#gg_pop <- stack(
+#  foreach(i = 1:nlayers(gg_popN)) %dopar% {
+#    m <- ceiling(cellStats(gg_popN[[i]], max, na.rm = TRUE))
+#    pop <- calc(gg_popN[[i]], fun = function(x) if(is.na(x)) x else rbinom(prob = (x/m), size = m, n = 1))
+#    pop[idx] <- 0
+#    pop
+#  })
+names(gg_pop) <- colnames(gg_trans_mat)
+#plot(gg_pop, box = FALSE, axes = FALSE, col = viridis(100))
+
+TotpopN <- sum(cellStats(gg_pop, 'sum', na.rm = TRUE)) # Get total population size to check sensible
+init_pop_size <- sum(gg_pop)
+#plot(init_pop_size, box = FALSE, axes = FALSE, col = viridis(25))
+
+
+
+registerDoMC(cores = 10)
+# read in landis fire predictions
+gg_dist_fires <- stack(foreach(i = 1:50) %dopar% {
+  r <- raster(paste0("data/grids/landis/fire/severity-", i, ".tif"))
+  crop(r, extent(gg_hab_suit))
+})
+
+# read in landis logging predictions
+gg_dist_logging <- stack(foreach(i = 1:50) %dopar% {
+  r <- raster(paste0("data/grids/landis/logging/prescripts-", i, ".tif"))
+  crop(r, extent(gg_hab_suit))
+})
+
+k_function <- function (landscape, timestep) {
+  
+  
+  fun <- function(suitability) {
+    pcauchy(suitability, scale = 0.2, location = 0.5) * 3.5
+  }
+  
+  idx <- which(!is.na(landscape$suitability[[1]][]))
+  
+  suit <- landscape$suitability
+  
+  if (raster::nlayers(suit) > 1) {
+    suit <- suit[[timestep]]
+  }
+  
+  k <- suit
+  k[idx] <- fun(suit[idx])
+  
+  #calc(suit, fun)
+  
+}
+
+deterministic_transitions <- function(transition_matrix, raster_name) {
+  
+  # get indices
+  idx <- which(transition_matrix != 0)
+  is_recruitment <- upper.tri(transition_matrix)[idx]
+  upper <- ifelse(is_recruitment, Inf, 1)
+  vals <- transition_matrix[idx]
+  dim <- nrow(transition_matrix)
+  
+  function (landscape, timestep) {
+    
+    # get metrics and constructor info
+    cell_idx <- which(!is.na(raster::getValues(landscape$population[[1]])))
+    n_cells <- length(cell_idx)
+    addition <- length(transition_matrix) * (seq_len(n_cells) - 1)
+    idx_full <- as.numeric(outer(idx, addition, FUN = "+"))
+    
+    # get relevant raster
+    rst <- landscape[[raster_name]][[timestep]]
+    
+    #initialise array
+    transition_array <- array(0, dim = c(dim, dim, n_cells))
+    
+    # populate array:
+    transition_array[idx_full] <- vals * rep(rst[cell_idx], each = length(idx))
+    
+    #### Return array with required dimensions
+    transition_array
+  }
+}
+
+
+gg_landscape <- landscape(population = gg_pop,
+                          suitability = gg_hab_suit,
+                          carrying_capacity = gg_hab_k
+                          )
+
+gg_pop_dynamics <- population_dynamics(change = growth(transition_matrix = gg_trans_mat,
+                                                       global_stochasticity = 0.1
+),
+dispersal = cellular_automata_dispersal(dispersal_kernel = exponential_dispersal_kernel(distance_decay = 8000)
+modification = NULL
+)
+```
+
+Run simulation:
+
+```{r}
+gg_results <- simulation(landscape = gg_landscape,
+                         population_dynamics = gg_pop_dynamics,
+                         habitat_dynamics = NULL,
+                         timesteps = 5,
+                         replicates = 1)
+```
+
+
+```{r}
+plot(gg_results)
+plot(gg_results[1], type = "raster", stages = 0, timesteps = seq(1, 25, 4))
+plot(gg_results[1], type = "raster", stages = 0, animate = TRUE, timesteps = seq(1, 25, 4))
+```

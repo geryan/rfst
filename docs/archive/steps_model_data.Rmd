@@ -1,0 +1,76 @@
+---
+title: "Steps Model Data Landis"
+author: "Casey Visintin"
+date: "26 February 2019"
+output: html_document
+---
+
+```{r setup, include = FALSE, cache = FALSE}
+library(raster)
+library(rgdal)
+library(rgeos)
+library(dismo)
+library(viridis)
+library(foreach)
+library(maptools)
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_knit$set(root.dir = "../")
+path <- "data/grids/landis/"
+```
+
+Load a spatial layer from LANDIS as a base layer:
+
+```{r}
+ch_rst <- raster("data/grids/landis/eco_v12.img")
+```
+
+Gather spatial information from base layer:
+
+```{r}
+ch_res <- res(ch_rst)
+ch_extent <- extent(ch_rst)
+ch_proj <- ch_rst@crs
+```
+
+Read in mask layer:
+
+```{r}
+ch_mask <- raster("data/grids/ch_mask.tif")
+```
+
+Process raw LANDIS spatial data - this involves copying raster values into new rasters based on project standards:
+
+```{r}
+
+file_list <- list.files(paste0(path, "fire/"), pattern = ".img")
+
+for (i in file_list) {
+  base <- ch_rst
+  temp <- raster(paste0(path, "fire/", i))
+  val <- getValues(temp)
+  base[] <- val
+  base <- base - 2
+  base[base < 1] <- 0
+  base <- base / cellStats(base, max)
+  base <- 1 - base
+  base <- base * ch_mask
+  writeRaster(base, file = paste0(path, "fire/", gsub(".img", ".tif", i)), overwrite = TRUE)
+}
+
+file_list <- list.files(paste0(path, "logging/"), pattern = ".img")
+
+for (i in file_list) {
+  base <- ch_rst
+  temp <- raster(paste0(path, "logging/", i))
+  val <- getValues(temp)
+  base[] <- val
+  base <- base - 1
+  base[base < 1] <- 0
+  base[base >= 1] <- 1
+  base <- sqrt((base - 1) * (base - 1))
+  base <- base * ch_mask
+  writeRaster(base, file = paste0(path, "logging/", gsub(".img", ".tif", i)), overwrite = TRUE)
+}
+
+rm(base, temp, val)
+```

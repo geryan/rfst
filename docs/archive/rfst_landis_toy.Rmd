@@ -219,7 +219,8 @@ summary(glm(gg_model_data_l$data[[1]]$PA ~ predict(gg_brt_l, gg_model_data_l$dat
 ```
 
 ```{r}
-gg_env_var_l <- stack(gg_env_vars, ch_max_age)
+gg_env_var_l <- stack(gg_env_vars, ch_max_age[landis_ch_max_age.1[[1]])
+
 names(gg_env_var_l)[4] <- "MaxAge"
 
 gg_env_var_l
@@ -233,41 +234,79 @@ gg_pred_map_l <- predict(gg_env_var_l, gg_brt_l, type = "response", n.trees = gg
 ```{r}
 plot(gg_pred_map_l)
 ```
-
-
 ```{r}
-l_brt_gg_pred <- l_brt_gg %>% 
-  mutate(preds = map(.x = brt,
-                     .f = df_predict.gbm,
-                     y = data,
-                     type = "response"))
-
-l_brt_gg_pred
-```
-
-```{r}
-predbrt <- function(x, ...){
-  dismo::predict(x = data.frame(x), ...)
+change_name <- function(x, index = 4, name = "MaxAge"){
+  names(x)[index] <- name
 }
 ```
 
+```{r}
+
+MaxAge <- list_along(1:51)
+
+for(i in 1:51){
+  MaxAge[[i]] <- ch_max_age[[i]]
+}
+
+gg_pred_var <- tibble(year = 1:51, env_vars = MaxAge)
+
+for(i in 1:51){
+  gg_pred_var$env_vars[[i]] <- stack(gg_env_vars, MaxAge[[i]])
+}
+
+gg_pred_var
+```
+
+
+
 
 ```{r}
-l_brt_pred <- gg_model_data_l %>% 
-  mutate(
-    preds = map(
-      .x = data,
-      .f = predbrt,
-      object = gg_brt_l,
-      type = "response",
-      n.trees = gg_brt_l$gbm.call$best.trees
-    )
-  )
+for(i in 1:51){
+  names(gg_pred_var$env_vars[[i]])[4] <- "MaxAge"
+}
+
 ```
 
 
 ```{r}
-plot(l_brt_gg_pred$preds[[1]])
+#saveRDS(object = gg_pred_var, file = "output/gg_pred_var.Rds")
+
+#gg_pred_var <- readRDS(file = "output/gg_pred_var.Rds")
 ```
+
+```{r}
+#predict(gg_env_vars, gg_brt, type = "response", n.trees = gg_brt_l$gbm.call$best.trees)
+```
+
+
+```{r}
+nyears <- 51
+gg_pred_maps <- list_along(1:nyears)
+
+for(i in 1:nyears){
+  gg_pred_maps[[i]] <- predict(gg_pred_var$env_vars[[i]],
+                               gg_brt_l,
+                               type = "response",
+                               n.trees = gg_brt_l$gbm.call$best.trees)
+}
+
+gg_pred_maps
+```
+
+
+```{r}
+stack(gg_pred_maps)
+```
+
+```{r}
+plot(gg_pred_maps[[1]])
+```
+```{r}
+plot(gg_pred_maps[[2]])
+```
+
+
+
+
 
 

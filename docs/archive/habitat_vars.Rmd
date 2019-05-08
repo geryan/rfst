@@ -1,0 +1,545 @@
+---
+title: "Central Highalnds baseline landis habitat data"
+output: html_notebook
+author: "GE Ryan"
+---
+
+## Prelims
+
+### Packages
+```{r packages}
+library(raster)
+library(sf)
+library(dplyr)
+library(rgdal)
+library(sp)
+```
+### File paths
+```{r paths}
+bmpath <- "/home/landis/landis_ch_s1_pb-th-cc/output/biomass/"
+cspath <- "/home/landis/landis_ch_s1_pb-th-cc/output/cohort-stats/"
+oppath <- "/home/landis/landis_steps/output/"
+```
+
+## Landscape
+```{r ch_rst}
+ch_rst <- raster("~/landis_steps/data/grids/landis/eco_v12.img")
+```
+
+Gather spatial information from base layer:
+```{r }
+ch_res <- res(ch_rst)
+ch_extent <- extent(ch_rst)
+ch_proj <- ch_rst@crs
+```
+
+Create 1km2 window for focal operations:
+```{r}
+buffer_radius <- 564
+window <- focalWeight(raster(ncols=11, nrows=11, xmn = 0, resolution = 100),
+                      buffer_radius,
+                      type = 'circle')
+```
+
+Load in Central Highlands boundary and rasterize as a mask
+```{r}
+rfa_boundary <- readOGR(dsn="~/landis_steps/data/shapefiles", layer="RFA")
+rfa_boundary <- rfa_boundary[rfa_boundary@data$NAME == "CENTRAL HIGHLANDS", ]
+rfa_boundary <- spTransform(rfa_boundary, ch_proj)
+
+ch_mask <- rasterize(rfa_boundary, ch_rst, field = 1)
+#writeRaster(ch_mask, file = "~/landis_steps/data/grids/ch_mask.tif", overwrite = TRUE)
+```
+
+```{r}
+rfa_boundary <- re
+```
+
+
+
+```{r}
+vic <- read_sf(dsn = "/home/landis/landis_steps/data/shapefiles/vicstatepolygon/", layer = "VIC_STATE_POLYGON_shp") %>%
+  st_transform(crs = 32755)
+
+vic
+```
+
+
+```{r}
+plot(ch_mask)
+```
+
+## Process Landis Data
+
+### Initial year
+
+#### Biomass
+This creates a raster for year 0 for biomass of each species named in the 8 letter 4-4 genus-species format from landis
+```{r biomass}
+spp <- list.files(path = bmpath,
+                  pattern = "bio-") %>%
+  sub("bio-", "", .) %>%
+  sub("-.*", "", .) %>%
+  unique
+
+spp
+
+for(i in 1:length(spp)){
+  
+  tempraster <- ch_mask
+  
+  tempraster[] <- sprintf("%sbio-%s-0.img", bmpath, spp[i]) %>%
+    raster %>%
+    getValues
+  
+  names(tempraster) <- spp[i]
+  
+  assign(sprintf("biomass_%s", spp[i]), tempraster)
+  
+}
+```
+
+
+**need to up update species list in next run**
+```{r}
+spp <- list.files(path = cspath,
+                  ) %>%
+  sub("-.*", "", .) %>%
+  unique
+
+spp <- spp[which(spp!= "AGE")]
+spp <- spp[which(spp!= "SPP")]
+
+for(i in 1:length(spp)){
+  
+  tempraster <- ch_mask
+  
+  tempraster[] <- sprintf("%s%s-MAX-0.img", cspath, spp[i]) %>%
+    raster %>%
+    getValues
+  
+  names(tempraster) <- spp[i]
+  
+  assign(sprintf("maxage_%s", spp[i]), tempraster)
+  
+}
+```
+
+
+#### Max age
+```{r max age}
+max_age <- ch_mask
+
+max_age[] <- paste0(cspath, "AGE-MAX-0.img") %>%
+  raster %>%
+  getValues
+```
+
+#### Indices
+
+##### CV GG Model
+```{r max age 150 & 200}
+max_age_150 <- max_age
+max_age_150[max_age_150 < 150] <- 0
+max_age_150[max_age_150 != 0] <- 1
+
+max_age_200 <- max_age
+max_age_200[max_age_200 < 200] <- 0
+max_age_200[max_age_200 != 0] <- 1
+
+prop_old_150 <- focal(max_age_150, window, na.rm = TRUE)
+prop_old_200 <- focal(max_age_200, window, na.rm = TRUE)
+
+#writeRaster(prop_old_150, file = paste0(oppath, "prop_old_150_00.tif"), overwrite = TRUE)
+#writeRaster(prop_old_200, file = paste0(oppath, "prop_old_200_00.tif"), overwrite = TRUE)
+```
+?? Window buffer size appropriate?
+
+```{r cv eucs}
+biomass_eucs <- biomass_eucs <- stack(biomass_eucacype, biomass_eucadalr, biomass_eucadive, biomass_eucaradi, biomass_eucavimi)
+
+biomass_eucs_mat <- getValues(biomass_eucs)
+
+biomass_TotalBiomass_vec <- getValues(biomass_TotalBiomass)
+
+prop_bio_targ <- ch_mask
+prop_bio_targ[] <- rowSums(biomass_eucs_mat)/biomass_TotalBiomass_vec
+
+prop_bio_regn <- ch_mask
+prop_bio_regn[] <- getValues(biomass_eucaregn)/biomass_TotalBiomass_vec
+
+#writeRaster(prop_bio_targ, file = paste0(oppath, "prop_bio_targ_00.tif"), overwrite = TRUE)
+#writeRaster(prop_bio_regn, file = paste0(oppath, "prop_bio_regn_00.tif"), overwrite = TRUE)
+```
+
+
+##### HBT
+```{r}
+hbt <- ch_mask
+
+hbt[] <- getValues(max_age)
+hbt[hbt <= 150] <- 0
+hbt[hbt > 150 & hbt < 200] <- (hbt[hbt > 150 & hbt < 200] - 150)/50
+hbt[hbt >= 200] <- 1
+
+plot(hbt)
+```
+
+
+##### GG denning
+```{r}
+ggdspp <- stack(biomass_eucacype, biomass_eucadalr, biomass_eucadive, biomass_eucaradi, biomass_eucaregn, biomass_eucavimi)
+
+ggdspp_mat <- getValues(ggdspp)
+ggdspp_vec <- rowSums(ggdspp_mat)
+
+ggdspp <- ch_mask
+
+ggdspp[] <- ggdspp_vec
+
+ggdspp[ggdspp > 0] <- 1
+```
+
+```{r}
+plot(ggdspp)
+```
+
+
+##### GG foraging
+window this?
+```{r}
+ggfspp <- stack(biomass_eucacype, biomass_eucaglob, biomass_eucaobli, biomass_eucatric)
+
+ggfspp_mat <- getValues(ggfspp)
+ggfspp_vec <- rowSums(ggfspp_mat)
+
+ggfspp <- ch_mask
+
+ggfspp[] <- ggfspp_vec
+
+ggfspp[ggfspp > 0] <- 1
+```
+
+
+```{r}
+plot(ggfspp)
+```
+##### LBP mid-storey
+probably need eucaacer in future runs
+
+stupid because means of these things isn't very useful - great habitat in one of these is all that's needed
+```{r}
+lbdspp <- stack(biomass_acacdeal, biomass_acacmear, biomass_acacobli, biomass_eucadeli, biomass_eucanite, biomass_eucapauh, biomass_eucapaul, biomass_eucaregn, biomass_leptgran, biomass_nothcunn)
+
+lbdspp_mat <- getValues(lbdspp)
+lbdspp_mat[lbdspp_mat > 0] <- 1
+lbdspp_vec <- rowMeans(lbdspp_mat)
+
+lbdspp <- ch_mask
+
+lbdspp[] <- lbdspp_vec
+```
+
+use cumulative or propn biomass instead of index
+```{r}
+lbmspp <- stack(biomass_acacdeal, biomass_acacmear, biomass_acacobli, biomass_eucapauh, biomass_eucapaul, biomass_leptgran, biomass_nothcunn) # is nothofagus appropriate here? do we differentiate mid storey foraging habitat vs stuff they eat?
+
+lbmspp_mat <- getValues(lbmspp)
+lbmspp_mat[lbmspp_mat > 0] <- 1
+lbmspp_vec <- rowSums(lbmspp_mat)
+lbmspp_vec[lbmspp_vec > 0] <-1
+
+lbm <- ch_mask
+
+lbm[] <- lbmspp_vec
+```
+
+
+```{r}
+plot(lbm)
+```
+
+#### lbphbt
+```{r}
+buffer_radius_3h <- 100
+window_3h <- focalWeight(raster(ncols=3, nrows=3, xmn = 0, resolution = 100),
+                      buffer_radius_3h,
+                      type = 'rectangle')
+window_3h[] <- 1
+
+lbhspp <- stack(maxage_eucaregn, maxage_eucadeli, maxage_eucanite, maxage_eucapauh, maxage_eucapaul)
+
+lbhspp_mat <- getValues(lbhspp)
+lbhspp_mat[lbhspp_mat > 0] <- 1
+lbhspp_vec <- rowSums(lbhspp_mat)
+lbhspp_vec[lbhspp_vec > 0] <- 1
+
+lbh <- ch_mask
+
+lbh[] <- lbhspp_vec
+
+lbhf <- focal(lbh, window_3h, na.rm = TRUE)
+lbhf[lbhf < 1.5] <- 0
+lbhf[lbhf > 0 ] <- 0.4*lbhf[lbhf > 0] -0.6
+lbhf[lbhf > 1] <- 1
+```
+
+```{r}
+plot(lbhf)
+```
+
+## Climate vars
+```{r}
+prec01 <- raster("~/landis_steps/data/grids/bioclim/wc2.0_30s_prec_01.tif")
+prec01 <- projectRaster(prec01, ch_mask)
+prec01 <- mask(prec01, ch_mask)
+
+plot(prec01)
+```
+
+```{r}
+prec07 <- raster("~/landis_steps/data/grids/bioclim/wc2.0_30s_prec_07.tif")
+prec07 <- projectRaster(prec07, ch_mask)
+prec07 <- mask(prec07, ch_mask)
+
+plot(prec07)
+```
+
+```{r}
+tmax01 <- raster("~/landis_steps/data/grids/bioclim/wc2.0_30s_tmax_01.tif")
+tmax01 <- projectRaster(tmax01, ch_mask)
+tmax01 <- mask(tmax01, ch_mask)
+
+plot(tmax01)
+```
+
+```{r}
+tmin07 <- raster("~/landis_steps/data/grids/bioclim/wc2.0_30s_tmin_07.tif")
+tmin07 <- projectRaster(tmin07, ch_mask)
+tmin07 <- mask(tmin07, ch_mask)
+
+plot(tmin07)
+```
+
+```{r}
+ggplot() + geom_raster(data = as.data.frame(tmin07, xy = T), aes(x = x, y = y, fill = wc2.0_30s_tmin_07)) + scale_fill_viridis_c()
+```
+
+## collate vars
+```{r}
+#gg_init_env_vars <- stack(prec01, prec07, tmax01, tmin07, prop_bio_regn, prop_bio_targ, prop_old_150, prop_old_200)
+
+#names(gg_init_env_vars) <- c("prec01", "prec07", "tmax01", "tmin07", "prop_bio_regn", "prop_bio_targ", "prop_old_150", "prop_old_200")
+
+gg_init_env_vars <- stack(prop_bio_regn, prop_bio_targ, prop_old_150, prop_old_200)
+
+names(gg_init_env_vars) <- c("prop_bio_regn", "prop_bio_targ", "prop_old_150", "prop_old_200")
+
+
+save(gg_init_env_vars, file = "/home/landis/landis_steps/data/gg_init_env_vars")
+```
+
+```{r}
+lb_init_env_vars <- stack(prec01, prec07, tmax01, tmin07, lbhf, lbm)
+
+names(lb_init_env_vars) <- c("prec01", "prec07", "tmax01", "tmin07", "lbhf", "lbm")
+
+save(lb_init_env_vars, file = "/home/landis/landis_steps/data/lb_init_env_vars")
+```
+
+
+## points
+```{r}
+gg_pres_abs <- read.csv(file="/home/landis/landis_steps/data/tabular/vba_greater_glider_2009-2019_PA.csv")
+table(gg_pres_abs$PA)
+
+gg_pres_abs <- SpatialPointsDataFrame(coords = cbind("X" = gg_pres_abs$LongitudeGDA94, "Y" = gg_pres_abs$LatitudeGDA94),
+                                      data = data.frame("PA" = gg_pres_abs$PA),
+                                      proj4string = CRS("+proj=longlat +datum=WGS84"))
+
+gg_pres_abs <- spTransform(gg_pres_abs, ch_proj)
+
+#gg_pres_abs <- gg_pres_abs[rfa_boundary, ]
+
+table(gg_pres_abs$PA)
+
+plot(gg_pres_abs, col=c("darkred", "darkblue"), pch=c(4,20), cex=c(0.5,0.8))
+plot(rfa_boundary, add = TRUE)
+
+#writeOGR(gg_pres_abs, dsn = "/home/landis/landis_steps/data/shapefiles", layer = "gg_points", driver = "ESRI Shapefile", overwrite_layer = TRUE)
+
+#gg_points <- data.frame(gg_pres_abs@data, gg_pres_abs@coords)
+```
+
+```{r}
+gg_pres_abs <- read.csv(file="/home/landis/landis_steps/data/tabular/vba_greater_glider_2009-2019_PA.csv")
+table(gg_pres_abs$PA)
+
+gg_pres_abs <- SpatialPointsDataFrame(coords = cbind("X" = gg_pres_abs$LongitudeGDA94, "Y" = gg_pres_abs$LatitudeGDA94),
+                                      data = data.frame("PA" = gg_pres_abs$PA),
+                                      proj4string = CRS("+proj=longlat +datum=WGS84"))
+
+gg_pres_abs <- st_as_sf(gg_pres_abs, coords = c("LongitudeGDA94", "LatitudeGDA94"), crs = 4326)
+
+bo <- st_read()
+
+st_transform()
+
+st_crs(32755)
+
+gg_pres_abs <- spTransform(gg_pres_abs, ch_proj)
+
+plot(rfa_boundary)
+plot(gg_pres_abs, add = TRUE, col = gg_pres_abs$PA)
+
+library(ggplot2)
+ggplot() +
+  geom_sf(data = vic) +
+  geom_sf(data = st_as_sf(rfa_boundary)) +
+  geom_sf(data = st_as_sf(gg_pres_abs), aes(color = as.factor(PA)), size = 0.1) +
+  theme_bw()
+
+gg_pres_abs <- gg_pres_abs[rfa_boundary, ]
+gg_pres_abs$PA
+
+table(gg_pres_abs$PA)
+
+plot(gg_pres_abs, col=c("darkred", "darkblue"), pch=c(4,20), cex=c(0.5,0.8))
+plot(rfa_boundary, add = TRUE)
+```
+
+
+```{r}
+lb_pres_abs <- read.csv(file="/home/landis/landis_steps/data/tabular/vba_lbp_2009-2019_PA.csv")
+
+lb_pres_abs <- SpatialPointsDataFrame(coords = cbind("X" = lb_pres_abs$LongitudeGDA94, "Y" = lb_pres_abs$LatitudeGDA94),
+                                      data = data.frame("PA" = lb_pres_abs$PA),
+                                      proj4string = CRS("+proj=longlat +datum=WGS84"))
+
+lb_pres_abs <- spTransform(lb_pres_abs, ch_proj)
+lb_pres_abs <- lb_pres_abs[rfa_boundary, ]
+
+plot(lb_pres_abs, col=c("darkred", "darkblue"), pch=c(4,20), cex=c(0.5,0.8))
+
+writeOGR(lb_pres_abs, dsn = "/home/landis/landis_steps/data/shapefiles", layer = "lb_points", driver = "ESRI Shapefile", overwrite_layer = TRUE) ## can change over to st_write
+
+lb_points <- data.frame(lb_pres_abs@data, lb_pres_abs@coords)
+
+table(lb_points$PA)
+```
+
+
+
+### Sample data
+
+```{r}
+load(file="/home/landis/landis_steps/data/gg_init_env_vars")
+
+# Sample covariate values
+cov_sample <- as.data.frame(extract(gg_init_env_vars, gg_points[, 2:3]))
+
+# Create modelling dataset
+gg_model_data <- cbind("PA" = gg_points[, 1], cov_sample)
+```
+
+```{r}
+load(file="/home/landis/landis_steps/data/lb_init_env_vars")
+
+# Sample covariate values
+cov_sample <- as.data.frame(extract(lb_init_env_vars, lb_points[, 2:3]))
+
+# Create modelling dataset
+lb_model_data <- cbind("PA" = lb_points[, 1], cov_sample)
+```
+
+
+
+```{r}
+# Check for NA values and omit accordingly:
+sum(is.na(gg_model_data))
+gg_model_data <- na.omit(gg_model_data)
+```
+
+
+```{r}
+#cor(gg_model_data[, 2:9])
+cor(gg_model_data[, 2:5])
+```
+
+ Review covariate data types
+```{r}
+str(gg_model_data)
+```
+Review data ranges
+```{r}
+#apply(gg_model_data[, 2:9], 2, range)
+apply(gg_model_data[, 2:5], 2, range)
+```
+Split the data into training and testing data
+```{r}
+set.seed(123)
+gg_sample <- sample(nrow(gg_model_data), round(0.75 * nrow(gg_model_data))) # the row indexes of our 75% sample
+gg_model_data_75 <- gg_model_data[gg_sample, ] # 75% of the data used to train the model
+gg_model_data_25 <- gg_model_data[-gg_sample, ] # 25% of the data used to test the model
+```
+
+Write the modelling data out to csv files and as an R object
+```{r}
+write.csv(gg_model_data, file = "/home/landis/landis_steps/data/gg_model_data.csv")
+write.csv(gg_model_data_25, file = "/home/landis/landis_steps/data/gg_model_data_25.csv")
+write.csv(gg_model_data_75, file = "/home/landis/landis_steps/data/gg_model_data_75.csv")
+save("gg_model_data", "gg_model_data_25", "gg_model_data_75", file = "/home/landis/landis_steps/data/gg_model_datasets")
+```
+
+
+```{r}
+# Check for NA values and omit accordingly:
+sum(is.na(lb_model_data))
+lb_model_data <- na.omit(lb_model_data)
+```
+
+
+```{r}
+cor(lb_model_data[, 2:7])
+```
+
+ Review covariate data types
+```{r}
+str(lb_model_data)
+```
+Review data ranges
+```{r}
+apply(lb_model_data[, 2:7], 2, range)
+```
+Split the data into training and testing data
+```{r}
+set.seed(123)
+lb_sample <- sample(nrow(lb_model_data), round(0.75 * nrow(lb_model_data))) # the row indexes of our 75% sample
+lb_model_data_75 <- lb_model_data[lb_sample, ] # 75% of the data used to train the model
+lb_model_data_25 <- lb_model_data[-lb_sample, ] # 25% of the data used to test the model
+```
+
+Write the modelling data out to csv files and as an R object
+```{r}
+write.csv(lb_model_data, file = "/home/landis/landis_steps/data/lb_model_data.csv")
+write.csv(lb_model_data_25, file = "/home/landis/landis_steps/data/lb_model_data_25.csv")
+write.csv(lb_model_data_75, file = "/home/landis/landis_steps/data/lb_model_data_75.csv")
+save("lb_model_data", "lb_model_data_25", "lb_model_data_75", file = "/home/landis/landis_steps/data/lb_model_datasets")
+```
+
+
+## Fire
+```{r}
+fihi <- read_sf("/home/landis/landis_steps/data/shapefiles/vicfires/")
+```
+
+```{r}
+plot(fihi)
+```
+
+```{r}
+fhr <- raster(fihi, band = SEASON) ## doesn't work
+```
+
+
+### Future years

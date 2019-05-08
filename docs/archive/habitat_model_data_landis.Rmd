@@ -1,0 +1,315 @@
+---
+title: "Habitat Model Data Landis"
+author: "Casey Visintin"
+date: "26 February 2019"
+output: html_document
+---
+
+```{r setup, include = FALSE, cache = FALSE}
+library(raster)
+library(rgdal)
+library(rgeos)
+library(dismo)
+library(viridis)
+library(foreach)
+library(maptools)
+library(sf)
+knitr::opts_chunk$set(echo = TRUE)
+path <- "/home/landis/landis_ch_lbp/output/biomass/"
+```
+
+Load a spatial layer from LANDIS as a base layer:
+
+```{r}
+ch_rst <- raster("data/grids/landis/eco_v12.img")
+```
+
+Gather spatial information from base layer:
+
+```{r}
+ch_res <- res(ch_rst)
+ch_extent <- extent(ch_rst)
+ch_proj <- ch_rst@crs
+```
+
+Create 1km2 window for focal operations:
+
+```{r}
+buffer_radius <- 564
+window <- focalWeight(raster(ncols=11, nrows=11, xmn=0),
+                      buffer_radius,
+                      type = 'circle')
+```
+
+Load in Central Highlands boundary and rasterize as a mask
+
+```{r}
+rfa_boundary <- readOGR(dsn="data/shapefiles", layer="RFA")
+rfa_boundary <- rfa_boundary[rfa_boundary@data$NAME == "CENTRAL HIGHLANDS", ]
+rfa_boundary <- spTransform(rfa_boundary, ch_proj)
+
+ch_mask <- rasterize(rfa_boundary, ch_rst, field = 1)
+writeRaster(ch_mask, file = paste0(path, "../../ch_mask.tif"), overwrite = TRUE)
+```
+
+Process raw LANDIS spatial data - this involves copying raster values into new rasters based on project standards.
+
+Variables available - Maximum Age of each of the six target species and total, Total Biomass of each species and total, Total Species Richness, Total dead biomass.
+
+```{r}
+path <- "/home/landis/landis_ch_lbp/output/biomass/"
+biomass_tot <- ch_mask
+biomass_tot[] <- getValues(raster(paste0(path, "bio-TotalBiomass-0.img")))
+biomass_tot <- biomass_tot * ch_mask
+
+biomass_tot_vec <- getValues(biomass_tot)
+
+biomass_eucacype <- biomass_eucadalr <- biomass_eucadive <- biomass_eucaradi <- biomass_eucaregn <- biomass_eucavimi <- ch_rst
+
+biomass_eucacype[] <- getValues(raster(paste0(path, "bio-eucacype-0.img")))
+biomass_eucadalr[] <- getValues(raster(paste0(path, "bio-eucadalr-0.img")))
+#biomass_eucadive[] <- getValues(raster(paste0(path, "bio-eucadive-0.img")))
+biomass_eucaradi[] <- getValues(raster(paste0(path, "bio-eucaradi-0.img")))
+biomass_eucaregn[] <- getValues(raster(paste0(path, "bio-eucaregn-0.img")))
+biomass_eucavimi[] <- getValues(raster(paste0(path, "bio-eucavimi-0.img")))
+
+#biomass_eucs <- stack(biomass_eucacype, biomass_eucadalr, biomass_eucadive, biomass_eucaradi, biomass_eucavimi)
+biomass_eucs <- stack(biomass_eucacype, biomass_eucadalr, biomass_eucaradi, biomass_eucaregn, biomass_eucavimi)
+
+biomass_eucs <- biomass_eucs * ch_mask
+
+names(biomass_eucs) <- unique(gsub("-{1}.{1,2}\\.img", "",
+                                    list.files(path, pattern = "bio-euca")))[-5]
+
+names(biomass_eucs) <- unique(gsub("-{1}.{1,2}\\.img", "",
+                                    list.files(path, pattern = "bio-euca")))[c(2, 3, 9, 10, 11)]
+
+
+biomass_eucs_mat <- getValues(biomass_eucs)
+```
+
+```{r}
+path <- "/home/landis/landis_ch_lbp/output/cohort-stats/"
+max_age_200 <- ch_rst
+max_age_200[] <- getValues(raster(paste0(path, "AGE-MAX-0.img")))
+max_age_200[max_age_200 < 200] <- 0
+max_age_200[max_age_200 != 0] <- 1
+max_age_200 <- max_age_200 * ch_mask
+
+max_age_150 <- ch_rst
+max_age_150[] <- getValues(raster(paste0(path, "AGE-MAX-0.img")))
+max_age_150[max_age_150 < 150] <- 0
+max_age_150[max_age_150 != 0] <- 1
+max_age_150 <- max_age_150 * ch_mask
+```
+
+Create new spatial inputs based on LANDIS outputs:
+
+PROP_BIO_TARG <- Proportion of total biomass for all five target species (eucacype, eucadalr, eucadive, eucaradi, eucavimi) combined
+PROP_BIO_REGN <- Proportion of total biomass for regnans species
+PROP_OLD_200 <- Total proportion of old (>200 years) trees within 1km2
+PROP_OLD_150 <- Total proportion of old (>200 years) trees within 1km2
+
+```{r}
+path <- "landis_steps/data/grids/"
+PROP_BIO_TARG <- ch_rst
+PROP_BIO_TARG[] <- rowSums(biomass_eucs_mat) / biomass_tot_vec
+writeRaster(PROP_BIO_TARG, file = paste0(path, "/output/PROP_BIO_TARG-00.tif"), overwrite = TRUE)
+
+PROP_BIO_REGN <- ch_rst
+PROP_BIO_REGN[] <- getValues(biomass_eucaregn) / biomass_tot_vec
+writeRaster(PROP_BIO_REGN, file = paste0(path, "/output/PROP_BIO_REGN-00.tif"), overwrite = TRUE)
+
+PROP_OLD_200 <- focal(max_age_200, window, na.rm = TRUE)
+writeRaster(PROP_OLD_200, file = paste0(path, "/output/PROP_OLD_200-00.tif"), overwrite = TRUE)
+
+PROP_OLD_150 <- focal(max_age_150, window, na.rm = TRUE)
+writeRaster(PROP_OLD_150, file = paste0(path, "/output/PROP_OLD_150-00.tif"), overwrite = TRUE)
+```
+
+Combine all spatial data to produce modelling variable stack:
+
+```{r}
+gg_init_env_vars <- stack(PROP_BIO_TARG, PROP_BIO_REGN, PROP_OLD_200, PROP_OLD_150)
+names(gg_init_env_vars) <- c("PROP_BIO_TARG", "PROP_BIO_REGN", "PROP_OLD_200", "PROP_OLD_150")
+
+save(gg_init_env_vars, file="data/gg_init_env_vars")
+```
+
+Load in Greater Glider presence and absence data and reproject:
+
+```{r}
+gg_pres_abs <- read.csv(file="data/tabular/vicAtlasGGpresabs.csv")
+
+gg_pres_abs <- SpatialPointsDataFrame(coords = cbind("X" = gg_pres_abs$LongitudeGDA94, "Y" = gg_pres_abs$LatitudeGDA94),
+                                      data = data.frame("PA" = gg_pres_abs$PA),
+                                      proj4string = CRS("+init=epsg:4283"))
+
+gg_pres_abs <- spTransform(gg_pres_abs, ch_proj)
+gg_pres_abs <- gg_pres_abs[rfa_boundary, ]
+
+plot(gg_pres_abs, col=c("darkred", "darkblue"), pch=c(4,20), cex=c(0.5,0.8))
+
+writeOGR(gg_pres_abs, dsn = "data/shapefiles", layer = "gg_points", driver = "ESRI Shapefile", overwrite_layer = TRUE)
+
+GG_POINTS <- data.frame(gg_pres_abs@data, gg_pres_abs@coords)
+
+# GG_POINTS <- data.frame(
+#   rbind(
+#     cbind("PA" = 1, gridSample(xy = gg_pres_abs[gg_pres_abs@data$PA == 1,],
+#                         r = ch_rst,
+#                         n = 1)),
+#     cbind("PA" = 0, gridSample(xy = gg_pres_abs[gg_pres_abs@data$PA == 0,],
+#                         r = ch_rst,
+#                         n = 1))))
+
+```
+
+Verify spatial attributes representing potential autocorrelation:
+
+```{r}
+gg_points_sf <- st_as_sf(data.frame(GG_POINTS[, 2:3]), coords = c("X", "Y"), crs = 28355)
+gg_points_sf_pres <- st_as_sf(data.frame(GG_POINTS[GG_POINTS$PA == 1, 2:3]), coords = c("X", "Y"), crs = 28355)
+gg_points_sf_abs <- st_as_sf(data.frame(GG_POINTS[GG_POINTS$PA == 0, 2:3]), coords = c("X", "Y"), crs = 28355)
+
+dists_all <- st_distance(gg_points_sf, gg_points_sf)
+dists_all <- apply(dists_all, 1, function(x) min(x[x != 0]))
+plot(density(dists_all))
+
+dists_pres <- st_distance(gg_points_sf_pres, gg_points_sf_pres)
+dists_pres <- apply(dists_pres, 1, function(x) min(x[x != 0]))
+plot(density(dists_pres))
+
+dists_abs <- st_distance(gg_points_sf_abs, gg_points_sf_abs)
+dists_abs <- apply(dists_abs, 1, function(x) min(x[x != 0]))
+plot(density(dists_abs))
+```
+
+Sample predictor maps with Greater Glider presence and absence points and create modelling dataset:
+
+```{r}
+load(file="data/gg_init_env_vars")
+
+# Sample covariate values
+cov_sample <- as.data.frame(extract(gg_init_env_vars, GG_POINTS[, 2:3]))
+
+# Create modelling dataset
+gg_model_data <- cbind("PA" = GG_POINTS[, 1], cov_sample)
+
+```
+
+Import and process roads data to construct bias information:
+
+```{r}
+# roads <- st_read("data/shapefiles/VIC_GDA9455_ROADS_STATE.shp")
+# roads <- st_crop(roads, extent(ch_extent))
+# roads_simp <- st_union(roads)
+# save(roads_simp, file="data/roads_simp")
+# st_write(roads_simp, dsn = "data/shapefiles/roads_simplified.shp", driver = "ESRI Shapefile", delete_layer = TRUE)
+
+load(file="data/roads_simp")
+
+gg_points_sf <- st_as_sf(data.frame(GG_POINTS[, 2:3]), coords = c("X", "Y"), crs = 28355)
+
+bias_sample <- st_distance(gg_points_sf, roads_simp)
+
+# Append to modelling dataset
+gg_model_data <- cbind(gg_model_data, "DIST_ROADS" = as.vector(bias_sample))
+
+```
+
+Inspect data and create modelling training and testing datasets:
+
+```{r}
+# Check for NA values and omit accordingly:
+sum(is.na(gg_model_data))
+gg_model_data <- na.omit(gg_model_data)
+
+# Review pairwise correlation of covariates:
+cor(gg_model_data[, 2:6])
+
+# Review covariate data types
+str(gg_model_data)
+
+# Review data ranges
+apply(gg_model_data[, 2:6], 2, range)
+
+# Split the data into training and testing data
+set.seed(123)
+gg_sample <- sample(nrow(gg_model_data), round(0.75 * nrow(gg_model_data))) # the row indexes of our 75% sample
+gg_model_data_75 <- gg_model_data[gg_sample, ] # 75% of the data used to train the model
+gg_model_data_25 <- gg_model_data[-gg_sample, ] # 25% of the data used to test the model
+
+# Write the modelling data out to csv files and as an R object
+write.csv(gg_model_data, file = "data/gg_model_data.csv")
+write.csv(gg_model_data_25, file = "data/gg_model_data_25.csv")
+write.csv(gg_model_data_75, file = "data/gg_model_data_75.csv")
+save("gg_model_data", "gg_model_data_25", "gg_model_data_75", file = "data/gg_model_datasets")
+```
+
+Create predictor maps for all future timesteps:
+
+```{r, progress = FALSE}
+eucs_names <- unique(gsub("-{1}.{1,2}\\.img", "",
+                                    list.files(path, pattern = "bio-euca")))[-5]
+
+DIST_ROADS <- ch_mask
+DIST_ROADS[DIST_ROADS == 1] <- 0
+names(DIST_ROADS) <- "DIST_ROADS"
+
+timesteps <- 50
+
+gg_fut_env_vars <- foreach (i = seq_len(timesteps)) %do% {
+  biomass_tot <- ch_mask
+  biomass_tot[] <- getValues(raster(paste0(path, "bio-TotalBiomass-",i ,".img")))
+  biomass_tot <- biomass_tot * ch_mask
+  biomass_tot_vec <- getValues(biomass_tot)
+
+  biomass_eucacype <- biomass_eucadalr <- biomass_eucadive <- biomass_eucaradi <- biomass_eucaregn <- biomass_eucavimi <- ch_rst
+
+  biomass_eucacype[] <- getValues(raster(paste0(path, "bio-eucacype-",i, ".img")))
+  biomass_eucadalr[] <- getValues(raster(paste0(path, "bio-eucadalr-",i, ".img")))
+  biomass_eucadive[] <- getValues(raster(paste0(path, "bio-eucadive-",i, ".img")))
+  biomass_eucaradi[] <- getValues(raster(paste0(path, "bio-eucaradi-",i, ".img")))
+  biomass_eucaregn[] <- getValues(raster(paste0(path, "bio-eucaregn-",i, ".img")))
+  biomass_eucavimi[] <- getValues(raster(paste0(path, "bio-eucavimi-",i, ".img")))
+
+  biomass_eucs <- stack(biomass_eucacype, biomass_eucadalr, biomass_eucadive, biomass_eucaradi, biomass_eucavimi)
+
+  biomass_eucs <- biomass_eucs * ch_mask
+
+  names(biomass_eucs) <- eucs_names
+
+  biomass_eucs_mat <- getValues(biomass_eucs)
+
+  max_age_200 <- ch_rst
+  max_age_200[] <- getValues(raster(paste0(path, "AGE-MAX-",i, ".img")))
+  max_age_200[max_age_200 < 200] <- 0
+  max_age_200[max_age_200 != 0] <- 1
+  max_age_200 <- max_age_200 * ch_mask
+
+  max_age_150 <- ch_rst
+  max_age_150[] <- getValues(raster(paste0(path, "AGE-MAX-",i, ".img")))
+  max_age_150[max_age_150 < 150] <- 0
+  max_age_150[max_age_150 != 0] <- 1
+  max_age_150 <- max_age_150 * ch_mask
+  
+  PROP_BIO_TARG <- ch_rst
+  PROP_BIO_TARG[] <- rowSums(biomass_eucs_mat) / biomass_tot_vec
+
+  PROP_BIO_REGN <- ch_rst
+  PROP_BIO_REGN[] <- getValues(biomass_eucaregn) / biomass_tot_vec
+
+  PROP_OLD_200 <- focal(max_age_200, window, na.rm = TRUE)
+
+  PROP_OLD_150 <- focal(max_age_150, window, na.rm = TRUE)
+
+  stack(PROP_BIO_TARG, PROP_BIO_REGN, PROP_OLD_200, PROP_OLD_150, DIST_ROADS)
+}
+
+gg_fut_env_vars <- lapply(gg_fut_env_vars, function (x) {
+  names(x) <- c("PROP_BIO_TARG", "PROP_BIO_REGN", "PROP_OLD_200", "PROP_OLD_150", "DIST_ROADS")
+  x})
+
+save(gg_fut_env_vars, file="data/gg_fut_env_vars")
+```
