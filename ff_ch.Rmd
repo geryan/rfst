@@ -1,5 +1,5 @@
 ---
-title: "Victorian Forest Futures Population Vability Analysis"
+title: "Victorian Forest Futures Population Vability Analysis: Central Highlands"
 output: 
   html_notebook: 
     toc: yes
@@ -8,7 +8,7 @@ author: GE Ryan
 date: 2019-08-05
 ---
 
-# Preparations
+# Project setup
 
 ### Packages
 Load packages
@@ -28,8 +28,8 @@ library(tidyr)
 
 ### Functions
 ```{r functions}
-source(file = "R/functions/gsfplot.R")
-source(file = "R/functions/grplot.R") # fugly
+source(file = "R/functions/pf_sf.R")
+#source(file = "R/functions/grplot.R") # fugly
 source(file = "R/functions/read.vba.R")
 ```
 
@@ -41,11 +41,15 @@ source(file = "R/functions/read.vba.R")
 ### Landscape
 Set up base landscape layer
 ```{r ch_rst}
-ch_rst <- raster(x = "data/grids/eco_v12.img")
+ch_rst <- raster(x = "data/grids/eco_v12.img") %>%
+  projectRaster(from = ., crs = crs("+init=epsg:32755"), method = "ngb")
+
 ch_rst
 ```
 ```{r}
-ch_proj <- crs(ch_rst)
+ch_proj <- ch_rst@crs
+ch_extent <- extent(ch_rst)
+ch_res <- res(ch_rst)
 ```
 
 
@@ -55,29 +59,31 @@ plot(ch_rst)
 
 ### Boundaries
 ```{r rfa}
-rfa <- read_sf("data/shapefiles/RFA/")
+rfa <- read_sf("data/shapefiles/RFA/")%>%
+  st_transform(crs = ch_proj)
 rfa
 ```
 
 ```{r}
-gsfplot(rfa)
+pf.sf(rfa)
 ```
 
 
 ```{r ch_rfa}
-ch_rfa <- rfa[rfa$NAME== "CENTRAL HIGHLANDS",] %>%
-  st_transform(crs = ch_proj)
+ch_rfa <- rfa[rfa$NAME== "CENTRAL HIGHLANDS",]
 
 ch_rfa
 ```
 
 ```{r}
-gsfplot(ch_rfa)
+pf.sf(ch_rfa)
 ```
 
 
 ```{r ch_mask}
 ch_mask <- rasterize(ch_rfa, ch_rst, field = 1)
+
+ch_mask
 ```
 
 ```{r plot ch_mask}
@@ -96,7 +102,7 @@ victoria <- read_sf("data/shapefiles/vicstatepolygon/") %>%
 
 ### GG Occurrence data
 Read in data
-```{r read gg occ}
+```{r gg_ari}
 gg_ari <- read_excel(path = "data/tabular/BoA_SB_Combined_VBA_upload_v4.xls") %>%
   dplyr::select(-starts_with("leave")) %>%
   rename("lon" = `X-coordinate (easting or longitude)`, "lat" = `Y-coordinate (northing or latitude)`) %>%
@@ -110,7 +116,7 @@ gg_ari <- read_excel(path = "data/tabular/BoA_SB_Combined_VBA_upload_v4.xls") %>
 gg_ari
 ```
 
-```{r}
+```{r gg_vba}
 gg_vba <- read.vba("data/tabular/vba_gg_all_20190509.csv") %>%
   dplyr::rename("date" = `Survey Start Date`, "lon" = `Longitude GDA94`, "lat" = `Latitude GDA94`, "count" = `Total Count`) %>%
   select(date, lon, lat, count) %>%
@@ -131,26 +137,51 @@ gg_pa_all
 ```
 
 ```{r plot_gg_pa_all}
-plot_gg_pa_all <- ggplot() +
-  geom_sf(data = victoria) +
-  geom_sf(data = ch_rfa) +
-  geom_sf(data = gg_pa_all, aes(colour = base::as.factor(PA)), size = 0.01)
+plot_gg_pa_all <- pg.pa(gg_pa_all, ch_rfa) +
+  geom_sf(data = victoria, fill = NA)
 
 plot_gg_pa_all
 ```
 
 ```{r gg_pa_ch}
-gg_pa_ch <- gg_pa_all
-
+gg_pa_ch <- gg_pa_all[ch_rfa,]
 gg_pa_ch
 ```
 
 
+```{r pg_gg_pa_ch}
+pg_gg_pa_ch <- pg.pa(gg_pa_ch, ch_rfa)
+
+pg_gg_pa_ch
+```
 
 ### LBP Occurrence data
 ```{r read lb occ}
+lb_pa <- proc.vba("data/tabular/vba_lb_all_20190509.csv")
+
+lb_pa
+```
+```{r}
+read.vba("data/tabular/vba_lb_all_20190509.csv") %>%
+  dplyr::rename("date" = `Survey Start Date`, "lon" = `Longitude GDA94`, "lat" = `Latitude GDA94`, "count" = `Total Count`) %>%
+  select(date, lon, lat, count) %>%
+  mutate(date = dmy(date)) %>%
+  filter(date > ymd("2009-03-01")) %>%
+  mutate(PA = ifelse(count != 0 | is.na(count), 1, 0)) %>%
+  select(lon, lat, PA) %>%
+  st_as_sf(coords = c("lon", "lat"), crs = st_crs(4283)) %>%
+  st_transform(crs = st_crs(ch_rst))
 
 ```
+```{r}
+zz <- length(readLines("data/tabular/vba_lb_all_20190509.csv"))
+  
+xx <-  readLines("data/tabular/vba_gg_all_20190509.csv") %>%
+    head(-7) %>%
+    #paste0(collapse = "\n") %>%
+    read_csv(skip = 15, guess_max = zz-7)
+```
+
 
 ## Landis output
 
