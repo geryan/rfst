@@ -1,4 +1,6 @@
-proc.vba <- function(x, vba.crs = 4283, project.crs = 32755, cutoff.date = "2009-03-01"){
+proc.vba <- function(x, project.crs, vba.crs = 4283, cutoff.date = "2009-03-01"){
+  
+  source(file = "R/functions/read.vba.R")
   
   library(dplyr)
   

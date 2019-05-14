@@ -76,6 +76,8 @@ plot(ch_mask)
 #### Biomass
 This creates a raster for year 0 for biomass of each species named in the 8 letter 4-4 genus-species format from landis
 ```{r biomass}
+bmpath <- "~/landis_ch_s1_pb-th-cc/output/biomass/"
+
 spp <- list.files(path = bmpath,
                   pattern = "bio-") %>%
   sub("bio-", "", .) %>%
@@ -102,6 +104,7 @@ for(i in 1:length(spp)){
 
 **need to up update species list in next run**
 ```{r}
+cspath <- "~/landis_ch_s1_pb-th-cc/output/cohort-stats/"
 spp <- list.files(path = cspath,
                   ) %>%
   sub("-.*", "", .) %>%

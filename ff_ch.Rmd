@@ -28,9 +28,11 @@ library(tidyr)
 
 ### Functions
 ```{r functions}
-source(file = "R/functions/pf_sf.R")
-#source(file = "R/functions/grplot.R") # fugly
+source(file = "R/functions/pg.sf.R")
+source(file = "R/functions/pg.pa.R")
 source(file = "R/functions/read.vba.R")
+source(file = "R/functions/proc.vba.R")
+source(file = "R/make_habitat_vars.R") #move to /functions
 ```
 
 
@@ -41,8 +43,8 @@ source(file = "R/functions/read.vba.R")
 ### Landscape
 Set up base landscape layer
 ```{r ch_rst}
-ch_rst <- raster(x = "data/grids/eco_v12.img") %>%
-  projectRaster(from = ., crs = crs("+init=epsg:32755"), method = "ngb")
+ch_rst <- raster(x = "data/grids/eco_v12.img") #%>%
+  #projectRaster(from = ., crs = crs("+init=epsg:32755"), method = "ngb")
 
 ch_rst
 ```
@@ -65,7 +67,7 @@ rfa
 ```
 
 ```{r}
-pf.sf(rfa)
+pg.sf(rfa)
 ```
 
 
@@ -76,7 +78,7 @@ ch_rfa
 ```
 
 ```{r}
-pf.sf(ch_rfa)
+pg.sf(ch_rfa)
 ```
 
 
@@ -117,15 +119,7 @@ gg_ari
 ```
 
 ```{r gg_vba}
-gg_vba <- read.vba("data/tabular/vba_gg_all_20190509.csv") %>%
-  dplyr::rename("date" = `Survey Start Date`, "lon" = `Longitude GDA94`, "lat" = `Latitude GDA94`, "count" = `Total Count`) %>%
-  select(date, lon, lat, count) %>%
-  mutate(date = dmy(date)) %>%
-  filter(date > ymd("2009-03-01")) %>%
-  mutate(PA = ifelse(count != 0 | is.na(count), 1, 0)) %>%
-  select(lon, lat, PA) %>%
-  st_as_sf(coords = c("lon", "lat"), crs = st_crs(4283)) %>%
-  st_transform(crs = st_crs(ch_rst))
+gg_vba <- proc.vba("data/tabular/vba_gg_all_20190509.csv", project.crs = ch_proj)
 
 gg_vba
 ```
@@ -148,6 +142,10 @@ gg_pa_ch <- gg_pa_all[ch_rfa,]
 gg_pa_ch
 ```
 
+```{r write gg_pa_ch}
+st_write(gg_pa_ch, "output/shapefiles/pa/ch/gg_pa_ch.shp", delete_layer = TRUE)
+```
+
 
 ```{r pg_gg_pa_ch}
 pg_gg_pa_ch <- pg.pa(gg_pa_ch, ch_rfa)
@@ -157,33 +155,41 @@ pg_gg_pa_ch
 
 ### LBP Occurrence data
 ```{r read lb occ}
-lb_pa <- proc.vba("data/tabular/vba_lb_all_20190509.csv")
+lb_pa_all <- proc.vba("data/tabular/vba_lb_all_20190509.csv", project.crs = ch_proj)
 
-lb_pa
+lb_pa_all
 ```
-```{r}
-read.vba("data/tabular/vba_lb_all_20190509.csv") %>%
-  dplyr::rename("date" = `Survey Start Date`, "lon" = `Longitude GDA94`, "lat" = `Latitude GDA94`, "count" = `Total Count`) %>%
-  select(date, lon, lat, count) %>%
-  mutate(date = dmy(date)) %>%
-  filter(date > ymd("2009-03-01")) %>%
-  mutate(PA = ifelse(count != 0 | is.na(count), 1, 0)) %>%
-  select(lon, lat, PA) %>%
-  st_as_sf(coords = c("lon", "lat"), crs = st_crs(4283)) %>%
-  st_transform(crs = st_crs(ch_rst))
+```{r plot_lb_pa_all}
+plot_lb_pa_all <- pg.pa(lb_pa_all, ch_rfa) +
+  geom_sf(data = victoria, fill = NA)
 
-```
-```{r}
-zz <- length(readLines("data/tabular/vba_lb_all_20190509.csv"))
-  
-xx <-  readLines("data/tabular/vba_gg_all_20190509.csv") %>%
-    head(-7) %>%
-    #paste0(collapse = "\n") %>%
-    read_csv(skip = 15, guess_max = zz-7)
+plot_lb_pa_all
 ```
 
+```{r lb_pa_ch}
+lb_pa_ch <- lb_pa_all[ch_rfa,]
+lb_pa_ch
+```
+
+```{r write lbp_pa_ch}
+st_write(lb_pa_ch, "output/shapefiles/pa/ch/lb_pa_ch.shp", delete_layer = TRUE)
+```
+
+
+```{r pg_lb_pa_ch}
+pg_lb_pa_ch <- pg.pa(lb_pa_ch, ch_rfa)
+
+pg_lb_pa_ch
+```
 
 ## Landis output
+
+### Scenario 1: Mid CC & harvest
+```{r}
+get.landis.vars(scn_path = "~/landis_ch_s1_pb-th-cc/", proj_mask = ch_mask, scn_name = "s1", out_path = "output/habitat_vars/", cores = 3)
+```
+
+### Scenario 2: Mid CC no harvest
 
 ## Climactic data
 
