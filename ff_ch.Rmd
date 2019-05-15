@@ -186,8 +186,13 @@ pg_lb_pa_ch
 
 ### Scenario 1: Mid CC & harvest
 ```{r}
-get.landis.vars(scn_path = "~/landis_ch_s1_pb-th-cc/", proj_mask = ch_mask, scn_name = "s1", out_path = "output/habitat_vars/", cores = 3)
+xx <- get.landis.vars.cur(scn_path = "~/landis_ch_s1_pb-th-cc/", proj_mask = ch_mask, scn_name = "s1", out_path = "output/habitat_vars/", cores = 3)
 ```
+
+```{r}
+plot(xx)
+```
+
 
 ### Scenario 2: Mid CC no harvest
 
