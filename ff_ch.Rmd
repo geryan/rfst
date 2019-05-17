@@ -32,7 +32,9 @@ source(file = "R/functions/pg.sf.R")
 source(file = "R/functions/pg.pa.R")
 source(file = "R/functions/read.vba.R")
 source(file = "R/functions/proc.vba.R")
-source(file = "R/make_habitat_vars.R") #move to /functions
+source(file = "R/functions/get.landis.vars.init.R")
+source(file = "R/functions/get.landis.vars.fut.R")
+source(file = "R/functions/.get.landis.vars.fut.R")
 ```
 
 
@@ -102,6 +104,17 @@ victoria <- read_sf("data/shapefiles/vicstatepolygon/") %>%
 
 ## Occurrence data
 
+```{r pseudo_abs}
+pseudo_abs <- read_sf("data/shapefiles/pseudo_absences/pseudo_absences.shp")%>%
+  st_transform(crs = st_crs(ch_rst)) %>%
+  mutate(PA = 0) %>%
+  select(PA, geometry) %>%
+  st_zm(drop = TRUE)
+
+pseudo_abs
+```
+
+
 ### GG Occurrence data
 Read in data
 ```{r gg_ari}
@@ -125,7 +138,8 @@ gg_vba
 ```
 ```{r gg_pa_all}
 gg_pa_all <- gg_vba %>%
-  rbind(gg_ari)
+  rbind(gg_ari) %>%
+  rbind(pseudo_abs)
 
 gg_pa_all
 ```
@@ -155,7 +169,8 @@ pg_gg_pa_ch
 
 ### LBP Occurrence data
 ```{r read lb occ}
-lb_pa_all <- proc.vba("data/tabular/vba_lb_all_20190509.csv", project.crs = ch_proj)
+lb_pa_all <- proc.vba("data/tabular/vba_lb_all_20190509.csv", project.crs = ch_proj) %>%
+  rbind(pseudo_abs)
 
 lb_pa_all
 ```
@@ -186,11 +201,17 @@ pg_lb_pa_ch
 
 ### Scenario 1: Mid CC & harvest
 ```{r}
-xx <- get.landis.vars.cur(scn_path = "~/landis_ch_s1_pb-th-cc/", proj_mask = ch_mask, scn_name = "s1", out_path = "output/habitat_vars/", cores = 3)
+s1_vars_landis_init <- get.landis.vars.init(scn_path = "~/landis_ch_s1_pb-th-cc/", proj_mask = ch_mask)
 ```
 
 ```{r}
-plot(xx)
+plot(s1_vars_landis_init)
+```
+
+```{r}
+s1_vars_landis_init_fut <- get.landis.vars.fut(scn_path = "~/landis_ch_s1_pb-th-cc/", proj_mask = ch_mask, timesteps = 20, cores = 20)
+
+s1_vars_landis_init_fut
 ```
 
 

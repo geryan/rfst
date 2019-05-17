@@ -1,19 +1,14 @@
-get.landis.vars.cur <- function(
+get.landis.vars.init <- function(
   scn_path,
-  proj_mask,
-  scn_name,
-  out_path = "/output/habitat_vars",
-  cores = 3
-){
+  proj_mask
+  ){
   
-  library(doMC)
   library(raster)
   library(dplyr)
   
   bmpath <- paste0(scn_path, "/output/biomass/")
   cspath <- paste0(scn_path, "/output/cohort-stats/")
   
-  oupath <- paste0(out_path, scn_name)
   
   win1k <- focalWeight(raster(ncols=11,
                               nrows=11,
@@ -176,7 +171,25 @@ get.landis.vars.cur <- function(
   
   lbm <- focal(lbm, win3h, na.rm = TRUE)
   
-  result <- stack(lbm, ggf, ggd, hbt_3h, hbt_1k, prop_bio_regn, prop_bio_targ, prop_old_150, prop_old_200)
- 
+  result <- stack(lbm,
+                  ggf,
+                  ggd,
+                  hbt_3h,
+                  hbt_1k,
+                  prop_bio_regn,
+                  prop_bio_targ,
+                  prop_old_150,
+                  prop_old_200)
+  
+  names(result) <- c("lbm",
+                     "ggf",
+                     "ggd",
+                     "hbt_3h",
+                     "hbt_1k",
+                     "prop_bio_regn",
+                     "prop_bio_targ",
+                     "prop_old_150",
+                     "prop_old_200")
+  
   return(result) 
 }

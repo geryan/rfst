@@ -299,19 +299,19 @@ save("gg_model_data", "gg_model_data_25", "gg_model_data_75", file = "data/gg_mo
 Create predictor maps for all future timesteps:
 
 ```{r, progress = FALSE}
-path <- "/home/landis/landis_ch_lbp/output/biomass/"
+path <- "/home/landis/landis_ch_s1_pb-th-cc/output/biomass/"
 
 #eucs_names <- unique(gsub("-{1}.{1,2}\\.img", "",
 #                                    list.files(path, pattern = "bio-euca")))[-5]
 
 eucs_names <- unique(gsub("-{1}.{1,2}\\.img", "",
-                                    list.files(path, pattern = "bio-euca")))[c(2, 3, 9, 10, 11)]
+                                    list.files(path, pattern = "bio-euca")))[c(3, 5, 11, 23, 29)]
 
 #DIST_ROADS <- ch_mask
 #DIST_ROADS[DIST_ROADS == 1] <- 0
 #names(DIST_ROADS) <- "DIST_ROADS"
 
-timesteps <- 50
+timesteps <- 20
 
 #cl <- makePSOCKcluster(20)
 
@@ -321,7 +321,7 @@ registerDoMC(cores = 20)
 
 gg_fut_env_vars <- foreach (i = seq_len(timesteps)) %dopar% {
   
-  path <- "/home/landis/landis_ch_lbp/output/biomass/"
+  path <- "/home/landis/landis_ch_s1_pb-th-cc/output/biomass/"
   biomass_tot <- ch_mask
   biomass_tot[] <- getValues(raster(paste0(path, "bio-TotalBiomass-",i ,".img")))
   biomass_tot <- biomass_tot * ch_mask
@@ -336,8 +336,8 @@ gg_fut_env_vars <- foreach (i = seq_len(timesteps)) %dopar% {
   biomass_eucaregn[] <- getValues(raster(paste0(path, "bio-eucaregn-",i, ".img")))
   biomass_eucavimi[] <- getValues(raster(paste0(path, "bio-eucavimi-",i, ".img")))
 
-  #biomass_eucs <- stack(biomass_eucacype, biomass_eucadalr, biomass_eucadive, biomass_eucaradi, biomass_eucavimi)
-  biomass_eucs <- stack(biomass_eucacype, biomass_eucadalr, biomass_eucaradi, biomass_eucaregn, biomass_eucavimi)
+  biomass_eucs <- stack(biomass_eucacype, biomass_eucadalr, biomass_eucadive, biomass_eucaradi, biomass_eucavimi)
+  #biomass_eucs <- stack(biomass_eucacype, biomass_eucadalr, biomass_eucaradi, biomass_eucaregn, biomass_eucavimi)
 
   biomass_eucs <- biomass_eucs * ch_mask
 
@@ -346,7 +346,7 @@ gg_fut_env_vars <- foreach (i = seq_len(timesteps)) %dopar% {
   biomass_eucs_mat <- getValues(biomass_eucs)
 
   
-  path <- "/home/landis/landis_ch_lbp/output/cohort-stats/"
+  path <- "//home/landis/landis_ch_s1_pb-th-cc/output/cohort-stats/"
   
   max_age_200 <- ch_rst
   max_age_200[] <- getValues(raster(paste0(path, "AGE-MAX-",i, ".img")))
