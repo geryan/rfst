@@ -24,6 +24,9 @@ library(ggplot2)
 library(lubridate)
 library(magrittr)
 library(tidyr)
+library(doMC)
+library(future)
+library(future.apply)
 ```
 
 ### Functions
@@ -209,7 +212,7 @@ plot(s1_vars_landis_init)
 ```
 
 ```{r}
-s1_vars_landis_init_fut <- get.landis.vars.fut(scn_path = "~/landis_ch_s1_pb-th-cc/", proj_mask = ch_mask, timesteps = 20, cores = 20)
+s1_vars_landis_init_fut <- get.landis.vars.fut(scn_path = "~/landis_ch_s1_pb-th-cc/", proj_mask = ch_mask, timesteps = 100, cores = 40)
 
 s1_vars_landis_init_fut
 ```
