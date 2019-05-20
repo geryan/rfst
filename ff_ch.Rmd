@@ -430,6 +430,27 @@ plot(twi)
 #plot(winex)
 ```
 
+### ARI variables stack
+
+#### Initial variables
+```{r ari_iv}
+ari_iv <- stack(ahr, rai, lvdaw, lvdma, lvdmi, lvdsw, tho)
+
+names(ari_iv) <- c("ahr", "rai", "lvdaw", "lvdma", "lvdmi", "lvdsw", "tho")
+```
+
+#### Future variables 
+Repeates into list for each year
+```{r ari_fv}
+ari_fv <- vector("list", 100)
+
+
+for(i in 1:100){
+  ari_fv[[i]] <- ari_iv
+}
+```
+
+
 
 ## Climactic data
 pc ~ percentage change
@@ -451,37 +472,45 @@ evtr ~ evapotranspiration
 From WorldClim
 
 #### Precipitation in January
-```{r}
+```{r prec01}
 prec01 <- raster("data/grids/wc2.0_30s_prec_01.tif") %>%
   projectRaster(to = ch_mask) %>%
   mask(mask = ch_mask)
+
+names(prec01) <- "prec01"
 
 plot(prec01)
 ```
 
 #### Precipitation in July
-```{r}
+```{r prec07}
 prec07 <- raster("data/grids/wc2.0_30s_prec_07.tif") %>%
   projectRaster(to = ch_mask) %>%
   mask(mask = ch_mask)
+
+names(prec07) <- "prec07"
 
 plot(prec07)
 ```
 
 #### Max temperature in January
-```{r}
+```{r tmax01}
 tmax01 <- raster("data/grids/wc2.0_30s_tmax_01.tif") %>%
   projectRaster(to = ch_mask) %>%
   mask(mask = ch_mask)
+
+names(tmax01) <- "tmax01"
 
 plot(tmax01)
 ```
 
 #### Minimum temperature in July
-```{r}
+```{r tmin07}
 tmin07 <- raster("data/grids/wc2.0_30s_tmin_07.tif") %>%
   projectRaster(to = ch_mask) %>%
   mask(mask = ch_mask)
+
+names(tmin07) <- "tmin07"
 
 plot(tmin07)
 ```
@@ -622,19 +651,74 @@ prec07_4.5_int <- interpolate.climdat(prec07, prec07_4.5, ny = 100, nf = n_prec0
 prec07_8.5_int <- interpolate.climdat(prec07, prec07_8.5, ny = 100, nf = n_prec07_8.5, n0 = 2019, varname = "prec07")
 ```
 
+### Climate variable sets
+
+#### Initial climate variables
+```{r clim iv}
+clim_iv <- stack(prec01, prec07, tmax01, tmin07)
+```
+
+#### Future climate variables
+```{r clim_fv}
+clim_fv_cc0 <- vector("list", 100)
+
+
+clim_fv_4.5 <- mapply(prec01_4.5_int, prec07_4.5_int, tmax01_4.5_int, tmin07_4.5_int, FUN = stack)
+clim_fv_8.5 <- mapply(prec01_8.5_int, prec07_8.5_int, tmax01_8.5_int, tmin07_8.5_int, FUN = stack)
+```
+
 
 
 ## Distribution model variables
 
-### Scenario 1
+### Greater Glider model variables
 
-#### Greater Glider model variables
+#### GG LANDIS vars
+```{r gg_lv}
+gglv <- c("ggf", "ggd", "hbt_1k")
+```
 
-#### Leadbeater's Possum
+
+#### Scenario 1
+
+##### Scenario 1 initial variables
+```{r s1_iv_gg}
+s1_iv_gg <- stack(s1_vars_landis_init[[c(gglv)]], ari_iv, clim_iv)
+
+save(s1_iv_gg, file = "output/habitat_vars/s1_iv_gg")
+```
+
+##### Scenaio 1 model data
+```{r}
+s1_md_gg <- s1_iv_gg %>%
+  raster::extract(y = st_coordinates(gg_pa_ch)) %>%
+  cbind("PA" = gg_pa_ch$PA, .) %>%
+  na.omit
+
+s1_md_gg
+
+save(s1_md_gg, file = "output/habitat_vars/s1_md_gg")
+```
+
+
+##### Scenario 1 future variables
+```{r s1_fv_gg}
+s1_fv_gg <- s1_vars_landis_fut %>%
+  sapply("[[", gglv) %>%
+  mapply(ari_fv, clim_fv_4.5, FUN = stack)
+
+save(s1_fv_gg, file = "output/habitat_vars/s1_fv_gg")
+```
+
+
+### Leadbeater's Possum
 
 
 
 
 # Distribution model fit and prediction
+```{r}
+
+```
 
 # Population viability analysis
