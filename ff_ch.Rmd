@@ -28,6 +28,8 @@ library(doMC)
 library(future)
 library(future.apply)
 library(tidyr)
+library(dismo)
+library(gbm)
 ```
 
 ### Functions
@@ -488,7 +490,9 @@ plot(tmin07)
 ### Future climate
 Data from [Climate Change in Australia](https://www.climatechangeinaustralia.gov.au/en/)
 
-#### Absolute change in temperature
+#### Change data
+
+##### Absolute change in temperature
 ```{r raw temp ac}
 #absolute change in temp
 raw_tmax01_4.5_ac <- read.multi.line.header(file = "http://nrm-erddap.nci.org.au/erddap/griddap/tasmax_Amon_CSIRO-Mk3-6-0_rcp45_r1i1p1_abs-change-wrt-seasavg-clim_native.csv?tasmax_january[(2025-01-01T12:00:00Z):1:(2090-01-01T12:00:00Z)][(-40.10297775):1:(-32.64199448)][(140.625):1:(150)]")
@@ -499,7 +503,7 @@ raw_tmin07_4.5_ac <- read.multi.line.header(file = "http://nrm-erddap.nci.org.au
 
 raw_tmin07_8.5_ac <- read.multi.line.header(file = "http://nrm-erddap.nci.org.au/erddap/griddap/tasmin_Amon_CSIRO-Mk3-6-0_rcp85_r1i1p1_abs-change-wrt-seasavg-clim_native.csv?tasmin_july[(2025-01-01T12:00:00Z):1:(2090-01-01T12:00:00Z)][(-40.10297775):1:(-32.64199448)][(140.625):1:(150)]")
 ```
-Years data are for
+Years data
 ```{r n temp ac}
 n_tmax01_4.5 <- as.numeric(sub("-.*", "", unique(raw_tmax01_4.5_ac$time)))
 n_tmax01_8.5 <- as.numeric(sub("-.*", "", unique(raw_tmax01_8.5_ac$time)))
@@ -516,7 +520,7 @@ tmin07_8.5_ac <- rascc(raw_tmin07_8.5_ac, new.proj.layer = ch_mask)
 ```
 
 
-Percentage change in precfall
+### Percentage change in precipitation
 ```{r}
 raw_prec01_4.5_pc <- read.multi.line.header(file = "http://nrm-erddap.nci.org.au/erddap/griddap/pr_Amon_CSIRO-Mk3-6-0_rcp45_r1i1p1_perc-change-wrt-seassum-clim_native.csv?pr_january[(2025-01-01T12:00:00Z):1:(2090-01-01T12:00:00Z)][(-40.10297775):1:(-32.64199448)][(140.625):1:(150)]")
 
@@ -527,23 +531,14 @@ raw_prec07_4.5_pc <- read.multi.line.header(file = "http://nrm-erddap.nci.org.au
 raw_prec07_8.5_pc <- read.multi.line.header(file = "http://nrm-erddap.nci.org.au/erddap/griddap/pr_Amon_CSIRO-Mk3-6-0_rcp85_r1i1p1_perc-change-wrt-seassum-clim_native.csv?pr_july[(2025-01-01T12:00:00Z):1:(2090-01-01T12:00:00Z)][(-40.10297775):1:(-32.64199448)][(140.625):1:(150)]")
 ```
 
-Convert data frames to rasters
 ```{r}
-
-
 prec01_4.5_pc <- rascc(raw_prec01_4.5_pc, new.proj.layer = ch_mask)
 prec01_8.5_pc <- rascc(raw_prec01_8.5_pc, new.proj.layer = ch_mask)
 prec07_4.5_pc <- rascc(raw_prec07_4.5_pc, new.proj.layer = ch_mask)
 prec07_8.5_pc <- rascc(raw_prec07_8.5_pc, new.proj.layer = ch_mask)
 ```
 
-
-```{r}
-plot(tmax01_4.5_ac[[1]])
-```
-
 ```{r n_bioclim}
-
 n_prec01_4.5 <- as.numeric(sub("-.*", "", unique(raw_prec01_4.5_pc$time)))
 n_prec01_8.5 <- as.numeric(sub("-.*", "", unique(raw_prec01_4.5_pc$time)))
 n_prec07_4.5 <- as.numeric(sub("-.*", "", unique(raw_prec07_4.5_pc$time)))
@@ -551,31 +546,94 @@ n_prec07_8.5 <- as.numeric(sub("-.*", "", unique(raw_prec07_4.5_pc$time)))
 ```
 
 
-```{r absolute predicted values}
-tmax01_4.5_wc <- tmax01_4.5_ac + tmax01
-tmax01_8.5_wc <- tmax01_8.5_ac + tmax01
-tmin07_4.5_wc <- tmin07_4.5_ac + tmax01
-tmin07_8.5_wc <- tmin07_8.5_ac + tmax01
+###  Absolute predicted values
 
-prec01_4.5_wc <- prec01 * (1 + prec01_4.5_pc/100)
-prec01_8.5_wc <- prec01 * (1 + prec01_8.5_pc/100)
-prec07_4.5_wc <- prec07 * (1 + prec07_4.5_pc/100)
-prec07_8.5_wc <- prec07 * (1 + prec07_8.5_pc/100)
+#### Temperature
 
+##### Jan max temperature RCP 4.5
+```{r tmax01_4.5}
+tmax01_4.5 <- tmax01_4.5_ac + tmax01
+names(tmax01_4.5) <- names(tmax01_4.5_ac)
+plot(tmax01_4.5)
+```
 
-names(tmax01_4.5_wc) <- names(tmax01_4.5_ac)
-names(tmax01_8.5_wc) <- names(tmax01_8.5_ac)
-names(tmin07_4.5_wc) <- names(tmin07_4.5_ac)
-names(tmin07_8.5_wc) <- names(tmin07_8.5_ac)
+##### Jan max temperature RCP 8.5
+```{r tmax01_8.5}
+tmax01_8.5 <- tmax01_8.5_ac + tmax01
+names(tmax01_8.5) <- names(tmax01_8.5_ac)
+plot(tmax01_8.5)
+```
+##### July min temperature RCP 4.5
+```{r tmin07_4.5}
+tmin07_4.5 <- tmin07_4.5_ac + tmax01
+names(tmin07_4.5) <- names(tmin07_4.5_ac)
+plot(tmin07_4.5)
+```
 
-names(prec01_4.5_wc) <- names(prec01_4.5_pc)
-names(prec01_8.5_wc) <- names(prec01_8.5_pc)
-names(prec07_4.5_wc) <- names(prec07_4.5_pc)
-names(prec07_8.5_wc) <- names(prec07_8.5_pc)
+##### July min temperature RCP 8.5
+```{r}
+tmin07_8.5 <- tmin07_8.5_ac + tmax01
+names(tmin07_8.5) <- names(tmin07_8.5_ac)
+plot(tmin07_8.5)
+```
+
+#### Precipitation
+
+#### January precipitation RCP 4.5
+```{r}
+prec01_4.5 <- prec01 * (1 + prec01_4.5_pc/100)
+names(prec01_4.5) <- names(prec01_4.5_pc)
+plot(prec01_4.5)
+```
+
+#### January precipitation RCP 8.5
+```{r}
+prec01_8.5 <- prec01 * (1 + prec01_8.5_pc/100)
+names(prec01_8.5) <- names(prec01_8.5_pc)
+plot(prec01_8.5)
+```
+
+#### July precipitation RCP 4.5
+```{r}
+prec07_4.5 <- prec07 * (1 + prec07_4.5_pc/100)
+names(prec07_4.5) <- names(prec07_4.5_pc)
+plot(prec07_4.5)
+```
+
+#### July precipitation RCP 8.5
+```{r}
+prec07_8.5 <- prec07 * (1 + prec07_8.5_pc/100)
+names(prec07_8.5) <- names(prec07_8.5_pc)
+plot(prec07_8.5)
+```
+
+### Interploate prediction data
+**Currently just repeats predictions, need updating to weight predictions within 10 years, cf data from CSIRO**
+
+```{r}
+tmax01_4.5_int <- interpolate.climdat(tmax01, tmax01_4.5, ny = 100, nf = n_tmax01_4.5, n0 = 2019, varname = "tmax01")
+tmax01_8.5_int <- interpolate.climdat(tmax01, tmax01_8.5, ny = 100, nf = n_tmax01_8.5, n0 = 2019, varname = "tmax01")
+tmin07_4.5_int <- interpolate.climdat(tmin07, tmin07_4.5, ny = 100, nf = n_tmin07_4.5, n0 = 2019, varname = "tmin07")
+tmin07_8.5_int <- interpolate.climdat(tmin07, tmin07_8.5, ny = 100, nf = n_tmin07_8.5, n0 = 2019, varname = "tmin07")
+
+prec01_4.5_int <- interpolate.climdat(prec01, prec01_4.5, ny = 100, nf = n_prec01_4.5, n0 = 2019, varname = "prec01")
+prec01_8.5_int <- interpolate.climdat(prec01, prec01_8.5, ny = 100, nf = n_prec01_8.5, n0 = 2019, varname = "prec01")
+prec07_4.5_int <- interpolate.climdat(prec07, prec07_4.5, ny = 100, nf = n_prec07_4.5, n0 = 2019, varname = "prec07")
+prec07_8.5_int <- interpolate.climdat(prec07, prec07_8.5, ny = 100, nf = n_prec07_8.5, n0 = 2019, varname = "prec07")
 ```
 
 
+
 ## Distribution model variables
+
+### Scenario 1
+
+#### Greater Glider model variables
+
+#### Leadbeater's Possum
+
+
+
 
 # Distribution model fit and prediction
 
