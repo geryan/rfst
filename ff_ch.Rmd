@@ -27,6 +27,7 @@ library(tidyr)
 library(doMC)
 library(future)
 library(future.apply)
+library(tidyr)
 ```
 
 ### Functions
@@ -38,6 +39,8 @@ source(file = "R/functions/proc.vba.R")
 source(file = "R/functions/get.landis.vars.init.R")
 source(file = "R/functions/get.landis.vars.fut.R")
 source(file = "R/functions/.get.landis.vars.fut.R")
+source(file = "R/functions/rascc.R")
+source(file = "R/functions/read.multi.line.header.R")
 ```
 
 
@@ -202,25 +205,375 @@ pg_lb_pa_ch
 
 ## Landis output
 
-### Scenario 1: Mid CC & harvest
-```{r}
-s1_vars_landis_init <- get.landis.vars.init(scn_path = "~/landis_ch_s1_pb-th-cc/", proj_mask = ch_mask)
+### Scenario 1: Current planned burning, current timber harvesting, climate change under RCP 4.5, current bushfire regime (Buisness as usual)
+```{r s1_vars_landis_init}
+# s1_vars_landis_init <- get.landis.vars.init(scn_path = "~/landis_ch_s1_pb-th-cc/", proj_mask = ch_mask)
+
+# saveRDS(object = s1_vars_landis_init, file = "output/habitat_vars/s1_vars_landis_init.Rds")
+
+s1_vars_landis_init <- readRDS(file = "output/habitat_vars/s1_vars_landis_init.Rds")
 ```
 
-```{r}
+```{r plot s1_vars_landis_init}
 plot(s1_vars_landis_init)
 ```
 
-```{r}
-s1_vars_landis_init_fut <- get.landis.vars.fut(scn_path = "~/landis_ch_s1_pb-th-cc/", proj_mask = ch_mask, timesteps = 100, cores = 40)
+```{r s1_vars_landis_fut}
+# s1_vars_landis_fut <- get.landis.vars.fut(scn_path = "~/landis_ch_s1_pb-th-cc/", proj_mask = ch_mask, timesteps = 100, cores = 40)
 
-s1_vars_landis_init_fut
+# saveRDS(object = s1_vars_landis_fut, file = "output/habitat_vars/s1_vars_landis_fut.Rds")
+
+s1_vars_landis_fut <- readRDS(file = "output/habitat_vars/s1_vars_landis_fut.Rds")
+```
+
+```{r plot s1_vars_landis_fut}
+plot(s1_vars_landis_fut[[100]])
+```
+
+### Scenario 2: Current planned burning, current timber harvesting, climate change under RCP 8.5, increatred bushfire regime
+```{r s2_vars_landis_init}
+# s2_vars_landis_init <- get.landis.vars.init(scn_path = "~/landis_ch_s2_pb-th-cc/", proj_mask = ch_mask)
+
+# saveRDS(object = s2_vars_landis_init, file = "output/habitat_vars/s2_vars_landis_init.Rds")
+
+# s2_vars_landis_init <- readRDS(file = "output/habitat_vars/s2_vars_landis_init.Rds")
+```
+
+```{r plot s2_vars_landis_init}
+# plot(s2_vars_landis_init)
+```
+
+```{r s2_vars_landis_fut}
+# s2_vars_landis_fut <- get.landis.vars.fut(scn_path = "~/landis_ch_s2_pb-th-cc/", proj_mask = ch_mask, timesteps = 100, cores = 40)
+
+# saveRDS(object = s2_vars_landis_fut, file = "output/habitat_vars/s2_vars_landis_fut.Rds")
+
+# s2_vars_landis_fut <- readRDS(file = "output/habitat_vars/s2_vars_landis_fut.Rds")
+```
+
+```{r plot s2_vars_landis_fut}
+# plot(s2_vars_landis_fut[[100]])
+```
+
+### Scenario 3: Current planned burning, current timber harvesting, no climate change, current bushfire regime
+```{r s3_vars_landis_init}
+# s3_vars_landis_init <- get.landis.vars.init(scn_path = "~/landis_ch_s3_pb-th-cc/", proj_mask = ch_mask)
+
+# saveRDS(object = s3_vars_landis_init, file = "output/habitat_vars/s3_vars_landis_init.Rds")
+
+#  s3_vars_landis_init <- readRDS(file = "output/habitat_vars/s3_vars_landis_init.Rds")
+```
+
+```{r plot s3_vars_landis_init}
+# plot(s3_vars_landis_init)
+```
+
+```{r s3_vars_landis_fut}
+# s3_vars_landis_fut <- get.landis.vars.fut(scn_path = "~/landis_ch_s3_pb-th-cc/", proj_mask = ch_mask, timesteps = 100, cores = 40)
+
+# saveRDS(object = s3_vars_landis_fut, file = "output/habitat_vars/s3_vars_landis_fut.Rds")
+
+# s3_vars_landis_fut <- readRDS(file = "output/habitat_vars/s3_vars_landis_fut.Rds")
+```
+
+```{r plot s3_vars_landis_fut}
+# plot(s3_vars_landis_fut[[100]])
+```
+
+### Scenario 4: Current planned burning, no harvesting, climate change under RCP 4.5, current bushfire regime
+```{r s4_vars_landis_init}
+# s4_vars_landis_init <- get.landis.vars.init(scn_path = "~/landis_ch_s4_pb-th-cc/", proj_mask = ch_mask)
+
+# saveRDS(object = s4_vars_landis_init, file = "output/habitat_vars/s4_vars_landis_init.Rds")
+
+# s4_vars_landis_init <- readRDS(file = "output/habitat_vars/s4_vars_landis_init.Rds")
+```
+
+```{r plot s4_vars_landis_init}
+# plot(s4_vars_landis_init)
+```
+
+```{r s4_vars_landis_fut}
+# s4_vars_landis_fut <- get.landis.vars.fut(scn_path = "~/landis_ch_s4_pb-th-cc/", proj_mask = ch_mask, timesteps = 100, cores = 40)
+
+# saveRDS(object = s4_vars_landis_fut, file = "output/habitat_vars/s4_vars_landis_fut.Rds")
+
+# s4_vars_landis_fut <- readRDS(file = "output/habitat_vars/s4_vars_landis_fut.Rds")
+```
+
+```{r plot s4_vars_landis_fut}
+# plot(s4_vars_landis_fut[[100]])
 ```
 
 
-### Scenario 2: Mid CC no harvest
+## ARI Data
+
+### Anisotronic heating x ruggedness
+```{r ahr}
+ahr <-raster(x = "data/grids/Env_covariates_noClimate_VicGrid94/Anisotrophic_Heating_Ruggedness") %>%
+  projectRaster(to = ch_mask) %>%
+  mask(mask = ch_mask)
+
+ahr
+```
+
+```{r plot ahr}
+plot(ahr)
+```
+
+
+### Log verticical distance all wetlands
+```{r lvdaw}
+lvdaw <- raster(x = "data/grids/Env_covariates_noClimate_VicGrid94/log_vertical_distance_all_wetlands_sept2012") %>%
+  projectRaster(to = ch_mask) %>%
+  mask(mask = ch_mask)
+
+lvdaw
+```
+```{r plot lvdaw}
+plot(lvdaw)
+```
+### Log vertical distance major streams
+```{r lvdma}
+lvdma <- raster(x = "data/grids/Env_covariates_noClimate_VicGrid94/log_vertical_distance_major_streams_sept2012") %>%
+  projectRaster(to = ch_mask) %>%
+  mask(mask = ch_mask)
+
+lvdma
+```
+```{r plot lvdma}
+plot(lvdma)
+```
+### Log vertical distance minor streams
+```{r lvdmi}
+lvdmi <- raster(x = "data/grids/Env_covariates_noClimate_VicGrid94/log_vertical_distance_minor_streams_sept2012") %>%
+  projectRaster(to = ch_mask) %>%
+  mask(mask = ch_mask)
+
+lvdmi
+```
+```{r plot lvdmi}
+plot(lvdmi)
+```
+
+### Log vertical distance saline wetlands
+```{r lvdsw}
+lvdsw <- raster(x = "data/grids/Env_covariates_noClimate_VicGrid94/log_vertical_distance_saline_wetlands_sept2012") %>%
+  projectRaster(to = ch_mask) %>%
+  mask(mask = ch_mask)
+
+lvdsw
+```
+```{r plot lvdsw}
+plot(lvdsw)
+```
+### Relative annual insolation
+```{r rai}
+rai <- raster(x = "data/grids/Env_covariates_noClimate_VicGrid94/relative_annual_insolation_sept2012") %>%
+  projectRaster(to = ch_mask) %>%
+  mask(mask = ch_mask)
+
+rai
+```
+```{r plot rai}
+plot(rai)
+```
+
+### Thorium
+```{r tho}
+tho <- raster(x = "data/grids/Env_covariates_noClimate_VicGrid94/sept2014thorium") %>%
+  projectRaster(to = ch_mask) %>%
+  mask(mask = ch_mask)
+
+tho
+```
+```{r plot tho}
+plot(tho)
+```
+
+### Visible sky index
+```{r vsky}
+vsky <- raster(x = "data/grids/Env_covariates_noClimate_VicGrid94/visible_sky_sept2012") %>%
+  projectRaster(to = ch_mask) %>%
+  mask(mask = ch_mask)
+
+vsky
+```
+```{r plot vsky}
+plot(vsky)
+```
+
+### Topographic wetness index
+```{r twi}
+twi <- raster(x = "data/grids/Env_covariates_noClimate_VicGrid94/wetness_index_topocrop_sept2012") %>%
+  projectRaster(to = ch_mask) %>%
+  mask(mask = ch_mask)
+
+twi
+```
+```{r plot twi}
+plot(twi)
+```
+
+### Wind exposition
+**Problem with layer**
+```{r winex}
+# winex <- raster(x = "data/grids/Env_covariates_noClimate_VicGrid94/wind_exposition2015") %>%
+  # projectRaster(to = ch_mask) %>%
+  # mask(mask = ch_mask)
+
+# winex
+```
+```{r plot winex}
+#plot(winex)
+```
+
 
 ## Climactic data
+pc ~ percentage change
+ac ~ absolute change
+
+tmax ~ max temperature
+tmin ~ minimum temperature
+prec ~ precipitation
+evtr ~ evapotranspiration
+
+01 ~ January
+07 ~ July
+
+4.5 ~ rcp 4.5
+8.5 ~ rcp 8.5
+
+
+### Current climate
+From WorldClim
+
+#### Precipitation in January
+```{r}
+prec01 <- raster("data/grids/wc2.0_30s_prec_01.tif") %>%
+  projectRaster(to = ch_mask) %>%
+  mask(mask = ch_mask)
+
+plot(prec01)
+```
+
+#### Precipitation in July
+```{r}
+prec07 <- raster("data/grids/wc2.0_30s_prec_07.tif") %>%
+  projectRaster(to = ch_mask) %>%
+  mask(mask = ch_mask)
+
+plot(prec07)
+```
+
+#### Max temperature in January
+```{r}
+tmax01 <- raster("data/grids/wc2.0_30s_tmax_01.tif") %>%
+  projectRaster(to = ch_mask) %>%
+  mask(mask = ch_mask)
+
+plot(tmax01)
+```
+
+#### Minimum temperature in July
+```{r}
+tmin07 <- raster("data/grids/wc2.0_30s_tmin_07.tif") %>%
+  projectRaster(to = ch_mask) %>%
+  mask(mask = ch_mask)
+
+plot(tmin07)
+```
+
+
+### Future climate
+Data from [Climate Change in Australia](https://www.climatechangeinaustralia.gov.au/en/)
+
+#### Absolute change in temperature
+```{r raw temp ac}
+#absolute change in temp
+raw_tmax01_4.5_ac <- read.multi.line.header(file = "http://nrm-erddap.nci.org.au/erddap/griddap/tasmax_Amon_CSIRO-Mk3-6-0_rcp45_r1i1p1_abs-change-wrt-seasavg-clim_native.csv?tasmax_january[(2025-01-01T12:00:00Z):1:(2090-01-01T12:00:00Z)][(-40.10297775):1:(-32.64199448)][(140.625):1:(150)]")
+
+raw_tmax01_8.5_ac <- read.multi.line.header(file = "http://nrm-erddap.nci.org.au/erddap/griddap/tasmax_Amon_CSIRO-Mk3-6-0_rcp85_r1i1p1_abs-change-wrt-seasavg-clim_native.csv?tasmax_january[(2025-01-01T12:00:00Z):1:(2090-01-01T12:00:00Z)][(-40.10297775):1:(-32.64199448)][(140.625):1:(150)]")
+
+raw_tmin07_4.5_ac <- read.multi.line.header(file = "http://nrm-erddap.nci.org.au/erddap/griddap/tasmin_Amon_CSIRO-Mk3-6-0_rcp45_r1i1p1_abs-change-wrt-seasavg-clim_native.csv?tasmin_july[(2025-01-01T12:00:00Z):1:(2090-01-01T12:00:00Z)][(-40.10297775):1:(-32.64199448)][(140.625):1:(150)]") 
+
+raw_tmin07_8.5_ac <- read.multi.line.header(file = "http://nrm-erddap.nci.org.au/erddap/griddap/tasmin_Amon_CSIRO-Mk3-6-0_rcp85_r1i1p1_abs-change-wrt-seasavg-clim_native.csv?tasmin_july[(2025-01-01T12:00:00Z):1:(2090-01-01T12:00:00Z)][(-40.10297775):1:(-32.64199448)][(140.625):1:(150)]")
+```
+Years data are for
+```{r n temp ac}
+n_tmax01_4.5 <- as.numeric(sub("-.*", "", unique(raw_tmax01_4.5_ac$time)))
+n_tmax01_8.5 <- as.numeric(sub("-.*", "", unique(raw_tmax01_8.5_ac$time)))
+n_tmin07_4.5 <- as.numeric(sub("-.*", "", unique(raw_tmin07_4.5_ac$time)))
+n_tmin07_8.5 <- as.numeric(sub("-.*", "", unique(raw_tmin07_8.5_ac$time)))
+```
+
+
+```{r tmax ac}
+tmax01_4.5_ac <- rascc(raw_tmax01_4.5_ac, new.proj.layer = ch_mask)
+tmax01_8.5_ac <- rascc(raw_tmax01_8.5_ac, new.proj.layer = ch_mask)
+tmin07_4.5_ac <- rascc(raw_tmin07_4.5_ac, new.proj.layer = ch_mask)
+tmin07_8.5_ac <- rascc(raw_tmin07_8.5_ac, new.proj.layer = ch_mask)
+```
+
+
+Percentage change in precfall
+```{r}
+raw_prec01_4.5_pc <- read.multi.line.header(file = "http://nrm-erddap.nci.org.au/erddap/griddap/pr_Amon_CSIRO-Mk3-6-0_rcp45_r1i1p1_perc-change-wrt-seassum-clim_native.csv?pr_january[(2025-01-01T12:00:00Z):1:(2090-01-01T12:00:00Z)][(-40.10297775):1:(-32.64199448)][(140.625):1:(150)]")
+
+raw_prec01_8.5_pc <- read.multi.line.header(file = "http://nrm-erddap.nci.org.au/erddap/griddap/pr_Amon_CSIRO-Mk3-6-0_rcp85_r1i1p1_perc-change-wrt-seassum-clim_native.csv?pr_january[(2025-01-01T12:00:00Z):1:(2090-01-01T12:00:00Z)][(-40.10297775):1:(-32.64199448)][(140.625):1:(150)]")
+
+raw_prec07_4.5_pc <- read.multi.line.header(file = "http://nrm-erddap.nci.org.au/erddap/griddap/pr_Amon_CSIRO-Mk3-6-0_rcp45_r1i1p1_perc-change-wrt-seassum-clim_native.csv?pr_july[(2025-01-01T12:00:00Z):1:(2090-01-01T12:00:00Z)][(-40.10297775):1:(-32.64199448)][(140.625):1:(150)]")
+
+raw_prec07_8.5_pc <- read.multi.line.header(file = "http://nrm-erddap.nci.org.au/erddap/griddap/pr_Amon_CSIRO-Mk3-6-0_rcp85_r1i1p1_perc-change-wrt-seassum-clim_native.csv?pr_july[(2025-01-01T12:00:00Z):1:(2090-01-01T12:00:00Z)][(-40.10297775):1:(-32.64199448)][(140.625):1:(150)]")
+```
+
+Convert data frames to rasters
+```{r}
+
+
+prec01_4.5_pc <- rascc(raw_prec01_4.5_pc, new.proj.layer = ch_mask)
+prec01_8.5_pc <- rascc(raw_prec01_8.5_pc, new.proj.layer = ch_mask)
+prec07_4.5_pc <- rascc(raw_prec07_4.5_pc, new.proj.layer = ch_mask)
+prec07_8.5_pc <- rascc(raw_prec07_8.5_pc, new.proj.layer = ch_mask)
+```
+
+
+```{r}
+plot(tmax01_4.5_ac[[1]])
+```
+
+```{r n_bioclim}
+
+n_prec01_4.5 <- as.numeric(sub("-.*", "", unique(raw_prec01_4.5_pc$time)))
+n_prec01_8.5 <- as.numeric(sub("-.*", "", unique(raw_prec01_4.5_pc$time)))
+n_prec07_4.5 <- as.numeric(sub("-.*", "", unique(raw_prec07_4.5_pc$time)))
+n_prec07_8.5 <- as.numeric(sub("-.*", "", unique(raw_prec07_4.5_pc$time)))
+```
+
+
+```{r absolute predicted values}
+tmax01_4.5_wc <- tmax01_4.5_ac + tmax01
+tmax01_8.5_wc <- tmax01_8.5_ac + tmax01
+tmin07_4.5_wc <- tmin07_4.5_ac + tmax01
+tmin07_8.5_wc <- tmin07_8.5_ac + tmax01
+
+prec01_4.5_wc <- prec01 * (1 + prec01_4.5_pc/100)
+prec01_8.5_wc <- prec01 * (1 + prec01_8.5_pc/100)
+prec07_4.5_wc <- prec07 * (1 + prec07_4.5_pc/100)
+prec07_8.5_wc <- prec07 * (1 + prec07_8.5_pc/100)
+
+
+names(tmax01_4.5_wc) <- names(tmax01_4.5_ac)
+names(tmax01_8.5_wc) <- names(tmax01_8.5_ac)
+names(tmin07_4.5_wc) <- names(tmin07_4.5_ac)
+names(tmin07_8.5_wc) <- names(tmin07_8.5_ac)
+
+names(prec01_4.5_wc) <- names(prec01_4.5_pc)
+names(prec01_8.5_wc) <- names(prec01_8.5_pc)
+names(prec07_4.5_wc) <- names(prec07_4.5_pc)
+names(prec07_8.5_wc) <- names(prec07_8.5_pc)
+```
+
 
 ## Distribution model variables
 
