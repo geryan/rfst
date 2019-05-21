@@ -45,6 +45,7 @@ source(file = "R/functions/get.landis.vars.fut.R")
 source(file = "R/functions/.get.landis.vars.fut.R")
 source(file = "R/functions/rascc.R")
 source(file = "R/functions/read.multi.line.header.R")
+source(file = "R/functions/interpolate.climdat.R")
 ```
 
 
@@ -148,8 +149,7 @@ gg_vba
 ```
 ```{r gg_pa_all}
 gg_pa_all <- gg_vba %>%
-  rbind(gg_ari) %>%
-  rbind(pseudo_abs)
+  rbind(gg_ari)
 
 gg_pa_all
 ```
@@ -166,24 +166,30 @@ gg_pa_ch <- gg_pa_all[ch_rfa,]
 gg_pa_ch
 ```
 
+```{r gg_pa_ch_psab}
+gg_pa_ch_psab <- gg_pa_ch %>%
+  rbind(pseudo_abs)
+```
+
+
 ```{r write gg_pa_ch}
 st_write(gg_pa_ch, "output/shapefiles/pa/ch/gg_pa_ch.shp", delete_layer = TRUE)
+st_write(gg_pa_ch_psab, "output/shapefiles/pa/ch/gg_pa_ch_psab.shp", delete_layer = TRUE)
 ```
 
 
 ```{r pg_gg_pa_ch}
-pg_gg_pa_ch <- pg.pa(gg_pa_ch, ch_rfa)
+pg_gg_pa_ch <- pg.pa(gg_pa_ch %>% mutate(pseudo_abs = "vba") %>% rbind(pseudo_abs %>% mutate(pseudo_abs = "pseudo_absences")), ch_rfa) +
+  facet_grid(.~pseudo_abs)
 
 pg_gg_pa_ch
 ```
 
 ### LBP Occurrence data
 ```{r read lb occ}
-lb_pa_all <- proc.vba("data/tabular/vba_lb_all_20190509.csv", project.crs = ch_proj) %>%
-  rbind(pseudo_abs)
-
-lb_pa_all
+lb_pa_all <- proc.vba("data/tabular/vba_lb_all_20190509.csv", project.crs = ch_proj)
 ```
+
 ```{r plot_lb_pa_all}
 plot_lb_pa_all <- pg.pa(lb_pa_all, ch_rfa) +
   geom_sf(data = victoria, fill = NA)
@@ -196,26 +202,45 @@ lb_pa_ch <- lb_pa_all[ch_rfa,]
 lb_pa_ch
 ```
 
+```{r lb_pa_ch_psab}
+lb_pa_ch_psab <- lb_pa_ch %>%
+  rbind(pseudo_abs)
+```
+
+
 ```{r write lbp_pa_ch}
 st_write(lb_pa_ch, "output/shapefiles/pa/ch/lb_pa_ch.shp", delete_layer = TRUE)
+st_write(lb_pa_ch_psab, "output/shapefiles/pa/ch/lb_pa_ch_psab.shp", delete_layer = TRUE)
 ```
 
 
 ```{r pg_lb_pa_ch}
-pg_lb_pa_ch <- pg.pa(lb_pa_ch, ch_rfa)
+pg_lb_pa_ch <- pg.pa(lb_pa_ch %>% mutate(pseudo_abs = "vba") %>% rbind(pseudo_abs %>% mutate(pseudo_abs = "pseudo_absences")), ch_rfa) +
+  facet_grid(.~pseudo_abs)
 
 pg_lb_pa_ch
 ```
+
+```{r}
+#save.image("output/landscap-occupancy.RData")
+```
+
+```{r}
+load(file = "output/landscap-occupancy.RData")
+```
+
 
 ## Landis output
 
 ### Scenario 1: Current planned burning, current timber harvesting, climate change under RCP 4.5, current bushfire regime (Buisness as usual)
 ```{r s1_vars_landis_init}
-# s1_vars_landis_init <- get.landis.vars.init(scn_path = "~/landis_ch_s1_pb-th-cc/", proj_mask = ch_mask)
+#s1_vars_landis_init <- get.landis.vars.init(scn_path = "~/landis_ch_s1_pb-th-cc_50/", proj_mask = ch_mask)
 
-# saveRDS(object = s1_vars_landis_init, file = "output/habitat_vars/s1_vars_landis_init.Rds")
+#writeRaster(s1_vars_landis_init, "output/habitat_vars/s1_vars_landis_init.tif")
 
-s1_vars_landis_init <- readRDS(file = "output/habitat_vars/s1_vars_landis_init.Rds")
+s1_vars_landis_init <- stack(x = "output/habitat_vars/s1_vars_landis_init.tif")
+
+names(s1_vars_landis_init) <- c("lbm", "ggf", "ggd", "hbt_3h", "hbt_1k", "prop_bio_regn", "prop_bio_targ", "prop_old_150", "prop_old_200")
 ```
 
 ```{r plot s1_vars_landis_init}
@@ -223,24 +248,42 @@ plot(s1_vars_landis_init)
 ```
 
 ```{r s1_vars_landis_fut}
-# s1_vars_landis_fut <- get.landis.vars.fut(scn_path = "~/landis_ch_s1_pb-th-cc/", proj_mask = ch_mask, timesteps = 100, cores = 40)
-
-# saveRDS(object = s1_vars_landis_fut, file = "output/habitat_vars/s1_vars_landis_fut.Rds")
-
-s1_vars_landis_fut <- readRDS(file = "output/habitat_vars/s1_vars_landis_fut.Rds")
+s1_vars_landis_fut. <- .get.landis.vars.fut(scn_path = "~/landis_ch_s1_pb-th-cc_50/", proj_mask = ch_mask, timesteps = 50, cores = 20)
 ```
 
+```{r}
+s1_vars_landis_fut <- lapply(s1_vars_landis_fut., function (x) {
+   names(x) <- c("lbm",
+                 "ggf",
+                 "ggd",
+                 "hbt_3h",
+                 "hbt_1k",
+                 "prop_bio_regn",
+                 "prop_bio_targ",
+                 "prop_old_150",
+                 "prop_old_200")
+   x})
+```
+
+```{r s1_vars_landis_fut save load}
+save(s1_vars_landis_fut, file = "output/habitat_vars/s1_vars_landis_fut")
+
+load(file = "output/habitat_vars/s1_vars_landis_fut")
+```
+
+
 ```{r plot s1_vars_landis_fut}
-plot(s1_vars_landis_fut[[100]])
+plot(s1_vars_landis_fut[[50]])
 ```
 
 ### Scenario 2: Current planned burning, current timber harvesting, climate change under RCP 8.5, increatred bushfire regime
 ```{r s2_vars_landis_init}
-# s2_vars_landis_init <- get.landis.vars.init(scn_path = "~/landis_ch_s2_pb-th-cc/", proj_mask = ch_mask)
+# s2_vars_landis_init <- get.landis.vars.init(scn_path = "~/landis_ch_s2_pb-th-cc_50/", proj_mask = ch_mask)
 
-# saveRDS(object = s2_vars_landis_init, file = "output/habitat_vars/s2_vars_landis_init.Rds")
+# writeRaster(s2_vars_landis_init, "output/habitat_vars/s2_vars_landis_init.tif")
 
-# s2_vars_landis_init <- readRDS(file = "output/habitat_vars/s2_vars_landis_init.Rds")
+# s2_vars_landis_init <- stack(x = "output/habitat_vars/s2_vars_landis_init.tif")
+# names(s2_vars_landis_init) <- c("lbm", "ggf", "ggd", "hbt_3h", "hbt_1k", "prop_bio_regn", "prop_bio_targ", "prop_old_150", "prop_old_200")
 ```
 
 ```{r plot s2_vars_landis_init}
@@ -248,65 +291,119 @@ plot(s1_vars_landis_fut[[100]])
 ```
 
 ```{r s2_vars_landis_fut}
-# s2_vars_landis_fut <- get.landis.vars.fut(scn_path = "~/landis_ch_s2_pb-th-cc/", proj_mask = ch_mask, timesteps = 100, cores = 40)
-
-# saveRDS(object = s2_vars_landis_fut, file = "output/habitat_vars/s2_vars_landis_fut.Rds")
-
-# s2_vars_landis_fut <- readRDS(file = "output/habitat_vars/s2_vars_landis_fut.Rds")
+# s2_vars_landis_fut. <- .get.landis.vars.fut(scn_path = "~/landis_ch_s2_pb-th-cc_50/", proj_mask = ch_mask, timesteps = 50, cores = 20)
 ```
+
+```{r}
+# s2_vars_landis_fut <- lapply(s2_vars_landis_fut., function (x) {
+#    names(x) <- c("lbm",
+#                  "ggf",
+#                  "ggd",
+#                  "hbt_3h",
+#                  "hbt_1k",
+#                  "prop_bio_regn",
+#                  "prop_bio_targ",
+#                  "prop_old_150",
+#                  "prop_old_200")
+#    x})
+```
+
+```{r s2_vars_landis_fut save load}
+# save(s2_vars_landis_fut, file = "output/habitat_vars/s2_vars_landis_fut")
+# 
+# load(file = "output/habitat_vars/s2_vars_landis_fut")
+```
+
 
 ```{r plot s2_vars_landis_fut}
-# plot(s2_vars_landis_fut[[100]])
+# plot(s2_vars_landis_fut[[50]])
 ```
+
 
 ### Scenario 3: Current planned burning, current timber harvesting, no climate change, current bushfire regime
 ```{r s3_vars_landis_init}
-# s3_vars_landis_init <- get.landis.vars.init(scn_path = "~/landis_ch_s3_pb-th-cc/", proj_mask = ch_mask)
+# s3_vars_landis_init <- get.landis.vars.init(scn_path = "~/landis_ch_s3_pb-th-cc0_50/", proj_mask = ch_mask)
 
-# saveRDS(object = s3_vars_landis_init, file = "output/habitat_vars/s3_vars_landis_init.Rds")
+# writeRaster(s3_vars_landis_init, "output/habitat_vars/s3_vars_landis_init.tif")
 
-#  s3_vars_landis_init <- readRDS(file = "output/habitat_vars/s3_vars_landis_init.Rds")
+s3_vars_landis_init <- stack(x = "output/habitat_vars/s3_vars_landis_init.tif")
+names(s3_vars_landis_init) <- c("lbm", "ggf", "ggd", "hbt_3h", "hbt_1k", "prop_bio_regn", "prop_bio_targ", "prop_old_150", "prop_old_200")
 ```
 
 ```{r plot s3_vars_landis_init}
-# plot(s3_vars_landis_init)
+plot(s3_vars_landis_init)
 ```
 
 ```{r s3_vars_landis_fut}
-# s3_vars_landis_fut <- get.landis.vars.fut(scn_path = "~/landis_ch_s3_pb-th-cc/", proj_mask = ch_mask, timesteps = 100, cores = 40)
-
-# saveRDS(object = s3_vars_landis_fut, file = "output/habitat_vars/s3_vars_landis_fut.Rds")
-
-# s3_vars_landis_fut <- readRDS(file = "output/habitat_vars/s3_vars_landis_fut.Rds")
+s3_vars_landis_fut. <- .get.landis.vars.fut(scn_path = "~/landis_ch_s3_pb-th-cc0_50/", proj_mask = ch_mask, timesteps = 50, cores = 20)
 ```
 
+```{r}
+s3_vars_landis_fut <- lapply(s3_vars_landis_fut., function (x) {
+   names(x) <- c("lbm",
+                 "ggf",
+                 "ggd",
+                 "hbt_3h",
+                 "hbt_1k",
+                 "prop_bio_regn",
+                 "prop_bio_targ",
+                 "prop_old_150",
+                 "prop_old_200")
+   x})
+```
+
+```{r s3_vars_landis_fut save load}
+save(s3_vars_landis_fut, file = "output/habitat_vars/s3_vars_landis_fut")
+
+load(file = "output/habitat_vars/s3_vars_landis_fut")
+```
+
+
 ```{r plot s3_vars_landis_fut}
-# plot(s3_vars_landis_fut[[100]])
+plot(s3_vars_landis_fut[[50]])
 ```
 
 ### Scenario 4: Current planned burning, no harvesting, climate change under RCP 4.5, current bushfire regime
 ```{r s4_vars_landis_init}
-# s4_vars_landis_init <- get.landis.vars.init(scn_path = "~/landis_ch_s4_pb-th-cc/", proj_mask = ch_mask)
+# s4_vars_landis_init <- get.landis.vars.init(scn_path = "~/landis_ch_s4_pb-th0-cc_50/", proj_mask = ch_mask)
 
-# saveRDS(object = s4_vars_landis_init, file = "output/habitat_vars/s4_vars_landis_init.Rds")
+# writeRaster(s4_vars_landis_init, "output/habitat_vars/s4_vars_landis_init.tif")
 
-# s4_vars_landis_init <- readRDS(file = "output/habitat_vars/s4_vars_landis_init.Rds")
+s4_vars_landis_init <- stack(x = "output/habitat_vars/s4_vars_landis_init.tif")
+names(s4_vars_landis_init) <- c("lbm", "ggf", "ggd", "hbt_3h", "hbt_1k", "prop_bio_regn", "prop_bio_targ", "prop_old_150", "prop_old_200")
 ```
 
 ```{r plot s4_vars_landis_init}
-# plot(s4_vars_landis_init)
+plot(s4_vars_landis_init)
 ```
 
 ```{r s4_vars_landis_fut}
-# s4_vars_landis_fut <- get.landis.vars.fut(scn_path = "~/landis_ch_s4_pb-th-cc/", proj_mask = ch_mask, timesteps = 100, cores = 40)
-
-# saveRDS(object = s4_vars_landis_fut, file = "output/habitat_vars/s4_vars_landis_fut.Rds")
-
-# s4_vars_landis_fut <- readRDS(file = "output/habitat_vars/s4_vars_landis_fut.Rds")
+s4_vars_landis_fut. <- .get.landis.vars.fut(scn_path = "~/landis_ch_s4_pb-th0-cc_50/", proj_mask = ch_mask, timesteps = 50, cores = 20)
 ```
 
+```{r}
+s4_vars_landis_fut <- lapply(s4_vars_landis_fut., function (x) {
+   names(x) <- c("lbm",
+                 "ggf",
+                 "ggd",
+                 "hbt_3h",
+                 "hbt_1k",
+                 "prop_bio_regn",
+                 "prop_bio_targ",
+                 "prop_old_150",
+                 "prop_old_200")
+   x})
+```
+
+```{r s4_vars_landis_fut save load}
+save(s4_vars_landis_fut, file = "output/habitat_vars/s4_vars_landis_fut")
+
+load(file = "output/habitat_vars/s4_vars_landis_fut")
+```
+
+
 ```{r plot s4_vars_landis_fut}
-# plot(s4_vars_landis_fut[[100]])
+plot(s4_vars_landis_fut[[50]])
 ```
 
 
@@ -436,18 +533,18 @@ plot(twi)
 
 #### Initial variables
 ```{r ari_iv}
-ari_iv <- stack(ahr, rai, lvdaw, lvdma, lvdmi, lvdsw, tho)
+ari_iv <- stack(lvdaw, lvdma, lvdmi, lvdsw)
 
-names(ari_iv) <- c("ahr", "rai", "lvdaw", "lvdma", "lvdmi", "lvdsw", "tho")
+names(ari_iv) <- c("lvdaw", "lvdma", "lvdmi", "lvdsw")
 ```
 
 #### Future variables 
 Repeates into list for each year
 ```{r ari_fv}
-ari_fv <- vector("list", 100)
+ari_fv <- vector("list", 50)
 
 
-for(i in 1:100){
+for(i in 1:50){
   ari_fv[[i]] <- ari_iv
 }
 ```
@@ -642,15 +739,15 @@ plot(prec07_8.5)
 **Currently just repeats predictions, need updating to weight predictions within 10 years, cf data from CSIRO**
 
 ```{r}
-tmax01_4.5_int <- interpolate.climdat(tmax01, tmax01_4.5, ny = 100, nf = n_tmax01_4.5, n0 = 2019, varname = "tmax01")
-tmax01_8.5_int <- interpolate.climdat(tmax01, tmax01_8.5, ny = 100, nf = n_tmax01_8.5, n0 = 2019, varname = "tmax01")
-tmin07_4.5_int <- interpolate.climdat(tmin07, tmin07_4.5, ny = 100, nf = n_tmin07_4.5, n0 = 2019, varname = "tmin07")
-tmin07_8.5_int <- interpolate.climdat(tmin07, tmin07_8.5, ny = 100, nf = n_tmin07_8.5, n0 = 2019, varname = "tmin07")
+tmax01_4.5_int <- interpolate.climdat(tmax01, tmax01_4.5, ny = 50, nf = n_tmax01_4.5, n0 = 2019, varname = "tmax01")
+tmax01_8.5_int <- interpolate.climdat(tmax01, tmax01_8.5, ny = 50, nf = n_tmax01_8.5, n0 = 2019, varname = "tmax01")
+tmin07_4.5_int <- interpolate.climdat(tmin07, tmin07_4.5, ny = 50, nf = n_tmin07_4.5, n0 = 2019, varname = "tmin07")
+tmin07_8.5_int <- interpolate.climdat(tmin07, tmin07_8.5, ny = 50, nf = n_tmin07_8.5, n0 = 2019, varname = "tmin07")
 
-prec01_4.5_int <- interpolate.climdat(prec01, prec01_4.5, ny = 100, nf = n_prec01_4.5, n0 = 2019, varname = "prec01")
-prec01_8.5_int <- interpolate.climdat(prec01, prec01_8.5, ny = 100, nf = n_prec01_8.5, n0 = 2019, varname = "prec01")
-prec07_4.5_int <- interpolate.climdat(prec07, prec07_4.5, ny = 100, nf = n_prec07_4.5, n0 = 2019, varname = "prec07")
-prec07_8.5_int <- interpolate.climdat(prec07, prec07_8.5, ny = 100, nf = n_prec07_8.5, n0 = 2019, varname = "prec07")
+prec01_4.5_int <- interpolate.climdat(prec01, prec01_4.5, ny = 50, nf = n_prec01_4.5, n0 = 2019, varname = "prec01")
+prec01_8.5_int <- interpolate.climdat(prec01, prec01_8.5, ny = 50, nf = n_prec01_8.5, n0 = 2019, varname = "prec01")
+prec07_4.5_int <- interpolate.climdat(prec07, prec07_4.5, ny = 50, nf = n_prec07_4.5, n0 = 2019, varname = "prec07")
+prec07_8.5_int <- interpolate.climdat(prec07, prec07_8.5, ny = 50, nf = n_prec07_8.5, n0 = 2019, varname = "prec07")
 ```
 
 ### Climate variable sets
@@ -662,13 +759,16 @@ clim_iv <- stack(prec01, prec07, tmax01, tmin07)
 
 #### Future climate variables
 ```{r clim_fv}
-clim_fv_cc0 <- vector("list", 100)
+clim_fv_cc0 <- vector("list", 50)
 
 
 clim_fv_4.5 <- mapply(prec01_4.5_int, prec07_4.5_int, tmax01_4.5_int, tmin07_4.5_int, FUN = stack)
 clim_fv_8.5 <- mapply(prec01_8.5_int, prec07_8.5_int, tmax01_8.5_int, tmin07_8.5_int, FUN = stack)
 ```
 
+```{r}
+save.image(file = "output/input_variables.RData")
+```
 
 
 ## Distribution model variables
@@ -724,35 +824,201 @@ save(s1_fv_gg, file = "output/habitat_vars/s1_fv_gg")
 
 #### Leadbeater's Possum
 
+##### Scenario 1 initial variables
+```{r s1_iv_lb}
+s1_iv_lb <- stack(s1_vars_landis_init[[c(lblv)]], clim_iv)
 
+save(s1_iv_lb, file = "output/habitat_vars/s1_iv_lb")
+```
+
+##### Scenaio 1 model data
+```{r}
+s1_md_lb <- s1_iv_lb %>%
+  raster::extract(y = st_coordinates(lb_pa_ch)) %>%
+  cbind("PA" = lb_pa_ch$PA, .) %>%
+  as.data.frame %>%
+  na.omit 
+
+s1_md_lb
+
+save(s1_md_lb, file = "output/habitat_vars/s1_md_lb")
+```
+
+
+##### Scenario 1 future variables
+```{r s1_fv_lb}
+s1_fv_lb <- s1_vars_landis_fut %>%
+  sapply("[[", lblv) %>%
+  mapply(clim_fv_4.5, FUN = stack)
+
+save(s1_fv_lb, file = "output/habitat_vars/s1_fv_lb")
+```
+
+### Scenario 2
+**awaiting updated climate variables**
+
+
+### Scenario 3
+
+#### Greater Glider
+
+##### Scenario 3 initial variables
+```{r s3_iv_gg}
+s3_iv_gg <- stack(s3_vars_landis_init[[c(gglv)]], clim_iv)
+
+save(s3_iv_gg, file = "output/habitat_vars/s3_iv_gg")
+```
+
+##### Scenaio 3 model data
+```{r}
+s3_md_gg <- s3_iv_gg %>%
+  raster::extract(y = st_coordinates(gg_pa_ch)) %>%
+  cbind("PA" = gg_pa_ch$PA, .) %>%
+  as.data.frame %>%
+  na.omit 
+
+s3_md_gg
+
+save(s3_md_gg, file = "output/habitat_vars/s3_md_gg")
+```
+
+
+##### Scenario 3 future variables
+```{r s3_fv_gg}
+s3_fv_gg <- s3_vars_landis_fut %>%
+  sapply("[[", gglv) %>%
+  mapply(clim_fv_cc0, FUN = stack)
+
+save(s3_fv_gg, file = "output/habitat_vars/s3_fv_gg")
+```
+
+
+#### Leadbeater's Possum
+
+##### Scenario 3 initial variables
+```{r s3_iv_lb}
+s3_iv_lb <- stack(s3_vars_landis_init[[c(lblv)]], clim_iv)
+
+save(s3_iv_lb, file = "output/habitat_vars/s3_iv_lb")
+```
+
+##### Scenaio 3 model data
+```{r}
+s3_md_lb <- s3_iv_lb %>%
+  raster::extract(y = st_coordinates(lb_pa_ch)) %>%
+  cbind("PA" = lb_pa_ch$PA, .) %>%
+  as.data.frame %>%
+  na.omit 
+
+s3_md_lb
+
+save(s3_md_lb, file = "output/habitat_vars/s3_md_lb")
+```
+
+
+##### Scenario 3 future variables
+```{r s3_fv_lb}
+s3_fv_lb <- s3_vars_landis_fut %>%
+  sapply("[[", lblv) %>%
+  mapply(clim_fv_cc0, FUN = stack)
+
+save(s3_fv_lb, file = "output/habitat_vars/s3_fv_lb")
+```
+
+
+### Scenario 4
+
+#### Greater Glider
+
+##### Scenario 4 initial variables
+```{r s4_iv_gg}
+s4_iv_gg <- stack(s4_vars_landis_init[[c(gglv)]], clim_iv)
+
+save(s4_iv_gg, file = "output/habitat_vars/s4_iv_gg")
+```
+
+##### Scenaio 4 model data
+```{r}
+s4_md_gg <- s4_iv_gg %>%
+  raster::extract(y = st_coordinates(gg_pa_ch)) %>%
+  cbind("PA" = gg_pa_ch$PA, .) %>%
+  as.data.frame %>%
+  na.omit 
+
+s4_md_gg
+
+save(s4_md_gg, file = "output/habitat_vars/s4_md_gg")
+```
+
+
+##### Scenario 4 future variables
+```{r s4_fv_gg}
+s4_fv_gg <- s4_vars_landis_fut %>%
+  sapply("[[", gglv) %>%
+  mapply(clim_fv_4.5, FUN = stack)
+
+save(s4_fv_gg, file = "output/habitat_vars/s4_fv_gg")
+```
+
+
+#### Leadbeater's Possum
+
+##### Scenario 4 initial variables
+```{r s4_iv_lb}
+s4_iv_lb <- stack(s4_vars_landis_init[[c(lblv)]], clim_iv)
+
+save(s4_iv_lb, file = "output/habitat_vars/s4_iv_lb")
+```
+
+##### Scenaio 4 model data
+```{r}
+s4_md_lb <- s4_iv_lb %>%
+  raster::extract(y = st_coordinates(lb_pa_ch)) %>%
+  cbind("PA" = lb_pa_ch$PA, .) %>%
+  as.data.frame %>%
+  na.omit 
+
+s4_md_lb
+
+save(s4_md_lb, file = "output/habitat_vars/s4_md_lb")
+```
+
+
+##### Scenario 4 future variables
+```{r s4_fv_lb}
+s4_fv_lb <- s4_vars_landis_fut %>%
+  sapply("[[", lblv) %>%
+  mapply(clim_fv_4.5, FUN = stack)
+
+save(s4_fv_lb, file = "output/habitat_vars/s4_fv_lb")
+```
 
 
 # Distribution model fit and prediction
 
-## Scenario 1
+## Greater Glider
 
-### Greater Glider
-
-```{r}
-s1_mod_gg <- gbm.step(data = s1_md_gg, gbm.x = 3:8, gbm.y = 1, family = "bernoulli", tree.complexity = 5, learning.rate = 0.001, step.size = 1, bag.fraction = 0.5, prev.stratify = FALSE, verbose = FALSE, max.trees = 1000)
+### Scenario 1
+```{r s1_mod_gg}
+s1_mod_gg <- gbm.step(data = s1_md_gg, gbm.x = 2:8, gbm.y = 1, family = "bernoulli", tree.complexity = 5, learning.rate = 0.001, step.size = 1, bag.fraction = 0.5, prev.stratify = FALSE, verbose = FALSE, max.trees = 1000)
 ```
-```{r}
+```{r sumary s1_mod_gg}
 summary(s1_mod_gg)
 ```
 
-```{r}
-s1_ip_gg <- predict(s1_iv_gg[[2:7]], s1_mod_gg, type = "response", n.trees = s1_mod_gg$gbm.call$best.trees)
+```{r s1_ip_gg}
+s1_ip_gg <- predict(s1_iv_gg, s1_mod_gg, type = "response", n.trees = s1_mod_gg$gbm.call$best.trees)
 
 writeRaster(s1_ip_gg, "output/habitat_pred/s1_ip_gg.tif", overwrite = TRUE)
 
 plot(s1_ip_gg)
 ```
 
-```{r}
+```{r s1_fp_gg}
 registerDoMC(cores = 20)
 
 s1_fp_gg <- foreach(i = seq_len(length(s1_fv_gg))) %dopar% {
-  predict(s1_fv_gg[[i]][[2:7]],
+  predict(s1_fv_gg[[i]],
           s1_mod_gg,
           type = "response",
           n.trees = s1_mod_gg$gbm.call$best.trees,
@@ -763,8 +1029,117 @@ s1_fp_gg <- foreach(i = seq_len(length(s1_fv_gg))) %dopar% {
 s1_fp_gg <- stack(s1_fp_gg)
 ```
 
-```{r}
+```{r save s1_fp_gg}
 save(s1_fp_gg, file = "output/habitat_pred/s1_fp_gg")
+```
+
+
+### Scenario 3
+```{r s3_mod_gg}
+s3_mod_gg <- gbm.step(data = s3_md_gg, gbm.x = 2:8, gbm.y = 1, family = "bernoulli", tree.complexity = 5, learning.rate = 0.001, step.size = 1, bag.fraction = 0.5, prev.stratify = FALSE, verbose = FALSE, max.trees = 1000)
+```
+```{r sumary s3_mod_gg}
+summary(s3_mod_gg)
+```
+
+```{r s3_ip_gg}
+s3_ip_gg <- predict(s3_iv_gg, s3_mod_gg, type = "response", n.trees = s3_mod_gg$gbm.call$best.trees)
+
+writeRaster(s3_ip_gg, "output/habitat_pred/s3_ip_gg.tif", overwrite = TRUE)
+
+plot(s3_ip_gg)
+```
+
+```{r s3_fp_gg}
+registerDoMC(cores = 20)
+
+s3_fp_gg <- foreach(i = seq_len(length(s3_fv_gg))) %dopar% {
+  predict(s3_fv_gg[[i]],
+          s3_mod_gg,
+          type = "response",
+          n.trees = s3_mod_gg$gbm.call$best.trees,
+          filename = paste0("output/habitat_pred/s3_fp_gg-", sprintf("%03d", i), ".tif"),
+          overwrite = TRUE)
+}
+
+s3_fp_gg <- stack(s3_fp_gg)
+```
+
+```{r save s3_fp_gg}
+save(s3_fp_gg, file = "output/habitat_pred/s3_fp_gg")
+```
+
+### Scenario 4
+```{r s4_mod_gg}
+s4_mod_gg <- gbm.step(data = s4_md_gg, gbm.x = 2:8, gbm.y = 1, family = "bernoulli", tree.complexity = 5, learning.rate = 0.001, step.size = 1, bag.fraction = 0.5, prev.stratify = FALSE, verbose = FALSE, max.trees = 1000)
+```
+```{r sumary s4_mod_gg}
+summary(s4_mod_gg)
+```
+
+```{r s4_ip_gg}
+s4_ip_gg <- predict(s4_iv_gg, s4_mod_gg, type = "response", n.trees = s4_mod_gg$gbm.call$best.trees)
+
+writeRaster(s4_ip_gg, "output/habitat_pred/s4_ip_gg.tif", overwrite = TRUE)
+
+plot(s4_ip_gg)
+```
+
+```{r s4_fp_gg}
+registerDoMC(cores = 20)
+
+s4_fp_gg <- foreach(i = seq_len(length(s4_fv_gg))) %dopar% {
+  predict(s4_fv_gg[[i]],
+          s4_mod_gg,
+          type = "response",
+          n.trees = s4_mod_gg$gbm.call$best.trees,
+          filename = paste0("output/habitat_pred/s4_fp_gg-", sprintf("%03d", i), ".tif"),
+          overwrite = TRUE)
+}
+
+s4_fp_gg <- stack(s4_fp_gg)
+```
+
+```{r save s4_fp_gg}
+save(s4_fp_gg, file = "output/habitat_pred/s4_fp_gg")
+```
+
+
+## Leadbeater's Possum
+
+### Scenario 1
+```{r s1_mod_lb}
+s1_mod_lb <- gbm.step(data = s1_md_lb, gbm.x = 2:8, gbm.y = 1, family = "bernoulli", tree.complexity = 5, learning.rate = 0.001, step.size = 1, bag.fraction = 0.5, prev.stratify = FALSE, verbose = FALSE, max.trees = 1000)
+```
+```{r sumary s1_mod_lb}
+summary(s1_mod_lb)
+```
+
+```{r s1_ip_lb}
+s1_ip_lb <- predict(s1_iv_lb, s1_mod_lb, type = "response", n.trees = s1_mod_lb$gbm.call$best.trees)
+
+writeRaster(s1_ip_lb, "output/habitat_pred/s1_ip_lb.tif", overwrite = TRUE)
+
+plot(s1_ip_lb)
+```
+
+```{r s1_fp_lb}
+registerDoMC(cores = 20)
+
+s1_fp_lb <- foreach(i = seq_len(length(s1_fv_lb))) %dopar% {
+  predict(s1_fv_lb[[i]],
+          s1_mod_lb,
+          type = "response",
+          n.trees = s1_mod_lb$gbm.call$best.trees,
+          filename = paste0("output/habitat_pred/s1_fp_lb-", sprintf("%03d", i), ".tif"),
+          overwrite = TRUE)
+}
+
+s1_fp_lb <- stack(s1_fp_lb)
+```
+
+```{r save s1_fp_lb}
+save(s1_fp_lb, file = "output/habitat_pred/s1_fp_lb")
 ```
 
 # Population viability analysis
@@ -776,9 +1151,9 @@ save(s1_fp_gg, file = "output/habitat_pred/s1_fp_gg")
 s1_hs_gg <- c(list(s1_ip_gg), s1_fp_gg) %>% stack
 
 
-s1_hs_gg <- s1_hs_gg[[1:20]]
+s1_hs_gg <- s1_hs_gg[[1:50]]
 
-for(i in 1:20){
+for(i in 1:50){
   s1_hs_gg[[i]][is.na(s1_hs_gg[[i]][])] <- 0
 }
 
@@ -786,7 +1161,7 @@ s1_hs_gg <- mask(s1_hs_gg, mask = ch_mask)
 ```
 
 ```{r}
-gg_trans_mat <- matrix(c(0.00,0.00,0.25,
+gg_trans_mat <- matrix(c(0.00,0.00,0.50,
                          0.50,0.00,0.00,
                          0.00,0.85,0.85),
                        nrow = 3, ncol = 3, byrow = TRUE) # based on Possingham et al 1994
@@ -842,29 +1217,6 @@ names(gg_pop) <- colnames(gg_trans_mat)
 TotpopN <- sum(cellStats(gg_pop, 'sum', na.rm = TRUE)) # Get total population size to check sensible
 init_pop_size <- sum(gg_pop)
 #plot(init_pop_size, box = FALSE, axes = FALSE, col = viridis(25))
-
-
-k_function <- function (landscape, timestep) {
-  
-  
-  fun <- function(suitability) {
-    pcauchy(suitability, scale = 0.2, location = 0.5) * 3.5
-  }
-  
-  idx <- which(!is.na(landscape$suitability[[1]][]))
-  
-  suit <- landscape$suitability
-  
-  if (raster::nlayers(suit) > 1) {
-    suit <- suit[[timestep]]
-  }
-  
-  k <- suit
-  k[idx] <- fun(suit[idx])
-  
-  #calc(suit, fun)
-  
-}
 ```
 
 ```{r}
@@ -881,16 +1233,38 @@ gg_pop_dynamics <- population_dynamics(change = growth(transition_matrix = gg_tr
 ```
 
 ```{r}
-plan(multiprocess, workers = 5)
-gg_results <- simulation(landscape = gg_landscape,
+plan(sequential, workers = 1)
+gg_results_1 <- simulation(landscape = gg_landscape,
+                         population_dynamics = gg_pop_dynamics,
+                         habitat_dynamics = NULL,
+                         timesteps = 5,
+                         replicates = 1)
+
+```
+```{r}
+plan(sequential, workers = 1)
+gg_results_1_20 <- simulation(landscape = gg_landscape,
                          population_dynamics = gg_pop_dynamics,
                          habitat_dynamics = NULL,
                          timesteps = 20,
-                         replicates = 5)
+                         replicates = 1)
+
 ```
 
+
 ```{r}
-saveRDS(object = gg_results, file = "output/pva_results/gg_results.Rds")
+plan(multiprocess, workers = 20)
+gg_results_20_20 <- simulation(landscape = gg_landscape,
+                         population_dynamics = gg_pop_dynamics,
+                         habitat_dynamics = NULL,
+                         timesteps = 20,
+                         replicates = 20)
+
+```
+
+
+```{r}
+saveRDS(object = gg_results_1_20, file = "output/pva_results/gg_results_1_20.Rds")
 ```
 
 
@@ -900,197 +1274,5 @@ plot(gg_results[1], type = "raster", stages = 0, timesteps = c(1,5))
 plot(gg_results[1], type = "raster", stages = 0, animate = TRUE, timesteps = 1:5)
 ```
 
-
-##################################################################
-
-## LB
-##### Scenario 1 initial variables
-```{r s1_iv_lb}
-s1_iv_lb <- stack(s1_vars_landis_init[[c(lblv)]], clim_iv)
-
-save(s1_iv_lb, file = "output/habitat_vars/s1_iv_lb")
-```
-
-##### Scenaio 1 model data
-```{r}
-s1_md_lb <- s1_iv_lb %>%
-  raster::extract(y = st_coordinates(lb_pa_ch)) %>%
-  cbind("PA" = lb_pa_ch$PA, .) %>%
-  as.data.frame %>%
-  na.omit 
-
-s1_md_lb
-
-save(s1_md_lb, file = "output/habitat_vars/s1_md_lb")
-```
-
-
-##### Scenario 1 future variables
-```{r s1_fv_lb}
-s1_fv_lb <- s1_vars_landis_fut %>%
-  sapply("[[", lblv) %>%
-  mapply(clim_fv_4.5, FUN = stack)
-
-save(s1_fv_lb, file = "output/habitat_vars/s1_fv_lb")
-```
-
-
-#### Leadbeater's Possum
-
-
-
-
-# Distribution model fit and prediction
-
-## Scenario 1
-
-### Greater Glider
-
-```{r}
-s1_mod_lb <- gbm.step(data = s1_md_lb, gbm.x = 2:7, gbm.y = 1, family = "bernoulli", tree.complexity = 5, learning.rate = 0.001, step.size = 1, bag.fraction = 0.5, prev.stratify = FALSE, verbose = FALSE, max.trees = 1000)
-```
-```{r}
-summary(s1_mod_lb)
-```
-
-```{r}
-s1_ip_lb <- predict(s1_iv_lb, s1_mod_lb, type = "response", n.trees = s1_mod_lb$gbm.call$best.trees)
-
-writeRaster(s1_ip_lb, "output/habitat_pred/s1_ip_lb.tif", overwrite = TRUE)
-
-plot(s1_ip_lb)
-```
-
-```{r}
-registerDoMC(cores = 20)
-
-s1_fp_lb <- foreach(i = seq_len(length(s1_fv_lb))) %dopar% {
-  predict(s1_fv_lb[[i]],
-          s1_mod_lb,
-          type = "response",
-          n.trees = s1_mod_lb$gbm.call$best.trees,
-          filename = paste0("output/habitat_pred/s1_fp_lb-", sprintf("%03d", i), ".tif"),
-          overwrite = TRUE)
-}
-
-s1_fp_lb <- stack(s1_fp_lb)
-```
-
-```{r}
-save(s1_fp_lb, file = "output/habitat_pred/s1_fp_lb")
-```
-
-# Population viability analysis
-
-## Scenario 1
-
-### Greater Glider
-```{r}
-s1_hs_lb <- c(list(s1_ip_lb), s1_fp_lb) %>% stack
-
-
-for(i in 1:101){
-  s1_hs_lb[[i]][is.na(s1_hs_lb[[i]])] <- 0
-}
-
-
-
-s1_hs_lb <- mask(s1_hs_lb, mask = ch_mask)
-```
-
-```{r}
-lb_trans_mat <- matrix(c(0.00,0.00,2,
-                         0.50,0.00,0.00,
-                         0.00,0.85,0.85),
-                       nrow = 3, ncol = 3, byrow = TRUE) # based on Possingham et al 1994
-colnames(lb_trans_mat) <- rownames(lb_trans_mat) <- c('Newborn','Juvenile','Adult')
-
-lb_stable_states <- abs( eigen(lb_trans_mat)$vectors[,1] / base::sum(eigen(lb_trans_mat)$vectors[,1]) ) 
-```
-
-
-```{r}
-s1_hab_k_lb <- calc(s1_hs_lb[[1]], fun = function(x){if(is.na(x)) x else rbinom(prob = x, size = 3, n = 1)})
-
-names(s1_hab_k_lb) <- "carryingCapacity"
-```
-
-```{r}
-lb_popN <- stack(replicate(ncol(lb_trans_mat), s1_hab_k_lb))
-#lb_popN <- stack(replicate(ncol(lb_trans_mat), floor(lb_hab_suit*200)))
-
-lb_popN <- lb_popN*lb_stable_states
-
-idx <- which(!is.na(s1_hs_lb[[1]][]) & s1_hs_lb[[1]][] < 0.95)
-# 
-# lb_p <- foreach(i = 1:nlayers(lb_popN)) %do% {
-#   m <- ceiling(cellStats(lb_popN[[i]], max, na.rm = TRUE))
-#     pop <- calc(lb_popN[[i]], fun = function(x){if(is.na(x)) x else rbinom(prob = (x/m), size = m, n = 1)})
-#     pop[idx] <- 0
-#     pop
-# } ## Not working right investigate why no integeers
-# 
-# lb_pop <- stack(lb_p)
-
-
-lb_pop <- lb_popN
-lb_pop[!is.na(lb_pop)] <- 0
-lb_pop[[1]][sample(idx, 10000)] <- 1
-lb_pop[[2]][sample(idx, 10000)] <- 1
-lb_pop[[3]][sample(idx, 10000)] <- 1
-
-lb_pop <- lb_pop*ch_mask
-
-#registerDoMC(cores = 4)
-#lb_pop <- stack(
-#  foreach(i = 1:nlayers(lb_popN)) %dopar% {
-#    m <- ceiling(cellStats(lb_popN[[i]], max, na.rm = TRUE))
-#    pop <- calc(lb_popN[[i]], fun = function(x) if(is.na(x)) x else rbinom(prob = (x/m), size = m, n = 1))
-#    pop[idx] <- 0
-#    pop
-#  })
-names(lb_pop) <- colnames(lb_trans_mat)
-#plot(lb_pop, box = FALSE, axes = FALSE, col = viridis(100))
-
-TotpopN <- sum(cellStats(lb_pop, 'sum', na.rm = TRUE)) # Get total population size to check sensible
-init_pop_size <- sum(lb_pop)
-#plot(init_pop_size, box = FALSE, axes = FALSE, col = viridis(25))
-
-
-k_function <- function (landscape, timestep) {
-  
-  
-  fun <- function(suitability) {
-    pcauchy(suitability, scale = 0.2, location = 0.5) * 3.5
-  }
-  
-  idx <- which(!is.na(landscape$suitability[[1]][]))
-  
-  suit <- landscape$suitability
-  
-  if (raster::nlayers(suit) > 1) {
-    suit <- suit[[timestep]]
-  }
-  
-  k <- suit
-  k[idx] <- fun(suit[idx])
-  
-  #calc(suit, fun)
-  
-}
-```
-
-```{r}
-lb_landscape <- landscape(population = lb_pop,
-                          suitability = s1_hs_lb,
-                          carrying_capacity = s1_hab_k_lb)
-
-lb_pop_dynamics <- population_dynamics(change = growth(transition_matrix = lb_trans_mat,
-                                                       global_stochasticity = 0.1),
-                                       dispersal = fast_dispersal(
-                                         dispersal_kernel = exponential_dispersal_kernel(
-                                           distance_decay = 8000)),
-                                       modification = NULL)
-```
 
 

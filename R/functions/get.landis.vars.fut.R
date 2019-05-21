@@ -10,13 +10,9 @@ get.landis.vars.fut <- function(
                                 timesteps = timesteps,
                                 cores = cores)
 
+
  
- library(future)
- library(future.apply)
- 
- plan(multiprocess, workers = cores)
- 
- result <- future_lapply(result, function (x) {
+ result <- lapply(result, function (x) {
    names(x) <- c("lbm",
                  "ggf",
                  "ggd",

@@ -165,7 +165,7 @@
                     biomass_acacobli,
                     biomass_eucapauh,
                     biomass_eucapaul,
-                    #biomass_eucaacer,
+                    biomass_eucaacer,
                     biomass_leptgran,
                     biomass_nothcunn) %>%
       getValues %>%
