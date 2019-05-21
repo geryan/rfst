@@ -760,6 +760,9 @@ clim_iv <- stack(prec01, prec07, tmax01, tmin07)
 #### Future climate variables
 ```{r clim_fv}
 clim_fv_cc0 <- vector("list", 50)
+for(i in 1:50){
+  clim_fv_cc0[[i]] <- clim_iv
+}
 
 
 clim_fv_4.5 <- mapply(prec01_4.5_int, prec07_4.5_int, tmax01_4.5_int, tmin07_4.5_int, FUN = stack)
@@ -1007,7 +1010,7 @@ summary(s1_mod_gg)
 ```
 
 ```{r s1_ip_gg}
-s1_ip_gg <- predict(s1_iv_gg, s1_mod_gg, type = "response", n.trees = s1_mod_gg$gbm.call$best.trees)
+s1_ip_gg <- predict(s1_iv_gg, s1_mod_gg, type = "response", n.trees = s1_mod_gg$gbm.call$best.trees, filename = "/output/habitat_pred/s1_fp_gg-000.tif")
 
 writeRaster(s1_ip_gg, "output/habitat_pred/s1_ip_gg.tif", overwrite = TRUE)
 
@@ -1031,19 +1034,20 @@ s1_fp_gg <- stack(s1_fp_gg)
 
 ```{r save s1_fp_gg}
 save(s1_fp_gg, file = "output/habitat_pred/s1_fp_gg")
+writeRaster(s1_fp_gg, filename = "output/habitat_pred/s1_fp_gg.tif")
 ```
 
 
 ### Scenario 3
 ```{r s3_mod_gg}
-s3_mod_gg <- gbm.step(data = s3_md_gg, gbm.x = 2:8, gbm.y = 1, family = "bernoulli", tree.complexity = 5, learning.rate = 0.001, step.size = 1, bag.fraction = 0.5, prev.stratify = FALSE, verbose = FALSE, max.trees = 1000)
+s3_mod_gg <- gbm.step(data = s3_md_gg, gbm.x = 3:7, gbm.y = 1, family = "bernoulli", tree.complexity = 5, learning.rate = 0.001, step.size = 1, bag.fraction = 0.5, prev.stratify = FALSE, verbose = FALSE, max.trees = 1000)
 ```
 ```{r sumary s3_mod_gg}
 summary(s3_mod_gg)
 ```
 
 ```{r s3_ip_gg}
-s3_ip_gg <- predict(s3_iv_gg, s3_mod_gg, type = "response", n.trees = s3_mod_gg$gbm.call$best.trees)
+s3_ip_gg <- predict(s3_iv_gg, s3_mod_gg, type = "response", n.trees = s3_mod_gg$gbm.call$best.trees, filename ="/output/habitat_pred/s3_fp_gg-000.tif")
 
 writeRaster(s3_ip_gg, "output/habitat_pred/s3_ip_gg.tif", overwrite = TRUE)
 
@@ -1067,6 +1071,7 @@ s3_fp_gg <- stack(s3_fp_gg)
 
 ```{r save s3_fp_gg}
 save(s3_fp_gg, file = "output/habitat_pred/s3_fp_gg")
+writeRaster(s3_fp_gg, filename = "output/habitat_pred/s3_fp_gg.tif")
 ```
 
 ### Scenario 4
@@ -1078,7 +1083,7 @@ summary(s4_mod_gg)
 ```
 
 ```{r s4_ip_gg}
-s4_ip_gg <- predict(s4_iv_gg, s4_mod_gg, type = "response", n.trees = s4_mod_gg$gbm.call$best.trees)
+s4_ip_gg <- predict(s4_iv_gg, s4_mod_gg, type = "response", n.trees = s4_mod_gg$gbm.call$best.trees,  filename = "s/output/habitat_pred/4_fp_gg-000.tif")
 
 writeRaster(s4_ip_gg, "output/habitat_pred/s4_ip_gg.tif", overwrite = TRUE)
 
@@ -1102,21 +1107,23 @@ s4_fp_gg <- stack(s4_fp_gg)
 
 ```{r save s4_fp_gg}
 save(s4_fp_gg, file = "output/habitat_pred/s4_fp_gg")
+writeRaster(s4_fp_gg, filename = "output/habitat_pred/s4_fp_gg.tif")
 ```
 
 
 ## Leadbeater's Possum
 
+
 ### Scenario 1
 ```{r s1_mod_lb}
-s1_mod_lb <- gbm.step(data = s1_md_lb, gbm.x = 2:8, gbm.y = 1, family = "bernoulli", tree.complexity = 5, learning.rate = 0.001, step.size = 1, bag.fraction = 0.5, prev.stratify = FALSE, verbose = FALSE, max.trees = 1000)
+s1_mod_lb <- gbm.step(data = s1_md_lb, gbm.x = 2:7, gbm.y = 1, family = "bernoulli", tree.complexity = 5, learning.rate = 0.001, step.size = 1, bag.fraction = 0.5, prev.stratify = FALSE, verbose = FALSE, max.trees = 1000)
 ```
 ```{r sumary s1_mod_lb}
 summary(s1_mod_lb)
 ```
 
 ```{r s1_ip_lb}
-s1_ip_lb <- predict(s1_iv_lb, s1_mod_lb, type = "response", n.trees = s1_mod_lb$gbm.call$best.trees)
+s1_ip_lb <- predict(s1_iv_lb, s1_mod_lb, type = "response", n.trees = s1_mod_lb$gbm.call$best.trees, filename = "/output/habitat_pred/s1_fp_lb-000.tif")
 
 writeRaster(s1_ip_lb, "output/habitat_pred/s1_ip_lb.tif", overwrite = TRUE)
 
@@ -1140,26 +1147,86 @@ s1_fp_lb <- stack(s1_fp_lb)
 
 ```{r save s1_fp_lb}
 save(s1_fp_lb, file = "output/habitat_pred/s1_fp_lb")
+writeRaster(s1_fp_lb, filename = "output/habitat_pred/s1_fp_lb.tif")
 ```
+
+### Scenario 3
+```{r s3_mod_lb}
+s3_mod_lb <- gbm.step(data = s3_md_lb, gbm.x = 2:7, gbm.y = 1, family = "bernoulli", tree.complexity = 5, learning.rate = 0.001, step.size = 1, bag.fraction = 0.5, prev.stratify = FALSE, verbose = FALSE, max.trees = 1000)
+```
+```{r sumary s3_mod_lb}
+summary(s3_mod_lb)
+```
+
+```{r s3_ip_lb}
+s3_ip_lb <- predict(s3_iv_lb, s3_mod_lb, type = "response", n.trees = s3_mod_lb$gbm.call$best.trees, filename = "/output/habitat_pred/s3_fp_lb-000.tif")
+
+writeRaster(s3_ip_lb, "output/habitat_pred/s3_ip_lb.tif", overwrite = TRUE)
+
+plot(s3_ip_lb)
+```
+
+```{r s3_fp_lb}
+registerDoMC(cores = 20)
+
+s3_fp_lb <- foreach(i = seq_len(length(s3_fv_lb))) %dopar% {
+  predict(s3_fv_lb[[i]],
+          s3_mod_lb,
+          type = "response",
+          n.trees = s3_mod_lb$gbm.call$best.trees,
+          filename = paste0("output/habitat_pred/s3_fp_lb-", sprintf("%03d", i), ".tif"),
+          overwrite = TRUE)
+}
+
+s3_fp_lb <- stack(s3_fp_lb)
+```
+
+```{r save s3_fp_lb}
+save(s3_fp_lb, file = "output/habitat_pred/s3_fp_lb")
+writeRaster(s3_fp_lb, filename = "output/habitat_pred/s3_fp_lb.tif")
+```
+
+### Scenario 4
+```{r s4_mod_lb}
+s4_mod_lb <- gbm.step(data = s4_md_lb, gbm.x = 2:7, gbm.y = 1, family = "bernoulli", tree.complexity = 5, learning.rate = 0.001, step.size = 1, bag.fraction = 0.5, prev.stratify = FALSE, verbose = FALSE, max.trees = 1000)
+```
+```{r sumary s4_mod_lb}
+summary(s4_mod_lb)
+```
+
+```{r s4_ip_lb}
+s4_ip_lb <- predict(s4_iv_lb, s4_mod_lb, type = "response", n.trees = s4_mod_lb$gbm.call$best.trees, filename = "/output/habitat_pred/s4_fp_lb-000.tif")
+
+writeRaster(s4_ip_lb, "output/habitat_pred/s4_ip_lb.tif", overwrite = TRUE)
+
+plot(s4_ip_lb)
+```
+
+```{r s4_fp_lb}
+registerDoMC(cores = 20)
+
+s4_fp_lb <- foreach(i = seq_len(length(s4_fv_lb))) %dopar% {
+  predict(s4_fv_lb[[i]],
+          s4_mod_lb,
+          type = "response",
+          n.trees = s4_mod_lb$gbm.call$best.trees,
+          filename = paste0("output/habitat_pred/s4_fp_lb-", sprintf("%03d", i), ".tif"),
+          overwrite = TRUE)
+}
+
+s4_fp_lb <- stack(s4_fp_lb)
+```
+
+```{r save s4_fp_lb}
+save(s4_fp_lb, file = "output/habitat_pred/s4_fp_lb")
+writeRaster(s4_fp_lb, filename = "output/habitat_pred/s4_fp_lb.tif")
+```
+
+
 
 # Population viability analysis
 
-## Scenario 1
-
-### Greater Glider
-```{r}
-s1_hs_gg <- c(list(s1_ip_gg), s1_fp_gg) %>% stack
-
-
-s1_hs_gg <- s1_hs_gg[[1:50]]
-
-for(i in 1:50){
-  s1_hs_gg[[i]][is.na(s1_hs_gg[[i]][])] <- 0
-}
-
-s1_hs_gg <- mask(s1_hs_gg, mask = ch_mask)
-```
-
+## Greater Glider
 ```{r}
 gg_trans_mat <- matrix(c(0.00,0.00,0.50,
                          0.50,0.00,0.00,
@@ -1171,60 +1238,48 @@ gg_stable_states <- abs( eigen(gg_trans_mat)$vectors[,1] / base::sum(eigen(gg_tr
 ```
 
 
+### Scenario 1
+```{r}
+s1_hs_gg <- stack(s1_ip_gg, s1_fp_gg)
+
+for(i in 1:51){
+  s1_hs_gg[[i]][is.na(s1_hs_gg[[i]][])] <- 0
+}
+
+s1_hs_gg <- mask(s1_hs_gg, mask = ch_mask)
+```
+
 ```{r}
 s1_hab_k_gg <- calc(s1_hs_gg[[1]], fun = function(x){if(is.na(x)) x else rbinom(prob = x, size = 3, n = 1)})
 
 names(s1_hab_k_gg) <- "carryingCapacity"
+
+s1_gg_popN <- stack(replicate(ncol(gg_trans_mat), s1_hab_k_gg))
+
+s1_gg_popN <- s1_gg_popN*gg_stable_states
+
+s1_gg_idx <- which(!is.na(s1_hs_gg[[1]][]) & s1_hs_gg[[1]][] < 0.95)
+
+s1_gg_pop <- s1_gg_popN
+s1_gg_pop[!is.na(s1_gg_pop)] <- 0
+s1_gg_pop[[1]][sample(s1_gg_idx, 10000)] <- 1
+s1_gg_pop[[2]][sample(s1_gg_idx, 10000)] <- 1
+s1_gg_pop[[3]][sample(s1_gg_idx, 10000)] <- 1
+
+s1_gg_pop <- s1_gg_pop*ch_mask
+
+names(s1_gg_pop) <- colnames(gg_trans_mat)
+
+s1_gg_TotpopN <- sum(cellStats(s1_gg_pop, 'sum', na.rm = TRUE)) # Get total population size to check sensible
+s1_gg_init_pop_size <- sum(s1_gg_pop)
 ```
 
 ```{r}
-gg_popN <- stack(replicate(ncol(gg_trans_mat), s1_hab_k_gg))
-#gg_popN <- stack(replicate(ncol(gg_trans_mat), floor(gg_hab_suit*200)))
-
-gg_popN <- gg_popN*gg_stable_states
-
-idx <- which(!is.na(s1_hs_gg[[1]][]) & s1_hs_gg[[1]][] < 0.95)
-# 
-# gg_p <- foreach(i = 1:nlayers(gg_popN)) %do% {
-#   m <- ceiling(cellStats(gg_popN[[i]], max, na.rm = TRUE))
-#     pop <- calc(gg_popN[[i]], fun = function(x){if(is.na(x)) x else rbinom(prob = (x/m), size = m, n = 1)})
-#     pop[idx] <- 0
-#     pop
-# } ## Not working right investigate why no integeers
-# 
-# gg_pop <- stack(gg_p)
-
-
-gg_pop <- gg_popN
-gg_pop[!is.na(gg_pop)] <- 0
-gg_pop[[1]][sample(idx, 10000)] <- 1
-gg_pop[[2]][sample(idx, 10000)] <- 1
-gg_pop[[3]][sample(idx, 10000)] <- 1
-
-gg_pop <- gg_pop*ch_mask
-
-#registerDoMC(cores = 4)
-#gg_pop <- stack(
-#  foreach(i = 1:nlayers(gg_popN)) %dopar% {
-#    m <- ceiling(cellStats(gg_popN[[i]], max, na.rm = TRUE))
-#    pop <- calc(gg_popN[[i]], fun = function(x) if(is.na(x)) x else rbinom(prob = (x/m), size = m, n = 1))
-#    pop[idx] <- 0
-#    pop
-#  })
-names(gg_pop) <- colnames(gg_trans_mat)
-#plot(gg_pop, box = FALSE, axes = FALSE, col = viridis(100))
-
-TotpopN <- sum(cellStats(gg_pop, 'sum', na.rm = TRUE)) # Get total population size to check sensible
-init_pop_size <- sum(gg_pop)
-#plot(init_pop_size, box = FALSE, axes = FALSE, col = viridis(25))
-```
-
-```{r}
-gg_landscape <- landscape(population = gg_pop,
+s1_gg_landscape <- landscape(population = s1_gg_pop,
                           suitability = s1_hs_gg,
                           carrying_capacity = s1_hab_k_gg)
 
-gg_pop_dynamics <- population_dynamics(change = growth(transition_matrix = gg_trans_mat,
+s1_gg_pop_dynamics <- population_dynamics(change = growth(transition_matrix = gg_trans_mat,
                                                        global_stochasticity = 0.1),
                                        dispersal = fast_dispersal(
                                          dispersal_kernel = exponential_dispersal_kernel(
@@ -1234,45 +1289,384 @@ gg_pop_dynamics <- population_dynamics(change = growth(transition_matrix = gg_tr
 
 ```{r}
 plan(sequential, workers = 1)
-gg_results_1 <- simulation(landscape = gg_landscape,
-                         population_dynamics = gg_pop_dynamics,
+s1_gg_results_1 <- simulation(landscape = s1_gg_landscape,
+                         population_dynamics = s1_gg_pop_dynamics,
                          habitat_dynamics = NULL,
                          timesteps = 5,
                          replicates = 1)
 
+
+saveRDS(object = s1_gg_results_1, file = "output/pva_results/s1_gg_results_1.Rds")
 ```
+
+
+```{r}
+plot(s1_gg_results_1)
+```
+
+```{r}
+plot(s1_gg_results_1[1], type = "raster", stages = 0, timesteps = c(1:5))
+```
+
+### Scenario 3
+```{r}
+s3_hs_gg <- stack(s3_ip_gg, s3_fp_gg)
+
+for(i in 1:51){
+  s3_hs_gg[[i]][is.na(s3_hs_gg[[i]][])] <- 0
+}
+
+s3_hs_gg <- mask(s3_hs_gg, mask = ch_mask)
+```
+
+```{r}
+s3_hab_k_gg <- calc(s3_hs_gg[[1]], fun = function(x){if(is.na(x)) x else rbinom(prob = x, size = 3, n = 1)})
+
+names(s3_hab_k_gg) <- "carryingCapacity"
+
+s3_gg_popN <- stack(replicate(ncol(gg_trans_mat), s3_hab_k_gg))
+
+s3_gg_popN <- s3_gg_popN*gg_stable_states
+
+s3_gg_idx <- which(!is.na(s3_hs_gg[[1]][]) & s3_hs_gg[[1]][] < 0.95)
+
+s3_gg_pop <- s3_gg_popN
+s3_gg_pop[!is.na(s3_gg_pop)] <- 0
+s3_gg_pop[[1]][sample(s3_gg_idx, 10000)] <- 1
+s3_gg_pop[[2]][sample(s3_gg_idx, 10000)] <- 1
+s3_gg_pop[[3]][sample(s3_gg_idx, 10000)] <- 1
+
+s3_gg_pop <- s3_gg_pop*ch_mask
+
+names(s3_gg_pop) <- colnames(gg_trans_mat)
+
+s3_gg_TotpopN <- sum(cellStats(s3_gg_pop, 'sum', na.rm = TRUE)) # Get total population size to check sensible
+s3_gg_init_pop_size <- sum(s3_gg_pop)
+```
+
+```{r}
+s3_gg_landscape <- landscape(population = s3_gg_pop,
+                          suitability = s3_hs_gg,
+                          carrying_capacity = s3_hab_k_gg)
+
+s3_gg_pop_dynamics <- population_dynamics(change = growth(transition_matrix = gg_trans_mat,
+                                                       global_stochasticity = 0.1),
+                                       dispersal = fast_dispersal(
+                                         dispersal_kernel = exponential_dispersal_kernel(
+                                           distance_decay = 8000)),
+                                       modification = NULL)
+```
+
 ```{r}
 plan(sequential, workers = 1)
-gg_results_1_20 <- simulation(landscape = gg_landscape,
-                         population_dynamics = gg_pop_dynamics,
+s3_gg_results_1 <- simulation(landscape = s3_gg_landscape,
+                         population_dynamics = s3_gg_pop_dynamics,
                          habitat_dynamics = NULL,
-                         timesteps = 20,
+                         timesteps = 5,
                          replicates = 1)
 
+
+saveRDS(object = s3_gg_results_1, file = "output/pva_results/s3_gg_results_1.Rds")
 ```
 
 
 ```{r}
-plan(multiprocess, workers = 20)
-gg_results_20_20 <- simulation(landscape = gg_landscape,
-                         population_dynamics = gg_pop_dynamics,
+plot(s3_gg_results_1)
+```
+
+```{r}
+plot(s3_gg_results_1[1], type = "raster", stages = 0, timesteps = c(1:5))
+```
+
+### Scenario 4
+```{r}
+s4_hs_gg <- stack(s4_ip_gg, s4_fp_gg)
+
+for(i in 1:51){
+  s4_hs_gg[[i]][is.na(s4_hs_gg[[i]][])] <- 0
+}
+
+s4_hs_gg <- mask(s4_hs_gg, mask = ch_mask)
+```
+
+```{r}
+s4_hab_k_gg <- calc(s4_hs_gg[[1]], fun = function(x){if(is.na(x)) x else rbinom(prob = x, size = 3, n = 1)})
+
+names(s4_hab_k_gg) <- "carryingCapacity"
+
+s4_gg_popN <- stack(replicate(ncol(gg_trans_mat), s4_hab_k_gg))
+
+s4_gg_popN <- S4_gg_popN*gg_stable_states
+
+s4_gg_idx <- which(!is.na(s4_hs_gg[[1]][]) & s4_hs_gg[[1]][] < 0.95)
+
+s4_gg_pop <- s4_gg_popN
+s4_gg_pop[!is.na(s4_gg_pop)] <- 0
+s4_gg_pop[[1]][sample(s4_gg_idx, 10000)] <- 1
+s4_gg_pop[[2]][sample(s4_gg_idx, 10000)] <- 1
+s4_gg_pop[[3]][sample(s4_gg_idx, 10000)] <- 1
+
+s4_gg_pop <- s4_gg_pop*ch_mask
+
+names(s4_gg_pop) <- colnames(gg_trans_mat)
+
+s4_gg_TotpopN <- sum(cellStats(s4_gg_pop, 'sum', na.rm = TRUE)) # Get total population size to check sensible
+s4_gg_init_pop_size <- sum(s4_gg_pop)
+```
+
+```{r}
+s4_gg_landscape <- landscape(population = s4_gg_pop,
+                          suitability = s4_hs_gg,
+                          carrying_capacity = s4_hab_k_gg)
+
+s4_gg_pop_dynamics <- population_dynamics(change = growth(transition_matrix = gg_trans_mat,
+                                                       global_stochasticity = 0.1),
+                                       dispersal = fast_dispersal(
+                                         dispersal_kernel = exponential_dispersal_kernel(
+                                           distance_decay = 8000)),
+                                       modification = NULL)
+```
+
+```{r}
+plan(sequential, workers = 1)
+s4_gg_results_1 <- simulation(landscape = S4_gg_landscape,
+                         population_dynamics = S4_gg_pop_dynamics,
                          habitat_dynamics = NULL,
-                         timesteps = 20,
-                         replicates = 20)
+                         timesteps = 5,
+                         replicates = 1)
 
+
+saveRDS(object = s4_gg_results_1, file = "output/pva_results/s4_gg_results_1.Rds")
 ```
 
 
 ```{r}
-saveRDS(object = gg_results_1_20, file = "output/pva_results/gg_results_1_20.Rds")
+plot(s4_gg_results_1)
+```
+
+```{r}
+plot(s4_gg_results_1[1], type = "raster", stages = 0, timesteps = c(1:5))
+```
+
+
+## Leadbeater's Possum
+```{r}
+lb_trans_mat <- matrix(c(0.00,0.00,2,
+                         0.50,0.00,0.00,
+                         0.00,0.8,0.8),
+                       nrow = 3, ncol = 3, byrow = TRUE) 
+colnames(lb_trans_mat) <- rownames(lb_trans_mat) <- c('Newborn','Juvenile','Adult')
+
+lb_stable_states <- abs( eigen(lb_trans_mat)$vectors[,1] / base::sum(eigen(lb_trans_mat)$vectors[,1]) ) 
+```
+
+### Scenario 1
+```{r}
+s1_hs_lb <- stack(s1_ip_lb, s1_fp_lb)
+
+for(i in 1:51){
+  s1_hs_lb[[i]][is.na(s1_hs_lb[[i]][])] <- 0
+}
+
+s1_hs_lb <- mask(s1_hs_lb, mask = ch_mask)
+```
+
+```{r}
+s1_hab_k_lb <- calc(s1_hs_lb[[1]], fun = function(x){if(is.na(x)) x else rbinom(prob = x, size = 3, n = 1)})
+
+names(s1_hab_k_lb) <- "carryingCapacity"
+
+s1_lb_popN <- stack(replicate(ncol(lb_trans_mat), s1_hab_k_lb))
+
+s1_lb_popN <- s1_lb_popN*lb_stable_states
+
+s1_lb_idx <- which(!is.na(s1_hs_lb[[1]][]) & s1_hs_lb[[1]][] < 0.95)
+
+s1_lb_pop <- s1_lb_popN
+s1_lb_pop[!is.na(s1_lb_pop)] <- 0
+s1_lb_pop[[1]][sample(s1_lb_idx, 10000)] <- 1
+s1_lb_pop[[2]][sample(s1_lb_idx, 10000)] <- 1
+s1_lb_pop[[3]][sample(s1_lb_idx, 10000)] <- 1
+
+s1_lb_pop <- s1_lb_pop*ch_mask
+
+names(s1_lb_pop) <- colnames(lb_trans_mat)
+
+s1_lb_TotpopN <- sum(cellStats(s1_lb_pop, 'sum', na.rm = TRUE)) # Get total population size to check sensible
+s1_lb_init_pop_size <- sum(s1_lb_pop)
+```
+
+```{r}
+s1_lb_landscape <- landscape(population = s1_lb_pop,
+                          suitability = s1_hs_lb,
+                          carrying_capacity = s1_hab_k_lb)
+
+s1_lb_pop_dynamics <- population_dynamics(change = growth(transition_matrix = lb_trans_mat,
+                                                       global_stochasticity = 0.1),
+                                       dispersal = fast_dispersal(
+                                         dispersal_kernel = exponential_dispersal_kernel(
+                                           distance_decay = 2000)),
+                                       modification = NULL)
+```
+
+```{r}
+plan(sequential, workers = 1)
+s1_lb_results_1 <- simulation(landscape = s1_lb_landscape,
+                         population_dynamics = s1_lb_pop_dynamics,
+                         habitat_dynamics = NULL,
+                         timesteps = 5,
+                         replicates = 1)
+
+
+saveRDS(object = s1_lb_results_1, file = "output/pva_results/s1_lb_results_1.Rds")
 ```
 
 
 ```{r}
-plot(gg_results)
-plot(gg_results[1], type = "raster", stages = 0, timesteps = c(1,5))
-plot(gg_results[1], type = "raster", stages = 0, animate = TRUE, timesteps = 1:5)
+plot(s1_lb_results_1)
 ```
 
+```{r}
+plot(s1_lb_results_1[1], type = "raster", stages = 0, timesteps = c(1:5))
+```
+
+### Scenario 3
+```{r}
+s3_hs_lb <- stack(s3_ip_lb, s3_fp_lb)
+
+for(i in 1:51){
+  s3_hs_lb[[i]][is.na(s3_hs_lb[[i]][])] <- 0
+}
+
+s3_hs_lb <- mask(s3_hs_lb, mask = ch_mask)
+```
+
+```{r}
+s3_hab_k_lb <- calc(s3_hs_lb[[1]], fun = function(x){if(is.na(x)) x else rbinom(prob = x, size = 3, n = 1)})
+
+names(s3_hab_k_lb) <- "carryingCapacity"
+
+s3_lb_popN <- stack(replicate(ncol(lb_trans_mat), s3_hab_k_lb))
+
+s3_lb_popN <- s3_lb_popN*lb_stable_states
+
+s3_lb_idx <- which(!is.na(s3_hs_lb[[1]][]) & s3_hs_lb[[1]][] < 0.95)
+
+s3_lb_pop <- s3_lb_popN
+s3_lb_pop[!is.na(s3_lb_pop)] <- 0
+s3_lb_pop[[1]][sample(s3_lb_idx, 10000)] <- 1
+s3_lb_pop[[2]][sample(s3_lb_idx, 10000)] <- 1
+s3_lb_pop[[3]][sample(s3_lb_idx, 10000)] <- 1
+
+s3_lb_pop <- s3_lb_pop*ch_mask
+
+names(s3_lb_pop) <- colnames(lb_trans_mat)
+
+s3_lb_TotpopN <- sum(cellStats(s3_lb_pop, 'sum', na.rm = TRUE)) # Get total population size to check sensible
+s3_lb_init_pop_size <- sum(s3_lb_pop)
+```
+
+```{r}
+s3_lb_landscape <- landscape(population = s3_lb_pop,
+                          suitability = s3_hs_lb,
+                          carrying_capacity = s3_hab_k_lb)
+
+s3_lb_pop_dynamics <- population_dynamics(change = growth(transition_matrix = lb_trans_mat,
+                                                       global_stochasticity = 0.1),
+                                       dispersal = fast_dispersal(
+                                         dispersal_kernel = exponential_dispersal_kernel(
+                                           distance_decay = 8000)),
+                                       modification = NULL)
+```
+
+```{r}
+plan(sequential, workers = 1)
+s3_lb_results_1 <- simulation(landscape = s3_lb_landscape,
+                         population_dynamics = s3_lb_pop_dynamics,
+                         habitat_dynamics = NULL,
+                         timesteps = 5,
+                         replicates = 1)
+
+
+saveRDS(object = s3_lb_results_1, file = "output/pva_results/s3_lb_results_1.Rds")
+```
+
+```{r}
+plot(s3_lb_results_1)
+```
+
+```{r}
+plot(s3_lb_results_1[1], type = "raster", stages = 0, timesteps = c(1:5))
+```
+
+### Scenario 4
+```{r}
+s4_hs_lb <- stack(s4_ip_lb, s4_fp_lb)
+
+for(i in 1:51){
+  s4_hs_lb[[i]][is.na(s4_hs_lb[[i]][])] <- 0
+}
+
+s4_hs_lb <- mask(s4_hs_lb, mask = ch_mask)
+```
+
+```{r}
+s4_hab_k_lb <- calc(s4_hs_lb[[1]], fun = function(x){if(is.na(x)) x else rbinom(prob = x, size = 3, n = 1)})
+
+names(s4_hab_k_lb) <- "carryingCapacity"
+
+s4_lb_popN <- stack(replicate(ncol(lb_trans_mat), s4_hab_k_lb))
+
+s4_lb_popN <- s4_lb_popN*lb_stable_states
+
+s4_lb_idx <- which(!is.na(s4_hs_lb[[1]][]) & s4_hs_lb[[1]][] < 0.95)
+
+s4_lb_pop <- s4_lb_popN
+s4_lb_pop[!is.na(s4_lb_pop)] <- 0
+s4_lb_pop[[1]][sample(s4_lb_idx, 10000)] <- 1
+s4_lb_pop[[2]][sample(s4_lb_idx, 10000)] <- 1
+s4_lb_pop[[3]][sample(s4_lb_idx, 10000)] <- 1
+
+s4_lb_pop <- s4_lb_pop*ch_mask
+
+names(s4_lb_pop) <- colnames(lb_trans_mat)
+
+s4_lb_TotpopN <- sum(cellStats(s4_lb_pop, 'sum', na.rm = TRUE)) # Get total population size to check sensible
+s4_lb_init_pop_size <- sum(s4_lb_pop)
+```
+
+```{r}
+s4_lb_landscape <- landscape(population = s4_lb_pop,
+                          suitability = s4_hs_lb,
+                          carrying_capacity = s4_hab_k_lb)
+
+s4_lb_pop_dynamics <- population_dynamics(change = growth(transition_matrix = lb_trans_mat,
+                                                       global_stochasticity = 0.1),
+                                       dispersal = fast_dispersal(
+                                         dispersal_kernel = exponential_dispersal_kernel(
+                                           distance_decay = 8000)),
+                                       modification = NULL)
+```
+
+```{r}
+plan(sequential, workers = 1)
+s4_lb_results_1 <- simulation(landscape = s4_lb_landscape,
+                         population_dynamics = s4_lb_pop_dynamics,
+                         habitat_dynamics = NULL,
+                         timesteps = 5,
+                         replicates = 1)
+
+
+saveRDS(object = s4_lb_results_1, file = "output/pva_results/s4_lb_results_1.Rds")
+```
+
+
+```{r}
+plot(s4_lb_results_1)
+```
+
+```{r}
+plot(s4_lb_results_1[1], type = "raster", stages = 0, timesteps = c(1:5))
+```
 
 
