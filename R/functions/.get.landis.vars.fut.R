@@ -1,5 +1,6 @@
 .get.landis.vars.fut <- function(
   scn_path,
+  out_path,
   proj_mask,
   timesteps,
   cores = cores
@@ -177,15 +178,16 @@
     
     lbm <- focal(lbm, win3h, na.rm = TRUE)
     
-    stack(lbm,
-          ggf,
-          ggd,
-          hbt_3h,
-          hbt_1k,
-          prop_bio_regn,
-          prop_bio_targ,
-          prop_old_150,
-          prop_old_200)
+    stack("lbm" = lbm,
+          "ggf" = ggf,
+          "ggd" = ggd,
+          "hbt3h" = hbt_3h,
+          "hbt_1k" = hbt_1k,
+          "prop_bio_regn" = prop_bio_regn,
+          "prop_bio_targ" = prop_bio_targ,
+          "prop_old_150" = prop_old_150,
+          "prop_old_200" = prop_old_200,
+          filename = sprintf("%s/lv_%03d.grd", out_path, j))
   }
   
   

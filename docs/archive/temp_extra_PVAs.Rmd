@@ -1,0 +1,87 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+
+```{r}
+lb_trans_mat <- matrix(c(0.00, 0.00, 0.5,
+                         0.59, 0.00, 0.00,
+                         0.00, 0.59, 0.79),
+                       nrow = 3, ncol = 3, byrow = TRUE) 
+colnames(lb_trans_mat) <- rownames(lb_trans_mat) <- c('Newborn','Juvenile','Adult')
+
+lb_stable_states <- abs( eigen(lb_trans_mat)$vectors[,1] / base::sum(eigen(lb_trans_mat)$vectors[,1]) ) 
+```
+
+
+```{r}
+s1_hab_k_lb <- calc(s1_hs_lb[[1]], fun = function(x){if(is.na(x)) x else rbinom(prob = x, size = 3, n = 1)})
+
+names(s1_hab_k_lb) <- "carryingCapacity"
+
+s1_lb_popN <- stack(replicate(ncol(lb_trans_mat), s1_hab_k_lb))
+
+s1_lb_popN <- s1_lb_popN*lb_stable_states
+
+s1_lb_idx <- which(!is.na(s1_hs_lb[[1]][]) & s1_hs_lb[[1]][] < 0.95)
+
+s1_lb_pop <- s1_lb_popN
+s1_lb_pop[!is.na(s1_lb_pop)] <- 0
+s1_lb_pop[[1]][sample(s1_lb_idx, 3000)] <- 1
+s1_lb_pop[[2]][sample(s1_lb_idx, 3000)] <- 1
+s1_lb_pop[[3]][sample(s1_lb_idx, 3000)] <- 1
+
+s1_lb_pop <- s1_lb_pop*ch_mask
+
+names(s1_lb_pop) <- colnames(lb_trans_mat)
+
+s1_lb_TotpopN <- sum(cellStats(s1_lb_pop, 'sum', na.rm = TRUE)) # Get total population size to check sensible
+s1_lb_init_pop_size <- sum(s1_lb_pop)
+```
+
+```{r}
+s1_lb_landscape <- landscape(population = s1_lb_pop,
+                          suitability = s1_hs_lb,
+                          carrying_capacity = s1_hab_k_lb)
+
+s1_lb_pop_dynamics <- population_dynamics(change = growth(transition_matrix = lb_trans_mat,
+                                                       global_stochasticity = 0.3),
+                                       dispersal = fast_dispersal(
+                                         dispersal_kernel = exponential_dispersal_kernel(
+                                           distance_decay = 2000)),
+                                       modification = NULL)
+```
+
+
+```{r}
+plan(sequential, workers = 1)
+s1_lb_results_newmatrix_4 <- simulation(landscape = s1_lb_landscape,
+                         population_dynamics = s1_lb_pop_dynamics,
+                         habitat_dynamics = NULL,
+                         timesteps = 10,
+                         replicates = 1)
+```
+
+```{r}
+example_s1_lb <- bind_simulation_repetitions(list(s1_lb_results_newmatrix, s1_lb_results_newmatrix_2, s1_lb_results_newmatrix_3, s1_lb_results_newmatrix_4))
+```
+
+```{r}
+plot(example_s1_lb)
+```
+```{r}
+plot(example_s1_lb[3], type = "raster", stages = 0, timesteps = c(1, 5, 10), panels = c(3,1))
+```
+
+
+
+
+```{r}
+ss <- ch_rst * 3 
+
+ss <- ss %T>%
+  writeRaster(filename = "test.grd")
+
+```
+

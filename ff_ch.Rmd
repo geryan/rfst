@@ -11,6 +11,15 @@ date: 2019-08-05
 # Project setup
 
 ### Packages
+Install packages if necessary. Listed are installers for packages not on CRAN and the devlopment (most up-to-date) version of STEPS.
+```{r install packages}
+# library(devtools)
+# install_github("steps-dev/steps")
+# install_github("smwindecker/gdaltools")
+```
+
+
+
 Load packages
 ```{r packages}
 library(raster)
@@ -32,6 +41,7 @@ library(tidyr)
 library(dismo)
 library(gbm)
 library(steps)
+library(gdaltools)
 ```
 
 ### Functions
@@ -51,25 +61,27 @@ source(file = "R/functions/interpolate.climdat.R")
 
 # Prepare variables
 
+## Analysis parameters
+
+### Timesteps
+```{r}
+timesteps <- 50
+```
+
+
 ## Geographic data
 
 ### Landscape
 Set up base landscape layer
 ```{r ch_rst}
-ch_rst <- raster(x = "data/grids/eco_v12.img") #%>%
-  #projectRaster(from = ., crs = crs("+init=epsg:32755"), method = "ngb")
-
-ch_rst
+ch_rst <- raster(x = "data/grids/eco_v12.img") %T>%
+  plot
 ```
-```{r}
+
+```{r proj ext res}
 ch_proj <- ch_rst@crs
 ch_extent <- extent(ch_rst)
 ch_res <- res(ch_rst)
-```
-
-
-```{r plot ch_rst}
-plot(ch_rst)
 ```
 
 ### Boundaries
@@ -79,35 +91,30 @@ rfa <- read_sf("data/shapefiles/RFA/")%>%
 rfa
 ```
 
-```{r}
+```{r plot rfa}
 pg.sf(rfa)
 ```
 
 
 ```{r ch_rfa}
-ch_rfa <- rfa[rfa$NAME== "CENTRAL HIGHLANDS",]
+ch_rfa <- rfa[rfa$NAME== "CENTRAL HIGHLANDS",] 
 
 ch_rfa
 ```
 
-```{r}
+```{r plot ch_rfa}
 pg.sf(ch_rfa)
 ```
 
 
 ```{r ch_mask}
-ch_mask <- rasterize(ch_rfa, ch_rst, field = 1)
-
-ch_mask
+ch_mask <- rasterize(ch_rfa, ch_rst, field = 1, filename = "./output/landscape_vars/ch_mask.grd", overwrite = TRUE) %T>%
+  plot
 ```
-
-```{r plot ch_mask}
-plot(ch_mask)
-```
-
-```{r}
+*Think carefully about using this layer as projections are for zone 55, so distorts west of the state*
+```{r victoria}
 victoria <- read_sf("data/shapefiles/vicstatepolygon/") %>%
-  st_transform(crs = ch_proj)
+   st_transform(crs = ch_proj)
 ```
 
 
@@ -147,6 +154,7 @@ gg_vba <- proc.vba("data/tabular/vba_gg_all_20190509.csv", project.crs = ch_proj
 
 gg_vba
 ```
+
 ```{r gg_pa_all}
 gg_pa_all <- gg_vba %>%
   rbind(gg_ari)
@@ -221,12 +229,12 @@ pg_lb_pa_ch <- pg.pa(lb_pa_ch %>% mutate(pseudo_abs = "vba") %>% rbind(pseudo_ab
 pg_lb_pa_ch
 ```
 
-```{r}
-#save.image("output/landscap-occupancy.RData")
+```{r save image occu}
+save.image("output/session_images/landscape-occupancy.RData")
 ```
 
-```{r}
-load(file = "output/landscap-occupancy.RData")
+```{r load image occu}
+load(file = "output/session_images/landscape-occupancy.RData")
 ```
 
 
@@ -448,8 +456,8 @@ plot(lvdma)
 ### Log vertical distance minor streams
 ```{r lvdmi}
 lvdmi <- raster(x = "data/grids/Env_covariates_noClimate_VicGrid94/log_vertical_distance_minor_streams_sept2012") %>%
-  projectRaster(to = ch_mask) %>%
-  mask(mask = ch_mask)
+  projectRaster(to = ch_mask) #%>%
+  #mask(mask = ch_mask)
 
 lvdmi
 ```
@@ -619,7 +627,7 @@ plot(tmin07)
 Data from [Climate Change in Australia](https://www.climatechangeinaustralia.gov.au/en/)
 
 #### Change data
-
+**CV has updated**
 ##### Absolute change in temperature
 ```{r raw temp ac}
 #absolute change in temp
@@ -1010,9 +1018,10 @@ summary(s1_mod_gg)
 ```
 
 ```{r s1_ip_gg}
-s1_ip_gg <- predict(s1_iv_gg, s1_mod_gg, type = "response", n.trees = s1_mod_gg$gbm.call$best.trees, filename = "/output/habitat_pred/s1_fp_gg-000.tif")
+#s1_ip_gg <- predict(s1_iv_gg, s1_mod_gg, type = "response", n.trees = s1_mod_gg$gbm.call$best.trees, filename = "output/habitat_pred/s1_fp_gg-000.tif")
 
-writeRaster(s1_ip_gg, "output/habitat_pred/s1_ip_gg.tif", overwrite = TRUE)
+#writeRaster(s1_ip_gg, "output/habitat_pred/s1_ip_gg.tif", overwrite = TRUE)
+s1_ip_gg <- raster(x = "output/habitat_pred/s1_ip_gg.tif")
 
 plot(s1_ip_gg)
 ```
@@ -1047,9 +1056,11 @@ summary(s3_mod_gg)
 ```
 
 ```{r s3_ip_gg}
-s3_ip_gg <- predict(s3_iv_gg, s3_mod_gg, type = "response", n.trees = s3_mod_gg$gbm.call$best.trees, filename ="/output/habitat_pred/s3_fp_gg-000.tif")
+ # s3_ip_gg <- predict(s3_iv_gg, s3_mod_gg, type = "response", n.trees = s3_mod_gg$gbm.call$best.trees, filename ="output/habitat_pred/s3_fp_gg-000.tif")
 
-writeRaster(s3_ip_gg, "output/habitat_pred/s3_ip_gg.tif", overwrite = TRUE)
+ # writeRaster(s3_ip_gg, "output/habitat_pred/s3_ip_gg.tif", overwrite = TRUE)
+
+s3_ip_gg <- raster(x = "output/habitat_pred/s3_ip_gg.tif")
 
 plot(s3_ip_gg)
 ```
@@ -1083,9 +1094,11 @@ summary(s4_mod_gg)
 ```
 
 ```{r s4_ip_gg}
-s4_ip_gg <- predict(s4_iv_gg, s4_mod_gg, type = "response", n.trees = s4_mod_gg$gbm.call$best.trees,  filename = "s/output/habitat_pred/4_fp_gg-000.tif")
+# s4_ip_gg <- predict(s4_iv_gg, s4_mod_gg, type = "response", n.trees = s4_mod_gg$gbm.call$best.trees,  filename = "output/habitat_pred/4_fp_gg-000.tif")
 
-writeRaster(s4_ip_gg, "output/habitat_pred/s4_ip_gg.tif", overwrite = TRUE)
+# writeRaster(s4_ip_gg, "output/habitat_pred/s4_ip_gg.tif", overwrite = TRUE)
+
+s4_ip_gg <- raster(x = "output/habitat_pred/s4_ip_gg.tif")
 
 plot(s4_ip_gg)
 ```
@@ -1123,9 +1136,11 @@ summary(s1_mod_lb)
 ```
 
 ```{r s1_ip_lb}
-s1_ip_lb <- predict(s1_iv_lb, s1_mod_lb, type = "response", n.trees = s1_mod_lb$gbm.call$best.trees, filename = "/output/habitat_pred/s1_fp_lb-000.tif")
+# s1_ip_lb <- predict(s1_iv_lb, s1_mod_lb, type = "response", n.trees = s1_mod_lb$gbm.call$best.trees, filename = "output/habitat_pred/s1_fp_lb-000.tif")
 
-writeRaster(s1_ip_lb, "output/habitat_pred/s1_ip_lb.tif", overwrite = TRUE)
+# writeRaster(s1_ip_lb, "output/habitat_pred/s1_ip_lb.tif", overwrite = TRUE)
+
+s1_ip_lb <- raster(x = "output/habitat_pred/s1_ip_lb.tif")
 
 plot(s1_ip_lb)
 ```
@@ -1159,9 +1174,11 @@ summary(s3_mod_lb)
 ```
 
 ```{r s3_ip_lb}
-s3_ip_lb <- predict(s3_iv_lb, s3_mod_lb, type = "response", n.trees = s3_mod_lb$gbm.call$best.trees, filename = "/output/habitat_pred/s3_fp_lb-000.tif")
+# s3_ip_lb <- predict(s3_iv_lb, s3_mod_lb, type = "response", n.trees = s3_mod_lb$gbm.call$best.trees, filename = "output/habitat_pred/s3_fp_lb-000.tif")
 
-writeRaster(s3_ip_lb, "output/habitat_pred/s3_ip_lb.tif", overwrite = TRUE)
+# writeRaster(s3_ip_lb, "output/habitat_pred/s3_ip_lb.tif", overwrite = TRUE)
+
+s3_ip_lb <- raster(x = "output/habitat_pred/s3_ip_lb.tif")
 
 plot(s3_ip_lb)
 ```
@@ -1195,9 +1212,11 @@ summary(s4_mod_lb)
 ```
 
 ```{r s4_ip_lb}
-s4_ip_lb <- predict(s4_iv_lb, s4_mod_lb, type = "response", n.trees = s4_mod_lb$gbm.call$best.trees, filename = "/output/habitat_pred/s4_fp_lb-000.tif")
+# s4_ip_lb <- predict(s4_iv_lb, s4_mod_lb, type = "response", n.trees = s4_mod_lb$gbm.call$best.trees, filename = "output/habitat_pred/s4_fp_lb-000.tif")
 
-writeRaster(s4_ip_lb, "output/habitat_pred/s4_ip_lb.tif", overwrite = TRUE)
+# writeRaster(s4_ip_lb, "output/habitat_pred/s4_ip_lb.tif", overwrite = TRUE)
+
+s4_ip_lb <- raster(x = "output/habitat_pred/s4_ip_lb.tif")
 
 plot(s4_ip_lb)
 ```
@@ -1228,7 +1247,7 @@ writeRaster(s4_fp_lb, filename = "output/habitat_pred/s4_fp_lb.tif")
 
 ## Greater Glider
 ```{r}
-gg_trans_mat <- matrix(c(0.00,0.00,0.50,
+gg_trans_mat <- matrix(c(0.00,0.00,0.25,
                          0.50,0.00,0.00,
                          0.00,0.85,0.85),
                        nrow = 3, ncol = 3, byrow = TRUE) # based on Possingham et al 1994
@@ -1289,23 +1308,23 @@ s1_gg_pop_dynamics <- population_dynamics(change = growth(transition_matrix = gg
 
 ```{r}
 plan(sequential, workers = 1)
-s1_gg_results_1 <- simulation(landscape = s1_gg_landscape,
+s1_gg_results_1_50 <- simulation(landscape = s1_gg_landscape,
                          population_dynamics = s1_gg_pop_dynamics,
                          habitat_dynamics = NULL,
-                         timesteps = 5,
+                         timesteps = 50,
                          replicates = 1)
 
 
-saveRDS(object = s1_gg_results_1, file = "output/pva_results/s1_gg_results_1.Rds")
+saveRDS(object = s1_gg_results_1_50, file = "output/pva_results/s1_gg_results_1_50.Rds")
 ```
 
 
 ```{r}
-plot(s1_gg_results_1)
+plot(s1_gg_results_1_50)
 ```
 
 ```{r}
-plot(s1_gg_results_1[1], type = "raster", stages = 0, timesteps = c(1:5))
+plot(s1_gg_results_1_50[1], type = "raster", stages = 0, timesteps = c(1:5))
 ```
 
 ### Scenario 3
@@ -1359,23 +1378,23 @@ s3_gg_pop_dynamics <- population_dynamics(change = growth(transition_matrix = gg
 
 ```{r}
 plan(sequential, workers = 1)
-s3_gg_results_1 <- simulation(landscape = s3_gg_landscape,
+s3_gg_results_1_50 <- simulation(landscape = s3_gg_landscape,
                          population_dynamics = s3_gg_pop_dynamics,
                          habitat_dynamics = NULL,
-                         timesteps = 5,
+                         timesteps = 50,
                          replicates = 1)
 
 
-saveRDS(object = s3_gg_results_1, file = "output/pva_results/s3_gg_results_1.Rds")
+saveRDS(object = s3_gg_results_1_50, file = "output/pva_results/s3_gg_results_1_50.Rds")
 ```
 
 
 ```{r}
-plot(s3_gg_results_1)
+plot(s3_gg_results_1_50)
 ```
 
 ```{r}
-plot(s3_gg_results_1[1], type = "raster", stages = 0, timesteps = c(1:5))
+plot(s3_gg_results_1_50[1], type = "raster", stages = 0, timesteps = c(1:5))
 ```
 
 ### Scenario 4
@@ -1396,7 +1415,7 @@ names(s4_hab_k_gg) <- "carryingCapacity"
 
 s4_gg_popN <- stack(replicate(ncol(gg_trans_mat), s4_hab_k_gg))
 
-s4_gg_popN <- S4_gg_popN*gg_stable_states
+s4_gg_popN <- s4_gg_popN*gg_stable_states
 
 s4_gg_idx <- which(!is.na(s4_hs_gg[[1]][]) & s4_hs_gg[[1]][] < 0.95)
 
@@ -1429,31 +1448,31 @@ s4_gg_pop_dynamics <- population_dynamics(change = growth(transition_matrix = gg
 
 ```{r}
 plan(sequential, workers = 1)
-s4_gg_results_1 <- simulation(landscape = S4_gg_landscape,
-                         population_dynamics = S4_gg_pop_dynamics,
+s4_gg_results_1_50 <- simulation(landscape = s4_gg_landscape,
+                         population_dynamics = s4_gg_pop_dynamics,
                          habitat_dynamics = NULL,
-                         timesteps = 5,
+                         timesteps = 50,
                          replicates = 1)
 
 
-saveRDS(object = s4_gg_results_1, file = "output/pva_results/s4_gg_results_1.Rds")
+saveRDS(object = s4_gg_results_1_50, file = "output/pva_results/s4_gg_results_1_50.Rds")
 ```
 
 
 ```{r}
-plot(s4_gg_results_1)
+plot(s4_gg_results_1_50)
 ```
 
 ```{r}
-plot(s4_gg_results_1[1], type = "raster", stages = 0, timesteps = c(1:5))
+plot(s4_gg_results_1_50[1], type = "raster", stages = 0, timesteps = c(1:5))
 ```
 
 
 ## Leadbeater's Possum
 ```{r}
-lb_trans_mat <- matrix(c(0.00,0.00,2,
-                         0.50,0.00,0.00,
-                         0.00,0.8,0.8),
+lb_trans_mat <- matrix(c(0.00, 0.00, 1.10,
+                         0.59, 0.00, 0.00,
+                         0.00, 0.59, 0.79),
                        nrow = 3, ncol = 3, byrow = TRUE) 
 colnames(lb_trans_mat) <- rownames(lb_trans_mat) <- c('Newborn','Juvenile','Adult')
 
@@ -1484,9 +1503,9 @@ s1_lb_idx <- which(!is.na(s1_hs_lb[[1]][]) & s1_hs_lb[[1]][] < 0.95)
 
 s1_lb_pop <- s1_lb_popN
 s1_lb_pop[!is.na(s1_lb_pop)] <- 0
-s1_lb_pop[[1]][sample(s1_lb_idx, 10000)] <- 1
-s1_lb_pop[[2]][sample(s1_lb_idx, 10000)] <- 1
-s1_lb_pop[[3]][sample(s1_lb_idx, 10000)] <- 1
+s1_lb_pop[[1]][sample(s1_lb_idx, 3000)] <- 1
+s1_lb_pop[[2]][sample(s1_lb_idx, 3000)] <- 1
+s1_lb_pop[[3]][sample(s1_lb_idx, 3000)] <- 1
 
 s1_lb_pop <- s1_lb_pop*ch_mask
 
@@ -1502,7 +1521,7 @@ s1_lb_landscape <- landscape(population = s1_lb_pop,
                           carrying_capacity = s1_hab_k_lb)
 
 s1_lb_pop_dynamics <- population_dynamics(change = growth(transition_matrix = lb_trans_mat,
-                                                       global_stochasticity = 0.1),
+                                                       global_stochasticity = 0.3),
                                        dispersal = fast_dispersal(
                                          dispersal_kernel = exponential_dispersal_kernel(
                                            distance_decay = 2000)),
@@ -1511,23 +1530,23 @@ s1_lb_pop_dynamics <- population_dynamics(change = growth(transition_matrix = lb
 
 ```{r}
 plan(sequential, workers = 1)
-s1_lb_results_1 <- simulation(landscape = s1_lb_landscape,
+s1_lb_results_1_50 <- simulation(landscape = s1_lb_landscape,
                          population_dynamics = s1_lb_pop_dynamics,
                          habitat_dynamics = NULL,
-                         timesteps = 5,
+                         timesteps = 50,
                          replicates = 1)
 
 
-saveRDS(object = s1_lb_results_1, file = "output/pva_results/s1_lb_results_1.Rds")
+saveRDS(object = s1_lb_results_1_50, file = "output/pva_results/s1_lb_results_1_50.Rds")
 ```
 
 
 ```{r}
-plot(s1_lb_results_1)
+plot(s1_lb_results_1_50)
 ```
 
 ```{r}
-plot(s1_lb_results_1[1], type = "raster", stages = 0, timesteps = c(1:5))
+plot(s1_lb_results_1_50[1], type = "raster", stages = 0, timesteps = c(1:5))
 ```
 
 ### Scenario 3
@@ -1554,9 +1573,9 @@ s3_lb_idx <- which(!is.na(s3_hs_lb[[1]][]) & s3_hs_lb[[1]][] < 0.95)
 
 s3_lb_pop <- s3_lb_popN
 s3_lb_pop[!is.na(s3_lb_pop)] <- 0
-s3_lb_pop[[1]][sample(s3_lb_idx, 10000)] <- 1
-s3_lb_pop[[2]][sample(s3_lb_idx, 10000)] <- 1
-s3_lb_pop[[3]][sample(s3_lb_idx, 10000)] <- 1
+s3_lb_pop[[1]][sample(s3_lb_idx, 3000)] <- 1
+s3_lb_pop[[2]][sample(s3_lb_idx, 3000)] <- 1
+s3_lb_pop[[3]][sample(s3_lb_idx, 3000)] <- 1
 
 s3_lb_pop <- s3_lb_pop*ch_mask
 
@@ -1581,22 +1600,22 @@ s3_lb_pop_dynamics <- population_dynamics(change = growth(transition_matrix = lb
 
 ```{r}
 plan(sequential, workers = 1)
-s3_lb_results_1 <- simulation(landscape = s3_lb_landscape,
+s3_lb_results_1_50 <- simulation(landscape = s3_lb_landscape,
                          population_dynamics = s3_lb_pop_dynamics,
                          habitat_dynamics = NULL,
-                         timesteps = 5,
+                         timesteps = 50,
                          replicates = 1)
 
 
-saveRDS(object = s3_lb_results_1, file = "output/pva_results/s3_lb_results_1.Rds")
+saveRDS(object = s3_lb_results_1_50, file = "output/pva_results/s3_lb_results_1_50.Rds")
 ```
 
 ```{r}
-plot(s3_lb_results_1)
+plot(s3_lb_results_1_50)
 ```
 
 ```{r}
-plot(s3_lb_results_1[1], type = "raster", stages = 0, timesteps = c(1:5))
+plot(s3_lb_results_1_50[1], type = "raster", stages = 0, timesteps = c(1:5))
 ```
 
 ### Scenario 4
@@ -1623,9 +1642,9 @@ s4_lb_idx <- which(!is.na(s4_hs_lb[[1]][]) & s4_hs_lb[[1]][] < 0.95)
 
 s4_lb_pop <- s4_lb_popN
 s4_lb_pop[!is.na(s4_lb_pop)] <- 0
-s4_lb_pop[[1]][sample(s4_lb_idx, 10000)] <- 1
-s4_lb_pop[[2]][sample(s4_lb_idx, 10000)] <- 1
-s4_lb_pop[[3]][sample(s4_lb_idx, 10000)] <- 1
+s4_lb_pop[[1]][sample(s4_lb_idx, 3000)] <- 1
+s4_lb_pop[[2]][sample(s4_lb_idx, 3000)] <- 1
+s4_lb_pop[[3]][sample(s4_lb_idx, 3000)] <- 1
 
 s4_lb_pop <- s4_lb_pop*ch_mask
 
@@ -1650,23 +1669,23 @@ s4_lb_pop_dynamics <- population_dynamics(change = growth(transition_matrix = lb
 
 ```{r}
 plan(sequential, workers = 1)
-s4_lb_results_1 <- simulation(landscape = s4_lb_landscape,
+s4_lb_results_1_50 <- simulation(landscape = s4_lb_landscape,
                          population_dynamics = s4_lb_pop_dynamics,
                          habitat_dynamics = NULL,
-                         timesteps = 5,
+                         timesteps = 50,
                          replicates = 1)
 
 
-saveRDS(object = s4_lb_results_1, file = "output/pva_results/s4_lb_results_1.Rds")
+saveRDS(object = s4_lb_results_1_50, file = "output/pva_results/s4_lb_results_1_50.Rds")
 ```
 
 
 ```{r}
-plot(s4_lb_results_1)
+plot(s4_lb_results_1_50)
 ```
 
 ```{r}
-plot(s4_lb_results_1[1], type = "raster", stages = 0, timesteps = c(1:5))
+plot(s4_lb_results_1_50[1], type = "raster", stages = 0, timesteps = c(1:5))
 ```
 
 
