@@ -17,8 +17,8 @@ rascc <- function(dat, new.proj.layer = FALSE, input.projection = "+proj=longlat
   if(!is.logical(new.proj.layer)){
     
     result <- projectRaster(from = result,
-                            to = new.proj.layer#,
-                            #method = "ngb"
+                            to = new.proj.layer,
+                            method = "ngb"
                             )
     
     result <- mask(x = result,

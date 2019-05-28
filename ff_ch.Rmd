@@ -18,8 +18,6 @@ Install packages if necessary. Listed are installers for packages not on CRAN an
 # install_github("smwindecker/gdaltools")
 ```
 
-
-
 Load packages
 ```{r packages}
 library(raster)
@@ -50,12 +48,17 @@ source(file = "R/functions/pg.sf.R")
 source(file = "R/functions/pg.pa.R")
 source(file = "R/functions/read.vba.R")
 source(file = "R/functions/proc.vba.R")
-source(file = "R/functions/get.landis.vars.init.R")
-source(file = "R/functions/get.landis.vars.fut.R")
-source(file = "R/functions/.get.landis.vars.fut.R")
+source(file = "R/functions/get.landis.vars.R")
 source(file = "R/functions/rascc.R")
 source(file = "R/functions/read.multi.line.header.R")
 source(file = "R/functions/interpolate.climdat.R")
+source(file = "R/functions/get.rst.prop.R")
+```
+
+### Paths
+```{r paths}
+proj_path <- "/home/landis/rfst/"
+# proj_path <- "D:/Users/ryan/Dropbox/Work/RFA_STEPS/rfst/"
 ```
 
 
@@ -67,7 +70,6 @@ source(file = "R/functions/interpolate.climdat.R")
 ```{r}
 timesteps <- 50
 ```
-
 
 ## Geographic data
 
@@ -95,7 +97,6 @@ rfa
 pg.sf(rfa)
 ```
 
-
 ```{r ch_rfa}
 ch_rfa <- rfa[rfa$NAME== "CENTRAL HIGHLANDS",] 
 
@@ -108,8 +109,11 @@ pg.sf(ch_rfa)
 
 
 ```{r ch_mask}
-ch_mask <- rasterize(ch_rfa, ch_rst, field = 1, filename = "./output/landscape_vars/ch_mask.grd", overwrite = TRUE) %T>%
-  plot
+ch_mask <- rasterize(ch_rfa, ch_rst, field = 1, filename = "./output/landscape_vars/ch_mask.grd", overwrite = TRUE) 
+
+ch_mask[ch_rst == 132] <- NA # removes lake areas from habitat
+
+plot(ch_mask)
 ```
 *Think carefully about using this layer as projections are for zone 55, so distorts west of the state*
 ```{r victoria}
@@ -241,8 +245,35 @@ load(file = "output/session_images/landscape-occupancy.RData")
 ## Landis output
 
 ### Scenario 1: Current planned burning, current timber harvesting, climate change under RCP 4.5, current bushfire regime (Buisness as usual)
+
+```{r}
+zz <- get.landis.vars(scn_path = "~/landis_ch_s1_pb-th-cc_50/", proj_path = proj_path, out_path = "/output/habitat_vars/", scn_id = "s1", proj_mask = ch_mask, timesteps = 50, cores = 20)
+```
+
+```{r}
+qq <- zz[[1]][[1]]
+```
+
+```{r}
+qq[is.na(qq)] <- 1000
+```
+
+
+```{r}
+mm <- ch_mask
+
+mm[] <- getValues(ma)
+
+mm[mm < 150] <- 0
+mm[mm > 200] <- 1
+mm[mm > 1] <- (mm[mm > 1]- 150)/50
+
+plot(mm)
+```
+
+
 ```{r s1_vars_landis_init}
-#s1_vars_landis_init <- get.landis.vars.init(scn_path = "~/landis_ch_s1_pb-th-cc_50/", proj_mask = ch_mask)
+s1_vars_landis_init <- get.landis.vars.init(scn_path = "~/landis_ch_s1_pb-th-cc_50/", proj_mask = ch_mask)
 
 #writeRaster(s1_vars_landis_init, "output/habitat_vars/s1_vars_landis_init.tif")
 
@@ -256,7 +287,7 @@ plot(s1_vars_landis_init)
 ```
 
 ```{r s1_vars_landis_fut}
-s1_vars_landis_fut. <- .get.landis.vars.fut(scn_path = "~/landis_ch_s1_pb-th-cc_50/", proj_mask = ch_mask, timesteps = 50, cores = 20)
+s1_vars_landis_fut. <- .get.landis.vars.fut(scn_path = "~/landis_ch_s1_pb-th-cc_50/", , proj_mask = ch_mask, timesteps = 50, cores = 20)
 ```
 
 ```{r}

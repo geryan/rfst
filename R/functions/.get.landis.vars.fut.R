@@ -1,6 +1,8 @@
 .get.landis.vars.fut <- function(
   scn_path,
-  out_path,
+  proj_pat,
+  out_path = "/output/habitat_vars/",
+  scn_id,
   proj_mask,
   timesteps,
   cores = cores
@@ -187,7 +189,7 @@
           "prop_bio_targ" = prop_bio_targ,
           "prop_old_150" = prop_old_150,
           "prop_old_200" = prop_old_200,
-          filename = sprintf("%s/lv_%03d.grd", out_path, j))
+          filename = sprintf("%s%s/lv_%s_%03d.grd", proj_path, out_path, scn_id, j))
   }
   
   
