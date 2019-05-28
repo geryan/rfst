@@ -17,7 +17,7 @@ get.rst.prop <- function(inputs, total, proj_mask, filename, window = NA){
     
     t <- getValues(total, row = bs$row[i], nrows = bs$nrows[i])
     
-    v <- v/t
+    v <- ifelse(t == 0 , 0, v/t)
     
     out <- writeValues(out, v, bs$row[i])
   }
@@ -27,6 +27,8 @@ get.rst.prop <- function(inputs, total, proj_mask, filename, window = NA){
   if(!any(is.na(window))){
     out <- focal(out, window, fun = mean, na.rm = TRUE, filename = filename, overwrite = TRUE)
   }
+  
+  out <- mask(x = out, mask = proj_mask, filename = filename, overwrite = TRUE)
   
   return(out)
   
