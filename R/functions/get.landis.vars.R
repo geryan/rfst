@@ -5,7 +5,8 @@ get.landis.vars <- function(
   scn_id,
   proj_mask,
   timesteps,
-  cores = cores
+  cores = cores,
+  harvest_timber = TRUE
   ){
   
   library(doMC)
@@ -14,8 +15,9 @@ get.landis.vars <- function(
   
   bmpath <- paste0(scn_path, "/output/biomass/")
   cspath <- paste0(scn_path, "/output/cohort-stats/")
-  
-  
+  hapath <- paste0(scn_path, "/harvest/")
+  fipath <- paste0(scn_path, "/fire/")
+  bapath <- paste0(scn_path, "/output/biomassAge/")
   
   win1k <- focalWeight(raster(ncols=11,
                               nrows=11,
@@ -39,19 +41,20 @@ get.landis.vars <- function(
   registerDoMC(cores = cores)
   
   result <- foreach(j = 0:timesteps) %dopar% {
+    
+    #### BIOMASS
+    
     spbm <- list.files(path = bmpath,
                        pattern = "bio-") %>%
       sub("bio-", "", .) %>%
       sub("-.*", "", .) %>%
       unique
     
-    spbm
-    
     for(i in 1:length(spbm)){
       
       tempraster <- proj_mask
       
-      tempraster[] <- sprintf("%sbio-%s-%s.img", bmpath, spbm[i], j) %>%
+      tempraster[] <- sprintf("%s/bio-%s-%s.img", bmpath, spbm[i], j) %>%
         raster %>%
         getValues
       
@@ -59,6 +62,26 @@ get.landis.vars <- function(
       
       
       assign(sprintf("biomass_%s", spbm[i]), tempraster)
+    }
+    
+    #### BIOMASS BY AGE
+    
+    spba <- list.files(path = bapath) %>%
+      sub("-.*", "", .) %>%
+      unique
+    
+    for(i in 1:length(spba)){
+      
+      tempraster <- proj_mask
+      
+      tempraster[] <- sprintf("%s/%s-ageclass-%s.img", bapath, spba[i], j) %>%
+        raster %>%
+        getValues
+      
+      names(tempraster) <- spba[i]
+      
+      
+      assign(sprintf("bioAge_%s", spba[i]), tempraster)
     }
     
     
@@ -133,6 +156,84 @@ get.landis.vars <- function(
                                                      scn_id,
                                                      j))
     names(prop_bio_regn) <- "prop_bio_regn"
+    
+    ##### PROP OLD GROWTH EUCALYPTS
+    
+    prop_oge <- get.rst.prop(inputs = stack(bioAge_eucacama,
+                                            bioAge_eucacype,
+                                            bioAge_eucadalr,
+                                            bioAge_eucadeli,
+                                            bioAge_eucadent,
+                                            bioAge_eucadive,
+                                            bioAge_eucaglob,
+                                            bioAge_eucanite,
+                                            bioAge_eucaobli,
+                                            bioAge_eucapauh,
+                                            bioAge_eucapaul,
+                                            bioAge_eucaradi,
+                                            bioAge_eucaregn,
+                                            bioAge_eucatric,
+                                            bioAge_eucavimi),
+                                  total = biomass_TotalBiomass,
+                                  proj_mask = proj_mask,
+                                  filename = sprintf("%s/%s/%s_prop_oge_%03d.grd",
+                                                     proj_path,
+                                                     out_path,
+                                                     scn_id,
+                                                     j))
+    names(prop_oge) <- "prop_oge"
+    
+    prop_oge_3h <- get.rst.prop(inputs = stack(bioAge_eucacama,
+                                            bioAge_eucacype,
+                                            bioAge_eucadalr,
+                                            bioAge_eucadeli,
+                                            bioAge_eucadent,
+                                            bioAge_eucadive,
+                                            bioAge_eucaglob,
+                                            bioAge_eucanite,
+                                            bioAge_eucaobli,
+                                            bioAge_eucapauh,
+                                            bioAge_eucapaul,
+                                            bioAge_eucaradi,
+                                            bioAge_eucaregn,
+                                            bioAge_eucatric,
+                                            bioAge_eucavimi),
+                             total = biomass_TotalBiomass,
+                             proj_mask = proj_mask,
+                             filename = sprintf("%s/%s/%s_prop_oge_3h_%03d.grd",
+                                                proj_path,
+                                                out_path,
+                                                scn_id,
+                                                j),
+                             window = win3h)
+    names(prop_oge_3h) <- "prop_oge_3h"
+    
+    prop_oge_1k <- get.rst.prop(inputs = stack(bioAge_eucacama,
+                                            bioAge_eucacype,
+                                            bioAge_eucadalr,
+                                            bioAge_eucadeli,
+                                            bioAge_eucadent,
+                                            bioAge_eucadive,
+                                            bioAge_eucaglob,
+                                            bioAge_eucanite,
+                                            bioAge_eucaobli,
+                                            bioAge_eucapauh,
+                                            bioAge_eucapaul,
+                                            bioAge_eucaradi,
+                                            bioAge_eucaregn,
+                                            bioAge_eucatric,
+                                            bioAge_eucavimi),
+                             total = biomass_TotalBiomass,
+                             proj_mask = proj_mask,
+                             filename = sprintf("%s/%s/%s_prop_oge_1k_%03d.grd",
+                                                proj_path,
+                                                out_path,
+                                                scn_id,
+                                                j),
+                             window = win1k)
+    names(prop_oge_1k) <- "prop_oge_1k"
+    
+    
     
     #### HOLLOW BEARING TREE INDEX
     hbt <- proj_mask
@@ -220,8 +321,109 @@ get.landis.vars <- function(
                         window = win3h)
     names(lbm) <- "lbm"
     
+
+    # ##### FIRE SEVERITY
+
+    if(j == 0){
+
+      firesev <- proj_mask
+
+      firesev[] <- 0
+
+      firesev <- mask(x = firesev,
+                      mask = proj_mask,
+                      filename = sprintf("%s/%s/%s_firesev_%03d.grd",
+                                         proj_path,
+                                         out_path,
+                                         scn_id,
+                                         j),
+                      overwrite = TRUE)
+
+
+    } else {
+
+      firesev <- paste0(fipath, "severity-", j,".img") %>%
+        raster %>%
+        get.rst.dat(proj_mask = proj_mask,
+                    filename = sprintf("%s/%s/%s_firesev_%03d.grd",
+                                       proj_path,
+                                       out_path,
+                                       scn_id,
+                                       j),
+                    sub1 = TRUE)
+    }
+
+    names(firesev) <- "firesev"
+
+
+    ##### WOODY BIOMASS
+
+    woody <- paste0(bmpath, "woody-", j,".img") %>%
+      raster %>%
+      get.rst.dat(proj_mask = proj_mask,
+                  filename = sprintf("%s/%s/%s_woody_%03d.grd",
+                                     proj_path,
+                                     out_path,
+                                     scn_id,
+                                     j))
+
+    names(woody) <- "woody"
     
     #### COMBINE VARIABLES
+    
+    
+    
+    #### HARVEST
+    
+    if(harvest_timber){
+      
+      if(j == 0){
+        
+        harvest <- proj_mask
+        
+        harvest[] <- 0
+        
+        harvest <- mask(x = harvest,
+                        mask = proj_mask,
+                        filename = sprintf("%s/%s/%s_harvest_%03d.grd",
+                                           proj_path,
+                                           out_path,
+                                           scn_id,
+                                           j),
+                        overwrite = TRUE)
+        
+        
+      } else {
+        
+        harvest <- paste0(hapath, "prescripts-", j,".img") %>%
+          raster %>%
+          get.rst.dat(proj_mask = proj_mask,
+                      filename = sprintf("%s/%s/%s_harvest_%03d.grd",
+                                         proj_path,
+                                         out_path,
+                                         scn_id,
+                                         j),
+                      sub1 = TRUE)
+      }
+      
+      names(harvest) <- "harvest"
+    } else {
+      harvest <- proj_mask
+      
+      harvest[] <- 0
+      
+      harvest <- mask(x = harvest,
+                      mask = proj_mask,
+                      filename = sprintf("%s/%s/%s_harvest_%03d.grd",
+                                         proj_path,
+                                         out_path,
+                                         scn_id,
+                                         j),
+                      overwrite = TRUE)
+      names(harvest) <- "harvest"
+    }
+      
+
     
     stack(lbm,
           ggf,
@@ -231,7 +433,13 @@ get.landis.vars <- function(
           prop_bio_regn,
           prop_bio_targ,
           prop_old_150,
-          prop_old_200)
+          prop_old_200,
+          prop_oge,
+          prop_oge_3h,
+          prop_oge_1k,
+          harvest,
+          firesev,
+          woody)
   }
 
   return(result) 

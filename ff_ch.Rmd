@@ -53,6 +53,7 @@ source(file = "R/functions/rascc.R")
 source(file = "R/functions/read.multi.line.header.R")
 source(file = "R/functions/interpolate.climdat.R")
 source(file = "R/functions/get.rst.prop.R")
+source(file = "R/functions/get.rst.dat.R")
 ```
 
 ### Paths
@@ -67,9 +68,15 @@ proj_path <- "/home/landis/rfst/"
 ## Analysis parameters
 
 ### Timesteps
-```{r}
-timesteps <- 50
+```{r ntimesteps}
+ntimesteps <- 50
 ```
+
+```{r ncores}
+ncores <- 20
+```
+
+
 
 ## Geographic data
 
@@ -238,213 +245,100 @@ save.image("output/session_images/landscape-occupancy.RData")
 ```
 
 ```{r load image occu}
-load(file = "output/session_images/landscape-occupancy.RData")
+#load(file = "output/session_images/landscape-occupancy.RData")
 ```
 
 
 ## Landis output
 
 ### Scenario 1: Current planned burning, current timber harvesting, climate change under RCP 4.5, current bushfire regime (Buisness as usual)
-
-```{r}
-zz <- get.landis.vars(scn_path = "~/landis_ch_s1_pb-th-cc_50/", proj_path = proj_path, out_path = "/output/habitat_vars/", scn_id = "s1", proj_mask = ch_mask, timesteps = 50, cores = 20)
+```{r s1_vars_landis}
+s1_vars_landis <- get.landis.vars(
+  scn_path = "~/landis_ch_s1_pb-th-cc_50/",
+  proj_path = proj_path,
+  out_path = "/output/habitat_vars/",
+  scn_id = "s1",
+  proj_mask = ch_mask,
+  timesteps = ntimesteps,
+  cores = ncores
+  )
 ```
 
-```{r}
-qq <- zz[[1]][[1]]
+```{r plot s1_vars_landis initial}
+plot(s1_vars_landis[[1]])
 ```
 
-```{r}
-qq[is.na(qq)] <- 1000
-```
-
-
-```{r}
-mm <- ch_mask
-
-mm[] <- getValues(ma)
-
-mm[mm < 150] <- 0
-mm[mm > 200] <- 1
-mm[mm > 1] <- (mm[mm > 1]- 150)/50
-
-plot(mm)
+```{r plot s1_vars_landis last}
+plot(s1_vars_landis[[ntimesteps + 1]])
 ```
 
 
-```{r s1_vars_landis_init}
-s1_vars_landis_init <- get.landis.vars.init(scn_path = "~/landis_ch_s1_pb-th-cc_50/", proj_mask = ch_mask)
+```{r s1_vars_landis save load}
+save(s1_vars_landis, file = "output/habitat_vars/s1_vars_landis")
 
-#writeRaster(s1_vars_landis_init, "output/habitat_vars/s1_vars_landis_init.tif")
-
-s1_vars_landis_init <- stack(x = "output/habitat_vars/s1_vars_landis_init.tif")
-
-names(s1_vars_landis_init) <- c("lbm", "ggf", "ggd", "hbt_3h", "hbt_1k", "prop_bio_regn", "prop_bio_targ", "prop_old_150", "prop_old_200")
+# load(file = "output/habitat_vars/s1_vars_landis_fut")
 ```
 
-```{r plot s1_vars_landis_init}
-plot(s1_vars_landis_init)
-```
-
-```{r s1_vars_landis_fut}
-s1_vars_landis_fut. <- .get.landis.vars.fut(scn_path = "~/landis_ch_s1_pb-th-cc_50/", , proj_mask = ch_mask, timesteps = 50, cores = 20)
-```
-
-```{r}
-s1_vars_landis_fut <- lapply(s1_vars_landis_fut., function (x) {
-   names(x) <- c("lbm",
-                 "ggf",
-                 "ggd",
-                 "hbt_3h",
-                 "hbt_1k",
-                 "prop_bio_regn",
-                 "prop_bio_targ",
-                 "prop_old_150",
-                 "prop_old_200")
-   x})
-```
-
-```{r s1_vars_landis_fut save load}
-save(s1_vars_landis_fut, file = "output/habitat_vars/s1_vars_landis_fut")
-
-load(file = "output/habitat_vars/s1_vars_landis_fut")
-```
-
-
-```{r plot s1_vars_landis_fut}
-plot(s1_vars_landis_fut[[50]])
-```
 
 ### Scenario 2: Current planned burning, current timber harvesting, climate change under RCP 8.5, increatred bushfire regime
-```{r s2_vars_landis_init}
-# s2_vars_landis_init <- get.landis.vars.init(scn_path = "~/landis_ch_s2_pb-th-cc_50/", proj_mask = ch_mask)
-
-# writeRaster(s2_vars_landis_init, "output/habitat_vars/s2_vars_landis_init.tif")
-
-# s2_vars_landis_init <- stack(x = "output/habitat_vars/s2_vars_landis_init.tif")
-# names(s2_vars_landis_init) <- c("lbm", "ggf", "ggd", "hbt_3h", "hbt_1k", "prop_bio_regn", "prop_bio_targ", "prop_old_150", "prop_old_200")
-```
-
-```{r plot s2_vars_landis_init}
-# plot(s2_vars_landis_init)
-```
-
-```{r s2_vars_landis_fut}
-# s2_vars_landis_fut. <- .get.landis.vars.fut(scn_path = "~/landis_ch_s2_pb-th-cc_50/", proj_mask = ch_mask, timesteps = 50, cores = 20)
-```
-
-```{r}
-# s2_vars_landis_fut <- lapply(s2_vars_landis_fut., function (x) {
-#    names(x) <- c("lbm",
-#                  "ggf",
-#                  "ggd",
-#                  "hbt_3h",
-#                  "hbt_1k",
-#                  "prop_bio_regn",
-#                  "prop_bio_targ",
-#                  "prop_old_150",
-#                  "prop_old_200")
-#    x})
-```
-
-```{r s2_vars_landis_fut save load}
-# save(s2_vars_landis_fut, file = "output/habitat_vars/s2_vars_landis_fut")
-# 
-# load(file = "output/habitat_vars/s2_vars_landis_fut")
-```
-
-
-```{r plot s2_vars_landis_fut}
-# plot(s2_vars_landis_fut[[50]])
-```
 
 
 ### Scenario 3: Current planned burning, current timber harvesting, no climate change, current bushfire regime
-```{r s3_vars_landis_init}
-# s3_vars_landis_init <- get.landis.vars.init(scn_path = "~/landis_ch_s3_pb-th-cc0_50/", proj_mask = ch_mask)
-
-# writeRaster(s3_vars_landis_init, "output/habitat_vars/s3_vars_landis_init.tif")
-
-s3_vars_landis_init <- stack(x = "output/habitat_vars/s3_vars_landis_init.tif")
-names(s3_vars_landis_init) <- c("lbm", "ggf", "ggd", "hbt_3h", "hbt_1k", "prop_bio_regn", "prop_bio_targ", "prop_old_150", "prop_old_200")
+```{r s3_vars_landis}
+s3_vars_landis <- get.landis.vars(
+  scn_path = "~/landis_ch_s3_pb-th-cc0_50/",
+  proj_path = proj_path,
+  out_path = "/output/habitat_vars/",
+  scn_id = "s3",
+  proj_mask = ch_mask,
+  timesteps = ntimesteps,
+  cores = ncores
+  )
 ```
 
-```{r plot s3_vars_landis_init}
-plot(s3_vars_landis_init)
+```{r plot s3_vars_landis initial}
+plot(s3_vars_landis[[1]])
 ```
 
-```{r s3_vars_landis_fut}
-s3_vars_landis_fut. <- .get.landis.vars.fut(scn_path = "~/landis_ch_s3_pb-th-cc0_50/", proj_mask = ch_mask, timesteps = 50, cores = 20)
-```
-
-```{r}
-s3_vars_landis_fut <- lapply(s3_vars_landis_fut., function (x) {
-   names(x) <- c("lbm",
-                 "ggf",
-                 "ggd",
-                 "hbt_3h",
-                 "hbt_1k",
-                 "prop_bio_regn",
-                 "prop_bio_targ",
-                 "prop_old_150",
-                 "prop_old_200")
-   x})
-```
-
-```{r s3_vars_landis_fut save load}
-save(s3_vars_landis_fut, file = "output/habitat_vars/s3_vars_landis_fut")
-
-load(file = "output/habitat_vars/s3_vars_landis_fut")
+```{r plot s3_vars_landis last}
+plot(s3_vars_landis[[ntimesteps + 1]])
 ```
 
 
-```{r plot s3_vars_landis_fut}
-plot(s3_vars_landis_fut[[50]])
+```{r s3_vars_landis save load}
+save(s3_vars_landis, file = "output/habitat_vars/s3_vars_landis")
+
+# load(file = "output/habitat_vars/s3_vars_landis_fut")
 ```
 
 ### Scenario 4: Current planned burning, no harvesting, climate change under RCP 4.5, current bushfire regime
-```{r s4_vars_landis_init}
-# s4_vars_landis_init <- get.landis.vars.init(scn_path = "~/landis_ch_s4_pb-th0-cc_50/", proj_mask = ch_mask)
-
-# writeRaster(s4_vars_landis_init, "output/habitat_vars/s4_vars_landis_init.tif")
-
-s4_vars_landis_init <- stack(x = "output/habitat_vars/s4_vars_landis_init.tif")
-names(s4_vars_landis_init) <- c("lbm", "ggf", "ggd", "hbt_3h", "hbt_1k", "prop_bio_regn", "prop_bio_targ", "prop_old_150", "prop_old_200")
+```{r s4_vars_landis}
+s4_vars_landis <- get.landis.vars(
+  scn_path = "~/landis_ch_s4_pb-th0-cc_50/",
+  proj_path = proj_path,
+  out_path = "/output/habitat_vars/",
+  scn_id = "s4",
+  proj_mask = ch_mask,
+  timesteps = ntimesteps,
+  cores = ncores,
+  harvest_timber = FALSE
+  )
 ```
 
-```{r plot s4_vars_landis_init}
-plot(s4_vars_landis_init)
+```{r plot s4_vars_landis initial}
+plot(s4_vars_landis[[1]])
 ```
 
-```{r s4_vars_landis_fut}
-s4_vars_landis_fut. <- .get.landis.vars.fut(scn_path = "~/landis_ch_s4_pb-th0-cc_50/", proj_mask = ch_mask, timesteps = 50, cores = 20)
-```
-
-```{r}
-s4_vars_landis_fut <- lapply(s4_vars_landis_fut., function (x) {
-   names(x) <- c("lbm",
-                 "ggf",
-                 "ggd",
-                 "hbt_3h",
-                 "hbt_1k",
-                 "prop_bio_regn",
-                 "prop_bio_targ",
-                 "prop_old_150",
-                 "prop_old_200")
-   x})
-```
-
-```{r s4_vars_landis_fut save load}
-save(s4_vars_landis_fut, file = "output/habitat_vars/s4_vars_landis_fut")
-
-load(file = "output/habitat_vars/s4_vars_landis_fut")
+```{r plot s4_vars_landis last}
+plot(s4_vars_landis[[ntimesteps + 1]])
 ```
 
 
-```{r plot s4_vars_landis_fut}
-plot(s4_vars_landis_fut[[50]])
-```
+```{r s4_vars_landis save load}
+save(s4_vars_landis, file = "output/habitat_vars/s4_vars_landis")
 
+# load(file = "output/habitat_vars/s4_vars_landis_fut")
+```
 
 ## ARI Data
 
@@ -452,107 +346,67 @@ plot(s4_vars_landis_fut[[50]])
 ```{r ahr}
 ahr <-raster(x = "data/grids/Env_covariates_noClimate_VicGrid94/Anisotrophic_Heating_Ruggedness") %>%
   projectRaster(to = ch_mask) %>%
-  mask(mask = ch_mask)
-
-ahr
+  mask(mask = ch_mask, filename = "output/habitat_vars/ari_ahr.grd") %T>%
+  plot
 ```
-
-```{r plot ahr}
-plot(ahr)
-```
-
 
 ### Log verticical distance all wetlands
 ```{r lvdaw}
 lvdaw <- raster(x = "data/grids/Env_covariates_noClimate_VicGrid94/log_vertical_distance_all_wetlands_sept2012") %>%
   projectRaster(to = ch_mask) %>%
-  mask(mask = ch_mask)
-
-lvdaw
-```
-```{r plot lvdaw}
-plot(lvdaw)
+  mask(mask = ch_mask, filename = "output/habitat_vars/ari_lvdaw.grd") %T>%
+  plot
 ```
 ### Log vertical distance major streams
 ```{r lvdma}
 lvdma <- raster(x = "data/grids/Env_covariates_noClimate_VicGrid94/log_vertical_distance_major_streams_sept2012") %>%
   projectRaster(to = ch_mask) %>%
-  mask(mask = ch_mask)
-
-lvdma
-```
-```{r plot lvdma}
-plot(lvdma)
+  mask(mask = ch_mask, filename = "output/habitat_vars/ari_lvdma.grd") %T>%
+  plot
 ```
 ### Log vertical distance minor streams
 ```{r lvdmi}
 lvdmi <- raster(x = "data/grids/Env_covariates_noClimate_VicGrid94/log_vertical_distance_minor_streams_sept2012") %>%
-  projectRaster(to = ch_mask) #%>%
-  #mask(mask = ch_mask)
-
-lvdmi
+  projectRaster(to = ch_mask) %>%
+  mask(mask = ch_mask, filename = "output/habitat_vars/ari_lvdmi.grd") %T>%
+  plot
 ```
-```{r plot lvdmi}
-plot(lvdmi)
-```
-
 ### Log vertical distance saline wetlands
 ```{r lvdsw}
 lvdsw <- raster(x = "data/grids/Env_covariates_noClimate_VicGrid94/log_vertical_distance_saline_wetlands_sept2012") %>%
   projectRaster(to = ch_mask) %>%
-  mask(mask = ch_mask)
-
-lvdsw
-```
-```{r plot lvdsw}
-plot(lvdsw)
+  mask(mask = ch_mask, filename = "output/habitat_vars/ari_lvdsw.grd") %T>%
+  plot
 ```
 ### Relative annual insolation
 ```{r rai}
 rai <- raster(x = "data/grids/Env_covariates_noClimate_VicGrid94/relative_annual_insolation_sept2012") %>%
   projectRaster(to = ch_mask) %>%
-  mask(mask = ch_mask)
-
-rai
+  mask(mask = ch_mask, filename = "output/habitat_vars/ari_rai.grd") %T>%
+  plot
 ```
-```{r plot rai}
-plot(rai)
-```
-
 ### Thorium
 ```{r tho}
 tho <- raster(x = "data/grids/Env_covariates_noClimate_VicGrid94/sept2014thorium") %>%
   projectRaster(to = ch_mask) %>%
-  mask(mask = ch_mask)
-
-tho
-```
-```{r plot tho}
-plot(tho)
+  mask(mask = ch_mask, filename = "output/habitat_vars/ari_tho.grd") %T>%
+  plot
 ```
 
 ### Visible sky index
 ```{r vsky}
 vsky <- raster(x = "data/grids/Env_covariates_noClimate_VicGrid94/visible_sky_sept2012") %>%
   projectRaster(to = ch_mask) %>%
-  mask(mask = ch_mask)
-
-vsky
-```
-```{r plot vsky}
-plot(vsky)
+  mask(mask = ch_mask, filename = "output/habitat_vars/ari_vsky.grd") %T>%
+  plot
 ```
 
 ### Topographic wetness index
 ```{r twi}
 twi <- raster(x = "data/grids/Env_covariates_noClimate_VicGrid94/wetness_index_topocrop_sept2012") %>%
   projectRaster(to = ch_mask) %>%
-  mask(mask = ch_mask)
-
-twi
-```
-```{r plot twi}
-plot(twi)
+  mask(mask = ch_mask, filename = "output/habitat_vars/ari_twi.grd") %T>%
+  plot
 ```
 
 ### Wind exposition
@@ -560,12 +414,8 @@ plot(twi)
 ```{r winex}
 # winex <- raster(x = "data/grids/Env_covariates_noClimate_VicGrid94/wind_exposition2015") %>%
   # projectRaster(to = ch_mask) %>%
-  # mask(mask = ch_mask)
-
-# winex
-```
-```{r plot winex}
-#plot(winex)
+  # mask(mask = ch_mask, filename = "output/habitat_vars/ari_winex.grd") %T>%
+  # plot
 ```
 
 ### ARI variables stack
@@ -579,12 +429,11 @@ names(ari_iv) <- c("lvdaw", "lvdma", "lvdmi", "lvdsw")
 
 #### Future variables 
 Repeates into list for each year
-```{r ari_fv}
-ari_fv <- vector("list", 50)
+```{r ari_v}
+ari_v <- vector("list", ntimesteps + 1)
 
-
-for(i in 1:50){
-  ari_fv[[i]] <- ari_iv
+for(i in 1:(ntimesteps+1)){
+  ari_v[[i]] <- ari_iv
 }
 ```
 
@@ -613,7 +462,7 @@ From WorldClim
 ```{r prec01}
 prec01 <- raster("data/grids/wc2.0_30s_prec_01.tif") %>%
   projectRaster(to = ch_mask) %>%
-  mask(mask = ch_mask)
+  mask(mask = ch_mask, filename = "output/clim_vars/prec01.grd")
 
 names(prec01) <- "prec01"
 
@@ -624,7 +473,7 @@ plot(prec01)
 ```{r prec07}
 prec07 <- raster("data/grids/wc2.0_30s_prec_07.tif") %>%
   projectRaster(to = ch_mask) %>%
-  mask(mask = ch_mask)
+  mask(mask = ch_mask, filename = "output/clim_vars/prec07.grd")
 
 names(prec07) <- "prec07"
 
@@ -635,7 +484,7 @@ plot(prec07)
 ```{r tmax01}
 tmax01 <- raster("data/grids/wc2.0_30s_tmax_01.tif") %>%
   projectRaster(to = ch_mask) %>%
-  mask(mask = ch_mask)
+  mask(mask = ch_mask, filename = "output/clim_vars/tmax01.grd")
 
 names(tmax01) <- "tmax01"
 
@@ -646,7 +495,7 @@ plot(tmax01)
 ```{r tmin07}
 tmin07 <- raster("data/grids/wc2.0_30s_tmin_07.tif") %>%
   projectRaster(to = ch_mask) %>%
-  mask(mask = ch_mask)
+  mask(mask = ch_mask, filename = "output/clim_vars/tmin07.grd")
 
 names(tmin07) <- "tmin07"
 
@@ -716,6 +565,9 @@ n_prec07_8.5 <- as.numeric(sub("-.*", "", unique(raw_prec07_4.5_pc$time)))
 ###  Absolute predicted values
 
 #### Temperature
+
+add new function that writes these climate layers to files.
+
 
 ##### Jan max temperature RCP 4.5
 ```{r tmax01_4.5}
