@@ -1,4 +1,4 @@
-rascc <- function(dat, new.proj.layer = FALSE, input.projection = "+proj=longlat +datum=WGS84"){
+rascc <- function(dat, new.proj.layer, filename, input.projection = "+proj=longlat +datum=WGS84"){
   
   library(tidyr)
   library(dplyr)
@@ -14,15 +14,23 @@ rascc <- function(dat, new.proj.layer = FALSE, input.projection = "+proj=longlat
     spread(year, !!var) %>%
     rasterFromXYZ(crs = input.projection)
   
-  if(!is.logical(new.proj.layer)){
+  if(!missing(new.proj.layer)){
     
     result <- projectRaster(from = result,
                             to = new.proj.layer,
                             method = "ngb"
                             )
     
-    result <- mask(x = result,
-                   mask = new.proj.layer)
+    
+    if(missing(filename)){
+      result <- mask(x = result,
+                     mask = new.proj.layer)
+    } else {
+      result <- mask(x = result,
+                     mask = new.proj.layer,
+                     filename = filename)
+    }
+    
   }
   
   return(result)

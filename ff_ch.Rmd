@@ -507,8 +507,9 @@ plot(tmin07)
 Data from [Climate Change in Australia](https://www.climatechangeinaustralia.gov.au/en/)
 
 #### Change data
-**CV has updated**
+*There should be new data to replace this *
 ##### Absolute change in temperature
+Get raw data
 ```{r raw temp ac}
 #absolute change in temp
 raw_tmax01_4.5_ac <- read.multi.line.header(file = "http://nrm-erddap.nci.org.au/erddap/griddap/tasmax_Amon_CSIRO-Mk3-6-0_rcp45_r1i1p1_abs-change-wrt-seasavg-clim_native.csv?tasmax_january[(2025-01-01T12:00:00Z):1:(2090-01-01T12:00:00Z)][(-40.10297775):1:(-32.64199448)][(140.625):1:(150)]")
@@ -519,7 +520,7 @@ raw_tmin07_4.5_ac <- read.multi.line.header(file = "http://nrm-erddap.nci.org.au
 
 raw_tmin07_8.5_ac <- read.multi.line.header(file = "http://nrm-erddap.nci.org.au/erddap/griddap/tasmin_Amon_CSIRO-Mk3-6-0_rcp85_r1i1p1_abs-change-wrt-seasavg-clim_native.csv?tasmin_july[(2025-01-01T12:00:00Z):1:(2090-01-01T12:00:00Z)][(-40.10297775):1:(-32.64199448)][(140.625):1:(150)]")
 ```
-Years data
+Years data available
 ```{r n temp ac}
 n_tmax01_4.5 <- as.numeric(sub("-.*", "", unique(raw_tmax01_4.5_ac$time)))
 n_tmax01_8.5 <- as.numeric(sub("-.*", "", unique(raw_tmax01_8.5_ac$time)))
@@ -527,17 +528,17 @@ n_tmin07_4.5 <- as.numeric(sub("-.*", "", unique(raw_tmin07_4.5_ac$time)))
 n_tmin07_8.5 <- as.numeric(sub("-.*", "", unique(raw_tmin07_8.5_ac$time)))
 ```
 
-
-```{r tmax ac}
-tmax01_4.5_ac <- rascc(raw_tmax01_4.5_ac, new.proj.layer = ch_mask)
-tmax01_8.5_ac <- rascc(raw_tmax01_8.5_ac, new.proj.layer = ch_mask)
-tmin07_4.5_ac <- rascc(raw_tmin07_4.5_ac, new.proj.layer = ch_mask)
-tmin07_8.5_ac <- rascc(raw_tmin07_8.5_ac, new.proj.layer = ch_mask)
+Reprojected layers
+```{r rasters temp ac}
+tmax01_4.5_ac <- rascc(raw_tmax01_4.5_ac, new.proj.layer = ch_mask, filename = "output/clim_vars/tmax01_4.5_ac.grd")
+tmax01_8.5_ac <- rascc(raw_tmax01_8.5_ac, new.proj.layer = ch_mask, filename = "output/clim_vars/tmax01_8.5_ac.grd")
+tmin07_4.5_ac <- rascc(raw_tmin07_4.5_ac, new.proj.layer = ch_mask, filename = "output/clim_vars/tmin07_4.5_ac.grd")
+tmin07_8.5_ac <- rascc(raw_tmin07_8.5_ac, new.proj.layer = ch_mask, filename = "output/clim_vars/tmin07_8.5_ac.grd")
 ```
 
-
-### Percentage change in precipitation
-```{r}
+##### Percentage change in precipitation
+Get raw data
+```{r raw prec pc}
 raw_prec01_4.5_pc <- read.multi.line.header(file = "http://nrm-erddap.nci.org.au/erddap/griddap/pr_Amon_CSIRO-Mk3-6-0_rcp45_r1i1p1_perc-change-wrt-seassum-clim_native.csv?pr_january[(2025-01-01T12:00:00Z):1:(2090-01-01T12:00:00Z)][(-40.10297775):1:(-32.64199448)][(140.625):1:(150)]")
 
 raw_prec01_8.5_pc <- read.multi.line.header(file = "http://nrm-erddap.nci.org.au/erddap/griddap/pr_Amon_CSIRO-Mk3-6-0_rcp85_r1i1p1_perc-change-wrt-seassum-clim_native.csv?pr_january[(2025-01-01T12:00:00Z):1:(2090-01-01T12:00:00Z)][(-40.10297775):1:(-32.64199448)][(140.625):1:(150)]")
@@ -547,88 +548,102 @@ raw_prec07_4.5_pc <- read.multi.line.header(file = "http://nrm-erddap.nci.org.au
 raw_prec07_8.5_pc <- read.multi.line.header(file = "http://nrm-erddap.nci.org.au/erddap/griddap/pr_Amon_CSIRO-Mk3-6-0_rcp85_r1i1p1_perc-change-wrt-seassum-clim_native.csv?pr_july[(2025-01-01T12:00:00Z):1:(2090-01-01T12:00:00Z)][(-40.10297775):1:(-32.64199448)][(140.625):1:(150)]")
 ```
 
-```{r}
-prec01_4.5_pc <- rascc(raw_prec01_4.5_pc, new.proj.layer = ch_mask)
-prec01_8.5_pc <- rascc(raw_prec01_8.5_pc, new.proj.layer = ch_mask)
-prec07_4.5_pc <- rascc(raw_prec07_4.5_pc, new.proj.layer = ch_mask)
-prec07_8.5_pc <- rascc(raw_prec07_8.5_pc, new.proj.layer = ch_mask)
-```
-
-```{r n_bioclim}
+Years data available
+```{r n prec pc}
 n_prec01_4.5 <- as.numeric(sub("-.*", "", unique(raw_prec01_4.5_pc$time)))
 n_prec01_8.5 <- as.numeric(sub("-.*", "", unique(raw_prec01_4.5_pc$time)))
 n_prec07_4.5 <- as.numeric(sub("-.*", "", unique(raw_prec07_4.5_pc$time)))
 n_prec07_8.5 <- as.numeric(sub("-.*", "", unique(raw_prec07_4.5_pc$time)))
 ```
 
+Reprojected layers
+```{r raster prec pc}
+prec01_4.5_pc <- rascc(raw_prec01_4.5_pc, new.proj.layer = ch_mask, filename = "output/clim_vars/prec01_4.5_pc.grd")
+prec01_8.5_pc <- rascc(raw_prec01_8.5_pc, new.proj.layer = ch_mask, filename = "output/clim_vars/prec01_8.5_pc.grd")
+prec07_4.5_pc <- rascc(raw_prec07_4.5_pc, new.proj.layer = ch_mask, filename = "output/clim_vars/prec07_4.5_pc.grd")
+prec07_8.5_pc <- rascc(raw_prec07_8.5_pc, new.proj.layer = ch_mask, filename = "output/clim_vars/prec07_8.5_pc.grd")
+```
 
-###  Absolute predicted values
 
-#### Temperature
+
+####  Absolute predicted values
+
+##### Temperature
 
 add new function that writes these climate layers to files.
 
 
-##### Jan max temperature RCP 4.5
+###### Jan max temperature RCP 4.5
 ```{r tmax01_4.5}
+tmax01_4.5 <- rst.op(input1 = tmax01,
+                     input2 = tmax01_4.5_ac,
+                     proj_mask = ch_mask,
+                     op = "addabs",
+                     filename = "output/clim_vars/tmax01_4.5",
+                     layernames = n_tmax01_4.5)
+plot(tmax01_4.5)
+```
+
+
+```{r}
 tmax01_4.5 <- tmax01_4.5_ac + tmax01
 names(tmax01_4.5) <- names(tmax01_4.5_ac)
 plot(tmax01_4.5)
 ```
+```
 
-##### Jan max temperature RCP 8.5
+###### Jan max temperature RCP 8.5
 ```{r tmax01_8.5}
 tmax01_8.5 <- tmax01_8.5_ac + tmax01
 names(tmax01_8.5) <- names(tmax01_8.5_ac)
 plot(tmax01_8.5)
 ```
-##### July min temperature RCP 4.5
+###### July min temperature RCP 4.5
 ```{r tmin07_4.5}
 tmin07_4.5 <- tmin07_4.5_ac + tmax01
 names(tmin07_4.5) <- names(tmin07_4.5_ac)
 plot(tmin07_4.5)
 ```
 
-##### July min temperature RCP 8.5
+###### July min temperature RCP 8.5
 ```{r}
 tmin07_8.5 <- tmin07_8.5_ac + tmax01
 names(tmin07_8.5) <- names(tmin07_8.5_ac)
 plot(tmin07_8.5)
 ```
 
-#### Precipitation
+##### Precipitation
 
-#### January precipitation RCP 4.5
+##### January precipitation RCP 4.5
 ```{r}
 prec01_4.5 <- prec01 * (1 + prec01_4.5_pc/100)
 names(prec01_4.5) <- names(prec01_4.5_pc)
 plot(prec01_4.5)
 ```
 
-#### January precipitation RCP 8.5
+##### January precipitation RCP 8.5
 ```{r}
 prec01_8.5 <- prec01 * (1 + prec01_8.5_pc/100)
 names(prec01_8.5) <- names(prec01_8.5_pc)
 plot(prec01_8.5)
 ```
 
-#### July precipitation RCP 4.5
+##### July precipitation RCP 4.5
 ```{r}
 prec07_4.5 <- prec07 * (1 + prec07_4.5_pc/100)
 names(prec07_4.5) <- names(prec07_4.5_pc)
 plot(prec07_4.5)
 ```
 
-#### July precipitation RCP 8.5
+##### July precipitation RCP 8.5
 ```{r}
 prec07_8.5 <- prec07 * (1 + prec07_8.5_pc/100)
 names(prec07_8.5) <- names(prec07_8.5_pc)
 plot(prec07_8.5)
 ```
 
-### Interploate prediction data
-**Currently just repeats predictions, need updating to weight predictions within 10 years, cf data from CSIRO**
-
+#### Interploate prediction data
+**Currently just repeats predictions for nearest year, need updating to weight predictions within 10 years, cf data from CSIRO**
 ```{r}
 tmax01_4.5_int <- interpolate.climdat(tmax01, tmax01_4.5, ny = 50, nf = n_tmax01_4.5, n0 = 2019, varname = "tmax01")
 tmax01_8.5_int <- interpolate.climdat(tmax01, tmax01_8.5, ny = 50, nf = n_tmax01_8.5, n0 = 2019, varname = "tmax01")
