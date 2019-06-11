@@ -52,8 +52,7 @@ source(file = "R/functions/get.landis.vars.R")
 source(file = "R/functions/rascc.R")
 source(file = "R/functions/read.multi.line.header.R")
 source(file = "R/functions/interpolate.climdat.R")
-source(file = "R/functions/get.rst.prop.R")
-source(file = "R/functions/get.rst.dat.R")
+source(file = "R/functions/rst.op.R")
 ```
 
 ### Paths
@@ -697,7 +696,7 @@ clim_fv_8.5 <- mapply(prec01_8.5_int, prec07_8.5_int, tmax01_8.5_int, tmin07_8.5
 ```
 
 ```{r}
-save.image(file = "output/input_variables.RData")
+save.image(file = "output/session_images/input_variables.RData")
 ```
 
 
