@@ -76,7 +76,7 @@ plot(ch_mask)
 #### Biomass
 This creates a raster for year 0 for biomass of each species named in the 8 letter 4-4 genus-species format from landis
 ```{r biomass}
-bmpath <- "~/landis_ch_s1_pb-th-cc/output/biomass/"
+bmpath <- "~/landis_ch_s1_pb-th-cc_50/output/biomass/"
 
 spp <- list.files(path = bmpath,
                   pattern = "bio-") %>%
@@ -104,7 +104,7 @@ for(i in 1:length(spp)){
 
 **need to up update species list in next run**
 ```{r}
-cspath <- "~/landis_ch_s1_pb-th-cc/output/cohort-stats/"
+cspath <- "~/landis_ch_s1_pb-th-cc_50/output/cohort-stats/"
 spp <- list.files(path = cspath,
                   ) %>%
   sub("-.*", "", .) %>%
@@ -137,6 +137,42 @@ max_age[] <- paste0(cspath, "AGE-MAX-0.img") %>%
   raster %>%
   getValues
 ```
+
+
+
+```{r}
+prop_old_200 <- rst.op(input1 = max_age,
+                           op = "lessthan",
+                           proj_mask = ch_mask,
+                           filename = sprintf("%s/%s/%s_prop_old_200_%03d.grd",
+                                              proj_path,
+                                              "/output/habitat_vars/",
+                                              "s1",
+                                              0),
+                           layernames = "prop_old_200",
+                           window = win1k,
+                           lessthan = 200)
+
+```
+
+```{r}
+
+    prop_bio_targ <- rst.op(input1 = stack(biomass_eucacype,
+                                           biomass_eucadalr,
+                                           biomass_eucadive,
+                                           biomass_eucaradi,
+                                           biomass_eucavimi),
+                            input2 = biomass_TotalBiomass,
+                            op = "prop",
+                            proj_mask = ch_mask,
+                            filename = sprintf("%s/%s/%s_prop_bio_targ_%03d.grd",
+                                               proj_path,
+                                               "/output/habitat_vars/",
+                                              "s1",
+                                               0),
+                            layernames = "prop_bio_targ")
+```
+
 
 #### Indices
 

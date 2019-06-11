@@ -252,20 +252,21 @@ save.image("output/session_images/landscape-occupancy.RData")
 ## Landis output
 
 ### Scenario 1: Current planned burning, current timber harvesting, climate change under RCP 4.5, current bushfire regime (Buisness as usual)
-```{r s1_vars_landis}
-s1_vars_landis <- get.landis.vars(
+
+```{r}
+aa <- get.landis.vars(
   scn_path = "~/landis_ch_s1_pb-th-cc_50/",
   proj_path = proj_path,
   out_path = "/output/habitat_vars/",
   scn_id = "s1",
   proj_mask = ch_mask,
-  timesteps = ntimesteps,
-  cores = ncores
+  timesteps = 3,
+  cores = 4
   )
 ```
 
-```{r plot s1_vars_landis initial}
-plot(s1_vars_landis[[1]])
+```{r}
+plot(aa[[4]])
 ```
 
 ```{r plot s1_vars_landis last}
@@ -580,72 +581,92 @@ tmax01_4.5 <- rst.op(input1 = tmax01,
                      proj_mask = ch_mask,
                      op = "addabs",
                      filename = "output/clim_vars/tmax01_4.5",
-                     layernames = n_tmax01_4.5)
-plot(tmax01_4.5)
-```
-
-
-```{r}
-tmax01_4.5 <- tmax01_4.5_ac + tmax01
-names(tmax01_4.5) <- names(tmax01_4.5_ac)
-plot(tmax01_4.5)
-```
+                     layernames = n_tmax01_4.5) %T>%
+  plot
 ```
 
 ###### Jan max temperature RCP 8.5
 ```{r tmax01_8.5}
-tmax01_8.5 <- tmax01_8.5_ac + tmax01
-names(tmax01_8.5) <- names(tmax01_8.5_ac)
-plot(tmax01_8.5)
+tmax01_8.5 <- rst.op(input1 = tmax01,
+                     input2 = tmax01_8.5_ac,
+                     proj_mask = ch_mask,
+                     op = "addabs",
+                     filename = "output/clim_vars/tmax01_8.5",
+                     layernames = n_tmax01_8.5) %T>%
+  plot
 ```
 ###### July min temperature RCP 4.5
 ```{r tmin07_4.5}
-tmin07_4.5 <- tmin07_4.5_ac + tmax01
-names(tmin07_4.5) <- names(tmin07_4.5_ac)
-plot(tmin07_4.5)
+tmin07_4.5 <- rst.op(input1 = tmin07,
+                     input2 = tmin07_4.5_ac,
+                     proj_mask = ch_mask,
+                     op = "addabs",
+                     filename = "output/clim_vars/tmin07_4.5",
+                     layernames = n_tmin07_4.5) %T>%
+  plot
 ```
 
 ###### July min temperature RCP 8.5
-```{r}
-tmin07_8.5 <- tmin07_8.5_ac + tmax01
-names(tmin07_8.5) <- names(tmin07_8.5_ac)
-plot(tmin07_8.5)
+```{r tmin07_8.5}
+tmin07_8.5 <- rst.op(input1 = tmin07,
+                     input2 = tmin07_8.5_ac,
+                     proj_mask = ch_mask,
+                     op = "addabs",
+                     filename = "output/clim_vars/tmin07_8.5",
+                     layernames = n_tmin07_8.5) %T>%
+  plot
 ```
 
 ##### Precipitation
 
 ##### January precipitation RCP 4.5
-```{r}
-prec01_4.5 <- prec01 * (1 + prec01_4.5_pc/100)
-names(prec01_4.5) <- names(prec01_4.5_pc)
-plot(prec01_4.5)
+```{r prec01_4.5}
+prec01_4.5 <- rst.op(input1 = prec01,
+                     input2 = prec01_4.5_pc,
+                     proj_mask = ch_mask,
+                     op = "addper",
+                     filename = "output/clim_vars/prec01_4.5",
+                     layernames = n_prec01_4.5) %T>%
+  plot
 ```
 
 ##### January precipitation RCP 8.5
-```{r}
-prec01_8.5 <- prec01 * (1 + prec01_8.5_pc/100)
-names(prec01_8.5) <- names(prec01_8.5_pc)
-plot(prec01_8.5)
+```{r prec01_8.5}
+prec01_8.5 <- rst.op(input1 = prec01,
+                     input2 = prec01_8.5_pc,
+                     proj_mask = ch_mask,
+                     op = "addper",
+                     filename = "output/clim_vars/prec01_8.5",
+                     layernames = n_prec01_8.5) %T>%
+  plot
 ```
 
 ##### July precipitation RCP 4.5
-```{r}
-prec07_4.5 <- prec07 * (1 + prec07_4.5_pc/100)
-names(prec07_4.5) <- names(prec07_4.5_pc)
-plot(prec07_4.5)
+```{r prec07_4.5}
+prec07_4.5 <- rst.op(input1 = prec07,
+                     input2 = prec07_4.5_pc,
+                     proj_mask = ch_mask,
+                     op = "addper",
+                     filename = "output/clim_vars/prec07_4.5",
+                     layernames = n_prec07_4.5) %T>%
+  plot
 ```
 
 ##### July precipitation RCP 8.5
-```{r}
-prec07_8.5 <- prec07 * (1 + prec07_8.5_pc/100)
-names(prec07_8.5) <- names(prec07_8.5_pc)
-plot(prec07_8.5)
+```{r prec07_8.5}
+prec07_8.5 <- rst.op(input1 = prec07,
+                     input2 = prec07_8.5_pc,
+                     proj_mask = ch_mask,
+                     op = "addper",
+                     filename = "output/clim_vars/prec07_8.5",
+                     layernames = n_prec07_8.5) %T>%
+  plot
 ```
 
 #### Interploate prediction data
 **Currently just repeats predictions for nearest year, need updating to weight predictions within 10 years, cf data from CSIRO**
 ```{r}
-tmax01_4.5_int <- interpolate.climdat(tmax01, tmax01_4.5, ny = 50, nf = n_tmax01_4.5, n0 = 2019, varname = "tmax01")
+tmax01_4.5_int <- interpolate.climdat(tmax01, tmax01_4.5, ny = ntimesteps, nf = n_tmax01_4.5, n0 = 2019, varname = "tmax01")
 tmax01_8.5_int <- interpolate.climdat(tmax01, tmax01_8.5, ny = 50, nf = n_tmax01_8.5, n0 = 2019, varname = "tmax01")
 tmin07_4.5_int <- interpolate.climdat(tmin07, tmin07_4.5, ny = 50, nf = n_tmin07_4.5, n0 = 2019, varname = "tmin07")
 tmin07_8.5_int <- interpolate.climdat(tmin07, tmin07_8.5, ny = 50, nf = n_tmin07_8.5, n0 = 2019, varname = "tmin07")
