@@ -66,11 +66,18 @@ proj_path <- "/home/landis/rfst/"
 
 ## Analysis parameters
 
+### Start year
+```{r year0}
+year0 <- 2019
+```
+
+
 ### Timesteps
 ```{r ntimesteps}
 ntimesteps <- 50
 ```
 
+### Cores to use
 ```{r ncores}
 ncores <- 20
 ```
@@ -664,7 +671,21 @@ prec07_8.5 <- rst.op(input1 = prec07,
 #### Interploate prediction data
 **Currently just repeats predictions for nearest year, need updating to weight predictions within 10 years, cf data from CSIRO**
 ```{r}
-tmax01_4.5_int <- interpolate.climdat(tmax01, tmax01_4.5, ny = ntimesteps, nf = n_tmax01_4.5, n0 = 2019, varname = "tmax01")
+tmax01_4.5_int <- interpolate.climdat(initras = tmax01,
+                                      futras = tmax01_4.5,
+                                      ntimesteps = ntimesteps,
+                                      data_years = n_tmax01_4.5,
+                                      year0 =  year0,
+                                      varname = "tmax01",
+                                      proj_mask = ch_mask,
+                                      filename = "output/clim_vars/tmax01_4.5")
+
+```
+
+```{r}
+
+
+
 tmax01_8.5_int <- interpolate.climdat(tmax01, tmax01_8.5, ny = 50, nf = n_tmax01_8.5, n0 = 2019, varname = "tmax01")
 tmin07_4.5_int <- interpolate.climdat(tmin07, tmin07_4.5, ny = 50, nf = n_tmin07_4.5, n0 = 2019, varname = "tmin07")
 tmin07_8.5_int <- interpolate.climdat(tmin07, tmin07_8.5, ny = 50, nf = n_tmin07_8.5, n0 = 2019, varname = "tmin07")
@@ -732,7 +753,7 @@ s1_md_gg <- s1_iv_gg %>%
   raster::extract(y = st_coordinates(gg_pa_ch)) %>%
   cbind("PA" = gg_pa_ch$PA, .) %>%
   as.data.frame %>%
-  na.omit 
+  na.omit
 
 s1_md_gg
 

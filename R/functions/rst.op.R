@@ -8,13 +8,16 @@ rst.op <- function(
     "addabs",
     "addper",
     "lessthan",
-    "lessthanscale"),
+    "lessthanscale",
+    "weightsum"),
   proj_mask,
   filename,
   layernames,
   window,
   lessthan,
-  scaleto){
+  scaleto,
+  weight1,
+  weight2){
   
   if(missing(op)){
     op <- "writeonly"
@@ -99,6 +102,7 @@ rst.op <- function(
         
       v2 <- getValues(input2, row = bs$row[i], nrows = bs$nrows[i])
       v <- v1 * (1 + v2/100)
+      
     } else if(op == "lessthan"){
       
       v <- v1
@@ -111,6 +115,14 @@ rst.op <- function(
       v[v < lessthan] <- 0
       v[v > scaleto] <- 1
       v[v > 1] <- (v[v > 1] - lessthan)/(scaleto - lessthan)
+      
+    } else if (op == "weightsum"){
+      
+      v2 <- getValues(input2, row = bs$row[i], nrows = bs$nrows[i])
+      
+      w <- weight1 + weight2
+      
+      v <- v1*(w - weight1)/w + v2*(w - weight2)/w
       
     }
       
