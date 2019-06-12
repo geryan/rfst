@@ -428,7 +428,7 @@ get.landis.vars <- function(
                                          j),
                       overwrite = TRUE)
     }
-      
+
     stack(lbm,
           ggf,
           ggd,

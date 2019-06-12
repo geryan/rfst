@@ -9,7 +9,9 @@ rst.op <- function(
     "addper",
     "lessthan",
     "lessthanscale",
-    "weightsum"),
+    "weightsum",
+    "history",
+    "timesince"),
   proj_mask,
   filename,
   layernames,
@@ -17,7 +19,10 @@ rst.op <- function(
   lessthan,
   scaleto,
   weight1,
-  weight2){
+  weight2,
+  year){
+  
+  library("raster")
   
   if(missing(op)){
     op <- "writeonly"
@@ -123,6 +128,20 @@ rst.op <- function(
       w <- weight1 + weight2
       
       v <- v1*(w - weight1)/w + v2*(w - weight2)/w
+      
+    } else if (op == "history"){
+      
+      v2 <- getValues(input2, row = bs$row[i], nrows = bs$nrows[i])
+      
+      v <- ifelse(v1 > 0, year, v2)
+      
+    } else if (op == "timesince"){
+      
+      v2 <- getValues(input2, row = bs$row[i], nrows = bs$nrows[i])
+      
+      v2 <- year - v2
+      
+      v <- ifelse(v1 > 0, 0, v2)
       
     }
       

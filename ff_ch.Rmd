@@ -15,7 +15,6 @@ Install packages if necessary. Listed are installers for packages not on CRAN an
 ```{r install packages}
 # library(devtools)
 # install_github("steps-dev/steps")
-# install_github("smwindecker/gdaltools")
 ```
 
 Load packages
@@ -24,6 +23,7 @@ library(raster)
 library(dplyr)
 library(tibble)
 library(sf)
+library(lwgeom)
 library(rgdal)
 library(readr)
 library(readxl)
@@ -39,7 +39,6 @@ library(tidyr)
 library(dismo)
 library(gbm)
 library(steps)
-library(gdaltools)
 ```
 
 ### Functions
@@ -134,8 +133,40 @@ victoria <- read_sf("data/shapefiles/vicstatepolygon/") %>%
    st_transform(crs = ch_proj)
 ```
 
+### Landscape management
 
+#### Fire history
+```{r fire_history}
+fire_history <- read_sf("data/shapefiles/vicfires/fire_history_lastburnt.shp") %>%
+  st_transform(crs = ch_proj) %>%
+  st_make_valid %>%
+  st_crop(y = st_bbox(ch_rst)) %>%
+  rasterize(y = ch_mask, field = "SEASON", fun = max, background = 1850) %>%
+  mask(mask = ch_mask, filename = "output/landscape_vars/fire_history.grd")
 
+fire_history
+```
+
+```{r plot fire_history}
+plot(fire_history)
+```
+
+#### Logging history
+```{r logging_history}
+logging_history <- read_sf("data/shapefiles/viclogging/lastlog25.shp") %>%
+  st_transform(crs = ch_proj) %>%
+  st_make_valid %>%
+  st_crop(y = st_bbox(ch_rst)) %>%
+  mutate(season = SEASON %>% substr(1,4) %>% as.numeric) %>%
+  rasterize(y = ch_mask, field = "season", fun = max, background = 1750) %>%
+  mask(mask = ch_mask, filename = "output/landscape_vars/logging_history.grd")
+
+logging_history
+```
+
+```{r plot logging_history}
+plot(logging_history)
+```
 
 ## Occurrence data
 
@@ -345,6 +376,74 @@ save(s4_vars_landis, file = "output/habitat_vars/s4_vars_landis")
 
 # load(file = "output/habitat_vars/s4_vars_landis_fut")
 ```
+
+## Disturbance variables
+Rely on landis output and land history.
+
+### Time since fire
+
+#### Scenario 1:
+```{r s1_tsf}
+s1_tsf <- vector("list", ntimesteps + 1)
+s1_fihi <- vector("list", ntimesteps + 1)
+s1_firesev <- lapply(s1_vars_landis, FUN = function(x){x[["firesev"]]})
+
+s1_fihi[[1]] <- rst.op(input1 = s1_firesev[[1]],
+                   input2 = fire_history,
+                   op = "history",
+                   proj_mask = ch_mask,
+                   filename = sprintf("%s/%s_%s_%03d.grd",
+                                      "output/landscape_vars/fire_history",
+                                      "s1",
+                                      "fihi",
+                                      year0),
+                   layernames = "fihi",
+                   year = year0)
+
+for (i in 2:(ntimesteps+1)){
+  s1_fihi[[i]] <- rst.op(input1 = s1_firesev[[i]],
+                   input2 = s1_fihi[[i-1]],
+                   op = "history",
+                   proj_mask = ch_mask,
+                   filename = sprintf("%s/%s_%s_%03d.grd",
+                                      "output/landscape_vars/fire_history",
+                                      "s1",
+                                      "fihi",
+                                      year0 + i - 1),
+                   layernames = "fihi",
+                   year = year0 + i - 1)
+}
+
+for(i in 1:(ntimesteps + 1)){
+  
+  s1_tsf[[i]] <- rst.op(input1 = s1_firesev[[i]],
+                        input2 = s1_fihi[[i]],
+                        op = "timesince",
+                        proj_mask = ch_mask,
+                        filename = sprintf("%s/%s_%s_%03d.grd",
+                                            "output/landscape_vars/tsf",
+                                            "s1",
+                                            "tsf",
+                                            year0 + i - 1),
+                         layernames = "tsf",
+                         year = year0 + i - 1)
+}
+```
+
+
+```{r}
+s1_fire_vars <- get.disturbance(disturbances =  lapply(s1_vars_landis, FUN = function(x){x[["firesev"]]}),
+                                disturnce_history = fire_history,
+                                out_path = "output/landscape_vars/",
+                                scn_id = "s1",
+                                layernames = c("fihi", "tsf"),
+                                ntimesteps = ntimesteps,
+                                year0 = year0)
+```
+
+
+
+### Time since logging
 
 ## ARI Data
 
@@ -669,8 +768,7 @@ prec07_8.5 <- rst.op(input1 = prec07,
 ```
 
 #### Interploate prediction data
-**Currently just repeats predictions for nearest year, need updating to weight predictions within 10 years, cf data from CSIRO**
-```{r}
+```{r tmax01_4.5_int}
 tmax01_4.5_int <- interpolate.climdat(initras = tmax01,
                                       futras = tmax01_4.5,
                                       ntimesteps = ntimesteps,
@@ -679,45 +777,97 @@ tmax01_4.5_int <- interpolate.climdat(initras = tmax01,
                                       varname = "tmax01",
                                       proj_mask = ch_mask,
                                       filename = "output/clim_vars/tmax01_4.5")
-
 ```
 
-```{r}
+```{r tmax01_8.5_int}
+tmax01_8.5_int <- interpolate.climdat(initras = tmax01,
+                                      futras = tmax01_8.5,
+                                      ntimesteps = ntimesteps,
+                                      data_years = n_tmax01_8.5,
+                                      year0 =  year0,
+                                      varname = "tmax01",
+                                      proj_mask = ch_mask,
+                                      filename = "output/clim_vars/tmax01_8.5")
+```
 
+```{r tmin07_4.5_int}
+tmin07_4.5_int <- interpolate.climdat(initras = tmin07,
+                                      futras = tmin07_4.5,
+                                      ntimesteps = ntimesteps,
+                                      data_years = n_tmin07_4.5,
+                                      year0 =  year0,
+                                      varname = "tmin07",
+                                      proj_mask = ch_mask,
+                                      filename = "output/clim_vars/tmin07_4.5")
+```
 
+```{r tmin07_8.5_int}
+tmin07_8.5_int <- interpolate.climdat(initras = tmin07,
+                                      futras = tmin07_8.5,
+                                      ntimesteps = ntimesteps,
+                                      data_years = n_tmin07_8.5,
+                                      year0 =  year0,
+                                      varname = "tmin07",
+                                      proj_mask = ch_mask,
+                                      filename = "output/clim_vars/tmin07_8.5")
+```
 
-tmax01_8.5_int <- interpolate.climdat(tmax01, tmax01_8.5, ny = 50, nf = n_tmax01_8.5, n0 = 2019, varname = "tmax01")
-tmin07_4.5_int <- interpolate.climdat(tmin07, tmin07_4.5, ny = 50, nf = n_tmin07_4.5, n0 = 2019, varname = "tmin07")
-tmin07_8.5_int <- interpolate.climdat(tmin07, tmin07_8.5, ny = 50, nf = n_tmin07_8.5, n0 = 2019, varname = "tmin07")
+```{r prec01_4.5_int}
+prec01_4.5_int <- interpolate.climdat(initras = prec01,
+                                      futras = prec01_4.5,
+                                      ntimesteps = ntimesteps,
+                                      data_years = n_prec01_4.5,
+                                      year0 =  year0,
+                                      varname = "prec01",
+                                      proj_mask = ch_mask,
+                                      filename = "output/clim_vars/prec01_4.5")
+```
 
-prec01_4.5_int <- interpolate.climdat(prec01, prec01_4.5, ny = 50, nf = n_prec01_4.5, n0 = 2019, varname = "prec01")
-prec01_8.5_int <- interpolate.climdat(prec01, prec01_8.5, ny = 50, nf = n_prec01_8.5, n0 = 2019, varname = "prec01")
-prec07_4.5_int <- interpolate.climdat(prec07, prec07_4.5, ny = 50, nf = n_prec07_4.5, n0 = 2019, varname = "prec07")
-prec07_8.5_int <- interpolate.climdat(prec07, prec07_8.5, ny = 50, nf = n_prec07_8.5, n0 = 2019, varname = "prec07")
+```{r prec01_8.5_int}
+prec01_8.5_int <- interpolate.climdat(initras = prec01,
+                                      futras = prec01_8.5,
+                                      ntimesteps = ntimesteps,
+                                      data_years = n_prec01_8.5,
+                                      year0 =  year0,
+                                      varname = "prec01",
+                                      proj_mask = ch_mask,
+                                      filename = "output/clim_vars/prec01_8.5")
+```
+
+```{r prec07_4.5_int}
+prec07_4.5_int <- interpolate.climdat(initras = prec07,
+                                      futras = prec07_4.5,
+                                      ntimesteps = ntimesteps,
+                                      data_years = n_prec07_4.5,
+                                      year0 =  year0,
+                                      varname = "prec07",
+                                      proj_mask = ch_mask,
+                                      filename = "output/clim_vars/prec07_4.5")
+```
+
+```{r prec07_8.5_int}
+prec07_8.5_int <- interpolate.climdat(initras = prec07,
+                                      futras = prec07_8.5,
+                                      ntimesteps = ntimesteps,
+                                      data_years = n_prec07_8.5,
+                                      year0 =  year0,
+                                      varname = "prec07",
+                                      proj_mask = ch_mask,
+                                      filename = "output/clim_vars/prec07_8.5")
 ```
 
 ### Climate variable sets
 
 #### Initial climate variables
 ```{r clim iv}
-clim_iv <- stack(prec01, prec07, tmax01, tmin07)
-```
-
-#### Future climate variables
-```{r clim_fv}
-clim_fv_cc0 <- vector("list", 50)
-for(i in 1:50){
-  clim_fv_cc0[[i]] <- clim_iv
-}
-
-
-clim_fv_4.5 <- mapply(prec01_4.5_int, prec07_4.5_int, tmax01_4.5_int, tmin07_4.5_int, FUN = stack)
-clim_fv_8.5 <- mapply(prec01_8.5_int, prec07_8.5_int, tmax01_8.5_int, tmin07_8.5_int, FUN = stack)
+clim_vars_4.5 <- mapply(prec01_4.5_int, prec07_4.5_int, tmax01_4.5_int, tmin07_4.5_int, FUN = stack)
+clim_vars_8.5 <- mapply(prec01_8.5_int, prec07_8.5_int, tmax01_8.5_int, tmin07_8.5_int, FUN = stack)
 ```
 
 ```{r}
 save.image(file = "output/session_images/input_variables.RData")
 ```
+
 
 
 ## Distribution model variables
@@ -742,7 +892,7 @@ lblv <- c("lbm", "hbt_3h")
 
 ##### Scenario 1 initial variables
 ```{r s1_iv_gg}
-s1_iv_gg <- stack(s1_vars_landis_init[[c(gglv)]], clim_iv)
+s1_iv_gg <- stack(s1_vars_landis[[c(gglv)]], clim_iv)
 
 save(s1_iv_gg, file = "output/habitat_vars/s1_iv_gg")
 ```
