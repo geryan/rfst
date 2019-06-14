@@ -19,7 +19,8 @@ Install packages if necessary. Listed are installers for packages not on CRAN an
 
 Load packages
 ```{r packages}
-library(raster)
+library(magrittr)
+library(tidyr)
 library(dplyr)
 library(tibble)
 library(sf)
@@ -29,8 +30,6 @@ library(readr)
 library(readxl)
 library(ggplot2)
 library(lubridate)
-library(magrittr)
-library(tidyr)
 library(foreach)
 library(doMC)
 library(future)
@@ -39,6 +38,7 @@ library(tidyr)
 library(dismo)
 library(gbm)
 library(steps)
+library(raster)
 ```
 
 ### Functions
@@ -52,6 +52,7 @@ source(file = "R/functions/rascc.R")
 source(file = "R/functions/read.multi.line.header.R")
 source(file = "R/functions/interpolate.climdat.R")
 source(file = "R/functions/rst.op.R")
+source(file = "R/functions/get.disturbance.R")
 ```
 
 ### Paths
@@ -142,7 +143,7 @@ fire_history <- read_sf("data/shapefiles/vicfires/fire_history_lastburnt.shp") %
   st_make_valid %>%
   st_crop(y = st_bbox(ch_rst)) %>%
   rasterize(y = ch_mask, field = "SEASON", fun = max, background = 1850) %>%
-  mask(mask = ch_mask, filename = "output/landscape_vars/fire_history.grd")
+  mask(mask = ch_mask, filename = "output/landscape_vars/fire_history.grd", overwrite = TRUE)
 
 fire_history
 ```
@@ -159,7 +160,7 @@ logging_history <- read_sf("data/shapefiles/viclogging/lastlog25.shp") %>%
   st_crop(y = st_bbox(ch_rst)) %>%
   mutate(season = SEASON %>% substr(1,4) %>% as.numeric) %>%
   rasterize(y = ch_mask, field = "season", fun = max, background = 1750) %>%
-  mask(mask = ch_mask, filename = "output/landscape_vars/logging_history.grd")
+  mask(mask = ch_mask, filename = "output/landscape_vars/logging_history.grd", overwrite = TRUE)
 
 logging_history
 ```
@@ -174,7 +175,7 @@ plot(logging_history)
 pseudo_abs <- read_sf("data/shapefiles/pseudo_absences/pseudo_absences.shp")%>%
   st_transform(crs = st_crs(ch_rst)) %>%
   mutate(PA = 0) %>%
-  select(PA, geometry) %>%
+  dplyr::select(PA, geometry) %>%
   st_zm(drop = TRUE)
 
 pseudo_abs
@@ -185,11 +186,11 @@ pseudo_abs
 Read in data
 ```{r gg_ari}
 gg_ari <- read_excel(path = "data/tabular/BoA_SB_Combined_VBA_upload_v4.xls") %>%
-  dplyr::select(-starts_with("leave")) %>%
+  dplyr::dplyr::select(-starts_with("leave")) %>%
   rename("lon" = `X-coordinate (easting or longitude)`, "lat" = `Y-coordinate (northing or latitude)`) %>%
    fill(lon, lat, .direction = "down") %>%
   filter(`Taxon Name` == "Misc Target taxa not found") %>%
-  select(lon, lat) %>%
+  dplyr::select(lon, lat) %>%
   mutate(PA = 0) %>%
   st_as_sf(coords = c("lon", "lat"), crs = st_crs(28355)) %>%
   st_transform(crs = st_crs(ch_rst))
@@ -383,67 +384,192 @@ Rely on landis output and land history.
 ### Time since fire
 
 #### Scenario 1:
-```{r s1_tsf}
-s1_tsf <- vector("list", ntimesteps + 1)
-s1_fihi <- vector("list", ntimesteps + 1)
-s1_firesev <- lapply(s1_vars_landis, FUN = function(x){x[["firesev"]]})
-
-s1_fihi[[1]] <- rst.op(input1 = s1_firesev[[1]],
-                   input2 = fire_history,
-                   op = "history",
-                   proj_mask = ch_mask,
-                   filename = sprintf("%s/%s_%s_%03d.grd",
-                                      "output/landscape_vars/fire_history",
-                                      "s1",
-                                      "fihi",
-                                      year0),
-                   layernames = "fihi",
-                   year = year0)
-
-for (i in 2:(ntimesteps+1)){
-  s1_fihi[[i]] <- rst.op(input1 = s1_firesev[[i]],
-                   input2 = s1_fihi[[i-1]],
-                   op = "history",
-                   proj_mask = ch_mask,
-                   filename = sprintf("%s/%s_%s_%03d.grd",
-                                      "output/landscape_vars/fire_history",
-                                      "s1",
-                                      "fihi",
-                                      year0 + i - 1),
-                   layernames = "fihi",
-                   year = year0 + i - 1)
-}
-
-for(i in 1:(ntimesteps + 1)){
-  
-  s1_tsf[[i]] <- rst.op(input1 = s1_firesev[[i]],
-                        input2 = s1_fihi[[i]],
-                        op = "timesince",
-                        proj_mask = ch_mask,
-                        filename = sprintf("%s/%s_%s_%03d.grd",
-                                            "output/landscape_vars/tsf",
-                                            "s1",
-                                            "tsf",
-                                            year0 + i - 1),
-                         layernames = "tsf",
-                         year = year0 + i - 1)
-}
-```
-
-
-```{r}
+```{r s1_fire_vars}
 s1_fire_vars <- get.disturbance(disturbances =  lapply(s1_vars_landis, FUN = function(x){x[["firesev"]]}),
-                                disturnce_history = fire_history,
+                                disturbance_history = fire_history,
                                 out_path = "output/landscape_vars/",
                                 scn_id = "s1",
                                 layernames = c("fihi", "tsf"),
                                 ntimesteps = ntimesteps,
                                 year0 = year0)
 ```
+Initial fire history
+```{r plot s1_fire_vars fire history initial}
+plot(s1_fire_vars[[1]][["fihi"]])
+```
+
+Last fire history
+```{r plot s1_fire_vars fire history last}
+plot(s1_fire_vars[[ntimesteps + 1]][["fihi"]])
+```
+
+Initial time since fire
+```{r plot s1_fire_vars time since fire initial}
+plot(s1_fire_vars[[1]][["tsf"]])
+```
+
+Last time since fire
+```{r plot s1_fire_var time since fire last}
+plot(s1_fire_vars[[ntimesteps + 1]][["tsf"]])
+```
+
+#### Scenario 2
+
+#### Scenario 3
+```{r s3_fire_vars}
+s3_fire_vars <- get.disturbance(disturbances =  lapply(s3_vars_landis, FUN = function(x){x[["firesev"]]}),
+                                disturbance_history = fire_history,
+                                out_path = "output/landscape_vars/",
+                                scn_id = "s3",
+                                layernames = c("fihi", "tsf"),
+                                ntimesteps = ntimesteps,
+                                year0 = year0)
+```
+Initial fire history
+```{r plot s3_fire_vars fire history initial}
+plot(s3_fire_vars[[1]][["fihi"]])
+```
+
+Last fire history
+```{r plot s3_fire_vars fire history last}
+plot(s3_fire_vars[[ntimesteps + 1]][["fihi"]])
+```
+
+Initial time since fire
+```{r plot s3_fire_vars time since fire initial}
+plot(s3_fire_vars[[1]][["tsf"]])
+```
+
+Last time since fire
+```{r plot s3_fire_var time since fire last}
+plot(s3_fire_vars[[ntimesteps + 1]][["tsf"]])
+```
+
+#### Scenario 4
+```{r s4_fire_vars}
+s4_fire_vars <- get.disturbance(disturbances =  lapply(s4_vars_landis, FUN = function(x){x[["firesev"]]}),
+                                disturbance_history = fire_history,
+                                out_path = "output/landscape_vars/",
+                                scn_id = "s4",
+                                layernames = c("fihi", "tsf"),
+                                ntimesteps = ntimesteps,
+                                year0 = year0)
+```
+Initial fire history
+```{r plot s4_fire_vars fire history initial}
+plot(s4_fire_vars[[1]][["fihi"]])
+```
+
+Last fire history
+```{r plot s4_fire_vars fire history last}
+plot(s4_fire_vars[[ntimesteps + 1]][["fihi"]])
+```
+
+Initial time since fire
+```{r plot s4_fire_vars time since fire initial}
+plot(s4_fire_vars[[1]][["tsf"]])
+```
+
+Last time since fire
+```{r plot s4_fire_var time since fire last}
+plot(s4_fire_vars[[ntimesteps + 1]][["tsf"]])
+```
 
 
 
 ### Time since logging
+
+#### Scenario 1:
+```{r s1_logging_vars}
+s1_logging_vars <- get.disturbance(disturbances =  lapply(s1_vars_landis, FUN = function(x){x[["harvest"]]}),
+                                disturbance_history = logging_history,
+                                out_path = "output/landscape_vars/",
+                                scn_id = "s1",
+                                layernames = c("lohi", "tsl"),
+                                ntimesteps = ntimesteps,
+                                year0 = year0)
+```
+Initial logging history
+```{r plot s1_logging_vars logging history initial}
+plot(s1_logging_vars[[1]][["lohi"]])
+```
+
+Last logging history
+```{r plot s1_logging_vars logging history last}
+plot(s1_logging_vars[[ntimesteps + 1]][["lohi"]])
+```
+
+Initial time since fire
+```{r plot s1_logging_vars time since logging initial}
+plot(s1_logging_vars[[1]][["tsl"]])
+```
+
+Last time since fire
+```{r plot s1_logging_var time since logging last}
+plot(s1_logging_vars[[ntimesteps + 1]][["tsl"]])
+```
+
+#### Scenario 2
+
+#### Scenario 3
+```{r s3_logging_vars}
+s3_logging_vars <- get.disturbance(disturbances =  lapply(s3_vars_landis, FUN = function(x){x[["harvest"]]}),
+                                disturbance_history = logging_history,
+                                out_path = "output/landscape_vars/",
+                                scn_id = "s3",
+                                layernames = c("lohi", "tsl"),
+                                ntimesteps = ntimesteps,
+                                year0 = year0)
+```
+Initial logging history
+```{r plot s3_logging_vars logging history initial}
+plot(s3_logging_vars[[1]][["lohi"]])
+```
+
+Last logging history
+```{r plot s3_logging_vars logging history last}
+plot(s3_logging_vars[[ntimesteps + 1]][["lohi"]])
+```
+
+Initial time since fire
+```{r plot s3_logging_vars time since logging initial}
+plot(s3_logging_vars[[1]][["tsl"]])
+```
+
+Last time since fire
+```{r plot s3_logging_var time since logging last}
+plot(s3_logging_vars[[ntimesteps + 1]][["tsl"]])
+```
+
+#### Scenario 4
+```{r s4_logging_vars}
+s4_logging_vars <- get.disturbance(disturbances =  lapply(s4_vars_landis, FUN = function(x){x[["harvest"]]}),
+                                disturbance_history = logging_history,
+                                out_path = "output/landscape_vars/",
+                                scn_id = "s4",
+                                layernames = c("lohi", "tsl"),
+                                ntimesteps = ntimesteps,
+                                year0 = year0)
+```
+Initial logging history
+```{r plot s4_logging_vars logging history initial}
+plot(s4_logging_vars[[1]][["lohi"]])
+```
+
+Last logging history
+```{r plot s4_logging_vars logging history last}
+plot(s4_logging_vars[[ntimesteps + 1]][["lohi"]])
+```
+
+Initial time since fire
+```{r plot s4_logging_vars time since logging initial}
+plot(s4_logging_vars[[1]][["tsl"]])
+```
+
+Last time since fire
+```{r plot s4_logging_var time since logging last}
+plot(s4_logging_vars[[ntimesteps + 1]][["tsl"]])
+```
 
 ## ARI Data
 
@@ -451,7 +577,7 @@ s1_fire_vars <- get.disturbance(disturbances =  lapply(s1_vars_landis, FUN = fun
 ```{r ahr}
 ahr <-raster(x = "data/grids/Env_covariates_noClimate_VicGrid94/Anisotrophic_Heating_Ruggedness") %>%
   projectRaster(to = ch_mask) %>%
-  mask(mask = ch_mask, filename = "output/habitat_vars/ari_ahr.grd") %T>%
+  mask(mask = ch_mask, filename = "output/habitat_vars/ari_ahr.grd", overwrite = TRUE) %T>%
   plot
 ```
 
@@ -459,42 +585,42 @@ ahr <-raster(x = "data/grids/Env_covariates_noClimate_VicGrid94/Anisotrophic_Hea
 ```{r lvdaw}
 lvdaw <- raster(x = "data/grids/Env_covariates_noClimate_VicGrid94/log_vertical_distance_all_wetlands_sept2012") %>%
   projectRaster(to = ch_mask) %>%
-  mask(mask = ch_mask, filename = "output/habitat_vars/ari_lvdaw.grd") %T>%
+  mask(mask = ch_mask, filename = "output/habitat_vars/ari_lvdaw.grd", overwrite = TRUE) %T>%
   plot
 ```
 ### Log vertical distance major streams
 ```{r lvdma}
 lvdma <- raster(x = "data/grids/Env_covariates_noClimate_VicGrid94/log_vertical_distance_major_streams_sept2012") %>%
   projectRaster(to = ch_mask) %>%
-  mask(mask = ch_mask, filename = "output/habitat_vars/ari_lvdma.grd") %T>%
+  mask(mask = ch_mask, filename = "output/habitat_vars/ari_lvdma.grd", overwrite = TRUE) %T>%
   plot
 ```
 ### Log vertical distance minor streams
 ```{r lvdmi}
 lvdmi <- raster(x = "data/grids/Env_covariates_noClimate_VicGrid94/log_vertical_distance_minor_streams_sept2012") %>%
   projectRaster(to = ch_mask) %>%
-  mask(mask = ch_mask, filename = "output/habitat_vars/ari_lvdmi.grd") %T>%
+  mask(mask = ch_mask, filename = "output/habitat_vars/ari_lvdmi.grd", overwrite = TRUE) %T>%
   plot
 ```
 ### Log vertical distance saline wetlands
 ```{r lvdsw}
 lvdsw <- raster(x = "data/grids/Env_covariates_noClimate_VicGrid94/log_vertical_distance_saline_wetlands_sept2012") %>%
   projectRaster(to = ch_mask) %>%
-  mask(mask = ch_mask, filename = "output/habitat_vars/ari_lvdsw.grd") %T>%
+  mask(mask = ch_mask, filename = "output/habitat_vars/ari_lvdsw.grd", overwrite = TRUE) %T>%
   plot
 ```
 ### Relative annual insolation
 ```{r rai}
 rai <- raster(x = "data/grids/Env_covariates_noClimate_VicGrid94/relative_annual_insolation_sept2012") %>%
   projectRaster(to = ch_mask) %>%
-  mask(mask = ch_mask, filename = "output/habitat_vars/ari_rai.grd") %T>%
+  mask(mask = ch_mask, filename = "output/habitat_vars/ari_rai.grd", overwrite = TRUE) %T>%
   plot
 ```
 ### Thorium
 ```{r tho}
 tho <- raster(x = "data/grids/Env_covariates_noClimate_VicGrid94/sept2014thorium") %>%
   projectRaster(to = ch_mask) %>%
-  mask(mask = ch_mask, filename = "output/habitat_vars/ari_tho.grd") %T>%
+  mask(mask = ch_mask, filename = "output/habitat_vars/ari_tho.grd", overwrite = TRUE) %T>%
   plot
 ```
 
@@ -502,7 +628,7 @@ tho <- raster(x = "data/grids/Env_covariates_noClimate_VicGrid94/sept2014thorium
 ```{r vsky}
 vsky <- raster(x = "data/grids/Env_covariates_noClimate_VicGrid94/visible_sky_sept2012") %>%
   projectRaster(to = ch_mask) %>%
-  mask(mask = ch_mask, filename = "output/habitat_vars/ari_vsky.grd") %T>%
+  mask(mask = ch_mask, filename = "output/habitat_vars/ari_vsky.grd", overwrite = TRUE) %T>%
   plot
 ```
 
@@ -510,7 +636,7 @@ vsky <- raster(x = "data/grids/Env_covariates_noClimate_VicGrid94/visible_sky_se
 ```{r twi}
 twi <- raster(x = "data/grids/Env_covariates_noClimate_VicGrid94/wetness_index_topocrop_sept2012") %>%
   projectRaster(to = ch_mask) %>%
-  mask(mask = ch_mask, filename = "output/habitat_vars/ari_twi.grd") %T>%
+  mask(mask = ch_mask, filename = "output/habitat_vars/ari_twi.grd", overwrite = TRUE) %T>%
   plot
 ```
 
@@ -519,7 +645,7 @@ twi <- raster(x = "data/grids/Env_covariates_noClimate_VicGrid94/wetness_index_t
 ```{r winex}
 # winex <- raster(x = "data/grids/Env_covariates_noClimate_VicGrid94/wind_exposition2015") %>%
   # projectRaster(to = ch_mask) %>%
-  # mask(mask = ch_mask, filename = "output/habitat_vars/ari_winex.grd") %T>%
+  # mask(mask = ch_mask, filename = "output/habitat_vars/ari_winex.grd", overwrite = TRUE) %T>%
   # plot
 ```
 
@@ -562,34 +688,11 @@ evtr ~ evapotranspiration
 
 ### Current climate
 From WorldClim
-
-#### Precipitation in January
-```{r prec01}
-prec01 <- raster("data/grids/wc2.0_30s_prec_01.tif") %>%
-  projectRaster(to = ch_mask) %>%
-  mask(mask = ch_mask, filename = "output/clim_vars/prec01.grd")
-
-names(prec01) <- "prec01"
-
-plot(prec01)
-```
-
-#### Precipitation in July
-```{r prec07}
-prec07 <- raster("data/grids/wc2.0_30s_prec_07.tif") %>%
-  projectRaster(to = ch_mask) %>%
-  mask(mask = ch_mask, filename = "output/clim_vars/prec07.grd")
-
-names(prec07) <- "prec07"
-
-plot(prec07)
-```
-
 #### Max temperature in January
 ```{r tmax01}
-tmax01 <- raster("data/grids/wc2.0_30s_tmax_01.tif") %>%
+tmax01 <- getData(name = "worldclim", var = "tmax", res = 0.5, lat = -60, lon = 120)[[1]] %>%
   projectRaster(to = ch_mask) %>%
-  mask(mask = ch_mask, filename = "output/clim_vars/tmax01.grd")
+  mask(mask = ch_mask, filename = "output/clim_vars/tmax01.grd", overwrite = TRUE)
 
 names(tmax01) <- "tmax01"
 
@@ -598,14 +701,37 @@ plot(tmax01)
 
 #### Minimum temperature in July
 ```{r tmin07}
-tmin07 <- raster("data/grids/wc2.0_30s_tmin_07.tif") %>%
+tmin07 <- getData(name = "worldclim", var = "tmin", res = 0.5, lat = -60, lon = 120)[[7]] %>%
   projectRaster(to = ch_mask) %>%
-  mask(mask = ch_mask, filename = "output/clim_vars/tmin07.grd")
+  mask(mask = ch_mask, filename = "output/clim_vars/tmin07.grd", overwrite = TRUE)
 
 names(tmin07) <- "tmin07"
 
 plot(tmin07)
 ```
+#### Precipitation in January
+```{r prec01}
+prec01 <- getData(name = "worldclim", var = "prec", res = 0.5, lat = -60, lon = 120)[[1]] %>%
+  projectRaster(to = ch_mask) %>%
+  mask(mask = ch_mask, filename = "output/clim_vars/prec01.grd", overwrite = TRUE)
+
+names(prec01) <- "prec01"
+
+plot(prec01)
+```
+
+#### Precipitation in July
+```{r prec07}
+prec07 <- getData(name = "worldclim", var = "tmax", res = 0.5, lat = -60, lon = 120)[[7]] %>%
+  projectRaster(to = ch_mask) %>%
+  mask(mask = ch_mask, filename = "output/clim_vars/prec07.grd", overwrite = TRUE)
+
+names(prec07) <- "prec07"
+
+plot(prec07)
+```
+
+
 
 
 ### Future climate
@@ -858,13 +984,17 @@ prec07_8.5_int <- interpolate.climdat(initras = prec07,
 
 ### Climate variable sets
 
-#### Initial climate variables
-```{r clim iv}
+#### Climate variables
+```{r clim_vars}
+clim_vars_cc0 <- vector("list", ntimesteps + 1)
+for(i in 1:(ntimesteps + 1)){
+  clim_vars_cc0[[i]] <- stack(prec01, prec07, tmax01, tmin07)
+}
 clim_vars_4.5 <- mapply(prec01_4.5_int, prec07_4.5_int, tmax01_4.5_int, tmin07_4.5_int, FUN = stack)
 clim_vars_8.5 <- mapply(prec01_8.5_int, prec07_8.5_int, tmax01_8.5_int, tmin07_8.5_int, FUN = stack)
 ```
 
-```{r}
+```{r save image vars}
 save.image(file = "output/session_images/input_variables.RData")
 ```
 
@@ -876,220 +1006,381 @@ save.image(file = "output/session_images/input_variables.RData")
 
 #### GG LANDIS vars
 ```{r gg_lv}
-gglv <- c("ggf", "ggd", "hbt_1k")
+gglv <- c("ggf", "ggd", "hbt_1k", "prop_bio_regn", "prop_bio_targ", "prop_oge_1k")
 ```
 
 
 #### LB LANDIS vars
-```{r}
-lblv <- c("lbm", "hbt_3h")
+```{r lblv}
+lblv <- c("lbm", "hbt_3h", "prop_oge_3h")
 ```
 
 
-### Scenario 1
+### Greater Glider
 
-#### Greater Glider
+#### Model data
 
-##### Scenario 1 initial variables
-```{r s1_iv_gg}
-s1_iv_gg <- stack(s1_vars_landis[[c(gglv)]], clim_iv)
+#####  Scenario 1 Variable layers
+```{r s1_v_gg initial}
+s1_v_gg <- s1_vars_landis %>%
+  sapply("[[", gglv) %>%
+  mapply(clim_vars_4.5,
+         ari_v,
+         sapply(s1_fire_vars, "[[", "tsf"),
+         sapply(s1_logging_vars, "[[", "tsl"),
+         FUN = stack)
 
-save(s1_iv_gg, file = "output/habitat_vars/s1_iv_gg")
+save(s1_v_gg, file = "output/model_vars/s1_v_gg")
 ```
 
-##### Scenaio 1 model data
-```{r}
-s1_md_gg <- s1_iv_gg %>%
+##### Model data
+```{r md_gg}
+md_gg <- s1_v_gg[[1]] %>%
   raster::extract(y = st_coordinates(gg_pa_ch)) %>%
   cbind("PA" = gg_pa_ch$PA, .) %>%
   as.data.frame %>%
   na.omit
 
-s1_md_gg
+save(md_gg, file = "output/model_vars/md_gg")
+```
 
-save(s1_md_gg, file = "output/habitat_vars/s1_md_gg")
+##### Model data with pseudo-absences
+```{r s1_md_gg_ps}
+s1_md_gg_ps <- s1_v_gg[[1]] %>%
+  raster::extract(y = st_coordinates(gg_pa_ch_psab)) %>%
+  cbind("PA" = gg_pa_ch_psab$PA, .) %>%
+  as.data.frame %>%
+  na.omit
+
+save(s1_md_gg_ps, file = "output/model_vars/s1_md_gg_ps")
+```
+
+##### Check for correlations
+```{r corr s1_v_gg}
+s1_gg_cor <- cor(s1_md_gg[, 2:dim(s1_md_gg)[2]])
+s1_gg_cor
+```
+```{r highlight s1_gg_cor}
+ifelse(s1_gg_cor > 0.7, s1_gg_cor, 0)
+```
+
+This suggests high degree of correlation (coefficient >0.7) between:
+
+- hbt_1k and prop_oge_1k
+- prec07, tmax01, and tmin07, and
+- lvdaw, lvdma, and lvdsw.
+
+Aim to keep:
+- prop_oge_1k, as this has the biomass-by-age data so should be more nuanced than the hbt_1k index.
+- tmin07, as highest average correlations and means we keep a temperature and a precipitation varible in the model
+- lvdaw, as this encompasses both major water bodies and salt water bodies
+
+Recompile variables excluding highly correlated variables.
+
+```{r gg_lv recompile}
+gglv <- c("ggf", "ggd", "prop_bio_regn", "prop_bio_targ", "prop_oge_1k")
 ```
 
 
-##### Scenario 1 future variables
-```{r s1_fv_gg}
-s1_fv_gg <- s1_vars_landis_fut %>%
-  sapply("[[", gglv) %>%
-  mapply(clim_fv_4.5, FUN = stack)
+```{r ari_v recomppile}
+ari_v <- sapply(ari_v, "[[", c("lvdaw", "lvdmi"))
+```
 
-save(s1_fv_gg, file = "output/habitat_vars/s1_fv_gg")
+```{r clim_vars recompile}
+clim_vars_cc0 <- sapply(clim_vars_cc0, "[[", c("prec01", "tmin07"))
+clim_vars_4.5 <- sapply(clim_vars_4.5, "[[", c("prec01", "tmin07"))
+clim_vars_8.5 <- sapply(clim_vars_8.5, "[[", c("prec01", "tmin07"))
+```
+
+#### Recompile scenario 1 variable layers
+```{r s1_v_gg}
+s1_v_gg <- s1_vars_landis %>%
+  sapply("[[", gglv) %>%
+  mapply(clim_vars_4.5,
+         ari_v,
+         sapply(s1_fire_vars, "[[", "tsf"),
+         sapply(s1_logging_vars, "[[", "tsl"),
+         FUN = stack)
+
+save(s1_v_gg, file = "output/model_vars/s1_v_gg")
+```
+
+##### Recompile  Model data
+```{r s1_md_gg}
+md_gg <- s1_v_gg[[1]] %>%
+  raster::extract(y = st_coordinates(gg_pa_ch)) %>%
+  cbind("PA" = gg_pa_ch$PA, .) %>%
+  as.data.frame %>%
+  na.omit
+
+save(md_gg, file = "output/model_vars/md_gg")
+```
+
+##### Recompile Model data with pseudo-absences
+```{r _md_gg_ps}
+md_gg_ps <- s1_v_gg[[1]] %>%
+  raster::extract(y = st_coordinates(gg_pa_ch_psab)) %>%
+  cbind("PA" = gg_pa_ch_psab$PA, .) %>%
+  as.data.frame %>%
+  na.omit
+
+save(md_gg_ps, file = "output/model_vars/md_gg_ps")
+```
+
+Check agian no  highly correlated variables
+```{r check again s1_gg_cor}
+which(cor(s1_md_gg) > 0.7 && cor(s1_md_gg) != 1) 
 ```
 
 
 #### Leadbeater's Possum
 
-##### Scenario 1 initial variables
-```{r s1_iv_lb}
-s1_iv_lb <- stack(s1_vars_landis_init[[c(lblv)]], clim_iv)
+##### Variable layers
+```{r s1_v_lb}
+s1_v_lb <- s1_vars_landis %>%
+  sapply("[[", lblv) %>%
+  mapply(clim_vars_4.5,
+         ari_v,
+         sapply(s1_fire_vars, "[[", "tsf"),
+         sapply(s1_logging_vars, "[[", "tsl"),
+         FUN = stack)
 
-save(s1_iv_lb, file = "output/habitat_vars/s1_iv_lb")
+save(s1_v_lb, file = "output/model_vars/s1_v_lb")
 ```
 
-##### Scenaio 1 model data
-```{r}
-s1_md_lb <- s1_iv_lb %>%
+##### Model data
+```{r s1_md_lb}
+s1_md_lb <- s1_v_lb[[1]] %>%
   raster::extract(y = st_coordinates(lb_pa_ch)) %>%
   cbind("PA" = lb_pa_ch$PA, .) %>%
   as.data.frame %>%
-  na.omit 
+  na.omit
 
-s1_md_lb
-
-save(s1_md_lb, file = "output/habitat_vars/s1_md_lb")
+save(s1_md_lb, file = "output/model_vars/s1_md_lb")
 ```
 
+##### Model data with pseudo-absences
+```{r s1_md_lb_ps}
+s1_md_lb_ps <- s1_v_lb[[1]] %>%
+  raster::extract(y = st_coordinates(lb_pa_ch_psab)) %>%
+  cbind("PA" = lb_pa_ch_psab$PA, .) %>%
+  as.data.frame %>%
+  na.omit
 
-##### Scenario 1 future variables
-```{r s1_fv_lb}
-s1_fv_lb <- s1_vars_landis_fut %>%
+save(s1_md_lb_ps, file = "output/model_vars/s1_md_lb_ps")
+```
+
+##### Check for correlations
+```{r corr s1_v_lb}
+s1_lb_cor <- cor(s1_md_lb[, 2:dim(s1_md_lb)[2]])
+s1_lb_cor
+```
+```{r highlight s1_lb_cor}
+ifelse(s1_lb_cor > 0.7, s1_lb_cor, 0)
+```
+
+Again high correlation between hollow-bearing tree index and proportion of old-growth eucalypts. As for greater glider, exclude the hbt_3h and recompile model variables.
+
+##### LB LANDIS vars
+```{r lblv}
+lblv <- c("lbm", "prop_oge_3h")
+```
+
+##### Variable layers
+```{r s1_v_lb}
+s1_v_lb <- s1_vars_landis %>%
   sapply("[[", lblv) %>%
-  mapply(clim_fv_4.5, FUN = stack)
+  mapply(clim_vars_4.5,
+         ari_v,
+         sapply(s1_fire_vars, "[[", "tsf"),
+         sapply(s1_logging_vars, "[[", "tsl"),
+         FUN = stack)
 
-save(s1_fv_lb, file = "output/habitat_vars/s1_fv_lb")
+save(s1_v_lb, file = "output/model_vars/s1_v_lb")
 ```
+
+##### Model data
+```{r s1_md_lb}
+s1_md_lb <- s1_v_lb[[1]] %>%
+  raster::extract(y = st_coordinates(lb_pa_ch)) %>%
+  cbind("PA" = lb_pa_ch$PA, .) %>%
+  as.data.frame %>%
+  na.omit
+
+save(s1_md_lb, file = "output/model_vars/s1_md_lb")
+```
+
+##### Model data with pseudo-absences
+```{r s1_md_lb_ps}
+s1_md_lb_ps <- s1_v_lb[[1]] %>%
+  raster::extract(y = st_coordinates(lb_pa_ch_psab)) %>%
+  cbind("PA" = lb_pa_ch_psab$PA, .) %>%
+  as.data.frame %>%
+  na.omit
+
+save(s1_md_lb_ps, file = "output/model_vars/s1_md_lb_ps")
+```
+
+Check agian no  highly correlated variables
+```{r check again s1_gg_cor}
+which(cor(s1_md_lb) > 0.7 && cor(s1_md_lb) != 1) 
+```
+
 
 ### Scenario 2
-**awaiting updated climate variables**
-
 
 ### Scenario 3
 
 #### Greater Glider
 
-##### Scenario 3 initial variables
-```{r s3_iv_gg}
-s3_iv_gg <- stack(s3_vars_landis_init[[c(gglv)]], clim_iv)
+##### Variable layers
+```{r s3_v_gg}
+s3_v_gg <- s3_vars_landis %>%
+  sapply("[[", gglv) %>%
+  mapply(clim_vars_cc0,
+         ari_v,
+         sapply(s3_fire_vars, "[[", "tsf"),
+         sapply(s3_logging_vars, "[[", "tsl"),
+         FUN = stack)
 
-save(s3_iv_gg, file = "output/habitat_vars/s3_iv_gg")
+save(s3_v_gg, file = "output/model_vars/s3_v_gg")
 ```
 
-##### Scenaio 3 model data
-```{r}
-s3_md_gg <- s3_iv_gg %>%
+##### Model data
+```{r s3_md_gg}
+s3_md_gg <- s3_v_gg[[1]] %>%
   raster::extract(y = st_coordinates(gg_pa_ch)) %>%
   cbind("PA" = gg_pa_ch$PA, .) %>%
   as.data.frame %>%
-  na.omit 
+  na.omit
 
-s3_md_gg
-
-save(s3_md_gg, file = "output/habitat_vars/s3_md_gg")
+save(s3_md_gg, file = "output/model_vars/s3_md_gg")
 ```
 
+##### Model data with pseudo-absences
+```{r s3_md_gg_ps}
+s3_md_gg_ps <- s3_v_gg[[1]] %>%
+  raster::extract(y = st_coordinates(gg_pa_ch_psab)) %>%
+  cbind("PA" = gg_pa_ch_psab$PA, .) %>%
+  as.data.frame %>%
+  na.omit
 
-##### Scenario 3 future variables
-```{r s3_fv_gg}
-s3_fv_gg <- s3_vars_landis_fut %>%
-  sapply("[[", gglv) %>%
-  mapply(clim_fv_cc0, FUN = stack)
-
-save(s3_fv_gg, file = "output/habitat_vars/s3_fv_gg")
+save(s3_md_gg_ps, file = "output/model_vars/s3_md_gg_ps")
 ```
 
 
 #### Leadbeater's Possum
 
-##### Scenario 3 initial variables
-```{r s3_iv_lb}
-s3_iv_lb <- stack(s3_vars_landis_init[[c(lblv)]], clim_iv)
+##### Variable layers
+```{r s3_v_lb}
+s3_v_lb <- s3_vars_landis %>%
+  sapply("[[", lblv) %>%
+  mapply(clim_vars_cc0,
+         ari_v,
+         sapply(s3_fire_vars, "[[", "tsf"),
+         sapply(s3_logging_vars, "[[", "tsl"),
+         FUN = stack)
 
-save(s3_iv_lb, file = "output/habitat_vars/s3_iv_lb")
+save(s3_v_lb, file = "output/model_vars/s3_v_lb")
 ```
 
-##### Scenaio 3 model data
-```{r}
-s3_md_lb <- s3_iv_lb %>%
+##### Model data
+```{r s3_md_lb}
+s3_md_lb <- s3_v_lb[[1]] %>%
   raster::extract(y = st_coordinates(lb_pa_ch)) %>%
   cbind("PA" = lb_pa_ch$PA, .) %>%
   as.data.frame %>%
-  na.omit 
+  na.omit
 
-s3_md_lb
-
-save(s3_md_lb, file = "output/habitat_vars/s3_md_lb")
+save(s3_md_lb, file = "output/model_vars/s3_md_lb")
 ```
 
+##### Model data with pseudo-absences
+```{r s3_md_lb_ps}
+s3_md_lb_ps <- s3_v_lb[[1]] %>%
+  raster::extract(y = st_coordinates(lb_pa_ch_psab)) %>%
+  cbind("PA" = lb_pa_ch_psab$PA, .) %>%
+  as.data.frame %>%
+  na.omit
 
-##### Scenario 3 future variables
-```{r s3_fv_lb}
-s3_fv_lb <- s3_vars_landis_fut %>%
-  sapply("[[", lblv) %>%
-  mapply(clim_fv_cc0, FUN = stack)
-
-save(s3_fv_lb, file = "output/habitat_vars/s3_fv_lb")
+save(s3_md_lb_ps, file = "output/model_vars/s3_md_lb_ps")
 ```
-
 
 ### Scenario 4
 
 #### Greater Glider
 
-##### Scenario 4 initial variables
-```{r s4_iv_gg}
-s4_iv_gg <- stack(s4_vars_landis_init[[c(gglv)]], clim_iv)
+#### Variable layers
+```{r s4_v_gg}
+s4_v_gg <- s4_vars_landis %>%
+  sapply("[[", gglv) %>%
+  mapply(clim_vars_4.5,
+         ari_v,
+         sapply(s4_fire_vars, "[[", "tsf"),
+         sapply(s4_logging_vars, "[[", "tsl"),
+         FUN = stack)
 
-save(s4_iv_gg, file = "output/habitat_vars/s4_iv_gg")
+save(s4_v_gg, file = "output/model_vars/s4_v_gg")
 ```
 
-##### Scenaio 4 model data
-```{r}
-s4_md_gg <- s4_iv_gg %>%
+#### Model data
+```{r s4_md_gg}
+s4_md_gg <- s4_v_gg[[1]] %>%
   raster::extract(y = st_coordinates(gg_pa_ch)) %>%
   cbind("PA" = gg_pa_ch$PA, .) %>%
   as.data.frame %>%
-  na.omit 
+  na.omit
 
-s4_md_gg
-
-save(s4_md_gg, file = "output/habitat_vars/s4_md_gg")
+save(s4_md_gg, file = "output/model_vars/s4_md_gg")
 ```
 
+#### Model data with pseudo-absences
+```{r s4_md_gg_ps}
+s4_md_gg_ps <- s4_v_gg[[1]] %>%
+  raster::extract(y = st_coordinates(gg_pa_ch_psab)) %>%
+  cbind("PA" = gg_pa_ch_psab$PA, .) %>%
+  as.data.frame %>%
+  na.omit
 
-##### Scenario 4 future variables
-```{r s4_fv_gg}
-s4_fv_gg <- s4_vars_landis_fut %>%
-  sapply("[[", gglv) %>%
-  mapply(clim_fv_4.5, FUN = stack)
-
-save(s4_fv_gg, file = "output/habitat_vars/s4_fv_gg")
+save(s4_md_gg_ps, file = "output/model_vars/s4_md_gg_ps")
 ```
 
 
 #### Leadbeater's Possum
 
-##### Scenario 4 initial variables
-```{r s4_iv_lb}
-s4_iv_lb <- stack(s4_vars_landis_init[[c(lblv)]], clim_iv)
+#### Variable layers
+```{r s4_v_lb}
+s4_v_lb <- s4_vars_landis %>%
+  sapply("[[", lblv) %>%
+  mapply(clim_vars_4.5,
+         ari_v,
+         sapply(s4_fire_vars, "[[", "tsf"),
+         sapply(s4_logging_vars, "[[", "tsl"),
+         FUN = stack)
 
-save(s4_iv_lb, file = "output/habitat_vars/s4_iv_lb")
+save(s4_v_lb, file = "output/model_vars/s4_v_lb")
 ```
 
-##### Scenaio 4 model data
-```{r}
-s4_md_lb <- s4_iv_lb %>%
+#### Model data
+```{r s4_md_lb}
+s4_md_lb <- s4_v_lb[[1]] %>%
   raster::extract(y = st_coordinates(lb_pa_ch)) %>%
   cbind("PA" = lb_pa_ch$PA, .) %>%
   as.data.frame %>%
-  na.omit 
+  na.omit
 
-s4_md_lb
-
-save(s4_md_lb, file = "output/habitat_vars/s4_md_lb")
+save(s4_md_lb, file = "output/model_vars/s4_md_lb")
 ```
 
+#### Model data with pseudo-absences
+```{r s4_md_lb_ps}
+s4_md_lb_ps <- s4_v_lb[[1]] %>%
+  raster::extract(y = st_coordinates(lb_pa_ch_psab)) %>%
+  cbind("PA" = lb_pa_ch_psab$PA, .) %>%
+  as.data.frame %>%
+  na.omit
 
-##### Scenario 4 future variables
-```{r s4_fv_lb}
-s4_fv_lb <- s4_vars_landis_fut %>%
-  sapply("[[", lblv) %>%
-  mapply(clim_fv_4.5, FUN = stack)
-
-save(s4_fv_lb, file = "output/habitat_vars/s4_fv_lb")
+save(s4_md_lb_ps, file = "output/model_vars/s4_md_lb_ps")
 ```
 
 
@@ -1099,8 +1390,9 @@ save(s4_fv_lb, file = "output/habitat_vars/s4_fv_lb")
 
 ### Scenario 1
 ```{r s1_mod_gg}
-s1_mod_gg <- gbm.step(data = s1_md_gg, gbm.x = 2:8, gbm.y = 1, family = "bernoulli", tree.complexity = 5, learning.rate = 0.001, step.size = 1, bag.fraction = 0.5, prev.stratify = FALSE, verbose = FALSE, max.trees = 1000)
+s1_mod_gg <- gbm.step(data = s1_md_gg, gbm.x = 2:12, gbm.y = 1, family = "bernoulli", tree.complexity = 5, learning.rate = 0.01, step.size = 1, bag.fraction = 0.5, prev.stratify = FALSE, verbose = FALSE, max.trees = 1000)
 ```
+
 ```{r sumary s1_mod_gg}
 summary(s1_mod_gg)
 ```

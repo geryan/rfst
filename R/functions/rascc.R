@@ -28,7 +28,8 @@ rascc <- function(dat, new.proj.layer, filename, input.projection = "+proj=longl
     } else {
       result <- mask(x = result,
                      mask = new.proj.layer,
-                     filename = filename)
+                     filename = filename,
+                     overwrite = TRUE)
     }
     
   }
