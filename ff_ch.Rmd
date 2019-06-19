@@ -241,6 +241,15 @@ gg_pa_ch_psab <- gg_pa_ch %>%
   rbind(pseudo_abs)
 ```
 
+```{r}
+gg_old <- read_csv("data/tabular/archive/vicAtlasGGpresabs.csv") %>%
+  st_as_sf(coords = c("LongitudeGDA94", "LatitudeGDA94"), crs = 4326) %>%
+   st_transform(crs = ch_proj)
+
+gg_old <- gg_old[ch_rfa,]
+```
+
+
 ```{r write gg_pa_ch}
 st_write(gg_pa_ch, "output/shapefiles/pa/ch/gg_pa_ch.shp", delete_layer = TRUE)
 st_write(gg_pa_ch_psab, "output/shapefiles/pa/ch/gg_pa_ch_psab.shp", delete_layer = TRUE)
@@ -1093,6 +1102,18 @@ md_gg_ps <- s1_v[[1]] %>%
 save(md_gg_ps, file = "output/model_vars/md_gg_ps")
 ```
 
+#### Presence-absence and background
+```{r md_gg_old}
+md_gg_old <- s1_v[[1]] %>%
+  raster::extract(y = st_coordinates(gg_old)) %>%
+  cbind("PA" = gg_old$PA, .) %>%
+  as.data.frame %>%
+  na.omit
+
+save(md_gg_old, file = "output/model_vars/md_gg_old")
+```
+
+
 ### Leadbeater's possum
 #### Presence-absence
 ```{r md_lb}
@@ -1166,6 +1187,12 @@ mv_gg_1_ps <- md_gg_ps[, v_gg_1]
 mv_gg_2_ps <- md_gg_ps[, v_gg_2]
 mv_gg_3_ps <- md_gg_ps[, v_gg_3]
 mv_gg_4_ps <- md_gg_ps[, v_gg_4]
+
+mv_gg_a_old <- md_gg_old[, v_gg_a]
+mv_gg_1_old <- md_gg_old[, v_gg_1]
+mv_gg_2_old <- md_gg_old[, v_gg_2]
+mv_gg_3_old <- md_gg_old[, v_gg_3]
+mv_gg_4_old <- md_gg_old[, v_gg_4]
 ```
 
 
@@ -1232,7 +1259,7 @@ gbm.plot(brt_gg_1)
 
 
 ```{r initial pred brt_gg_1}
-ip_brt_gg_1 <- predict(s1_v[[1]], brt_gg_1, type = "response", n.trees = brt_gg_1$gbm.call$best.trees, filename = "output/habitat_pred/s1_p_brt_gg-000.tif", overwrite = TRUE)
+ip_brt_gg_1 <- raster::predict(s1_v[[1]], brt_gg_1, type = "response", n.trees = brt_gg_1$gbm.call$best.trees, filename = "output/habitat_pred/s1_p_brt_gg-000.tif", overwrite = TRUE)
 
 #writeRaster(s1_ip_gg, "output/habitat_pred/s1_ip_gg.tif", overwrite = TRUE)
 #s1_ip_gg <- raster(x = "output/habitat_pred/s1_ip_gg.tif")
@@ -1261,33 +1288,51 @@ ip_brt_gg_4 <- predict(s1_v[[1]], brt_gg_4, type = "response", n.trees = brt_gg_
 
 plot(ip_brt_gg_4)
 ```
+```{r brt_gg_4_ps}
+brt_gg_4_ps <- gbm.step(data = mv_gg_4_ps, gbm.x = c(2:ncol(mv_gg_4_ps)), gbm.y = 1, family = "bernoulli", tree.complexity = 4, learning.rate = 0.001, step.size = 1, bag.fraction = 0.5, prev.stratify = FALSE, verbose = TRUE, max.trees = 5000)
+```
+
+```{r sumary brt_gg}
+summary(brt_gg_4_ps)
+```
+
+```{r}
+gbm.plot(brt_gg_4_ps)
+```
+
 
 ```{r initial pred brt_gg_4}
-ip_brt_gg_4 <- predict(s1_v[[1]][[v_gg_4[2:5]]], brt_gg_4, type = "response", n.trees = brt_gg_4$gbm.call$best.trees, filename = "output/habitat_pred/s1_p_brt_gg-000.tif", overwrite = TRUE)
+ip_brt_gg_4_ps <- predict(s1_v[[1]], brt_gg_4_ps, type = "response", n.trees = brt_gg_4$gbm.call$best.trees, filename = "output/habitat_pred/s1_p_brt_4_ps_gg-000.tif", overwrite = TRUE)
 
 #writeRaster(s1_ip_gg, "output/habitat_pred/s1_ip_gg.tif", overwrite = TRUE)
 #s1_ip_gg <- raster(x = "output/habitat_pred/s1_ip_gg.tif")
 
-plot(ip_brt_gg_4)
+plot(ip_brt_gg_4_ps)
 ```
 
-Pseudo-absence
-```{r brt_gg_ps}
-brt_gg_ps <- gbm.step(data = md_gg_ps, gbm.x = c(2:5, 7:12), gbm.y = 1, family = "bernoulli", tree.complexity = 5, learning.rate = 0.001, step.size = 1, bag.fraction = 0.75, prev.stratify = FALSE, verbose = TRUE, max.trees = 2000)
+```{r brt_gg_4_old}
+brt_gg_4_old <- gbm.step(data = mv_gg_4_old, gbm.x = c(2:ncol(mv_gg_4_old)), gbm.y = 1, family = "bernoulli", tree.complexity = 4, learning.rate = 0.001, step.size = 1, bag.fraction = 0.5, prev.stratify = FALSE, verbose = TRUE, max.trees = 5000)
 ```
 
-```{r sumary brt_gg_ps}
-summary(brt_gg_ps)
+```{r sumary brt_gg}
+summary(brt_gg_4_old)
 ```
+
 ```{r}
-gbm.plot(brt_gg_ps)
+gbm.plot(brt_gg_4_old)
 ```
 
 
-```{r initial pred brt_gg_ps}
-ip_brt_gg_ps <- predict(s1_v_gg[[1]], brt_gg_ps, type = "response", n.trees = brt_gg$gbm.call$best.trees, filename = "output/habitat_pred/s1_p_brt_gg_ps-000.tif", overwrite = TRUE)
-plot(ip_brt_gg)
+```{r initial pred brt_gg_4}
+ip_brt_gg_4_old <- predict(s1_v[[1]], brt_gg_4_old, type = "response", n.trees = brt_gg_4$gbm.call$best.trees, filename = "output/habitat_pred/s1_p_brt_4_old_gg-000.tif", overwrite = TRUE)
+
+#writeRaster(s1_ip_gg, "output/habitat_pred/s1_ip_gg.tif", overwrite = TRUE)
+#s1_ip_gg <- raster(x = "output/habitat_pred/s1_ip_gg.tif")
+
+plot(ip_brt_gg_4_old)
 ```
+
+``
 
 
 
