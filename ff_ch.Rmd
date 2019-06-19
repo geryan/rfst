@@ -199,7 +199,7 @@ pseudo_abs
 Read in data
 ```{r gg_ari}
 gg_ari <- read_excel(path = "data/tabular/BoA_SB_Combined_VBA_upload_v4.xls") %>%
-  dplyr::dplyr::select(-starts_with("leave")) %>%
+  dplyr::select(-starts_with("leave")) %>%
   rename("lon" = `X-coordinate (easting or longitude)`, "lat" = `Y-coordinate (northing or latitude)`) %>%
    fill(lon, lat, .direction = "down") %>%
   filter(`Taxon Name` == "Misc Target taxa not found") %>%
@@ -238,7 +238,7 @@ gg_pa_ch
 
 ```{r gg_pa_ch_psab}
 gg_pa_ch_psab <- gg_pa_ch %>%
-  rbind(pseudo_abs) %T>%
+  rbind(pseudo_abs)
 ```
 
 ```{r write gg_pa_ch}
@@ -299,17 +299,6 @@ save.image("output/session_images/landscape-occupancy.RData")
 
 
 ## Landis output
-```{r}
-aa <- get.landis.vars(
-  scn_path = "~/landis_ch_s1_pb-th-cc_50/",
-  proj_path = proj_path,
-  out_path = "/output/habitat_vars/",
-  scn_id = "s1",
-  proj_mask = ch_mask,
-  timesteps = 4,
-  cores = 5
-  )
-```
 
 ### Scenario 1: Current planned burning, current timber harvesting, climate change under RCP 4.5, current bushfire regime (Buisness as usual)
 ```{r s1_vars_landis}
@@ -325,11 +314,13 @@ s1_vars_landis <- get.landis.vars(
 ```
 
 ```{r plot s1_vars_landis initial}
-plot(s1_vars_landis[[1]])
+plot(s1_vars_landis[[1]][[1:12]])
+plot(s1_vars_landis[[1]][[13:22]])
 ```
 
 ```{r plot s1_vars_landis last}
-plot(s1_vars_landis[[ntimesteps + 1]])
+plot(s1_vars_landis[[ntimesteps + 1]][[1:12]])
+plot(s1_vars_landis[[ntimesteps + 1]][[13:22]])
 ```
 
 
@@ -357,11 +348,13 @@ s3_vars_landis <- get.landis.vars(
 ```
 
 ```{r plot s3_vars_landis initial}
-plot(s3_vars_landis[[1]])
+plot(s3_vars_landis[[1]][[1:12]])
+plot(s3_vars_landis[[1]][[13:22]])
 ```
 
 ```{r plot s3_vars_landis last}
-plot(s3_vars_landis[[ntimesteps + 1]])
+plot(s3_vars_landis[[ntimesteps + 1]][[1:12]])
+plot(s3_vars_landis[[ntimesteps + 1]][[13:22]])
 ```
 
 
@@ -386,13 +379,14 @@ s4_vars_landis <- get.landis.vars(
 ```
 
 ```{r plot s4_vars_landis initial}
-plot(s4_vars_landis[[1]])
+plot(s4_vars_landis[[1]][[1:12]])
+plot(s4_vars_landis[[1]][[13:22]])
 ```
 
 ```{r plot s4_vars_landis last}
-plot(s4_vars_landis[[ntimesteps + 1]])
+plot(s4_vars_landis[[ntimesteps + 1]][[1:12]])
+plot(s4_vars_landis[[ntimesteps + 1]][[13:22]])
 ```
-
 
 ```{r s4_vars_landis save load}
 save(s4_vars_landis, file = "output/habitat_vars/s4_vars_landis")
@@ -1024,34 +1018,62 @@ save.image(file = "output/session_images/input_variables.RData")
 
 # Distribution modelling
 
-## Distribution model variable selection
+## Distribution model variable collation
+
+### Scenario 1
+```{r s1_v}
+s1_v <- s1_vars_landis %>%
+  mapply(clim_vars_4.5,
+         ari_v,
+         sapply(s1_fire_vars, "[[", "tsf"),
+         sapply(s1_logging_vars, "[[", "tsl"),
+         FUN = stack)
+
+save(s1_v, file = "output/model_vars/s1_v")
+```
+
+### Scenario 2
+```{r s2_v}
+# s2_v <- s1_vars_landis %>%
+#   mapply(clim_vars_8.5,
+#          ari_v,
+#          sapply(s2_fire_vars, "[[", "tsf"),
+#          sapply(s2_logging_vars, "[[", "tsl"),
+#          FUN = stack)
+# 
+# save(s2_v, file = "output/model_vars/s2_v")
+```
+
+### Scenario 3
+```{r s3_v}
+s3_v <- s3_vars_landis %>%
+  mapply(clim_vars_cc0,
+         ari_v,
+         sapply(s3_fire_vars, "[[", "tsf"),
+         sapply(s3_logging_vars, "[[", "tsl"),
+         FUN = stack)
+
+save(s3_v, file = "output/model_vars/s3_v")
+```
+
+### Scenario 4
+```{r s4_v}
+s4_v <- s4_vars_landis %>%
+  mapply(clim_vars_4.5,
+         ari_v,
+         sapply(s4_fire_vars, "[[", "tsf"),
+         sapply(s4_logging_vars, "[[", "tsl"),
+         FUN = stack)
+
+save(s4_v, file = "output/model_vars/s4_v")
+```
+
+## Distribution model data sampling
 
 ### Greater Glider
-
-#### Model data
-
-##### GG LANDIS vars
-```{r gg_lv}
-gglv <- c("ggf", "ggd", "hbt_1k", "prop_bio_regn", "prop_bio_targ", "prop_oge_1k")
-```
-
-
-#####  Scenario 1 Variable layers
-```{r s1_v_gg initial}
-s1_v_gg <- s1_vars_landis %>%
-  sapply("[[", gglv) %>%
-  mapply(clim_vars_4.5,
-         ari_v,
-         sapply(s1_fire_vars, "[[", "tsf"),
-         sapply(s1_logging_vars, "[[", "tsl"),
-         FUN = stack)
-
-save(s1_v_gg, file = "output/model_vars/s1_v_gg")
-```
-
-##### Model data
+#### Presence-absence
 ```{r md_gg}
-md_gg <- s1_v_gg[[1]] %>%
+md_gg <- s1_v[[1]] %>%
   raster::extract(y = st_coordinates(gg_pa_ch)) %>%
   cbind("PA" = gg_pa_ch$PA, .) %>%
   as.data.frame %>%
@@ -1060,71 +1082,9 @@ md_gg <- s1_v_gg[[1]] %>%
 save(md_gg, file = "output/model_vars/md_gg")
 ```
 
-##### Check for correlations
-```{r gg_cor}
-gg_cor <- cor(md_gg[, 2:dim(md_gg)[2]])
-gg_cor
-```
-
-```{r highlight gg_cor}
-ifelse(gg_cor > 0.7, gg_cor, 0)
-```
-
-This suggests high degree of correlation (coefficient >0.7) between:
-
-- hbt_1k and prop_oge_1k
-- prec07, tmax01, and tmin07, and
-- lvdaw, lvdma, and lvdsw.
-
-Aim to keep:
-- prop_oge_1k, as this has the biomass-by-age data so should be more nuanced than the hbt_1k index.
-- tmin07, as highest average correlations and means we keep a temperature and a precipitation varible in the model
-- lvdaw, as this encompasses both major water bodies and salt water bodies
-
-Recompile variables excluding highly correlated variables.
-
-```{r gglv recompile}
-gglv <- c("ggf", "ggd", "prop_bio_regn", "prop_bio_targ", "prop_oge_1k")
-```
-
-
-```{r ari_v recomppile}
-ari_v <- sapply(ari_v, "[[", c("lvdaw", "lvdmi"))
-```
-
-```{r clim_vars recompile}
-clim_vars_cc0 <- sapply(clim_vars_cc0, "[[", c("prec01", "tmin07"))
-clim_vars_4.5 <- sapply(clim_vars_4.5, "[[", c("prec01", "tmin07"))
-clim_vars_8.5 <- sapply(clim_vars_8.5, "[[", c("prec01", "tmin07"))
-```
-
-##### Recompile scenario 1 variable layers
-```{r s1_v_gg recompile}
-s1_v_gg <- s1_vars_landis %>%
-  sapply("[[", gglv) %>%
-  mapply(clim_vars_4.5,
-         ari_v,
-         sapply(s1_fire_vars, "[[", "tsf"),
-         sapply(s1_logging_vars, "[[", "tsl"),
-         FUN = stack)
-
-save(s1_v_gg, file = "output/model_vars/s1_v_gg")
-```
-
-##### Recompile  Model data
-```{r md_gg recompile}
-md_gg <- s1_v_gg[[1]] %>%
-  raster::extract(y = st_coordinates(gg_pa_ch)) %>%
-  cbind("PA" = gg_pa_ch$PA, .) %>%
-  as.data.frame %>%
-  na.omit
-
-save(md_gg, file = "output/model_vars/md_gg")
-```
-
-##### Recompile Model data with pseudo-absences
+#### Presence-absence and background
 ```{r md_gg_ps}
-md_gg_ps <- s1_v_gg[[1]] %>%
+md_gg_ps <- s1_v[[1]] %>%
   raster::extract(y = st_coordinates(gg_pa_ch_psab)) %>%
   cbind("PA" = gg_pa_ch_psab$PA, .) %>%
   as.data.frame %>%
@@ -1133,68 +1093,10 @@ md_gg_ps <- s1_v_gg[[1]] %>%
 save(md_gg_ps, file = "output/model_vars/md_gg_ps")
 ```
 
-Check agian no  highly correlated variables
-```{r check again gg_cor}
-which(cor(md_gg) > 0.7 && cor(md_gg) != 1) 
-```
-#### Remaining scenarion variables
-
-##### Scenario 2
-
-##### Scenario 3
-```{r s3_v_gg}
-s3_v_gg <- s3_vars_landis %>%
-  sapply("[[", gglv) %>%
-  mapply(clim_vars_cc0,
-         ari_v,
-         sapply(s3_fire_vars, "[[", "tsf"),
-         sapply(s3_logging_vars, "[[", "tsl"),
-         FUN = stack)
-
-save(s3_v_gg, file = "output/model_vars/s3_v_gg")
-```
-
-
-##### Scenario 4
-```{r s4_v_gg}
-s4_v_gg <- s4_vars_landis %>%
-  sapply("[[", gglv) %>%
-  mapply(clim_vars_4.5,
-         ari_v,
-         sapply(s4_fire_vars, "[[", "tsf"),
-         sapply(s4_logging_vars, "[[", "tsl"),
-         FUN = stack)
-
-save(s4_v_gg, file = "output/model_vars/s4_v_gg")
-```
-
-
-### Leadbeater's Possum
-
-#### Model data
-
-##### LB LANDIS vars
-```{r lblv}
-lblv <- c("lbm", "hbt_3h", "prop_oge_3h")
-```
-
-
-##### Scenario 1 variable layers
-```{r s1_v_lb}
-s1_v_lb <- s1_vars_landis %>%
-  sapply("[[", lblv) %>%
-  mapply(clim_vars_4.5,
-         ari_v,
-         sapply(s1_fire_vars, "[[", "tsf"),
-         sapply(s1_logging_vars, "[[", "tsl"),
-         FUN = stack)
-
-save(s1_v_lb, file = "output/model_vars/s1_v_lb")
-```
-
-##### Model data
+### Leadbeater's possum
+#### Presence-absence
 ```{r md_lb}
-md_lb <- s1_v_lb[[1]] %>%
+md_lb <- s1_v[[1]] %>%
   raster::extract(y = st_coordinates(lb_pa_ch)) %>%
   cbind("PA" = lb_pa_ch$PA, .) %>%
   as.data.frame %>%
@@ -1203,49 +1105,9 @@ md_lb <- s1_v_lb[[1]] %>%
 save(md_lb, file = "output/model_vars/md_lb")
 ```
 
-##### Check for correlations
-```{r lb_cor}
-lb_cor <- cor(md_lb[, 2:dim(md_lb)[2]])
-lb_cor
-```
-```{r highlight lb_cor}
-ifelse(lb_cor > 0.7, lb_cor, 0)
-```
-
-Again high correlation between hollow-bearing tree index and proportion of old-growth eucalypts. As for greater glider, exclude the hbt_3h and recompile model variables.
-
-#####  Recompile LB LANDIS vars
-```{r lblv recompile}
-lblv <- c("lbm", "prop_oge_3h")
-```
-
-##### Scenario 1Variable layers
-```{r s1_v_lb recompile}
-s1_v_lb <- s1_vars_landis %>%
-  sapply("[[", lblv) %>%
-  mapply(clim_vars_4.5,
-         ari_v,
-         sapply(s1_fire_vars, "[[", "tsf"),
-         sapply(s1_logging_vars, "[[", "tsl"),
-         FUN = stack)
-
-save(s1_v_lb, file = "output/model_vars/s1_v_lb")
-```
-
-##### Model data
-```{r md_lb recompile}
-md_lb <- s1_v_lb[[1]] %>%
-  raster::extract(y = st_coordinates(lb_pa_ch)) %>%
-  cbind("PA" = lb_pa_ch$PA, .) %>%
-  as.data.frame %>%
-  na.omit
-
-save(md_lb, file = "output/model_vars/md_lb")
-```
-
-##### Model data with pseudo-absences
+#### Presence-absence and background
 ```{r md_lb_ps}
-md_lb_ps <- s1_v_lb[[1]] %>%
+md_lb_ps <- s1_v[[1]] %>%
   raster::extract(y = st_coordinates(lb_pa_ch_psab)) %>%
   cbind("PA" = lb_pa_ch_psab$PA, .) %>%
   as.data.frame %>%
@@ -1254,101 +1116,161 @@ md_lb_ps <- s1_v_lb[[1]] %>%
 save(md_lb_ps, file = "output/model_vars/md_lb_ps")
 ```
 
-Check agian no  highly correlated variables
-```{r check again lb_cor}
-which(cor(md_lb) > 0.7 && cor(md_lb) != 1) 
+
+```{r same image distribution_data}
+save.image(file = "output/session_images/distribution_data.RData")
+```
+
+### Check data correlations and produce variable subsets
+
+#### Greater glider
+```{r gg_cor}
+gg_cor <- cor(md_gg[, 2:dim(md_gg)[2]])
+
+gg_cor_v <- which(gg_cor >0.7 & gg_cor < 1, arr.ind = TRUE)
+
+gg_cor_list <- cbind.data.frame(var1 = rownames(gg_cor)[gg_cor_v[,"row"]],
+                                var2 = colnames(gg_cor)[gg_cor_v[,"col"]],
+                                correlation = gg_cor[which(gg_cor >0.7 & gg_cor < 1, arr.ind = TRUE)]) %>%
+  arrange(var1, var2) %>%
+  as.matrix
+
+gg_cor_list
+```
+
+#### Variable subsets
+Rmove variables to sets that exclude correlations, exclude variables intended to represent the same idea, and represent specific types of models. While also keep one with everything.
+
+c("PA", "lbm_prop", "lbm_biom", "ac_prop", "ac_biom", "ggf_prop", "ggf_biom", "ggd_prop", "ggd_prop_og", "ggd_biom", "ggd_biom_og", "hbt_3h", "hbt_1k", "prop_bio_regn", "prop_bio_targ", "prop_old_150", "prop_old_200", "prop_oge", "prop_oge_3h", "prop_oge_1k", "harvest", "firesev", "woody", "prec01", "prec07", "tmax01", "tmin07", "lvdaw", "lvdma", "lvdmi", "lvdsw", "tsf", "tsl")
+
+c("PA", "lbm_prop", "lbm_biom", "ac_prop", "ac_biom", "ggf_prop", "ggf_biom", "ggd_prop", "ggd_prop_og", "ggd_biom", "ggd_biom_og", "hbt_3h", "hbt_1k", "prop_bio_regn", "prop_bio_targ", "prop_old_150", "prop_old_200", "prop_oge", "prop_oge_3h", "prop_oge_1k", "prec01", "prec07", "tmax01", "tmin07", "lvdaw", "lvdma", "lvdmi", "lvdsw", "tsf", "tsl")
+
+```{r v_gg}
+v_gg_a <- c("PA", "lbm_prop", "lbm_biom", "ac_prop", "ac_biom", "ggf_prop", "ggf_biom", "ggd_prop", "ggd_prop_og", "ggd_biom", "ggd_biom_og", "hbt_3h", "hbt_1k", "prop_bio_regn", "prop_bio_targ", "prop_old_150", "prop_old_200", "prop_oge", "prop_oge_3h", "prop_oge_1k", "prec01", "prec07", "tmax01", "tmin07", "lvdaw", "lvdma", "lvdmi", "lvdsw", "tsf", "tsl")
+
+v_gg_1 <- c("PA", "ggf_prop", "ggd_prop_og", "prop_bio_regn", "prec01", "tmin07", "lvdaw", "lvdmi", "tsf", "tsl")
+v_gg_2 <- c("PA", "ggf_biom", "ggd_biom_og", "prop_bio_regn", "prec01", "tmin07", "lvdaw", "lvdmi", "tsf", "tsl")
+v_gg_3 <- c("PA", "ggf_prop", "ggd_prop_og", "prop_bio_regn", "tsf", "tsl")
+v_gg_4 <- c("PA", "prop_bio_regn", "prop_bio_targ", "prop_old_150", "prop_old_200")
+```
+
+```{r mv_gg}
+mv_gg_a <- md_gg[, v_gg_a]
+mv_gg_1 <- md_gg[, v_gg_1]
+mv_gg_2 <- md_gg[, v_gg_2]
+mv_gg_3 <- md_gg[, v_gg_3]
+mv_gg_4 <- md_gg[, v_gg_4]
+
+mv_gg_a_ps <- md_gg_ps[, v_gg_a]
+mv_gg_1_ps <- md_gg_ps[, v_gg_1]
+mv_gg_2_ps <- md_gg_ps[, v_gg_2]
+mv_gg_3_ps <- md_gg_ps[, v_gg_3]
+mv_gg_4_ps <- md_gg_ps[, v_gg_4]
 ```
 
 
-### Scenario 2
 
-### Scenario 3
-```{r s3_v_lb}
-s3_v_lb <- s3_vars_landis %>%
-  sapply("[[", lblv) %>%
-  mapply(clim_vars_cc0,
-         ari_v,
-         sapply(s3_fire_vars, "[[", "tsf"),
-         sapply(s3_logging_vars, "[[", "tsl"),
-         FUN = stack)
 
-save(s3_v_lb, file = "output/model_vars/s3_v_lb")
+#### Leadbeater's possum
+```{r lb_cor}
+lb_cor <- cor(md_lb[, 2:dim(md_lb)[2]])
+
+lb_cor_v <- which(lb_cor >0.7 & lb_cor < 1, arr.ind = TRUE)
+
+lb_cor_list <- cbind.data.frame(var1 = rownames(lb_cor)[lb_cor_v[,"row"]],
+                                var2 = colnames(lb_cor)[lb_cor_v[,"col"]],
+                                correlation = lb_cor[which(lb_cor > 0.7 & lb_cor < 1, arr.ind = TRUE)]) %>%
+  arrange(var1, var2) %>%
+  as.matrix
+
+lb_cor_list
 ```
-### Scenario 4
+#### Variable subsets
+c("PA", "lbm_prop", "lbm_biom", "ac_prop", "ac_biom", "ggf_prop", "ggf_biom", "ggd_prop", "ggd_prop_og", "ggd_biom", "ggd_biom_og", "hbt_3h", "hbt_1k", "prop_bio_regn", "prop_bio_targ", "prop_old_150", "prop_old_200", "prop_oge", "prop_oge_3h", "prop_oge_1k", "harvest", "firesev", "woody", "prec01", "prec07", "tmax01", "tmin07", "lvdaw", "lvdma", "lvdmi", "lvdsw", "tsf", "tsl")
 
+c("PA", "lbm_prop", "lbm_biom", "ac_prop", "ac_biom", "ggf_prop", "ggf_biom", "ggd_prop", "ggd_prop_og", "ggd_biom", "ggd_biom_og", "hbt_3h", "hbt_1k", "prop_bio_regn", "prop_bio_targ", "prop_old_150", "prop_old_200", "prop_oge", "prop_oge_3h", "prop_oge_1k", "prec01", "prec07", "tmax01", "tmin07", "lvdaw", "lvdma", "lvdmi", "lvdsw", "tsf", "tsl")
 
+```{r v_lv}
+v_lb_a <- c("PA", "lbm_prop", "lbm_biom", "ac_prop", "ac_biom", "ggf_prop", "ggf_biom", "ggd_prop", "ggd_prop_og", "ggd_biom", "ggd_biom_og", "hbt_3h", "hbt_1k", "prop_bio_regn", "prop_bio_targ", "prop_old_150", "prop_old_200", "prop_oge", "prop_oge_3h", "prop_oge_1k", "prec01", "prec07", "tmax01", "tmin07", "lvdaw", "lvdma", "lvdmi", "lvdsw", "tsf", "tsl")
 
-#### Leadbeater's Possum
-
-#### Variable layers
-```{r s4_v_lb}
-s4_v_lb <- s4_vars_landis %>%
-  sapply("[[", lblv) %>%
-  mapply(clim_vars_4.5,
-         ari_v,
-         sapply(s4_fire_vars, "[[", "tsf"),
-         sapply(s4_logging_vars, "[[", "tsl"),
-         FUN = stack)
-
-save(s4_v_lb, file = "output/model_vars/s4_v_lb")
+v_lb_1 <- c("PA", "lbm_prop", "lbm_biom", "prop_oge_3h", "prec01", "tmin07", "lvdaw", "lvdmi", "tsf", "tsl")
+v_lb_2 <- c("PA", "ac_prop", "ac_biom", "prop_oge_3h", "prec01", "tmin07", "lvdaw", "lvdmi", "tsf", "tsl")
+v_lb_3 <- c("PA", "lbm_prop", "lbm_biom", "prop_oge_3h", "tsf", "tsl")
+v_lb_4 <- c("PA", "ac_prop", "ac_biom", "prop_oge_3h", "tsf", "tsl")
 ```
 
-#### Model data
-```{r s4_md_lb}
-s4_md_lb <- s4_v_lb[[1]] %>%
-  raster::extract(y = st_coordinates(lb_pa_ch)) %>%
-  cbind("PA" = lb_pa_ch$PA, .) %>%
-  as.data.frame %>%
-  na.omit
+```{r mv_lb}
+mv_lb_a <- md_lb[, v_lb_a]
+mv_lb_1 <- md_lb[, v_lb_1]
+mv_lb_2 <- md_lb[, v_lb_2]
+mv_lb_3 <- md_lb[, v_lb_3]
+mv_lb_4 <- md_lb[, v_lb_4]
 
-save(s4_md_lb, file = "output/model_vars/s4_md_lb")
-```
-
-#### Model data with pseudo-absences
-```{r s4_md_lb_ps}
-s4_md_lb_ps <- s4_v_lb[[1]] %>%
-  raster::extract(y = st_coordinates(lb_pa_ch_psab)) %>%
-  cbind("PA" = lb_pa_ch_psab$PA, .) %>%
-  as.data.frame %>%
-  na.omit
-
-save(s4_md_lb_ps, file = "output/model_vars/s4_md_lb_ps")
+mv_lb_a_ps <- md_lb_ps[, v_lb_a]
+mv_lb_1_ps <- md_lb_ps[, v_lb_1]
+mv_lb_2_ps <- md_lb_ps[, v_lb_2]
+mv_lb_3_ps <- md_lb_ps[, v_lb_3]
+mv_lb_4_ps <- md_lb_ps[, v_lb_4]
 ```
 
 
 ## Distribution model fit
 
 ### Greater Glider
-```{r}
-aa <- t(data.frame(names(md_gg), 1:length(names(md_gg))))
 
-rownames(aa) <- NULL
-
-aa
-```
-
-
-```{r brt_gg}
-brt_gg <- gbm.step(data = md_gg, gbm.x = c(2:6), gbm.y = 1, family = "bernoulli", tree.complexity = 4, learning.rate = 0.001, step.size = 1, bag.fraction = 0.5, prev.stratify = FALSE, verbose = TRUE, max.trees = 5000)
+```{r brt_gg_1}
+brt_gg_1 <- gbm.step(data = mv_gg_1, gbm.x = c(2:ncol(mv_gg_1)), gbm.y = 1, family = "bernoulli", tree.complexity = 4, learning.rate = 0.001, step.size = 1, bag.fraction = 0.5, prev.stratify = FALSE, verbose = TRUE, max.trees = 5000)
 ```
 
 ```{r sumary brt_gg}
-summary(brt_gg)
+summary(brt_gg_1)
 ```
 
 ```{r}
-gbm.plot(brt_gg)
+gbm.plot(brt_gg_1)
 ```
 
 
-```{r initial pred brt_gg}
-ip_brt_gg <- predict(s1_v_gg[[1]][[c(1:5)]], brt_gg, type = "response", n.trees = brt_gg$gbm.call$best.trees, filename = "output/habitat_pred/s1_p_brt_gg-000.tif", overwrite = TRUE)
+```{r initial pred brt_gg_1}
+ip_brt_gg_1 <- predict(s1_v[[1]], brt_gg_1, type = "response", n.trees = brt_gg_1$gbm.call$best.trees, filename = "output/habitat_pred/s1_p_brt_gg-000.tif", overwrite = TRUE)
 
 #writeRaster(s1_ip_gg, "output/habitat_pred/s1_ip_gg.tif", overwrite = TRUE)
 #s1_ip_gg <- raster(x = "output/habitat_pred/s1_ip_gg.tif")
 
-plot(ip_brt_gg)
+plot(ip_brt_gg_1)
 ```
+
+```{r brt_gg_4}
+brt_gg_4 <- gbm.step(data = mv_gg_4, gbm.x = c(2:ncol(mv_gg_4)), gbm.y = 1, family = "bernoulli", tree.complexity = 4, learning.rate = 0.001, step.size = 1, bag.fraction = 0.5, prev.stratify = FALSE, verbose = TRUE, max.trees = 5000)
+```
+
+```{r sumary brt_gg}
+summary(brt_gg_4)
+```
+
+```{r}
+gbm.plot(brt_gg_4)
+```
+
+
+```{r initial pred brt_gg_4}
+ip_brt_gg_4 <- predict(s1_v[[1]], brt_gg_4, type = "response", n.trees = brt_gg_4$gbm.call$best.trees, filename = "output/habitat_pred/s1_p_brt_gg-000.tif", overwrite = TRUE)
+
+#writeRaster(s1_ip_gg, "output/habitat_pred/s1_ip_gg.tif", overwrite = TRUE)
+#s1_ip_gg <- raster(x = "output/habitat_pred/s1_ip_gg.tif")
+
+plot(ip_brt_gg_4)
+```
+
+```{r initial pred brt_gg_4}
+ip_brt_gg_4 <- predict(s1_v[[1]][[v_gg_4[2:5]]], brt_gg_4, type = "response", n.trees = brt_gg_4$gbm.call$best.trees, filename = "output/habitat_pred/s1_p_brt_gg-000.tif", overwrite = TRUE)
+
+#writeRaster(s1_ip_gg, "output/habitat_pred/s1_ip_gg.tif", overwrite = TRUE)
+#s1_ip_gg <- raster(x = "output/habitat_pred/s1_ip_gg.tif")
+
+plot(ip_brt_gg_4)
+```
+
 Pseudo-absence
 ```{r brt_gg_ps}
 brt_gg_ps <- gbm.step(data = md_gg_ps, gbm.x = c(2:5, 7:12), gbm.y = 1, family = "bernoulli", tree.complexity = 5, learning.rate = 0.001, step.size = 1, bag.fraction = 0.75, prev.stratify = FALSE, verbose = TRUE, max.trees = 2000)

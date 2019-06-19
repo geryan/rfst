@@ -10,7 +10,7 @@ rascc <- function(dat, new.proj.layer, filename, input.projection = "+proj=longl
   
   result <- dat %>%
     mutate(year = sub("-.*", "", time)) %>%
-    select(longitude, latitude, everything(), -time) %>%
+    dplyr::select(longitude, latitude, everything(), -time) %>%
     spread(year, !!var) %>%
     rasterFromXYZ(crs = input.projection)
   

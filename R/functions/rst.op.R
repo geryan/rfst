@@ -80,6 +80,12 @@ rst.op <- function(
     v1 <- getValues(input1, row = bs$row[i], nrows = bs$nrows[i])
       
     if(op == "writeonly"){
+      
+      if(class(input1) == "RasterStack" | class(input1) == "RasterBrick"){
+        
+        v1 <- rowSums(v1)
+        
+      }
         
       v <- v1
         
@@ -89,7 +95,7 @@ rst.op <- function(
         
     } else if(op == "prop"){
         
-      if(class(input1) == "RasterStack" | class(input2) == "RasterBrick"){
+      if(class(input1) == "RasterStack" | class(input1) == "RasterBrick"){
           
         v1 <- rowSums(v1)
         
