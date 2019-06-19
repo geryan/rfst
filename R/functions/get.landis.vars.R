@@ -152,6 +152,82 @@ get.landis.vars <- function(
                                                j),
                             layernames = "prop_bio_regn")
 
+    
+    ###### Biomass and proportion biomass of each species
+    
+    for(i in 1:length(spbm)){
+      
+      assign(sprintf("biomass_%s",
+                     spbm[i]),
+             rst.op(input1 = sprintf("biomass_%s",
+                                     spbm[i]),
+                    op = "writeonly",
+                    proj_mask = proj_mask,
+                    filename = sprintf("%s/%s/%s_biomass_%s_%03d.grd",
+                                       proj_path,
+                                       out_path,
+                                       scn_id,
+                                       spbm[i],
+                                       j),
+                    layernames = sprintf("biomass_%s",
+                                         spbm[i])))
+      
+      assign(sprintf("prop_biomass_%s",
+                     spbm[i]),
+             rst.op(input1 = sprintf("biomass_%s",
+                                     spbm[i]),
+                    input2 = biomass_TotalBiomass,
+                    op = "prop",
+                    proj_mask = proj_mask,
+                    filename = sprintf("%s/%s/%s_prop_biomass_%s_%03d.grd",
+                                       proj_path,
+                                       out_path,
+                                       scn_id,
+                                       spbm[i],
+                                       j),
+                    layernames = sprintf("prop_biomass_%s",
+                                         spbm[i])))
+      
+    }
+    
+    #### BIOMASS BY AGE and proportion of each species
+    
+    for(i in 1:length(spba)){
+      
+      assign(sprintf("bioAge_%s",
+                     spba[i]),
+             rst.op(input1 = sprintf("bioAge_%s",
+                                     spba[i]),
+                    op = "writeonly",
+                    proj_mask = proj_mask,
+                    filename = sprintf("%s/%s/%s_bioAge_%s_%03d.grd",
+                                       proj_path,
+                                       out_path,
+                                       scn_id,
+                                       spba[i],
+                                       j),
+                    layernames = sprintf("bioAge_%s",
+                                         spba[i])))
+      
+      assign(sprintf("bioAge_%s",
+                     spba[i]),
+             rst.op(input1 = sprintf("bioAge_%s",
+                                     spba[i]),
+                    input2 = biomass_TotalBiomass,
+                    op = "prop",
+                    proj_mask = proj_mask,
+                    filename = sprintf("%s/%s/%s_prop_bioAge_%s_%03d.grd",
+                                       proj_path,
+                                       out_path,
+                                       scn_id,
+                                       spba[i],
+                                       j),
+                    layernames = sprintf("bioAge_%s",
+                                         spba[i])))
+      
+    }
+    
+    
     ##### PROP OLD GROWTH EUCALYPTS
 
     prop_oge <- rst.op(input1 = stack(bioAge_eucacama,
@@ -443,7 +519,77 @@ get.landis.vars <- function(
           prop_oge_1k,
           harvest,
           firesev,
-          woody
+          woody,
+          bioAge_eucacama,
+          bioAge_eucacype,
+          bioAge_eucadalr,
+          bioAge_eucadeli,
+          bioAge_eucadent,
+          bioAge_eucadive,
+          bioAge_eucaglob,
+          bioAge_eucanite,
+          bioAge_eucaobli,
+          bioAge_eucapauh,
+          bioAge_eucapaul,
+          bioAge_eucaradi,
+          bioAge_eucaregn,
+          bioAge_eucatric,
+          bioAge_eucavimi,
+          biomass_acacdeal,
+          biomass_acacmear,
+          biomass_acacobli,
+          biomass_eucacama,
+          biomass_eucacype,
+          biomass_eucadalr,
+          biomass_eucadeli,
+          biomass_eucadent,
+          biomass_eucadive,
+          biomass_eucaglob,
+          biomass_eucanite,
+          biomass_eucaobli,
+          biomass_eucapauh,
+          biomass_eucapaul,
+          biomass_eucaradi,
+          biomass_eucaregn,
+          biomass_eucatric,
+          biomass_eucavimi,
+          biomass_leptgran,
+          biomass_nothcunn,
+          prop_bioAge_eucacama,
+          prop_bioAge_eucacype,
+          prop_bioAge_eucadalr,
+          prop_bioAge_eucadeli,
+          prop_bioAge_eucadent,
+          prop_bioAge_eucadive,
+          prop_bioAge_eucaglob,
+          prop_bioAge_eucanite,
+          prop_bioAge_eucaobli,
+          prop_bioAge_eucapauh,
+          prop_bioAge_eucapaul,
+          prop_bioAge_eucaradi,
+          prop_bioAge_eucaregn,
+          prop_bioAge_eucatric,
+          prop_bioAge_eucavimi,
+          prop_biomass_acacdeal,
+          prop_biomass_acacmear,
+          prop_biomass_acacobli,
+          prop_biomass_eucacama,
+          prop_biomass_eucacype,
+          prop_biomass_eucadalr,
+          prop_biomass_eucadeli,
+          prop_biomass_eucadent,
+          prop_biomass_eucadive,
+          prop_biomass_eucaglob,
+          prop_biomass_eucanite,
+          prop_biomass_eucaobli,
+          prop_biomass_eucapauh,
+          prop_biomass_eucapaul,
+          prop_biomass_eucaradi,
+          prop_biomass_eucaregn,
+          prop_biomass_eucatric,
+          prop_biomass_eucavimi,
+          prop_biomass_leptgran,
+          prop_biomass_nothcunn
           )
   }
 
