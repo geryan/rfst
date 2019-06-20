@@ -1,0 +1,50 @@
+brtpredict <- function(variables,
+                       model,
+                       out_path = "output/habitat_pred",
+                       scn_id,
+                       varset,
+                       species,
+                       initial = TRUE,
+                       ncores){
+  
+  if(initial){
+    
+    result <- raster::predict(object = variables[[1]],
+                              model = model,
+                              type = "response",
+                              n.trees = model$gbm.call$best.trees,
+                              filename = sprintf("%s/brtpred_%s_%s_%s_000.grd",
+                                                 out_path,
+                                                 scn_id,
+                                                 varset,
+                                                 species),
+                              overwrite = TRUE)
+    
+    
+  } else {
+    
+    registerDoMC(cores = ncores)
+    
+    result <- foreach(i = seq_len(length(variables))) %dopar% {
+      
+      raster::predict(object = variables[[i]],
+                      model = model,
+                      type = "response",
+                      n.trees = model$gbm.call$best.trees,
+                      filename = sprintf("%s/brtpred_%s_%s_%s_%03d.grd",
+                                         out_path,
+                                         scn_id,
+                                         varset,
+                                         species,
+                                         i-1),
+                      overwrite = TRUE)
+    }
+    
+   result <- stack(result)
+     
+   names(result) <- sprintf("sdm_%s", 0:(length(variables) - 1))
+  }
+ 
+  return(result)
+   
+}
