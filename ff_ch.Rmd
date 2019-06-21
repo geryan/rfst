@@ -53,6 +53,8 @@ source(file = "R/functions/read.multi.line.header.R")
 source(file = "R/functions/interpolate.climdat.R")
 source(file = "R/functions/rst.op.R")
 source(file = "R/functions/get.disturbance.R")
+source(file = "R/functions/gbmstep.R")
+source(file = "R/functions/brtpredict.R")
 ```
 
 ### Paths
@@ -323,7 +325,7 @@ save.image("output/session_images/landscape-occupancy.RData")
 ### Scenario 1: Current planned burning, current timber harvesting, climate change under RCP 4.5, current bushfire regime (Buisness as usual)
 ```{r s1_vars_landis}
 s1_vars_landis <- get.landis.vars(
-  scn_path = "~/landis_ch_s1_pb-th-cc_50/",
+  scn_path = "~/s1/",
   proj_path = proj_path,
   out_path = "/output/habitat_vars/",
   scn_id = "s1",
@@ -350,14 +352,41 @@ save(s1_vars_landis, file = "output/habitat_vars/s1_vars_landis")
 # load(file = "output/habitat_vars/s1_vars_landis_fut")
 ```
 
+### Scenario 2: Current planned burning, current timber harvesting, climate change under RCP 8.5, increased bushfire regime (Buisness as usual)
+```{r s2_vars_landis}
+s2_vars_landis <- get.landis.vars(
+  scn_path = "~/s2/",
+  proj_path = proj_path,
+  out_path = "/output/habitat_vars/",
+  scn_id = "s2",
+  proj_mask = ch_mask,
+  timesteps = ntimesteps,
+  cores = ncores
+  )
+```
 
-### Scenario 2: Current planned burning, current timber harvesting, climate change under RCP 8.5, increatred bushfire regime
+```{r plot s2_vars_landis initial}
+plot(s2_vars_landis[[1]][[1:12]])
+plot(s2_vars_landis[[1]][[13:22]])
+```
+
+```{r plot s2_vars_landis last}
+plot(s2_vars_landis[[ntimesteps + 1]][[1:12]])
+plot(s2_vars_landis[[ntimesteps + 1]][[13:22]])
+```
+
+
+```{r s2_vars_landis save load}
+save(s2_vars_landis, file = "output/habitat_vars/s2_vars_landis")
+
+# load(file = "output/habitat_vars/s2_vars_landis_fut")
+```
 
 
 ### Scenario 3: Current planned burning, current timber harvesting, no climate change, current bushfire regime
 ```{r s3_vars_landis}
 s3_vars_landis <- get.landis.vars(
-  scn_path = "~/landis_ch_s3_pb-th-cc0_50/",
+  scn_path = "~/s3/",
   proj_path = proj_path,
   out_path = "/output/habitat_vars/",
   scn_id = "s3",
@@ -450,6 +479,34 @@ plot(s1_fire_vars[[ntimesteps + 1]][["tsf"]])
 ```
 
 #### Scenario 2
+```{r s2_fire_vars}
+s2_fire_vars <- get.disturbance(disturbances =  lapply(s2_vars_landis, FUN = function(x){x[["firesev"]]}),
+                                disturbance_history = fire_history,
+                                out_path = "output/landscape_vars/",
+                                scn_id = "s2",
+                                layernames = c("fihi", "tsf"),
+                                ntimesteps = ntimesteps,
+                                year0 = year0)
+```
+Initial fire history
+```{r plot s2_fire_vars fire history initial}
+plot(s2_fire_vars[[1]][["fihi"]])
+```
+
+Last fire history
+```{r plot s2_fire_vars fire history last}
+plot(s2_fire_vars[[ntimesteps + 1]][["fihi"]])
+```
+
+Initial time since fire
+```{r plot s2_fire_vars time since fire initial}
+plot(s2_fire_vars[[1]][["tsf"]])
+```
+
+Last time since fire
+```{r plot s2_fire_var time since fire last}
+plot(s2_fire_vars[[ntimesteps + 1]][["tsf"]])
+```
 
 #### Scenario 3
 ```{r s3_fire_vars}
@@ -480,6 +537,9 @@ Last time since fire
 ```{r plot s3_fire_var time since fire last}
 plot(s3_fire_vars[[ntimesteps + 1]][["tsf"]])
 ```
+
+
+
 
 #### Scenario 4
 ```{r s4_fire_vars}
@@ -546,6 +606,34 @@ plot(s1_logging_vars[[ntimesteps + 1]][["tsl"]])
 ```
 
 #### Scenario 2
+```{r s2_logging_vars}
+s2_logging_vars <- get.disturbance(disturbances =  lapply(s2_vars_landis, FUN = function(x){x[["harvest"]]}),
+                                disturbance_history = logging_history,
+                                out_path = "output/landscape_vars/",
+                                scn_id = "s2",
+                                layernames = c("lohi", "tsl"),
+                                ntimesteps = ntimesteps,
+                                year0 = year0)
+```
+Initial logging history
+```{r plot s2_logging_vars logging history initial}
+plot(s2_logging_vars[[1]][["lohi"]])
+```
+
+Last logging history
+```{r plot s2_logging_vars logging history last}
+plot(s2_logging_vars[[ntimesteps + 1]][["lohi"]])
+```
+
+Initial time since fire
+```{r plot s2_logging_vars time since logging initial}
+plot(s2_logging_vars[[1]][["tsl"]])
+```
+
+Last time since fire
+```{r plot s2_logging_var time since logging last}
+plot(s2_logging_vars[[ntimesteps + 1]][["tsl"]])
+```
 
 #### Scenario 3
 ```{r s3_logging_vars}
@@ -606,6 +694,9 @@ Last time since fire
 ```{r plot s4_logging_var time since logging last}
 plot(s4_logging_vars[[ntimesteps + 1]][["tsl"]])
 ```
+
+
+
 
 ## ARI Data
 
@@ -1054,14 +1145,14 @@ save(s1_v, file = "output/model_vars/s1_v")
 
 ### Scenario 2
 ```{r s2_v}
-# s2_v <- s1_vars_landis %>%
-#   mapply(clim_vars_8.5,
-#          ari_v,
-#          sapply(s2_fire_vars, "[[", "tsf"),
-#          sapply(s2_logging_vars, "[[", "tsl"),
-#          FUN = stack)
-# 
-# save(s2_v, file = "output/model_vars/s2_v")
+s2_v <- s1_vars_landis %>%
+  mapply(clim_vars_8.5,
+         ari_v,
+         sapply(s2_fire_vars, "[[", "tsf"),
+         sapply(s2_logging_vars, "[[", "tsl"),
+         FUN = stack)
+
+save(s2_v, file = "output/model_vars/s2_v")
 ```
 
 ### Scenario 3
@@ -1607,7 +1698,7 @@ plot(ip_lb_3_ps)
 
 #### Variable set 4 pseudo-absence
 ```{r brt_lb_4_ps}
-brt_lb_4_ps <- gbmstep(data = mv_lb_4_ps, learning.rate = 0.001, bag.fraction = 0.5)
+brt_lb_4_ps <- gbmstep(data = mv_lb_4_ps, learning.rate = 0.001, bag.fraction = 0.5, )
 ```
 
 ```{r sumary brt_lb_4_ps}
@@ -1632,6 +1723,7 @@ plot(ip_lb_4_ps)
 ```{r save image dist fits}
 save.image(file = "output/session_images/distribution_fits.RData")
 ```
+
 
 ## Distribution model predictions
 
@@ -1687,13 +1779,13 @@ s1_p_gg_4_ps <- brtpredict(variables = s1_v,
 
 ##### Model 1
 ```{r s2_p_gg_1}
-# s2_p_gg_1 <- brtpredict(variables = s2_v,
-#                       model = brt_gg_1,
-#                       scn_id = "s2",
-#                       varset = "1",
-#                       species = "gg",
-#                       initial = FALSE,
-#                       ncores = ncores)
+s2_p_gg_1 <- brtpredict(variables = s2_v,
+                      model = brt_gg_1,
+                      scn_id = "s2",
+                      varset = "1",
+                      species = "gg",
+                      initial = FALSE,
+                      ncores = ncores)
 ```
 
 ##### Model 4
@@ -1709,13 +1801,13 @@ s1_p_gg_4_ps <- brtpredict(variables = s1_v,
 
 ##### Model 1 pseudo-absences
 ```{r s2_p_gg_1_ps}
-# s2_p_gg_1_ps <- brtpredict(variables = s2_v,
-#                       model = brt_gg_1_ps,
-#                       scn_id = "s2",
-#                       varset = "1_ps",
-#                       species = "gg",
-#                       initial = FALSE,
-#                       ncores = ncores)
+s2_p_gg_1_ps <- brtpredict(variables = s2_v,
+                      model = brt_gg_1_ps,
+                      scn_id = "s2",
+                      varset = "1_ps",
+                      species = "gg",
+                      initial = FALSE,
+                      ncores = ncores)
 ```
 
 ##### Model 4 pseudo-absences
@@ -1744,13 +1836,13 @@ s3_p_gg_1 <- brtpredict(variables = s3_v,
 
 ##### Model 4
 ```{r s3_p_gg_4}
-s3_p_gg_4 <- brtpredict(variables = s3_v,
-                      model = brt_gg_4,
-                      scn_id = "s3",
-                      varset = "4",
-                      species = "gg",
-                      initial = FALSE,
-                      ncores = ncores)
+# s3_p_gg_4 <- brtpredict(variables = s3_v,
+#                       model = brt_gg_4,
+#                       scn_id = "s3",
+#                       varset = "4",
+#                       species = "gg",
+#                       initial = FALSE,
+#                       ncores = ncores)
 ```
 
 ##### Model 1 pseudo-absences
@@ -1766,59 +1858,59 @@ s3_p_gg_1_ps <- brtpredict(variables = s3_v,
 
 ##### Model 4 pseudo-absences
 ```{r s3_p_gg_4_ps}
-s3_p_gg_4_ps <- brtpredict(variables = s3_v,
-                      model = brt_gg_4_ps,
-                      scn_id = "s3",
-                      varset = "4_ps",
-                      species = "gg",
-                      initial = FALSE,
-                      ncores = ncores)
+# s3_p_gg_4_ps <- brtpredict(variables = s3_v,
+#                       model = brt_gg_4_ps,
+#                       scn_id = "s3",
+#                       varset = "4_ps",
+#                       species = "gg",
+#                       initial = FALSE,
+#                       ncores = ncores)
 ```
 
 #### Scenario 4
 
 ##### Model 1
 ```{r s4_p_gg_1}
-s4_p_gg_1 <- brtpredict(variables = s4_v,
-                      model = brt_gg_1,
-                      scn_id = "s4",
-                      varset = "1",
-                      species = "gg",
-                      initial = FALSE,
-                      ncores = ncores)
+# s4_p_gg_1 <- brtpredict(variables = s4_v,
+#                       model = brt_gg_1,
+#                       scn_id = "s4",
+#                       varset = "1",
+#                       species = "gg",
+#                       initial = FALSE,
+#                       ncores = ncores)
 ```
 
 ##### Model 4
 ```{r s4_p_gg_4}
-s4_p_gg_4 <- brtpredict(variables = s4_v,
-                      model = brt_gg_4,
-                      scn_id = "s4",
-                      varset = "4",
-                      species = "gg",
-                      initial = FALSE,
-                      ncores = ncores)
+# s4_p_gg_4 <- brtpredict(variables = s4_v,
+#                       model = brt_gg_4,
+#                       scn_id = "s4",
+#                       varset = "4",
+#                       species = "gg",
+#                       initial = FALSE,
+#                       ncores = ncores)
 ```
 
 ##### Model 1 pseudo-absences
 ```{r s4_p_gg_1_ps}
-s4_p_gg_1_ps <- brtpredict(variables = s4_v,
-                      model = brt_gg_1_ps,
-                      scn_id = "s4",
-                      varset = "1_ps",
-                      species = "gg",
-                      initial = FALSE,
-                      ncores = ncores)
+# s4_p_gg_1_ps <- brtpredict(variables = s4_v,
+#                       model = brt_gg_1_ps,
+#                       scn_id = "s4",
+#                       varset = "1_ps",
+#                       species = "gg",
+#                       initial = FALSE,
+#                       ncores = ncores)
 ```
 
 ##### Model 4 pseudo-absences
 ```{r s4_p_gg_4_ps}
-s4_p_gg_4_ps <- brtpredict(variables = s4_v,
-                      model = brt_gg_4_ps,
-                      scn_id = "s4",
-                      varset = "4_ps",
-                      species = "gg",
-                      initial = FALSE,
-                      ncores = ncores)
+# s4_p_gg_4_ps <- brtpredict(variables = s4_v,
+#                       model = brt_gg_4_ps,
+#                       scn_id = "s4",
+#                       varset = "4_ps",
+#                       species = "gg",
+#                       initial = FALSE,
+#                       ncores = ncores)
 ```
 
 ### Leadbeater's Possum
@@ -1873,13 +1965,13 @@ s1_p_lb_3_ps <- brtpredict(variables = s1_v,
 
 ##### Model 1
 ```{r s2_p_lb_1}
-# s2_p_lb_1 <- brtpredict(variables = s2_v,
-#                       model = brt_lb_1,
-#                       scn_id = "s2",
-#                       varset = "1",
-#                       species = "lb",
-#                       initial = FALSE,
-#                       ncores = ncores)
+s2_p_lb_1 <- brtpredict(variables = s2_v,
+                      model = brt_lb_1,
+                      scn_id = "s2",
+                      varset = "1",
+                      species = "lb",
+                      initial = FALSE,
+                      ncores = ncores)
 ```
 
 ##### Model 3
@@ -1895,13 +1987,13 @@ s1_p_lb_3_ps <- brtpredict(variables = s1_v,
 
 ##### Model 1 pseudo-absences
 ```{r s2_p_lb_1_ps}
-# s2_p_lb_1_ps <- brtpredict(variables = s2_v,
-#                       model = brt_lb_1_ps,
-#                       scn_id = "s2",
-#                       varset = "1_ps",
-#                       species = "lb",
-#                       initial = FALSE,
-#                       ncores = ncores)
+s2_p_lb_1_ps <- brtpredict(variables = s2_v,
+                      model = brt_lb_1_ps,
+                      scn_id = "s2",
+                      varset = "1_ps",
+                      species = "lb",
+                      initial = FALSE,
+                      ncores = ncores)
 ```
 
 ##### Model 3 pseudo-absences
@@ -1930,13 +2022,13 @@ s3_p_lb_1 <- brtpredict(variables = s3_v,
 
 ##### Model 3
 ```{r s3_p_lb_3}
-s3_p_lb_3 <- brtpredict(variables = s3_v,
-                      model = brt_lb_3,
-                      scn_id = "s3",
-                      varset = "3",
-                      species = "lb",
-                      initial = FALSE,
-                      ncores = ncores)
+# s3_p_lb_3 <- brtpredict(variables = s3_v,
+#                       model = brt_lb_3,
+#                       scn_id = "s3",
+#                       varset = "3",
+#                       species = "lb",
+#                       initial = FALSE,
+#                       ncores = ncores)
 ```
 
 ##### Model 1 pseudo-absences
@@ -1952,67 +2044,107 @@ s3_p_lb_1_ps <- brtpredict(variables = s3_v,
 
 ##### Model 3 pseudo-absences
 ```{r s3_p_lb_3_ps}
-s3_p_lb_3_ps <- brtpredict(variables = s3_v,
-                      model = brt_lb_3_ps,
-                      scn_id = "s3",
-                      varset = "3_ps",
-                      species = "lb",
-                      initial = FALSE,
-                      ncores = ncores)
+# s3_p_lb_3_ps <- brtpredict(variables = s3_v,
+#                       model = brt_lb_3_ps,
+#                       scn_id = "s3",
+#                       varset = "3_ps",
+#                       species = "lb",
+#                       initial = FALSE,
+#                       ncores = ncores)
 ```
 
 #### Scenario 4
 
 ##### Model 1
 ```{r s4_p_lb_1}
-s4_p_lb_1 <- brtpredict(variables = s4_v,
-                      model = brt_lb_1,
-                      scn_id = "s4",
-                      varset = "1",
-                      species = "lb",
-                      initial = FALSE,
-                      ncores = ncores)
+# s4_p_lb_1 <- brtpredict(variables = s4_v,
+#                       model = brt_lb_1,
+#                       scn_id = "s4",
+#                       varset = "1",
+#                       species = "lb",
+#                       initial = FALSE,
+#                       ncores = ncores)
 ```
 
 ##### Model 3
 ```{r s4_p_lb_3}
-s4_p_lb_3 <- brtpredict(variables = s4_v,
-                      model = brt_lb_3,
-                      scn_id = "s4",
-                      varset = "3",
-                      species = "lb",
-                      initial = FALSE,
-                      ncores = ncores)
+# s4_p_lb_3 <- brtpredict(variables = s4_v,
+#                       model = brt_lb_3,
+#                       scn_id = "s4",
+#                       varset = "3",
+#                       species = "lb",
+#                       initial = FALSE,
+#                       ncores = ncores)
 ```
 
 ##### Model 1 pseudo-absences
 ```{r s4_p_lb_1_ps}
-s4_p_lb_1_ps <- brtpredict(variables = s4_v,
-                      model = brt_lb_1_ps,
-                      scn_id = "s4",
-                      varset = "1_ps",
-                      species = "lb",
-                      initial = FALSE,
-                      ncores = ncores)
+# s4_p_lb_1_ps <- brtpredict(variables = s4_v,
+#                       model = brt_lb_1_ps,
+#                       scn_id = "s4",
+#                       varset = "1_ps",
+#                       species = "lb",
+#                       initial = FALSE,
+#                       ncores = ncores)
 ```
 
 ##### Model 3 pseudo-absences
 ```{r s4_p_lb_3_ps}
-s4_p_lb_3_ps <- brtpredict(variables = s4_v,
-                      model = brt_lb_3_ps,
-                      scn_id = "s4",
-                      varset = "3_ps",
-                      species = "lb",
-                      initial = FALSE,
-                      ncores = ncores)
+# s4_p_lb_3_ps <- brtpredict(variables = s4_v,
+#                       model = brt_lb_3_ps,
+#                       scn_id = "s4",
+#                       varset = "3_ps",
+#                       species = "lb",
+#                       initial = FALSE,
+#                       ncores = ncores)
+```
+
+```{r save.image distribution_predictions}
+save.image(file = "output/session_images/distribution_predictions.RData")
 ```
 
 
 
+```{r stackbrtpred}
+s1_p_gg_1    <- stackbrtpred(scn_id = "s1", varset = "1"    , species = "gg")
+s1_p_gg_4    <- stackbrtpred(scn_id = "s1", varset = "4"    , species = "gg")
+s1_p_gg_1_ps <- stackbrtpred(scn_id = "s1", varset = "1_ps" , species = "gg")
+s1_p_gg_4_ps <- stackbrtpred(scn_id = "s1", varset = "4_ps" , species = "gg")
 
+s2_p_gg_1    <- stackbrtpred(scn_id = "s2", varset = "1"    , species = "gg")
+# s2_p_gg_4    <- stackbrtpred(scn_id = "s2", varset = "4"    , species = "gg")
+s2_p_gg_1_ps <- stackbrtpred(scn_id = "s2", varset = "1_ps" , species = "gg")
+# s2_p_gg_4_ps <- stackbrtpred(scn_id = "s2", varset = "4_ps" , species = "gg")
 
-```{r}
-1+,
+s3_p_gg_1    <- stackbrtpred(scn_id = "s3", varset = "1"    , species = "gg")
+# s3_p_gg_4    <- stackbrtpred(scn_id = "s3", varset = "4"    , species = "gg")
+s3_p_gg_1_ps <- stackbrtpred(scn_id = "s3", varset = "1_ps" , species = "gg")
+# s3_p_gg_4_ps <- stackbrtpred(scn_id = "s3", varset = "4_ps" , species = "gg")
+
+# s4_p_gg_1    <- stackbrtpred(scn_id = "s4", varset = "1"    , species = "gg")
+# s4_p_gg_4    <- stackbrtpred(scn_id = "s4", varset = "4"    , species = "gg")
+# s4_p_gg_1_ps <- stackbrtpred(scn_id = "s4", varset = "1_ps" , species = "gg")
+# s4_p_gg_4_ps <- stackbrtpred(scn_id = "s4", varset = "4_ps" , species = "gg")
+
+s1_p_lb_1    <- stackbrtpred(scn_id = "s1", varset = "1"    , species = "lb")
+s1_p_lb_3    <- stackbrtpred(scn_id = "s1", varset = "3"    , species = "lb")
+s1_p_lb_1_ps <- stackbrtpred(scn_id = "s1", varset = "1_ps" , species = "lb")
+s1_p_lb_3_ps <- stackbrtpred(scn_id = "s1", varset = "3_ps" , species = "lb")
+
+s2_p_lb_1    <- stackbrtpred(scn_id = "s2", varset = "1"    , species = "lb")
+# s2_p_lb_3    <- stackbrtpred(scn_id = "s2", varset = "3"    , species = "lb")
+s2_p_lb_1_ps <- stackbrtpred(scn_id = "s2", varset = "1_ps" , species = "lb")
+# s2_p_lb_3_ps <- stackbrtpred(scn_id = "s2", varset = "3_ps" , species = "lb")
+
+s3_p_lb_1    <- stackbrtpred(scn_id = "s3", varset = "1"    , species = "lb")
+# s3_p_lb_3    <- stackbrtpred(scn_id = "s3", varset = "3"    , species = "lb")
+s3_p_lb_1_ps <- stackbrtpred(scn_id = "s3", varset = "1_ps" , species = "lb")
+# s3_p_lb_3_ps <- stackbrtpred(scn_id = "s3", varset = "3_ps" , species = "lb")
+
+# s4_p_lb_1    <- stackbrtpred(scn_id = "s4", varset = "1"    , species = "lb")
+# s4_p_lb_3    <- stackbrtpred(scn_id = "s4", varset = "3"    , species = "lb")
+# s4_p_lb_1_ps <- stackbrtpred(scn_id = "s4", varset = "1_ps" , species = "lb")
+# s4_p_lb_3_ps <- stackbrtpred(scn_id = "s4", varset = "3_ps" , species = "lb")
 ```
 
 
@@ -2020,446 +2152,515 @@ s4_p_lb_3_ps <- brtpredict(variables = s4_v,
 # Population viability analysis
 
 ## Greater Glider
-```{r}
-gg_trans_mat <- matrix(c(0.00,0.00,0.25,
-                         0.50,0.00,0.00,
-                         0.00,0.85,0.85),
-                       nrow = 3, ncol = 3, byrow = TRUE) # based on Possingham et al 1994
-colnames(gg_trans_mat) <- rownames(gg_trans_mat) <- c('Newborn','Juvenile','Adult')
 
-gg_stable_states <- abs( eigen(gg_trans_mat)$vectors[,1] / base::sum(eigen(gg_trans_mat)$vectors[,1]) ) 
+### PVA Input variables
+
+```{r ageClassNames}
+ageClassNames <- c('Newborn','Juvenile','Adult')
+```
+
+#### Transition matrices
+
+##### Mid fecundity
+```{r gg_trans_mat_fm}
+tm_gg_fm <- matrix(c(0.00,0.00,0.50,
+                     0.50,0.00,0.00,
+                     0.00,0.85,0.85),
+                   nrow = 3,
+                   ncol = 3,
+                   byrow = TRUE)
+
+colnames(tm_gg_fm) <- rownames(tm_gg_fm) <- ageClassNames
+
+ss_gg_fm <- get.stable.states(tm_gg_fm)
+
+ss_gg_fm
+
+rmax(tm = tm_gg_fm)
 ```
 
 
-### Scenario 1
-```{r}
-s1_hs_gg <- stack(s1_ip_gg, s1_fp_gg)
+##### Low fecundity
+```{r gg_trans_mat_fl}
+tm_gg_fl <- matrix(c(0.00,0.00,0.25,
+                     0.50,0.00,0.00,
+                     0.00,0.85,0.85),
+                   nrow = 3,
+                   ncol = 3,
+                   byrow = TRUE) # based on Possingham et al 1994
 
-for(i in 1:51){
-  s1_hs_gg[[i]][is.na(s1_hs_gg[[i]][])] <- 0
-}
+colnames(tm_gg_fl) <- rownames(tm_gg_fl) <- ageClassNames
 
-s1_hs_gg <- mask(s1_hs_gg, mask = ch_mask)
+ss_gg_fl <- get.stable.states(tm_gg_fl)
+
+ss_gg_fl
+
+rmax(tm = tm_gg_fl)
 ```
 
-```{r}
-s1_hab_k_gg <- calc(s1_hs_gg[[1]], fun = function(x){if(is.na(x)) x else rbinom(prob = x, size = 3, n = 1)})
+#### Carraying capacity
 
-names(s1_hab_k_gg) <- "carryingCapacity"
+##### Scenario 1
 
-s1_gg_popN <- stack(replicate(ncol(gg_trans_mat), s1_hab_k_gg))
-
-s1_gg_popN <- s1_gg_popN*gg_stable_states
-
-s1_gg_idx <- which(!is.na(s1_hs_gg[[1]][]) & s1_hs_gg[[1]][] < 0.95)
-
-s1_gg_pop <- s1_gg_popN
-s1_gg_pop[!is.na(s1_gg_pop)] <- 0
-s1_gg_pop[[1]][sample(s1_gg_idx, 10000)] <- 1
-s1_gg_pop[[2]][sample(s1_gg_idx, 10000)] <- 1
-s1_gg_pop[[3]][sample(s1_gg_idx, 10000)] <- 1
-
-s1_gg_pop <- s1_gg_pop*ch_mask
-
-names(s1_gg_pop) <- colnames(gg_trans_mat)
-
-s1_gg_TotpopN <- sum(cellStats(s1_gg_pop, 'sum', na.rm = TRUE)) # Get total population size to check sensible
-s1_gg_init_pop_size <- sum(s1_gg_pop)
+##### Model 1
+```{r cc_gg_1_1}
+cc_gg_1_1 <- rst.op(input1 = s1_p_gg_1[[1]],
+                    op = "cc",
+                    proj_mask = ch_mask,
+                    filename = "output/pva_vars/cc_gg_1_1.grd",
+                    layernames = "carryingCapacity",
+                    size = 3) %T>%
+  plot
+```
+##### Model 1 ps
+```{r cc_gg_1_1_ps}
+cc_gg_1_1_ps <- rst.op(input1 = s1_p_gg_1_ps[[1]],
+                       op = "cc",
+                    proj_mask = ch_mask,
+                    filename = "output/pva_vars/cc_gg_1_1_ps.grd",
+                    layernames = "carryingCapacity",
+                    size = 3) %T>%
+  plot
+```
+##### Model 4
+```{r cc_gg_1_4}
+cc_gg_1_4 <- rst.op(input1 = s1_p_gg_4[[1]],
+                    op = "cc",
+                    proj_mask = ch_mask,
+                    filename = "output/pva_vars/cc_gg_1_4.grd",
+                    layernames = "carryingCapacity",
+                    size = 3) %T>%
+  plot
+```
+##### Model 4 ps
+```{r cc_gg_1_4_ps}
+cc_gg_1_4_ps <- rst.op(input1 = s1_p_gg_4_ps[[1]],
+                       op = "cc",
+                    proj_mask = ch_mask,
+                    filename = "output/pva_vars/cc_gg_1_4_ps.grd",
+                    layernames = "carryingCapacity",
+                    size = 3) %T>%
+  plot
 ```
 
-```{r}
-s1_gg_landscape <- landscape(population = s1_gg_pop,
-                          suitability = s1_hs_gg,
-                          carrying_capacity = s1_hab_k_gg)
+##### Scenario 2
 
-s1_gg_pop_dynamics <- population_dynamics(change = growth(transition_matrix = gg_trans_mat,
-                                                       global_stochasticity = 0.1),
-                                       dispersal = fast_dispersal(
-                                         dispersal_kernel = exponential_dispersal_kernel(
-                                           distance_decay = 8000)),
-                                       modification = NULL)
+##### Model 1
+```{r cc_gg_2_1}
+cc_gg_2_1 <- rst.op(input1 = s2_p_gg_1[[1]],
+                    op = "cc",
+                    proj_mask = ch_mask,
+                    filename = "output/pva_vars/cc_gg_2_1.grd",
+                    layernames = "carryingCapacity",
+                    size = 3) %T>%
+  plot
 ```
-
-```{r}
-plan(sequential, workers = 1)
-s1_gg_results_1_50 <- simulation(landscape = s1_gg_landscape,
-                         population_dynamics = s1_gg_pop_dynamics,
-                         habitat_dynamics = NULL,
-                         timesteps = 50,
-                         replicates = 1)
-
-
-saveRDS(object = s1_gg_results_1_50, file = "output/pva_results/s1_gg_results_1_50.Rds")
-```
-
-
-```{r}
-plot(s1_gg_results_1_50)
-```
-
-```{r}
-plot(s1_gg_results_1_50[1], type = "raster", stages = 0, timesteps = c(1:5))
-```
-
-### Scenario 3
-```{r}
-s3_hs_gg <- stack(s3_ip_gg, s3_fp_gg)
-
-for(i in 1:51){
-  s3_hs_gg[[i]][is.na(s3_hs_gg[[i]][])] <- 0
-}
-
-s3_hs_gg <- mask(s3_hs_gg, mask = ch_mask)
-```
-
-```{r}
-s3_hab_k_gg <- calc(s3_hs_gg[[1]], fun = function(x){if(is.na(x)) x else rbinom(prob = x, size = 3, n = 1)})
-
-names(s3_hab_k_gg) <- "carryingCapacity"
-
-s3_gg_popN <- stack(replicate(ncol(gg_trans_mat), s3_hab_k_gg))
-
-s3_gg_popN <- s3_gg_popN*gg_stable_states
-
-s3_gg_idx <- which(!is.na(s3_hs_gg[[1]][]) & s3_hs_gg[[1]][] < 0.95)
-
-s3_gg_pop <- s3_gg_popN
-s3_gg_pop[!is.na(s3_gg_pop)] <- 0
-s3_gg_pop[[1]][sample(s3_gg_idx, 10000)] <- 1
-s3_gg_pop[[2]][sample(s3_gg_idx, 10000)] <- 1
-s3_gg_pop[[3]][sample(s3_gg_idx, 10000)] <- 1
-
-s3_gg_pop <- s3_gg_pop*ch_mask
-
-names(s3_gg_pop) <- colnames(gg_trans_mat)
-
-s3_gg_TotpopN <- sum(cellStats(s3_gg_pop, 'sum', na.rm = TRUE)) # Get total population size to check sensible
-s3_gg_init_pop_size <- sum(s3_gg_pop)
-```
-
-```{r}
-s3_gg_landscape <- landscape(population = s3_gg_pop,
-                          suitability = s3_hs_gg,
-                          carrying_capacity = s3_hab_k_gg)
-
-s3_gg_pop_dynamics <- population_dynamics(change = growth(transition_matrix = gg_trans_mat,
-                                                       global_stochasticity = 0.1),
-                                       dispersal = fast_dispersal(
-                                         dispersal_kernel = exponential_dispersal_kernel(
-                                           distance_decay = 8000)),
-                                       modification = NULL)
-```
-
-```{r}
-plan(sequential, workers = 1)
-s3_gg_results_1_50 <- simulation(landscape = s3_gg_landscape,
-                         population_dynamics = s3_gg_pop_dynamics,
-                         habitat_dynamics = NULL,
-                         timesteps = 50,
-                         replicates = 1)
-
-
-saveRDS(object = s3_gg_results_1_50, file = "output/pva_results/s3_gg_results_1_50.Rds")
+##### Model 1 ps
+```{r cc_gg_2_1_ps}
+cc_gg_2_1_ps <- rst.op(input1 = s2_p_gg_1_ps[[1]],
+                       op = "cc",
+                    proj_mask = ch_mask,
+                    filename = "output/pva_vars/cc_gg_2_1_ps.grd",
+                    layernames = "carryingCapacity",
+                    size = 3) %T>%
+  plot
 ```
 
 
-```{r}
-plot(s3_gg_results_1_50)
+##### Scenario 3
+
+##### Model 1
+```{r cc_gg_3_1}
+cc_gg_3_1 <- rst.op(input1 = s3_p_gg_1[[1]],
+                    op = "cc",
+                    proj_mask = ch_mask,
+                    filename = "output/pva_vars/cc_gg_3_1.grd",
+                    layernames = "carryingCapacity",
+                    size = 3) %T>%
+  plot
+```
+##### Model 1 ps
+```{r cc_gg_3_1_ps}
+cc_gg_3_1_ps <- rst.op(input1 = s3_p_gg_1_ps[[1]],
+                       op = "cc",
+                    proj_mask = ch_mask,
+                    filename = "output/pva_vars/cc_gg_3_1_ps.grd",
+                    layernames = "carryingCapacity",
+                    size = 3) %T>%
+  plot
+```
+
+##### Scenario 4
+
+##### Model 1
+```{r cc_gg_4_1}
+cc_gg_4_1 <- rst.op(input1 = s4_p_gg_1[[1]],
+                    op = "cc",
+                    proj_mask = ch_mask,
+                    filename = "output/pva_vars/cc_gg_4_1.grd",
+                    layernames = "carryingCapacity",
+                    size = 3) %T>%
+  plot
+```
+##### Model 1 ps
+```{r cc_gg_4_1_ps}
+cc_gg_4_1_ps <- rst.op(input1 = s4_p_gg_1_ps[[1]],
+                       op = "cc",
+                    proj_mask = ch_mask,
+                    filename = "output/pva_vars/cc_gg_4_1_ps.grd",
+                    layernames = "carryingCapacity",
+                    size = 3) %T>%
+  plot
+```
+#### Initial population
+
+##### Scenario 1
+
+###### Model 1
+```{r p0_gg_1_1}
+p0_gg_1_1 <- initpop(hs = s1_p_gg_1[[1]],
+                     cc = cc_gg_1_1,
+                     tm = tm_gg_fm,
+                     popsize = 10000,
+                     proj_mask = ch_mask,
+                     out_path = "output/pva_vars/",
+                     scn_id = "s1",
+                     varset = "1",
+                     species = "gg") %T>%
+  plot
+```
+###### Model 1 ps
+```{r p0_gg_1_1_ps}
+p0_gg_1_1_ps <- initpop(hs = s1_p_gg_1_ps[[1]],
+                     cc = cc_gg_1_1_ps,
+                     tm = tm_gg_fm,
+                     popsize = 10000,
+                     proj_mask = ch_mask,
+                     out_path = "output/pva_vars/",
+                     scn_id = "s1",
+                     varset = "1_ps",
+                     species = "gg") %T>%
+  plot
+```
+###### Model 1 low fecondity
+```{r p0_gg_1_1_fl}
+p0_gg_1_1_fl <- initpop(hs = s1_p_gg_1[[1]],
+                     cc = cc_gg_1_1,
+                     tm = tm_gg_fl,
+                     popsize = 10000,
+                     proj_mask = ch_mask,
+                     out_path = "output/pva_vars/",
+                     scn_id = "s1",
+                     varset = "1_fl",
+                     species = "gg") %T>%
+  plot
+```
+###### Model 1 ps low fecundity
+```{r p0_gg_1_1_ps_fl}
+p0_gg_1_1_ps_fl <- initpop(hs = s1_p_gg_1_ps[[1]],
+                     cc = cc_gg_1_1_ps,
+                     tm = tm_gg_fl,
+                     popsize = 10000,
+                     proj_mask = ch_mask,
+                     out_path = "output/pva_vars/",
+                     scn_id = "s1",
+                     varset = "1_ps_fl",
+                     species = "gg") %T>%
+  plot
+```
+
+###### Model 4
+```{r p0_gg_1_4}
+p0_gg_1_4 <- initpop(hs = s1_p_gg_4[[1]],
+                     cc = cc_gg_1_4,
+                     tm = tm_gg_fm,
+                     popsize = 10000,
+                     proj_mask = ch_mask,
+                     out_path = "output/pva_vars/",
+                     scn_id = "s1",
+                     varset = "4",
+                     species = "gg") %T>%
+  plot
+```
+###### Model 4 ps
+```{r p0_gg_1_4_ps}
+p0_gg_1_4_ps <- initpop(hs = s1_p_gg_4_ps[[1]],
+                     cc = cc_gg_1_4_ps,
+                     tm = tm_gg_fm,
+                     popsize = 10000,
+                     proj_mask = ch_mask,
+                     out_path = "output/pva_vars/",
+                     scn_id = "s1",
+                     varset = "4_ps",
+                     species = "gg") %T>%
+  plot
+```
+
+##### Scenario 2
+###### Model 1
+```{r p0_gg_2_1}
+p0_gg_2_1 <- initpop(hs = s2_p_gg_1[[1]],
+                     cc = cc_gg_2_1,
+                     tm = tm_gg_fm,
+                     popsize = 10000,
+                     proj_mask = ch_mask,
+                     out_path = "output/pva_vars/",
+                     scn_id = "s2",
+                     varset = "1",
+                     species = "gg") %T>%
+  plot
+```
+
+###### Model 1 ps
+```{r p0_gg_2_1_ps}
+p0_gg_2_1_ps <- initpop(hs = s2_p_gg_1_ps[[1]],
+                     cc = cc_gg_2_1_ps,
+                     tm = tm_gg_fm,
+                     popsize = 10000,
+                     proj_mask = ch_mask,
+                     out_path = "output/pva_vars/",
+                     scn_id = "s2",
+                     varset = "1_ps",
+                     species = "gg") %T>%
+  plot
+```
+
+##### Scenario 3
+###### Model 1
+```{r p0_gg_3_1}
+p0_gg_3_1 <- initpop(hs = s3_p_gg_1[[1]],
+                     cc = cc_gg_3_1,
+                     tm = tm_gg_fm,
+                     popsize = 10000,
+                     proj_mask = ch_mask,
+                     out_path = "output/pva_vars/",
+                     scn_id = "s3",
+                     varset = "1",
+                     species = "gg") %T>%
+  plot
+```
+
+###### Model 1 ps
+```{r p0_gg_3_1_ps}
+p0_gg_3_1_ps <- initpop(hs = s3_p_gg_1_ps[[1]],
+                     cc = cc_gg_3_1_ps,
+                     tm = tm_gg_fm,
+                     popsize = 10000,
+                     proj_mask = ch_mask,
+                     out_path = "output/pva_vars/",
+                     scn_id = "s3",
+                     varset = "1_ps",
+                     species = "gg") %T>%
+  plot
+```
+
+##### Scenario 4
+###### Model 1
+```{r p0_gg_4_1}
+p0_gg_4_1 <- initpop(hs = s4_p_gg_1[[1]],
+                     cc = cc_gg_4_1,
+                     tm = tm_gg_fm,
+                     popsize = 10000,
+                     proj_mask = ch_mask,
+                     out_path = "output/pva_vars/",
+                     scn_id = "s4",
+                     varset = "1",
+                     species = "gg") %T>%
+  plot
+```
+
+###### Model 1 ps
+```{r p0_gg_4_1_ps}
+p0_gg_4_1_ps <- initpop(hs = s4_p_gg_1_ps[[1]],
+                     cc = cc_gg_4_1_ps,
+                     tm = tm_gg_fm,
+                     popsize = 10000,
+                     proj_mask = ch_mask,
+                     out_path = "output/pva_vars/",
+                     scn_id = "s4",
+                     varset = "1_ps",
+                     species = "gg") %T>%
+  plot
+```
+#### Landscape objects
+
+##### Scenario 1
+
+###### Model 1
+```{r l_gg_1_1}
+l_gg_1_1 <- landscape(
+  population = p0_gg_1_1,
+  suitability = s1_p_gg_1,
+  carrying_capacity = cc_gg_1_1
+)
+```
+
+###### Model 1 ps
+```{r l_gg_1_1_ps}
+l_gg_1_1_ps <- landscape(
+  population = p0_gg_1_1_ps,
+  suitability = s1_p_gg_1_ps,
+  carrying_capacity = cc_gg_1_1_ps
+)
+```
+
+###### Model 1 low fecundity
+```{r l_gg_1_1_fl}
+l_gg_1_1_fl <- landscape(
+  population = p0_gg_1_1_fl,
+  suitability = s1_p_gg_1,
+  carrying_capacity = cc_gg_1_1
+)
+```
+
+###### Model 1 ps low fecundity
+```{r l_gg_1_1_ps_fl}
+l_gg_1_1_ps_fl <- landscape(
+  population = p0_gg_1_1_ps_fl,
+  suitability = s1_p_gg_1_ps,
+  carrying_capacity = cc_gg_1_1_ps
+)
+```
+
+###### Model 4
+```{r l_gg_1_4}
+l_gg_1_4 <- landscape(
+  population = p0_gg_1_4,
+  suitability = s1_p_gg_4,
+  carrying_capacity = cc_gg_1_4
+)
+```
+
+###### Model 4 ps
+```{r l_gg_1_4_ps}
+l_gg_1_4_ps <- landscape(
+  population = p0_gg_1_4_ps,
+  suitability = s1_p_gg_4_ps,
+  carrying_capacity = cc_gg_1_4_ps
+)
+```
+
+##### Scenario 2
+###### Model 1
+```{r l_gg_2_1}
+l_gg_2_1 <- landscape(
+  population = p0_gg_2_1,
+  suitability = s2_p_gg_1,
+  carrying_capacity = cc_gg_2_1
+)
+```
+
+###### Model 1 ps
+```{r l_gg_2_1_ps}
+l_gg_2_1_ps <- landscape(
+  population = p0_gg_2_1_ps,
+  suitability = s2_p_gg_1_ps,
+  carrying_capacity = cc_gg_2_1_ps
+)
+```
+
+##### Scenario 3
+###### Model 1
+```{r l_gg_3_1}
+l_gg_3_1 <- landscape(
+  population = p0_gg_3_1,
+  suitability = s3_p_gg_1,
+  carrying_capacity = cc_gg_3_1
+)
+```
+
+###### Model 1 ps
+```{r l_gg_3_1_ps}
+l_gg_3_1_ps <- landscape(
+  population = p0_gg_3_1_ps,
+  suitability = s3_p_gg_1_ps,
+  carrying_capacity = cc_gg_3_1_ps
+)
+```
+
+##### Scenario 4
+###### Model 1
+```{r l_gg_4_1}
+l_gg_4_1 <- landscape(
+  population = p0_gg_4_1,
+  suitability = s4_p_gg_1,
+  carrying_capacity = cc_gg_4_1
+)
+```
+
+###### Model 1 ps
+```{r l_gg_4_1_ps}
+l_gg_4_1_ps <- landscape(
+  population = p0_gg_4_1_ps,
+  suitability = s4_p_gg_1_ps,
+  carrying_capacity = cc_gg_4_1_ps
+)
+```
+
+#### Population dynamics objects
+
+##### Mid fecundity, mid dispersal
+```{r pd_gg_fm_dm}
+pd_gg_fm_dm <- population_dynamics(
+  change = growth(transition_matrix = tm_gg_fm,
+                  global_stochasticity = 0.1),
+  dispersal =  cellular_automata_dispersal(max_cells = c(0, 325, 325),
+                                          dispersal_proportion = carrying_capacity_dispersal())
+  )
+```
+
+##### Low fecundity, mid dispersal
+```{r pd_gg_fl_dm}
+pd_gg_fl_dm <- population_dynamics(
+  change = growth(transition_matrix = tm_gg_fl,
+                  global_stochasticity = 0.1),
+  dispersal =  cellular_automata_dispersal(max_cells = c(0, 325, 325),
+                                          dispersal_proportion = carrying_capacity_dispersal())
+  )
+```
+
+##### Mid fecundity, low dispersal
+```{r pd_gg_fm_dl}
+pd_gg_fm_dm <- population_dynamics(
+  change = growth(transition_matrix = tm_gg_fm,
+                  global_stochasticity = 0.1),
+  dispersal =  cellular_automata_dispersal(max_cells = c(0, 160, 160),
+                                          dispersal_proportion = carrying_capacity_dispersal())
+  )
 ```
 
 ```{r}
-plot(s3_gg_results_1_50[1], type = "raster", stages = 0, timesteps = c(1:5))
+save.image(file = "output/session_images/gg_pva_objects.RData")
 ```
 
-### Scenario 4
+### PVAs
+
+#### Scenario 1
+
+##### Model 1
 ```{r}
-s4_hs_gg <- stack(s4_ip_gg, s4_fp_gg)
-
-for(i in 1:51){
-  s4_hs_gg[[i]][is.na(s4_hs_gg[[i]][])] <- 0
-}
-
-s4_hs_gg <- mask(s4_hs_gg, mask = ch_mask)
-```
-
-```{r}
-s4_hab_k_gg <- calc(s4_hs_gg[[1]], fun = function(x){if(is.na(x)) x else rbinom(prob = x, size = 3, n = 1)})
-
-names(s4_hab_k_gg) <- "carryingCapacity"
-
-s4_gg_popN <- stack(replicate(ncol(gg_trans_mat), s4_hab_k_gg))
-
-s4_gg_popN <- s4_gg_popN*gg_stable_states
-
-s4_gg_idx <- which(!is.na(s4_hs_gg[[1]][]) & s4_hs_gg[[1]][] < 0.95)
-
-s4_gg_pop <- s4_gg_popN
-s4_gg_pop[!is.na(s4_gg_pop)] <- 0
-s4_gg_pop[[1]][sample(s4_gg_idx, 10000)] <- 1
-s4_gg_pop[[2]][sample(s4_gg_idx, 10000)] <- 1
-s4_gg_pop[[3]][sample(s4_gg_idx, 10000)] <- 1
-
-s4_gg_pop <- s4_gg_pop*ch_mask
-
-names(s4_gg_pop) <- colnames(gg_trans_mat)
-
-s4_gg_TotpopN <- sum(cellStats(s4_gg_pop, 'sum', na.rm = TRUE)) # Get total population size to check sensible
-s4_gg_init_pop_size <- sum(s4_gg_pop)
-```
-
-```{r}
-s4_gg_landscape <- landscape(population = s4_gg_pop,
-                          suitability = s4_hs_gg,
-                          carrying_capacity = s4_hab_k_gg)
-
-s4_gg_pop_dynamics <- population_dynamics(change = growth(transition_matrix = gg_trans_mat,
-                                                       global_stochasticity = 0.1),
-                                       dispersal = fast_dispersal(
-                                         dispersal_kernel = exponential_dispersal_kernel(
-                                           distance_decay = 8000)),
-                                       modification = NULL)
-```
-
-```{r}
-plan(sequential, workers = 1)
-s4_gg_results_1_50 <- simulation(landscape = s4_gg_landscape,
-                         population_dynamics = s4_gg_pop_dynamics,
-                         habitat_dynamics = NULL,
-                         timesteps = 50,
-                         replicates = 1)
-
-
-saveRDS(object = s4_gg_results_1_50, file = "output/pva_results/s4_gg_results_1_50.Rds")
+plan(multicore, workers = 5)
+sim_gg_1_1 <- simulation(
+  landscape = l_gg_1_1,
+  population_dynamics = pd_gg_fm_dm,
+  timesteps = 10,
+  replicates = 5
+)
 ```
 
 
 ```{r}
-plot(s4_gg_results_1_50)
+aa <- parsim(
+  landscape = l_gg_1_1,
+  population_dynamics = pd_gg_fm_dm,
+  timesteps = 10,
+  replicates = 5,
+  workers = 5,
+  proj_mask = ch_mask,
+  out_path = "output/pva_pops/",
+  scn_id = "s1",
+  varset = "1",
+  species = "gg"
+)
 ```
-
-```{r}
-plot(s4_gg_results_1_50[1], type = "raster", stages = 0, timesteps = c(1:5))
-```
-
-
-## Leadbeater's Possum
-```{r}
-lb_trans_mat <- matrix(c(0.00, 0.00, 1.10,
-                         0.59, 0.00, 0.00,
-                         0.00, 0.59, 0.79),
-                       nrow = 3, ncol = 3, byrow = TRUE) 
-colnames(lb_trans_mat) <- rownames(lb_trans_mat) <- c('Newborn','Juvenile','Adult')
-
-lb_stable_states <- abs( eigen(lb_trans_mat)$vectors[,1] / base::sum(eigen(lb_trans_mat)$vectors[,1]) ) 
-```
-
-### Scenario 1
-```{r}
-s1_hs_lb <- stack(s1_ip_lb, s1_fp_lb)
-
-for(i in 1:51){
-  s1_hs_lb[[i]][is.na(s1_hs_lb[[i]][])] <- 0
-}
-
-s1_hs_lb <- mask(s1_hs_lb, mask = ch_mask)
-```
-
-```{r}
-s1_hab_k_lb <- calc(s1_hs_lb[[1]], fun = function(x){if(is.na(x)) x else rbinom(prob = x, size = 3, n = 1)})
-
-names(s1_hab_k_lb) <- "carryingCapacity"
-
-s1_lb_popN <- stack(replicate(ncol(lb_trans_mat), s1_hab_k_lb))
-
-s1_lb_popN <- s1_lb_popN*lb_stable_states
-
-s1_lb_idx <- which(!is.na(s1_hs_lb[[1]][]) & s1_hs_lb[[1]][] < 0.95)
-
-s1_lb_pop <- s1_lb_popN
-s1_lb_pop[!is.na(s1_lb_pop)] <- 0
-s1_lb_pop[[1]][sample(s1_lb_idx, 3000)] <- 1
-s1_lb_pop[[2]][sample(s1_lb_idx, 3000)] <- 1
-s1_lb_pop[[3]][sample(s1_lb_idx, 3000)] <- 1
-
-s1_lb_pop <- s1_lb_pop*ch_mask
-
-names(s1_lb_pop) <- colnames(lb_trans_mat)
-
-s1_lb_TotpopN <- sum(cellStats(s1_lb_pop, 'sum', na.rm = TRUE)) # Get total population size to check sensible
-s1_lb_init_pop_size <- sum(s1_lb_pop)
-```
-
-```{r}
-s1_lb_landscape <- landscape(population = s1_lb_pop,
-                          suitability = s1_hs_lb,
-                          carrying_capacity = s1_hab_k_lb)
-
-s1_lb_pop_dynamics <- population_dynamics(change = growth(transition_matrix = lb_trans_mat,
-                                                       global_stochasticity = 0.3),
-                                       dispersal = fast_dispersal(
-                                         dispersal_kernel = exponential_dispersal_kernel(
-                                           distance_decay = 2000)),
-                                       modification = NULL)
-```
-
-```{r}
-plan(sequential, workers = 1)
-s1_lb_results_1_50 <- simulation(landscape = s1_lb_landscape,
-                         population_dynamics = s1_lb_pop_dynamics,
-                         habitat_dynamics = NULL,
-                         timesteps = 50,
-                         replicates = 1)
-
-
-saveRDS(object = s1_lb_results_1_50, file = "output/pva_results/s1_lb_results_1_50.Rds")
-```
-
-
-```{r}
-plot(s1_lb_results_1_50)
-```
-
-```{r}
-plot(s1_lb_results_1_50[1], type = "raster", stages = 0, timesteps = c(1:5))
-```
-
-### Scenario 3
-```{r}
-s3_hs_lb <- stack(s3_ip_lb, s3_fp_lb)
-
-for(i in 1:51){
-  s3_hs_lb[[i]][is.na(s3_hs_lb[[i]][])] <- 0
-}
-
-s3_hs_lb <- mask(s3_hs_lb, mask = ch_mask)
-```
-
-```{r}
-s3_hab_k_lb <- calc(s3_hs_lb[[1]], fun = function(x){if(is.na(x)) x else rbinom(prob = x, size = 3, n = 1)})
-
-names(s3_hab_k_lb) <- "carryingCapacity"
-
-s3_lb_popN <- stack(replicate(ncol(lb_trans_mat), s3_hab_k_lb))
-
-s3_lb_popN <- s3_lb_popN*lb_stable_states
-
-s3_lb_idx <- which(!is.na(s3_hs_lb[[1]][]) & s3_hs_lb[[1]][] < 0.95)
-
-s3_lb_pop <- s3_lb_popN
-s3_lb_pop[!is.na(s3_lb_pop)] <- 0
-s3_lb_pop[[1]][sample(s3_lb_idx, 3000)] <- 1
-s3_lb_pop[[2]][sample(s3_lb_idx, 3000)] <- 1
-s3_lb_pop[[3]][sample(s3_lb_idx, 3000)] <- 1
-
-s3_lb_pop <- s3_lb_pop*ch_mask
-
-names(s3_lb_pop) <- colnames(lb_trans_mat)
-
-s3_lb_TotpopN <- sum(cellStats(s3_lb_pop, 'sum', na.rm = TRUE)) # Get total population size to check sensible
-s3_lb_init_pop_size <- sum(s3_lb_pop)
-```
-
-```{r}
-s3_lb_landscape <- landscape(population = s3_lb_pop,
-                          suitability = s3_hs_lb,
-                          carrying_capacity = s3_hab_k_lb)
-
-s3_lb_pop_dynamics <- population_dynamics(change = growth(transition_matrix = lb_trans_mat,
-                                                       global_stochasticity = 0.1),
-                                       dispersal = fast_dispersal(
-                                         dispersal_kernel = exponential_dispersal_kernel(
-                                           distance_decay = 8000)),
-                                       modification = NULL)
-```
-
-```{r}
-plan(sequential, workers = 1)
-s3_lb_results_1_50 <- simulation(landscape = s3_lb_landscape,
-                         population_dynamics = s3_lb_pop_dynamics,
-                         habitat_dynamics = NULL,
-                         timesteps = 50,
-                         replicates = 1)
-
-
-saveRDS(object = s3_lb_results_1_50, file = "output/pva_results/s3_lb_results_1_50.Rds")
-```
-
-```{r}
-plot(s3_lb_results_1_50)
-```
-
-```{r}
-plot(s3_lb_results_1_50[1], type = "raster", stages = 0, timesteps = c(1:5))
-```
-
-### Scenario 4
-```{r}
-s4_hs_lb <- stack(s4_ip_lb, s4_fp_lb)
-
-for(i in 1:51){
-  s4_hs_lb[[i]][is.na(s4_hs_lb[[i]][])] <- 0
-}
-
-s4_hs_lb <- mask(s4_hs_lb, mask = ch_mask)
-```
-
-```{r}
-s4_hab_k_lb <- calc(s4_hs_lb[[1]], fun = function(x){if(is.na(x)) x else rbinom(prob = x, size = 3, n = 1)})
-
-names(s4_hab_k_lb) <- "carryingCapacity"
-
-s4_lb_popN <- stack(replicate(ncol(lb_trans_mat), s4_hab_k_lb))
-
-s4_lb_popN <- s4_lb_popN*lb_stable_states
-
-s4_lb_idx <- which(!is.na(s4_hs_lb[[1]][]) & s4_hs_lb[[1]][] < 0.95)
-
-s4_lb_pop <- s4_lb_popN
-s4_lb_pop[!is.na(s4_lb_pop)] <- 0
-s4_lb_pop[[1]][sample(s4_lb_idx, 3000)] <- 1
-s4_lb_pop[[2]][sample(s4_lb_idx, 3000)] <- 1
-s4_lb_pop[[3]][sample(s4_lb_idx, 3000)] <- 1
-
-s4_lb_pop <- s4_lb_pop*ch_mask
-
-names(s4_lb_pop) <- colnames(lb_trans_mat)
-
-s4_lb_TotpopN <- sum(cellStats(s4_lb_pop, 'sum', na.rm = TRUE)) # Get total population size to check sensible
-s4_lb_init_pop_size <- sum(s4_lb_pop)
-```
-
-```{r}
-s4_lb_landscape <- landscape(population = s4_lb_pop,
-                          suitability = s4_hs_lb,
-                          carrying_capacity = s4_hab_k_lb)
-
-s4_lb_pop_dynamics <- population_dynamics(change = growth(transition_matrix = lb_trans_mat,
-                                                       global_stochasticity = 0.1),
-                                       dispersal = fast_dispersal(
-                                         dispersal_kernel = exponential_dispersal_kernel(
-                                           distance_decay = 8000)),
-                                       modification = NULL)
-```
-
-```{r}
-plan(sequential, workers = 1)
-s4_lb_results_1_50 <- simulation(landscape = s4_lb_landscape,
-                         population_dynamics = s4_lb_pop_dynamics,
-                         habitat_dynamics = NULL,
-                         timesteps = 50,
-                         replicates = 1)
-
-
-saveRDS(object = s4_lb_results_1_50, file = "output/pva_results/s4_lb_results_1_50.Rds")
-```
-
-
-```{r}
-plot(s4_lb_results_1_50)
-```
-
-```{r}
-plot(s4_lb_results_1_50[1], type = "raster", stages = 0, timesteps = c(1:5))
-```
-
 

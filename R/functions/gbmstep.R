@@ -5,7 +5,7 @@ gbmstep <- function(data,
                     step.size = 1,
                     bag.fraction = 0.5,
                     prev.stratify = FALSE,
-                    verbose = TRUE,
+                    verbose = FALSE,
                     max.trees = 2000){
   
   library(dismo)

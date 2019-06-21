@@ -11,7 +11,9 @@ rst.op <- function(
     "lessthanscale",
     "weightsum",
     "history",
-    "timesince"),
+    "timesince",
+    "cc",
+    "pop"),
   proj_mask,
   filename,
   layernames,
@@ -20,7 +22,9 @@ rst.op <- function(
   scaleto,
   weight1,
   weight2,
-  year){
+  year,
+  size,
+  propn){
   
   library("raster")
   
@@ -148,6 +152,16 @@ rst.op <- function(
       v2 <- year - v2
       
       v <- ifelse(v1 > 0, 0, v2)
+      
+    } else if (op == "cc"){
+      
+      v <- rbinom(n = length(v1), size = size, prob = v1)
+      
+    } else if (op == "pop"){
+      
+      v2 <- getValues(input2, row = bs$row[i], nrows = bs$nrows[i])
+      
+      v <- rbinom(n = length(v1), size = v2, prob = v1*propn)
       
     }
       
