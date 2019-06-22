@@ -55,6 +55,13 @@ source(file = "R/functions/rst.op.R")
 source(file = "R/functions/get.disturbance.R")
 source(file = "R/functions/gbmstep.R")
 source(file = "R/functions/brtpredict.R")
+source(file = "R/functions/initpop.R")
+source(file = "R/functions/parsim.R")
+source(file = "R/functions/bind.simulation.repetitions.R")
+source(file = "R/functions/get.stable.states.R")
+source(file = "R/functions/rmax.R")
+source(file = "R/functions/stackbrtpred.R")
+source(file = "R/functions/")
 ```
 
 ### Paths
@@ -2633,27 +2640,18 @@ pd_gg_fm_dm <- population_dynamics(
 save.image(file = "output/session_images/gg_pva_objects.RData")
 ```
 
+
+
 ### PVAs
 
 #### Scenario 1
 
 ##### Model 1
-```{r}
-plan(multicore, workers = 5)
-sim_gg_1_1 <- simulation(
+```{r sim_gg_1_1}
+sim_gg_1_1 <- parsim(
   landscape = l_gg_1_1,
   population_dynamics = pd_gg_fm_dm,
-  timesteps = 10,
-  replicates = 5
-)
-```
-
-
-```{r}
-aa <- parsim(
-  landscape = l_gg_1_1,
-  population_dynamics = pd_gg_fm_dm,
-  timesteps = 10,
+  timesteps = 50,
   replicates = 5,
   workers = 5,
   proj_mask = ch_mask,
@@ -2662,5 +2660,127 @@ aa <- parsim(
   varset = "1",
   species = "gg"
 )
+
+gc()
 ```
 
+
+```{r sim_gg_1_1_ps}
+sim_gg_1_1_ps <- parsim(
+  landscape = l_gg_1_1_ps,
+  population_dynamics = pd_gg_fm_dm,
+  timesteps = 50,
+  replicates = 5,
+  workers = 5,
+  proj_mask = ch_mask,
+  out_path = "output/pva_pops/",
+  scn_id = "s1",
+  varset = "1_ps",
+  species = "gg"
+)
+
+gc()
+```
+
+```{r sim_gg_1_1_fl}
+sim_gg_1_1_fl <- parsim(
+  landscape = l_gg_1_1_fl,
+  population_dynamics = pd_gg_fl_dm,
+  timesteps = 50,
+  replicates = 5,
+  workers = 5,
+  proj_mask = ch_mask,
+  out_path = "output/pva_pops/",
+  scn_id = "s1",
+  varset = "1_fl",
+  species = "gg"
+)
+
+gc()
+```
+
+
+```{r sim_gg_1_1_ps_fl}
+sim_gg_1_1_ps_fl <- parsim(
+  landscape = l_gg_1_1_ps_fl,
+  population_dynamics = pd_gg_fl_dm,
+  timesteps = 50,
+  replicates = 5,
+  workers = 5,
+  proj_mask = ch_mask,
+  out_path = "output/pva_pops/",
+  scn_id = "s1",
+  varset = "1_ps_fl",
+  species = "gg"
+)
+
+gc()
+```
+
+```{r sim_gg_2_1}
+sim_gg_2_1 <- parsim(
+  landscape = l_gg_2_1,
+  population_dynamics = pd_gg_fm_dm,
+  timesteps = 50,
+  replicates = 5,
+  workers = 5,
+  proj_mask = ch_mask,
+  out_path = "output/pva_pops/",
+  scn_id = "s2",
+  varset = "1",
+  species = "gg"
+)
+```
+
+
+```{r sim_gg_2_1_ps}
+sim_gg_2_1_ps <- parsim(
+  landscape = l_gg_1_2_ps,
+  population_dynamics = pd_gg_fm_dm,
+  timesteps = 50,
+  replicates = 5,
+  workers = 5,
+  proj_mask = ch_mask,
+  out_path = "output/pva_pops/",
+  scn_id = "s2",
+  varset = "1_ps",
+  species = "gg"
+)
+
+gc()
+```
+
+```{r sim_gg_2_1}
+sim_gg_2_1 <- parsim(
+  landscape = l_gg_2_1,
+  population_dynamics = pd_gg_fm_dm,
+  timesteps = 50,
+  replicates = 5,
+  workers = 5,
+  proj_mask = ch_mask,
+  out_path = "output/pva_pops/",
+  scn_id = "s2",
+  varset = "1",
+  species = "gg"
+)
+
+gc()
+```
+
+
+```{r sim_gg_2_1_ps}
+sim_gg_2_1_ps <- parsim(
+  landscape = l_gg_1_2_ps,
+  population_dynamics = pd_gg_fm_dm,
+  timesteps = 50,
+  replicates = 5,
+  workers = 5,
+  proj_mask = ch_mask,
+  out_path = "output/pva_pops/",
+  scn_id = "s2",
+  varset = "1_ps",
+  species = "gg"
+)
+
+gc()
+```

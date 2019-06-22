@@ -15,7 +15,7 @@ parsim <- function(
   
   li <- vector("list", replicates)
   
-  plan(multiprocess, workers = workers)
+  plan(multisession, workers = workers)
   
   result <- future_lapply(X = li,
                           FUN = simulation,
@@ -26,9 +26,11 @@ parsim <- function(
   
   result <- bind.simulation.repetitions(result)
   
+  registerDoMC(cores = workers)
+  
   foreach (i = 1:replicates) %do% {
     foreach(j = 1:timesteps) %dopar% {
-      Newborn <- rst.op(input1 = result[[i]][[j]][[1]],
+      Newborn <- rst.op(input1 = result[[i]][[j]][[1]][[1]],
                         op = "writeonly",
                         proj_mask = proj_mask,
                         filename = sprintf(
@@ -41,7 +43,7 @@ parsim <- function(
                           j),
                         layernames = "Newborn")
       
-      Juvenile <- rst.op(input1 = result[[i]][[j]][[1]],
+      Juvenile <- rst.op(input1 = result[[i]][[j]][[1]][[2]],
                          op = "writeonly",
                          proj_mask = proj_mask,
                          filename = sprintf(
@@ -54,7 +56,7 @@ parsim <- function(
                            j),
                          layernames = "Juvenile")
       
-      Adult <- rst.op(input1 = result[[i]][[j]][[1]],
+      Adult <- rst.op(input1 = result[[i]][[j]][[1]][[3]],
                       op = "writeonly",
                       proj_mask = proj_mask,
                       filename = sprintf(
@@ -66,9 +68,48 @@ parsim <- function(
                         i,
                         j),
                       layernames = "Adult")
-      result[[i]][[j]] <- stack(Newborn, Juvenile, Adult)
       
-      names(result[[i]][[j]]) <- c("Newborn", "Juvenile", "Adult") 
+    }
+  }
+  
+  for (i in 1:replicates){
+    for(j in 1:timesteps){
+      
+      Newborn <- raster(
+        sprintf(
+          "%s/simpop_%s_%s_%s_%s_%s_n.grd",
+          out_path,
+          scn_id,
+          varset,
+          species,
+          i,
+          j)
+      )
+      
+      Juvenile <- raster(
+        sprintf(
+          "%s/simpop_%s_%s_%s_%s_%s_j.grd",
+          out_path,
+          scn_id,
+          varset,
+          species,
+          i,
+          j)
+        )
+      
+      Adult <- raster(
+        sprintf(
+          "%s/simpop_%s_%s_%s_%s_%s_a.grd",
+          out_path,
+          scn_id,
+          varset,
+          species,
+          i,
+          j)
+      )
+      
+      result[[i]][[j]][[1]] <- stack(Newborn, Juvenile, Adult)
+      
     }
   }
   
