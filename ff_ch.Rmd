@@ -61,7 +61,9 @@ source(file = "R/functions/bind.simulation.repetitions.R")
 source(file = "R/functions/get.stable.states.R")
 source(file = "R/functions/rmax.R")
 source(file = "R/functions/stackbrtpred.R")
-source(file = "R/functions/")
+source(file = "R/functions/gpr.R")
+source(file = "R/functions/gps.R")
+source(file = "R/functions/psr.R")
 ```
 
 ### Paths
@@ -2735,7 +2737,7 @@ sim_gg_2_1 <- parsim(
 
 ```{r sim_gg_2_1_ps}
 sim_gg_2_1_ps <- parsim(
-  landscape = l_gg_1_2_ps,
+  landscape = l_gg_2_1_ps,
   population_dynamics = pd_gg_fm_dm,
   timesteps = 50,
   replicates = 5,
@@ -2750,16 +2752,16 @@ sim_gg_2_1_ps <- parsim(
 gc()
 ```
 
-```{r sim_gg_2_1}
-sim_gg_2_1 <- parsim(
-  landscape = l_gg_2_1,
+```{r sim_gg_3_1}
+sim_gg_3_1 <- parsim(
+  landscape = l_gg_3_1,
   population_dynamics = pd_gg_fm_dm,
   timesteps = 50,
   replicates = 5,
   workers = 5,
   proj_mask = ch_mask,
   out_path = "output/pva_pops/",
-  scn_id = "s2",
+  scn_id = "s3",
   varset = "1",
   species = "gg"
 )
@@ -2768,16 +2770,16 @@ gc()
 ```
 
 
-```{r sim_gg_2_1_ps}
-sim_gg_2_1_ps <- parsim(
-  landscape = l_gg_1_2_ps,
+```{r sim_gg_3_1_ps}
+sim_gg_3_1_ps <- parsim(
+  landscape = l_gg_3_1_ps,
   population_dynamics = pd_gg_fm_dm,
   timesteps = 50,
   replicates = 5,
   workers = 5,
   proj_mask = ch_mask,
   out_path = "output/pva_pops/",
-  scn_id = "s2",
+  scn_id = "s3",
   varset = "1_ps",
   species = "gg"
 )
