@@ -2,6 +2,7 @@ psr <- function(
   popmat,
   ageClassNames,
   stages = NULL,
+  emp = TRUE,
   ...
 ){
   

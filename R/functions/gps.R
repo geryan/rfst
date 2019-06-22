@@ -6,7 +6,7 @@ gps <- function(x, workers) {
   pop_array <- array(dim=c(timesteps, total_stages, sims))
   
   for(i in seq_len(sims)) {
-    pop_array[, , i] <- get_pop_replicate(x[[i]], workers = workers)
+    pop_array[, , i] <- gpr(x[[i]], workers = workers)
   }
   return(pop_array)
 }

@@ -2587,24 +2587,7 @@ l_gg_3_1_ps <- landscape(
 )
 ```
 
-##### Scenario 4
-###### Model 1
-```{r l_gg_4_1}
-l_gg_4_1 <- landscape(
-  population = p0_gg_4_1,
-  suitability = s4_p_gg_1,
-  carrying_capacity = cc_gg_4_1
-)
-```
 
-###### Model 1 ps
-```{r l_gg_4_1_ps}
-l_gg_4_1_ps <- landscape(
-  population = p0_gg_4_1_ps,
-  suitability = s4_p_gg_1_ps,
-  carrying_capacity = cc_gg_4_1_ps
-)
-```
 
 #### Population dynamics objects
 
@@ -2630,13 +2613,18 @@ pd_gg_fl_dm <- population_dynamics(
 
 ##### Mid fecundity, low dispersal
 ```{r pd_gg_fm_dl}
-pd_gg_fm_dm <- population_dynamics(
+pd_gg_fm_dl <- population_dynamics(
   change = growth(transition_matrix = tm_gg_fm,
                   global_stochasticity = 0.1),
   dispersal =  cellular_automata_dispersal(max_cells = c(0, 160, 160),
                                           dispersal_proportion = carrying_capacity_dispersal())
   )
 ```
+
+```{r}
+1+,
+```
+
 
 ```{r}
 save.image(file = "output/session_images/gg_pva_objects.RData")
@@ -2646,6 +2634,15 @@ save.image(file = "output/session_images/gg_pva_objects.RData")
 
 ### PVAs
 
+```{r}
+ntimesteps <- 50
+nreplicates <- 5
+nworkers <- 5
+width.pdf <- 5
+height.pdf <- 3.125
+```
+
+
 #### Scenario 1
 
 ##### Model 1
@@ -2653,9 +2650,9 @@ save.image(file = "output/session_images/gg_pva_objects.RData")
 sim_gg_1_1 <- parsim(
   landscape = l_gg_1_1,
   population_dynamics = pd_gg_fm_dm,
-  timesteps = 50,
-  replicates = 5,
-  workers = 5,
+  timesteps = ntimesteps,
+  replicates = nreplicates,
+  workers = nworkers,
   proj_mask = ch_mask,
   out_path = "output/pva_pops/",
   scn_id = "s1",
@@ -2666,14 +2663,47 @@ sim_gg_1_1 <- parsim(
 gc()
 ```
 
+```{r popsize_gg_1_1}
+popsize_gg_1_1 <- gps(x = sim_gg_1_1,
+                      workers = nworkers)
 
+saveRDS(object = popsize_gg_1_1,
+        file = "output/pva_popmat/popsize_gg_1_1")
+```
+
+```{r spop_gg_1_1}
+spop_gg_1_1 <- psr(popmat = popsize_gg_1_1)
+
+pdf(file = "output/plots/pop/tpop_gg_1_1.pdf",
+    width = width.pdf,
+    height = height.pdf)
+psr(popmat = popsize_gg_1_1)
+dev.off()
+
+spop_gg_1_1
+```
+
+```{r tpop_gg_1_1}
+tpop_gg_1_1 <- psr(popmat = popsize_gg_1_1, stages = 0)
+
+pdf(file = "output/plots/pop/tpop_gg_1_1.pdf",
+    width = width.pdf,
+    height = height.pdf)
+psr(popmat = popsize_gg_1_1, stages = 0)
+dev.off()
+
+tpop_gg_1_1
+```
+
+
+##### Model 1 ps
 ```{r sim_gg_1_1_ps}
 sim_gg_1_1_ps <- parsim(
   landscape = l_gg_1_1_ps,
   population_dynamics = pd_gg_fm_dm,
-  timesteps = 50,
-  replicates = 5,
-  workers = 5,
+  timesteps = ntimesteps,
+  replicates = nreplicates,
+  workers = nworkers,
   proj_mask = ch_mask,
   out_path = "output/pva_pops/",
   scn_id = "s1",
@@ -2684,13 +2714,1292 @@ sim_gg_1_1_ps <- parsim(
 gc()
 ```
 
+```{r popsize_gg_1_1_ps}
+popsize_gg_1_1_ps <- gps(x = sim_gg_1_1_ps,
+                      workers = nworkers)
+
+saveRDS(object = popsize_gg_1_1_ps,
+        file = "output/pva_popmat/popsize_gg_1_1_ps")
+```
+
+```{r spop_gg_1_1_ps}
+spop_gg_1_1_ps <- psr(popmat = popsize_gg_1_1_ps)
+
+pdf(file = "output/plots/pop/tpop_gg_1_1_ps.pdf",
+    width = width.pdf,
+    height = height.pdf)
+psr(popmat = popsize_gg_1_1_ps)
+dev.off()
+
+spop_gg_1_1_ps
+```
+
+```{r tpop_gg_1_1_ps}
+tpop_gg_1_1_ps <- psr(popmat = popsize_gg_1_1_ps, stages = 0)
+
+pdf(file = "output/plots/pop/tpop_gg_1_1_ps.pdf",
+    width = width.pdf,
+    height = height.pdf)
+psr(popmat = popsize_gg_1_1_ps, stages = 0)
+dev.off()
+
+tpop_gg_1_1_ps
+```
+
+##### Model 4
+```{r sim_gg_1_4}
+sim_gg_1_4 <- parsim(
+  landscape = l_gg_1_4,
+  population_dynamics = pd_gg_fm_dm,
+  timesteps = ntimesteps,
+  replicates = nreplicates,
+  workers = nworkers,
+  proj_mask = ch_mask,
+  out_path = "output/pva_pops/",
+  scn_id = "s1",
+  varset = "4",
+  species = "gg"
+)
+
+gc()
+```
+
+```{r popsize_gg_1_4}
+popsize_gg_1_4 <- gps(x = sim_gg_1_4,
+                      workers = nworkers)
+
+saveRDS(object = popsize_gg_1_4,
+        file = "output/pva_popmat/popsize_gg_1_4")
+```
+
+```{r spop_gg_1_1_ps}
+spop_gg_1_1_ps <- psr(popmat = popsize_gg_1_1_ps)
+
+pdf(file = "output/plots/pop/tpop_gg_1_1_ps.pdf",
+    width = width.pdf,
+    height = height.pdf)
+psr(popmat = popsize_gg_1_1_ps)
+dev.off()
+
+spop_gg_1_1_ps
+```
+
+```{r tpop_gg_1_1_ps}
+tpop_gg_1_1_ps <- psr(popmat = popsize_gg_1_1_ps, stages = 0)
+
+pdf(file = "output/plots/pop/tpop_gg_1_1_ps.pdf",
+    width = width.pdf,
+    height = height.pdf)
+psr(popmat = popsize_gg_1_1_ps, stages = 0)
+dev.off()
+
+tpop_gg_1_1_ps
+```
+
+##### Model 4 ps
+```{r sim_gg_1_4_ps}
+sim_gg_1_4_ps <- parsim(
+  landscape = l_gg_1_4_ps,
+  population_dynamics = pd_gg_fm_dm,
+  timesteps = ntimesteps,
+  replicates = nreplicates,
+  workers = nworkers,
+  proj_mask = ch_mask,
+  out_path = "output/pva_pops/",
+  scn_id = "s1",
+  varset = "4_ps",
+  species = "gg"
+)
+
+gc()
+```
+
+```{r popsize_gg_1_4_ps}
+popsize_gg_1_4_ps <- gps(x = sim_gg_1_4_ps,
+                      workers = nworkers)
+
+saveRDS(object = popsize_gg_1_4_ps,
+        file = "output/pva_popmat/popsize_gg_1_4_ps")
+```
+
+```{r spop_gg_1_4_ps}
+spop_gg_1_4_ps <- psr(popmat = popsize_gg_1_4_ps)
+
+pdf(file = "output/plots/pop/tpop_gg_1_4_ps.pdf",
+    width = width.pdf,
+    height = height.pdf)
+psr(popmat = popsize_gg_1_4_ps)
+dev.off()
+
+spop_gg_1_4_ps
+```
+
+```{r tpop_gg_1_4_ps}
+tpop_gg_1_4_ps <- psr(popmat = popsize_gg_1_4_ps, stages = 0)
+
+pdf(file = "output/plots/pop/tpop_gg_1_4_ps.pdf",
+    width = width.pdf,
+    height = height.pdf)
+psr(popmat = popsize_gg_1_4_ps, stages = 0)
+dev.off()
+
+tpop_gg_1_4_ps
+```
+
+#### Scenario 2
+
+##### Model 1
+```{r sim_gg_2_1}
+sim_gg_2_1 <- parsim(
+  landscape = l_gg_2_1,
+  population_dynamics = pd_gg_fm_dm,
+  timesteps = ntimesteps,
+  replicates = nreplicates,
+  workers = nworkers,
+  proj_mask = ch_mask,
+  out_path = "output/pva_pops/",
+  scn_id = "s2",
+  varset = "1",
+  species = "gg"
+)
+
+gc()
+```
+
+```{r popsize_gg_2_1}
+popsize_gg_2_1 <- gps(x = sim_gg_2_1,
+                      workers = nworkers)
+
+saveRDS(object = popsize_gg_2_1,
+        file = "output/pva_popmat/popsize_gg_2_1")
+```
+
+```{r spop_gg_2_1}
+spop_gg_2_1 <- psr(popmat = popsize_gg_2_1)
+
+pdf(file = "output/plots/pop/tpop_gg_2_1.pdf",
+    width = width.pdf,
+    height = height.pdf)
+psr(popmat = popsize_gg_2_1)
+dev.off()
+
+spop_gg_2_1
+```
+
+```{r tpop_gg_2_1}
+tpop_gg_2_1 <- psr(popmat = popsize_gg_2_1, stages = 0)
+
+pdf(file = "output/plots/pop/tpop_gg_2_1.pdf",
+    width = width.pdf,
+    height = height.pdf)
+psr(popmat = popsize_gg_2_1, stages = 0)
+dev.off()
+
+tpop_gg_2_1
+```
+
+
+##### Model 1 ps
+```{r sim_gg_2_1_ps}
+sim_gg_2_1_ps <- parsim(
+  landscape = l_gg_2_1_ps,
+  population_dynamics = pd_gg_fm_dm,
+  timesteps = ntimesteps,
+  replicates = nreplicates,
+  workers = nworkers,
+  proj_mask = ch_mask,
+  out_path = "output/pva_pops/",
+  scn_id = "s2",
+  varset = "1_ps",
+  species = "gg"
+)
+
+gc()
+```
+
+```{r popsize_gg_2_1_ps}
+popsize_gg_2_1_ps <- gps(x = sim_gg_2_1_ps,
+                      workers = nworkers)
+
+saveRDS(object = popsize_gg_2_1_ps,
+        file = "output/pva_popmat/popsize_gg_2_1_ps")
+```
+
+```{r spop_gg_2_1_ps}
+spop_gg_2_1_ps <- psr(popmat = popsize_gg_2_1_ps)
+
+pdf(file = "output/plots/pop/tpop_gg_2_1_ps.pdf",
+    width = width.pdf,
+    height = height.pdf)
+psr(popmat = popsize_gg_2_1_ps)
+dev.off()
+
+spop_gg_2_1_ps
+```
+
+```{r tpop_gg_2_1_ps}
+tpop_gg_2_1_ps <- psr(popmat = popsize_gg_2_1_ps, stages = 0)
+
+pdf(file = "output/plots/pop/tpop_gg_2_1_ps.pdf",
+    width = width.pdf,
+    height = height.pdf)
+psr(popmat = popsize_gg_2_1_ps, stages = 0)
+dev.off()
+
+tpop_gg_2_1_ps
+```
+
+#### Scenario 3
+
+##### Model 1
+```{r sim_gg_3_1}
+sim_gg_3_1 <- parsim(
+  landscape = l_gg_3_1,
+  population_dynamics = pd_gg_fm_dm,
+  timesteps = ntimesteps,
+  replicates = nreplicates,
+  workers = nworkers,
+  proj_mask = ch_mask,
+  out_path = "output/pva_pops/",
+  scn_id = "s3",
+  varset = "1",
+  species = "gg"
+)
+
+gc()
+```
+
+```{r popsize_gg_3_1}
+popsize_gg_3_1 <- gps(x = sim_gg_3_1,
+                      workers = nworkers)
+
+saveRDS(object = popsize_gg_3_1,
+        file = "output/pva_popmat/popsize_gg_3_1")
+```
+
+```{r spop_gg_3_1}
+spop_gg_3_1 <- psr(popmat = popsize_gg_3_1)
+
+pdf(file = "output/plots/pop/tpop_gg_3_1.pdf",
+    width = width.pdf,
+    height = height.pdf)
+psr(popmat = popsize_gg_3_1)
+dev.off()
+
+spop_gg_3_1
+```
+
+```{r tpop_gg_3_1}
+tpop_gg_3_1 <- psr(popmat = popsize_gg_3_1, stages = 0)
+
+pdf(file = "output/plots/pop/tpop_gg_3_1.pdf",
+    width = width.pdf,
+    height = height.pdf)
+psr(popmat = popsize_gg_3_1, stages = 0)
+dev.off()
+
+tpop_gg_3_1
+```
+
+
+##### Model 1 ps
+```{r sim_gg_3_1_ps}
+sim_gg_3_1_ps <- parsim(
+  landscape = l_gg_3_1_ps,
+  population_dynamics = pd_gg_fm_dm,
+  timesteps = ntimesteps,
+  replicates = nreplicates,
+  workers = nworkers,
+  proj_mask = ch_mask,
+  out_path = "output/pva_pops/",
+  scn_id = "s3",
+  varset = "1_ps",
+  species = "gg"
+)
+
+gc()
+```
+
+```{r popsize_gg_3_1_ps}
+popsize_gg_3_1_ps <- gps(x = sim_gg_3_1_ps,
+                      workers = nworkers)
+
+saveRDS(object = popsize_gg_3_1_ps,
+        file = "output/pva_popmat/popsize_gg_3_1_ps")
+```
+
+```{r spop_gg_3_1_ps}
+spop_gg_3_1_ps <- psr(popmat = popsize_gg_3_1_ps)
+
+pdf(file = "output/plots/pop/tpop_gg_3_1_ps.pdf",
+    width = width.pdf,
+    height = height.pdf)
+psr(popmat = popsize_gg_3_1_ps)
+dev.off()
+
+spop_gg_3_1_ps
+```
+
+```{r tpop_gg_3_1_ps}
+tpop_gg_3_1_ps <- psr(popmat = popsize_gg_3_1_ps, stages = 0)
+
+pdf(file = "output/plots/pop/tpop_gg_3_1_ps.pdf",
+    width = width.pdf,
+    height = height.pdf)
+psr(popmat = popsize_gg_3_1_ps, stages = 0)
+dev.off()
+
+tpop_gg_3_1_ps
+```
+
+## Leadbeater's Possum
+
+### PVA Input variables
+
+```{r ageClassNames}
+ageClassNames <- c('Newborn','Juvenile','Adult')
+```
+
+#### Transition matrices
+
+##### Mid fecundity
+```{r lb_trans_mat_fm}
+tm_lb_fm <- matrix(c(0.00,0.00,2.00,
+                     0.59,0.00,0.00,
+                     0.00,0.59,0.79),
+                   nrow = 3,
+                   ncol = 3,
+                   byrow = TRUE)
+
+colnames(tm_lb_fm) <- rownames(tm_lb_fm) <- ageClassNames
+
+ss_lb_fm <- get.stable.states(tm_lb_fm)
+
+ss_lb_fm
+
+rmax(tm = tm_lb_fm)
+```
+
+
+##### Low fecundity
+```{r lb_trans_mat_fl}
+tm_lb_fl <- matrix(c(0.00,0.00,1.10,
+                     0.59,0.00,0.00,
+                     0.00,0.59,0.79),
+                   nrow = 3,
+                   ncol = 3,
+                   byrow = TRUE)# based on Possingham et al 1994
+
+colnames(tm_lb_fl) <- rownames(tm_lb_fl) <- ageClassNames
+
+ss_lb_fl <- get.stable.states(tm_lb_fl)
+
+ss_lb_fl
+
+rmax(tm = tm_lb_fl)
+```
+
+#### Carraying capacity
+
+##### Scenario 1
+
+##### Model 1
+```{r cc_lb_1_1}
+cc_lb_1_1 <- rst.op(input1 = s1_p_lb_1[[1]],
+                    op = "cc",
+                    proj_mask = ch_mask,
+                    filename = "output/pva_vars/cc_lb_1_1.grd",
+                    layernames = "carryingCapacity",
+                    size = 3) %T>%
+  plot
+```
+##### Model 1 ps
+```{r cc_lb_1_1_ps}
+cc_lb_1_1_ps <- rst.op(input1 = s1_p_lb_1_ps[[1]],
+                       op = "cc",
+                    proj_mask = ch_mask,
+                    filename = "output/pva_vars/cc_lb_1_1_ps.grd",
+                    layernames = "carryingCapacity",
+                    size = 3) %T>%
+  plot
+```
+##### Model 3
+```{r cc_lb_1_3}
+cc_lb_1_3 <- rst.op(input1 = s1_p_lb_3[[1]],
+                    op = "cc",
+                    proj_mask = ch_mask,
+                    filename = "output/pva_vars/cc_lb_1_3.grd",
+                    layernames = "carryingCapacity",
+                    size = 3) %T>%
+  plot
+```
+##### Model 3 ps
+```{r cc_lb_1_3_ps}
+cc_lb_1_3_ps <- rst.op(input1 = s1_p_lb_3_ps[[1]],
+                       op = "cc",
+                    proj_mask = ch_mask,
+                    filename = "output/pva_vars/cc_lb_1_3_ps.grd",
+                    layernames = "carryingCapacity",
+                    size = 3) %T>%
+  plot
+```
+
+##### Scenario 2
+
+##### Model 1
+```{r cc_lb_2_1}
+cc_lb_2_1 <- rst.op(input1 = s2_p_lb_1[[1]],
+                    op = "cc",
+                    proj_mask = ch_mask,
+                    filename = "output/pva_vars/cc_lb_2_1.grd",
+                    layernames = "carryingCapacity",
+                    size = 3) %T>%
+  plot
+```
+##### Model 1 ps
+```{r cc_lb_2_1_ps}
+cc_lb_2_1_ps <- rst.op(input1 = s2_p_lb_1_ps[[1]],
+                       op = "cc",
+                    proj_mask = ch_mask,
+                    filename = "output/pva_vars/cc_lb_2_1_ps.grd",
+                    layernames = "carryingCapacity",
+                    size = 3) %T>%
+  plot
+```
+
+
+##### Scenario 3
+
+##### Model 1
+```{r cc_lb_3_1}
+cc_lb_3_1 <- rst.op(input1 = s3_p_lb_1[[1]],
+                    op = "cc",
+                    proj_mask = ch_mask,
+                    filename = "output/pva_vars/cc_lb_3_1.grd",
+                    layernames = "carryingCapacity",
+                    size = 3) %T>%
+  plot
+```
+##### Model 1 ps
+```{r cc_lb_3_1_ps}
+cc_lb_3_1_ps <- rst.op(input1 = s3_p_lb_1_ps[[1]],
+                       op = "cc",
+                    proj_mask = ch_mask,
+                    filename = "output/pva_vars/cc_lb_3_1_ps.grd",
+                    layernames = "carryingCapacity",
+                    size = 3) %T>%
+  plot
+```
+
+
+#### Initial population
+
+##### Scenario 1
+
+###### Model 1
+```{r p0_lb_1_1}
+p0_lb_1_1 <- initpop(hs = s1_p_lb_1[[1]],
+                     cc = cc_lb_1_1,
+                     tm = tm_lb_fm,
+                     popsize = 5000,
+                     proj_mask = ch_mask,
+                     out_path = "output/pva_vars/",
+                     scn_id = "s1",
+                     varset = "1",
+                     species = "lb") %T>%
+  plot
+```
+###### Model 1 ps
+```{r p0_lb_1_1_ps}
+p0_lb_1_1_ps <- initpop(hs = s1_p_lb_1_ps[[1]],
+                     cc = cc_lb_1_1_ps,
+                     tm = tm_lb_fm,
+                     popsize = 5000,
+                     proj_mask = ch_mask,
+                     out_path = "output/pva_vars/",
+                     scn_id = "s1",
+                     varset = "1_ps",
+                     species = "lb") %T>%
+  plot
+```
+###### Model 1 low fecondity
+```{r p0_lb_1_1_fl}
+p0_lb_1_1_fl <- initpop(hs = s1_p_lb_1[[1]],
+                     cc = cc_lb_1_1,
+                     tm = tm_lb_fl,
+                     popsize = 5000,
+                     proj_mask = ch_mask,
+                     out_path = "output/pva_vars/",
+                     scn_id = "s1",
+                     varset = "1_fl",
+                     species = "lb") %T>%
+  plot
+```
+###### Model 1 ps low fecundity
+```{r p0_lb_1_1_ps_fl}
+p0_lb_1_1_ps_fl <- initpop(hs = s1_p_lb_1_ps[[1]],
+                     cc = cc_lb_1_1_ps,
+                     tm = tm_lb_fl,
+                     popsize = 5000,
+                     proj_mask = ch_mask,
+                     out_path = "output/pva_vars/",
+                     scn_id = "s1",
+                     varset = "1_ps_fl",
+                     species = "lb") %T>%
+  plot
+```
+
+###### Model 1 low pop
+```{r p0_lb_1_1_pl}
+p0_lb_1_1_pl <- initpop(hs = s1_p_lb_1[[1]],
+                     cc = cc_lb_1_1,
+                     tm = tm_lb_pl,
+                     popsize = 2500,
+                     proj_mask = ch_mask,
+                     out_path = "output/pva_vars/",
+                     scn_id = "s1",
+                     varset = "1_pl",
+                     species = "lb") %T>%
+  plot
+```
+###### Model 1 ps low pop
+```{r p0_lb_1_1_ps_pl}
+p0_lb_1_1_ps_pl <- initpop(hs = s1_p_lb_1_ps[[1]],
+                     cc = cc_lb_1_1_ps,
+                     tm = tm_lb_pl,
+                     popsize = 2500,
+                     proj_mask = ch_mask,
+                     out_path = "output/pva_vars/",
+                     scn_id = "s1",
+                     varset = "1_ps_pl",
+                     species = "lb") %T>%
+  plot
+```
+
+
+###### Model 1 high pop
+```{r p0_lb_1_1_ph}
+p0_lb_1_1_ph <- initpop(hs = s1_p_lb_1[[1]],
+                     cc = cc_lb_1_1,
+                     tm = tm_lb_ph,
+                     popsize = 5000,
+                     proj_mask = ch_mask,
+                     out_path = "output/pva_vars/",
+                     scn_id = "s1",
+                     varset = "1_ph",
+                     species = "lb") %T>%
+  plot
+```
+###### Model 1 ps high pop
+```{r p0_lb_1_1_ps_ph}
+p0_lb_1_1_ps_ph <- initpop(hs = s1_p_lb_1_ps[[1]],
+                     cc = cc_lb_1_1_ps,
+                     tm = tm_lb_ph,
+                     popsize = 5000,
+                     proj_mask = ch_mask,
+                     out_path = "output/pva_vars/",
+                     scn_id = "s1",
+                     varset = "1_ps_ph",
+                     species = "lb") %T>%
+  plot
+```
+
+
+###### Model 3
+```{r p0_lb_1_3}
+p0_lb_1_3 <- initpop(hs = s1_p_lb_3[[1]],
+                     cc = cc_lb_1_3,
+                     tm = tm_lb_fm,
+                     popsize = 5000,
+                     proj_mask = ch_mask,
+                     out_path = "output/pva_vars/",
+                     scn_id = "s1",
+                     varset = "3",
+                     species = "lb") %T>%
+  plot
+```
+###### Model 3 ps
+```{r p0_lb_1_3_ps}
+p0_lb_1_3_ps <- initpop(hs = s1_p_lb_3_ps[[1]],
+                     cc = cc_lb_1_3_ps,
+                     tm = tm_lb_fm,
+                     popsize = 5000,
+                     proj_mask = ch_mask,
+                     out_path = "output/pva_vars/",
+                     scn_id = "s1",
+                     varset = "3_ps",
+                     species = "lb") %T>%
+  plot
+```
+
+##### Scenario 2
+###### Model 1
+```{r p0_lb_2_1}
+p0_lb_2_1 <- initpop(hs = s2_p_lb_1[[1]],
+                     cc = cc_lb_2_1,
+                     tm = tm_lb_fm,
+                     popsize = 5000,
+                     proj_mask = ch_mask,
+                     out_path = "output/pva_vars/",
+                     scn_id = "s2",
+                     varset = "1",
+                     species = "lb") %T>%
+  plot
+```
+
+###### Model 1 ps
+```{r p0_lb_2_1_ps}
+p0_lb_2_1_ps <- initpop(hs = s2_p_lb_1_ps[[1]],
+                     cc = cc_lb_2_1_ps,
+                     tm = tm_lb_fm,
+                     popsize = 5000,
+                     proj_mask = ch_mask,
+                     out_path = "output/pva_vars/",
+                     scn_id = "s2",
+                     varset = "1_ps",
+                     species = "lb") %T>%
+  plot
+```
+
+##### Scenario 3
+###### Model 1
+```{r p0_lb_3_1}
+p0_lb_3_1 <- initpop(hs = s3_p_lb_1[[1]],
+                     cc = cc_lb_3_1,
+                     tm = tm_lb_fm,
+                     popsize = 5000,
+                     proj_mask = ch_mask,
+                     out_path = "output/pva_vars/",
+                     scn_id = "s3",
+                     varset = "1",
+                     species = "lb") %T>%
+  plot
+```
+
+###### Model 1 ps
+```{r p0_lb_3_1_ps}
+p0_lb_3_1_ps <- initpop(hs = s3_p_lb_1_ps[[1]],
+                     cc = cc_lb_3_1_ps,
+                     tm = tm_lb_fm,
+                     popsize = 5000,
+                     proj_mask = ch_mask,
+                     out_path = "output/pva_vars/",
+                     scn_id = "s3",
+                     varset = "1_ps",
+                     species = "lb") %T>%
+  plot
+```
+
+
+#### Landscape objects
+
+##### Scenario 1
+
+###### Model 1
+```{r l_lb_1_1}
+l_lb_1_1 <- landscape(
+  population = p0_lb_1_1,
+  suitability = s1_p_lb_1,
+  carrying_capacity = cc_lb_1_1
+)
+```
+
+###### Model 1 ps
+```{r l_lb_1_1_ps}
+l_lb_1_1_ps <- landscape(
+  population = p0_lb_1_1_ps,
+  suitability = s1_p_lb_1_ps,
+  carrying_capacity = cc_lb_1_1_ps
+)
+```
+
+###### Model 1 low fecundity
+```{r l_lb_1_1_fl}
+l_lb_1_1_fl <- landscape(
+  population = p0_lb_1_1_fl,
+  suitability = s1_p_lb_1,
+  carrying_capacity = cc_lb_1_1
+)
+```
+
+###### Model 1 ps low fecundity
+```{r l_lb_1_1_ps_fl}
+l_lb_1_1_ps_fl <- landscape(
+  population = p0_lb_1_1_ps_fl,
+  suitability = s1_p_lb_1_ps,
+  carrying_capacity = cc_lb_1_1_ps
+)
+```
+
+###### Model 1 low population
+```{r l_lb_1_1_pl}
+l_lb_1_1_pl <- landscape(
+  population = p0_lb_1_1_pl,
+  suitability = s1_p_lb_1,
+  carrying_capacity = cc_lb_1_1
+)
+```
+
+###### Model 1 ps low population
+```{r l_lb_1_1_ps_pl}
+l_lb_1_1_ps_pl <- landscape(
+  population = p0_lb_1_1_ps_pl,
+  suitability = s1_p_lb_1_ps,
+  carrying_capacity = cc_lb_1_1_ps
+)
+```
+
+###### Model 1 high population
+```{r l_lb_1_1_ph}
+l_lb_1_1_ph <- landscape(
+  population = p0_lb_1_1_ph,
+  suitability = s1_p_lb_1,
+  carrying_capacity = cc_lb_1_1
+)
+```
+
+###### Model 1 ps high population
+```{r l_lb_1_1_ps_ph}
+l_lb_1_1_ps_ph <- landscape(
+  population = p0_lb_1_1_ps_ph,
+  suitability = s1_p_lb_1_ps,
+  carrying_capacity = cc_lb_1_1_ps
+)
+```
+
+###### Model 3
+```{r l_lb_1_3}
+l_lb_1_3 <- landscape(
+  population = p0_lb_1_3,
+  suitability = s1_p_lb_3,
+  carrying_capacity = cc_lb_1_3
+)
+```
+
+###### Model 3 ps
+```{r l_lb_1_3_ps}
+l_lb_1_3_ps <- landscape(
+  population = p0_lb_1_3_ps,
+  suitability = s1_p_lb_3_ps,
+  carrying_capacity = cc_lb_1_3_ps
+)
+```
+
+##### Scenario 2
+###### Model 1
+```{r l_lb_2_1}
+l_lb_2_1 <- landscape(
+  population = p0_lb_2_1,
+  suitability = s2_p_lb_1,
+  carrying_capacity = cc_lb_2_1
+)
+```
+
+###### Model 1 ps
+```{r l_lb_2_1_ps}
+l_lb_2_1_ps <- landscape(
+  population = p0_lb_2_1_ps,
+  suitability = s2_p_lb_1_ps,
+  carrying_capacity = cc_lb_2_1_ps
+)
+```
+
+##### Scenario 3
+###### Model 1
+```{r l_lb_3_1}
+l_lb_3_1 <- landscape(
+  population = p0_lb_3_1,
+  suitability = s3_p_lb_1,
+  carrying_capacity = cc_lb_3_1
+)
+```
+
+###### Model 1 ps
+```{r l_lb_3_1_ps}
+l_lb_3_1_ps <- landscape(
+  population = p0_lb_3_1_ps,
+  suitability = s3_p_lb_1_ps,
+  carrying_capacity = cc_lb_3_1_ps
+)
+```
+
+
+
+#### Population dynamics objects
+
+##### Mid fecundity, mid dispersal
+```{r pd_lb_fm_dm}
+pd_lb_fm_dm <- population_dynamics(
+  change = growth(transition_matrix = tm_lb_fm,
+                  global_stochasticity = 0.1),
+  dispersal =  cellular_automata_dispersal(max_cells = c(0, 325, 325),
+                                          dispersal_proportion = carrying_capacity_dispersal())
+  )
+```
+
+##### Low fecundity, mid dispersal
+```{r pd_lb_fl_dm}
+pd_lb_fl_dm <- population_dynamics(
+  change = growth(transition_matrix = tm_lb_fl,
+                  global_stochasticity = 0.1),
+  dispersal =  cellular_automata_dispersal(max_cells = c(0, 325, 325),
+                                          dispersal_proportion = carrying_capacity_dispersal())
+  )
+```
+
+##### Mid fecundity, low dispersal
+```{r pd_lb_fm_dl}
+pd_lb_fm_dl <- population_dynamics(
+  change = growth(transition_matrix = tm_lb_fm,
+                  global_stochasticity = 0.1),
+  dispersal =  cellular_automata_dispersal(max_cells = c(0, 160, 160),
+                                          dispersal_proportion = carrying_capacity_dispersal())
+  )
+```
+
+
+```{r}
+save.image(file = "output/session_images/lb_pva_objects.RData")
+```
+
+
+
+### PVAs
+
+```{r}
+ntimesteps <- 50
+nreplicates <- 5
+nworkers <- 5
+width.pdf <- 5
+height.pdf <- 3.125
+```
+
+
+#### Scenario 1
+
+##### Model 1
+```{r sim_lb_1_1}
+sim_lb_1_1 <- parsim(
+  landscape = l_lb_1_1,
+  population_dynamics = pd_lb_fm_dm,
+  timesteps = ntimesteps,
+  replicates = nreplicates,
+  workers = nworkers,
+  proj_mask = ch_mask,
+  out_path = "output/pva_pops/",
+  scn_id = "s1",
+  varset = "1",
+  species = "lb"
+)
+
+gc()
+```
+
+```{r popsize_lb_1_1}
+popsize_lb_1_1 <- gps(x = sim_lb_1_1,
+                      workers = nworkers)
+
+saveRDS(object = popsize_lb_1_1,
+        file = "output/pva_popmat/popsize_lb_1_1")
+```
+
+```{r spop_lb_1_1}
+spop_lb_1_1 <- psr(popmat = popsize_lb_1_1)
+
+pdf(file = "output/plots/pop/tpop_lb_1_1.pdf",
+    width = width.pdf,
+    height = height.pdf)
+psr(popmat = popsize_lb_1_1)
+dev.off()
+
+spop_lb_1_1
+```
+
+```{r tpop_lb_1_1}
+tpop_lb_1_1 <- psr(popmat = popsize_lb_1_1, stages = 0)
+
+pdf(file = "output/plots/pop/tpop_lb_1_1.pdf",
+    width = width.pdf,
+    height = height.pdf)
+psr(popmat = popsize_lb_1_1, stages = 0)
+dev.off()
+
+tpop_lb_1_1
+```
+
+
+##### Model 1 ps
+```{r sim_lb_1_1_ps}
+sim_lb_1_1_ps <- parsim(
+  landscape = l_lb_1_1_ps,
+  population_dynamics = pd_lb_fm_dm,
+  timesteps = ntimesteps,
+  replicates = nreplicates,
+  workers = nworkers,
+  proj_mask = ch_mask,
+  out_path = "output/pva_pops/",
+  scn_id = "s1",
+  varset = "1_ps",
+  species = "lb"
+)
+
+gc()
+```
+
+```{r popsize_lb_1_1_ps}
+popsize_lb_1_1_ps <- gps(x = sim_lb_1_1_ps,
+                      workers = nworkers)
+
+saveRDS(object = popsize_lb_1_1_ps,
+        file = "output/pva_popmat/popsize_lb_1_1_ps")
+```
+
+```{r spop_lb_1_1_ps}
+spop_lb_1_1_ps <- psr(popmat = popsize_lb_1_1_ps)
+
+pdf(file = "output/plots/pop/tpop_lb_1_1_ps.pdf",
+    width = width.pdf,
+    height = height.pdf)
+psr(popmat = popsize_lb_1_1_ps)
+dev.off()
+
+spop_lb_1_1_ps
+```
+
+```{r tpop_lb_1_1_ps}
+tpop_lb_1_1_ps <- psr(popmat = popsize_lb_1_1_ps, stages = 0)
+
+pdf(file = "output/plots/pop/tpop_lb_1_1_ps.pdf",
+    width = width.pdf,
+    height = height.pdf)
+psr(popmat = popsize_lb_1_1_ps, stages = 0)
+dev.off()
+
+tpop_lb_1_1_ps
+```
+
+##### Model 3
+```{r sim_lb_1_3}
+sim_lb_1_3 <- parsim(
+  landscape = l_lb_1_3,
+  population_dynamics = pd_lb_fm_dm,
+  timesteps = ntimesteps,
+  replicates = nreplicates,
+  workers = nworkers,
+  proj_mask = ch_mask,
+  out_path = "output/pva_pops/",
+  scn_id = "s1",
+  varset = "3",
+  species = "lb"
+)
+
+gc()
+```
+
+```{r popsize_lb_1_3}
+popsize_lb_1_3 <- gps(x = sim_lb_1_3,
+                      workers = nworkers)
+
+saveRDS(object = popsize_lb_1_3,
+        file = "output/pva_popmat/popsize_lb_1_3")
+```
+
+```{r spop_lb_1_1_ps}
+spop_lb_1_1_ps <- psr(popmat = popsize_lb_1_1_ps)
+
+pdf(file = "output/plots/pop/tpop_lb_1_1_ps.pdf",
+    width = width.pdf,
+    height = height.pdf)
+psr(popmat = popsize_lb_1_1_ps)
+dev.off()
+
+spop_lb_1_1_ps
+```
+
+```{r tpop_lb_1_1_ps}
+tpop_lb_1_1_ps <- psr(popmat = popsize_lb_1_1_ps, stages = 0)
+
+pdf(file = "output/plots/pop/tpop_lb_1_1_ps.pdf",
+    width = width.pdf,
+    height = height.pdf)
+psr(popmat = popsize_lb_1_1_ps, stages = 0)
+dev.off()
+
+tpop_lb_1_1_ps
+```
+
+##### Model 3 ps
+```{r sim_lb_1_3_ps}
+sim_lb_1_3_ps <- parsim(
+  landscape = l_lb_1_3_ps,
+  population_dynamics = pd_lb_fm_dm,
+  timesteps = ntimesteps,
+  replicates = nreplicates,
+  workers = nworkers,
+  proj_mask = ch_mask,
+  out_path = "output/pva_pops/",
+  scn_id = "s1",
+  varset = "3_ps",
+  species = "lb"
+)
+
+gc()
+```
+
+```{r popsize_lb_1_3_ps}
+popsize_lb_1_3_ps <- gps(x = sim_lb_1_3_ps,
+                      workers = nworkers)
+
+saveRDS(object = popsize_lb_1_3_ps,
+        file = "output/pva_popmat/popsize_lb_1_3_ps")
+```
+
+```{r spop_lb_1_3_ps}
+spop_lb_1_3_ps <- psr(popmat = popsize_lb_1_3_ps)
+
+pdf(file = "output/plots/pop/tpop_lb_1_3_ps.pdf",
+    width = width.pdf,
+    height = height.pdf)
+psr(popmat = popsize_lb_1_3_ps)
+dev.off()
+
+spop_lb_1_3_ps
+```
+
+```{r tpop_lb_1_3_ps}
+tpop_lb_1_3_ps <- psr(popmat = popsize_lb_1_3_ps, stages = 0)
+
+pdf(file = "output/plots/pop/tpop_lb_1_3_ps.pdf",
+    width = width.pdf,
+    height = height.pdf)
+psr(popmat = popsize_lb_1_3_ps, stages = 0)
+dev.off()
+
+tpop_lb_1_3_ps
+```
+
+#### Scenario 2
+
+##### Model 1
+```{r sim_lb_2_1}
+sim_lb_2_1 <- parsim(
+  landscape = l_lb_2_1,
+  population_dynamics = pd_lb_fm_dm,
+  timesteps = ntimesteps,
+  replicates = nreplicates,
+  workers = nworkers,
+  proj_mask = ch_mask,
+  out_path = "output/pva_pops/",
+  scn_id = "s2",
+  varset = "1",
+  species = "lb"
+)
+
+gc()
+```
+
+```{r popsize_lb_2_1}
+popsize_lb_2_1 <- gps(x = sim_lb_2_1,
+                      workers = nworkers)
+
+saveRDS(object = popsize_lb_2_1,
+        file = "output/pva_popmat/popsize_lb_2_1")
+```
+
+```{r spop_lb_2_1}
+spop_lb_2_1 <- psr(popmat = popsize_lb_2_1)
+
+pdf(file = "output/plots/pop/tpop_lb_2_1.pdf",
+    width = width.pdf,
+    height = height.pdf)
+psr(popmat = popsize_lb_2_1)
+dev.off()
+
+spop_lb_2_1
+```
+
+```{r tpop_lb_2_1}
+tpop_lb_2_1 <- psr(popmat = popsize_lb_2_1, stages = 0)
+
+pdf(file = "output/plots/pop/tpop_lb_2_1.pdf",
+    width = width.pdf,
+    height = height.pdf)
+psr(popmat = popsize_lb_2_1, stages = 0)
+dev.off()
+
+tpop_lb_2_1
+```
+
+
+##### Model 1 ps
+```{r sim_lb_2_1_ps}
+sim_lb_2_1_ps <- parsim(
+  landscape = l_lb_2_1_ps,
+  population_dynamics = pd_lb_fm_dm,
+  timesteps = ntimesteps,
+  replicates = nreplicates,
+  workers = nworkers,
+  proj_mask = ch_mask,
+  out_path = "output/pva_pops/",
+  scn_id = "s2",
+  varset = "1_ps",
+  species = "lb"
+)
+
+gc()
+```
+
+```{r popsize_lb_2_1_ps}
+popsize_lb_2_1_ps <- gps(x = sim_lb_2_1_ps,
+                      workers = nworkers)
+
+saveRDS(object = popsize_lb_2_1_ps,
+        file = "output/pva_popmat/popsize_lb_2_1_ps")
+```
+
+```{r spop_lb_2_1_ps}
+spop_lb_2_1_ps <- psr(popmat = popsize_lb_2_1_ps)
+
+pdf(file = "output/plots/pop/tpop_lb_2_1_ps.pdf",
+    width = width.pdf,
+    height = height.pdf)
+psr(popmat = popsize_lb_2_1_ps)
+dev.off()
+
+spop_lb_2_1_ps
+```
+
+```{r tpop_lb_2_1_ps}
+tpop_lb_2_1_ps <- psr(popmat = popsize_lb_2_1_ps, stages = 0)
+
+pdf(file = "output/plots/pop/tpop_lb_2_1_ps.pdf",
+    width = width.pdf,
+    height = height.pdf)
+psr(popmat = popsize_lb_2_1_ps, stages = 0)
+dev.off()
+
+tpop_lb_2_1_ps
+```
+
+#### Scenario 3
+
+##### Model 1
+```{r sim_lb_3_1}
+sim_lb_3_1 <- parsim(
+  landscape = l_lb_3_1,
+  population_dynamics = pd_lb_fm_dm,
+  timesteps = ntimesteps,
+  replicates = nreplicates,
+  workers = nworkers,
+  proj_mask = ch_mask,
+  out_path = "output/pva_pops/",
+  scn_id = "s3",
+  varset = "1",
+  species = "lb"
+)
+
+gc()
+```
+
+```{r popsize_lb_3_1}
+popsize_lb_3_1 <- gps(x = sim_lb_3_1,
+                      workers = nworkers)
+
+saveRDS(object = popsize_lb_3_1,
+        file = "output/pva_popmat/popsize_lb_3_1")
+```
+
+```{r spop_lb_3_1}
+spop_lb_3_1 <- psr(popmat = popsize_lb_3_1)
+
+pdf(file = "output/plots/pop/tpop_lb_3_1.pdf",
+    width = width.pdf,
+    height = height.pdf)
+psr(popmat = popsize_lb_3_1)
+dev.off()
+
+spop_lb_3_1
+```
+
+```{r tpop_lb_3_1}
+tpop_lb_3_1 <- psr(popmat = popsize_lb_3_1, stages = 0)
+
+pdf(file = "output/plots/pop/tpop_lb_3_1.pdf",
+    width = width.pdf,
+    height = height.pdf)
+psr(popmat = popsize_lb_3_1, stages = 0)
+dev.off()
+
+tpop_lb_3_1
+```
+
+
+##### Model 1 ps
+```{r sim_lb_3_1_ps}
+sim_lb_3_1_ps <- parsim(
+  landscape = l_lb_3_1_ps,
+  population_dynamics = pd_lb_fm_dm,
+  timesteps = ntimesteps,
+  replicates = nreplicates,
+  workers = nworkers,
+  proj_mask = ch_mask,
+  out_path = "output/pva_pops/",
+  scn_id = "s3",
+  varset = "1_ps",
+  species = "lb"
+)
+
+gc()
+```
+
+```{r popsize_lb_3_1_ps}
+popsize_lb_3_1_ps <- gps(x = sim_lb_3_1_ps,
+                      workers = nworkers)
+
+saveRDS(object = popsize_lb_3_1_ps,
+        file = "output/pva_popmat/popsize_lb_3_1_ps")
+```
+
+```{r spop_lb_3_1_ps}
+spop_lb_3_1_ps <- psr(popmat = popsize_lb_3_1_ps)
+
+pdf(file = "output/plots/pop/tpop_lb_3_1_ps.pdf",
+    width = width.pdf,
+    height = height.pdf)
+psr(popmat = popsize_lb_3_1_ps)
+dev.off()
+
+spop_lb_3_1_ps
+```
+
+```{r tpop_lb_3_1_ps}
+tpop_lb_3_1_ps <- psr(popmat = popsize_lb_3_1_ps, stages = 0)
+
+pdf(file = "output/plots/pop/tpop_lb_3_1_ps.pdf",
+    width = width.pdf,
+    height = height.pdf)
+psr(popmat = popsize_lb_3_1_ps, stages = 0)
+dev.off()
+
+tpop_lb_3_1_ps
+```
+
+## Some extra
+
+### GG
+
+#### Low fecundity
+
+#### Scenario 1
+
+##### Model 1
 ```{r sim_gg_1_1_fl}
 sim_gg_1_1_fl <- parsim(
   landscape = l_gg_1_1_fl,
   population_dynamics = pd_gg_fl_dm,
-  timesteps = 50,
-  replicates = 5,
-  workers = 5,
+  timesteps = ntimesteps,
+  replicates = nreplicates,
+  workers = nworkers,
   proj_mask = ch_mask,
   out_path = "output/pva_pops/",
   scn_id = "s1",
@@ -2701,14 +4010,47 @@ sim_gg_1_1_fl <- parsim(
 gc()
 ```
 
+```{r popsize_gg_1_1_fl}
+popsize_gg_1_1_fl <- gps(x = sim_gg_1_1_fl,
+                      workers = nworkers)
 
+saveRDS(object = popsize_gg_1_1_fl,
+        file = "output/pva_popmat/popsize_gg_1_1_fl")
+```
+
+```{r spop_gg_1_1_fl}
+spop_gg_1_1_fl <- psr(popmat = popsize_gg_1_1_fl)
+
+pdf(file = "output/plots/pop/tpop_gg_1_1_fl.pdf",
+    width = width.pdf,
+    height = height.pdf)
+psr(popmat = popsize_gg_1_1_fl)
+dev.off()
+
+spop_gg_1_1_fl
+```
+
+```{r tpop_gg_1_1_fl}
+tpop_gg_1_1_fl <- psr(popmat = popsize_gg_1_1_fl, stages = 0)
+
+pdf(file = "output/plots/pop/tpop_gg_1_1_fl.pdf",
+    width = width.pdf,
+    height = height.pdf)
+psr(popmat = popsize_gg_1_1_fl, stages = 0)
+dev.off()
+
+tpop_gg_1_1_fl
+```
+
+
+##### Model 1 ps
 ```{r sim_gg_1_1_ps_fl}
 sim_gg_1_1_ps_fl <- parsim(
   landscape = l_gg_1_1_ps_fl,
   population_dynamics = pd_gg_fl_dm,
-  timesteps = 50,
-  replicates = 5,
-  workers = 5,
+  timesteps = ntimesteps,
+  replicates = nreplicates,
+  workers = nworkers,
   proj_mask = ch_mask,
   out_path = "output/pva_pops/",
   scn_id = "s1",
@@ -2719,70 +4061,139 @@ sim_gg_1_1_ps_fl <- parsim(
 gc()
 ```
 
-```{r sim_gg_2_1}
-sim_gg_2_1 <- parsim(
-  landscape = l_gg_2_1,
-  population_dynamics = pd_gg_fm_dm,
-  timesteps = 50,
-  replicates = 5,
-  workers = 5,
-  proj_mask = ch_mask,
-  out_path = "output/pva_pops/",
-  scn_id = "s2",
-  varset = "1",
-  species = "gg"
-)
+```{r popsize_gg_1_1_ps_fl}
+popsize_gg_1_1_ps_fl <- gps(x = sim_gg_1_1_ps_fl,
+                      workers = nworkers)
+
+saveRDS(object = popsize_gg_1_1_ps_fl,
+        file = "output/pva_popmat/popsize_gg_1_1_ps_fl")
 ```
 
+```{r spop_gg_1_1_ps_fl}
+spop_gg_1_1_ps_fl <- psr(popmat = popsize_gg_1_1_ps_fl)
 
-```{r sim_gg_2_1_ps}
-sim_gg_2_1_ps <- parsim(
-  landscape = l_gg_2_1_ps,
+pdf(file = "output/plots/pop/tpop_gg_1_1_ps_fl.pdf",
+    width = width.pdf,
+    height = height.pdf)
+psr(popmat = popsize_gg_1_1_ps_fl)
+dev.off()
+
+spop_gg_1_1_ps_fl
+```
+
+```{r tpop_gg_1_1_ps_fl}
+tpop_gg_1_1_ps_fl <- psr(popmat = popsize_gg_1_1_ps_fl, stages = 0)
+
+pdf(file = "output/plots/pop/tpop_gg_1_1_ps_fl.pdf",
+    width = width.pdf,
+    height = height.pdf)
+psr(popmat = popsize_gg_1_1_ps_fl, stages = 0)
+dev.off()
+
+tpop_gg_1_1_ps_fl
+```
+
+#### Low dispersal
+
+#### Scenario 1
+
+##### Model 1
+```{r sim_gg_1_1_dl}
+sim_gg_1_1_dl <- parsim(
+  landscape = l_gg_1_1,
   population_dynamics = pd_gg_fm_dm,
-  timesteps = 50,
-  replicates = 5,
-  workers = 5,
+  timesteps = ntimesteps,
+  replicates = nreplicates,
+  workers = nworkers,
   proj_mask = ch_mask,
   out_path = "output/pva_pops/",
-  scn_id = "s2",
-  varset = "1_ps",
+  scn_id = "s1",
+  varset = "1_dl",
   species = "gg"
 )
 
 gc()
 ```
 
-```{r sim_gg_3_1}
-sim_gg_3_1 <- parsim(
-  landscape = l_gg_3_1,
-  population_dynamics = pd_gg_fm_dm,
-  timesteps = 50,
-  replicates = 5,
-  workers = 5,
+```{r popsize_gg_1_1_dl}
+popsize_gg_1_1_dl <- gps(x = sim_gg_1_1_dl,
+                      workers = nworkers)
+
+saveRDS(object = popsize_gg_1_1_dl,
+        file = "output/pva_popmat/popsize_gg_1_1_dl")
+```
+
+```{r spop_gg_1_1_dl}
+spop_gg_1_1_dl <- psr(popmat = popsize_gg_1_1_dl)
+
+pdf(file = "output/plots/pop/tpop_gg_1_1_dl.pdf",
+    width = width.pdf,
+    height = height.pdf)
+psr(popmat = popsize_gg_1_1_dl)
+dev.off()
+
+spop_gg_1_1_dl
+```
+
+```{r tpop_gg_1_1_dl}
+tpop_gg_1_1_dl <- psr(popmat = popsize_gg_1_1_dl, stages = 0)
+
+pdf(file = "output/plots/pop/tpop_gg_1_1_dl.pdf",
+    width = width.pdf,
+    height = height.pdf)
+psr(popmat = popsize_gg_1_1_dl, stages = 0)
+dev.off()
+
+tpop_gg_1_1_dl
+```
+
+
+##### Model 1 ps
+```{r sim_gg_1_1_ps_dl}
+sim_gg_1_1_ps_dl <- parsim(
+  landscape = l_gg_1_1_ps,
+  population_dynamics = pd_gg_fm_dl,
+  timesteps = ntimesteps,
+  replicates = nreplicates,
+  workers = nworkers,
   proj_mask = ch_mask,
   out_path = "output/pva_pops/",
-  scn_id = "s3",
-  varset = "1",
+  scn_id = "s1",
+  varset = "1_ps_dl",
   species = "gg"
 )
 
 gc()
 ```
 
+```{r popsize_gg_1_1_ps_dl}
+popsize_gg_1_1_ps_dl <- gps(x = sim_gg_1_1_ps_dl,
+                      workers = nworkers)
 
-```{r sim_gg_3_1_ps}
-sim_gg_3_1_ps <- parsim(
-  landscape = l_gg_3_1_ps,
-  population_dynamics = pd_gg_fm_dm,
-  timesteps = 50,
-  replicates = 5,
-  workers = 5,
-  proj_mask = ch_mask,
-  out_path = "output/pva_pops/",
-  scn_id = "s3",
-  varset = "1_ps",
-  species = "gg"
-)
+saveRDS(object = popsize_gg_1_1_ps_dl,
+        file = "output/pva_popmat/popsize_gg_1_1_ps_dl")
+```
 
-gc()
+```{r spop_gg_1_1_ps_dl}
+spop_gg_1_1_ps_dl <- psr(popmat = popsize_gg_1_1_ps_dl)
+
+pdf(file = "output/plots/pop/tpop_gg_1_1_ps_dl.pdf",
+    width = width.pdf,
+    height = height.pdf)
+psr(popmat = popsize_gg_1_1_ps_dl)
+dev.off()
+
+spop_gg_1_1_ps_dl
+```
+
+```{r tpop_gg_1_1_ps_dl}
+tpop_gg_1_1_ps_dl <- psr(popmat = popsize_gg_1_1_ps_dl, stages = 0)
+
+pdf(file = "output/plots/pop/tpop_gg_1_1_ps_dl.pdf",
+    width = width.pdf,
+    height = height.pdf)
+psr(popmat = popsize_gg_1_1_ps_dl, stages = 0)
+dev.off()
+
+tpop_gg_1_1_ps_dl
 ```
