@@ -13,7 +13,7 @@ date: 2019-08-05
 ### Packages
 Install packages if necessary. Listed are installers for packages not on CRAN and the devlopment (most up-to-date) version of STEPS.
 ```{r install packages}
-# library(devtools)
+# library(devtools
 # install_github("steps-dev/steps")
 ```
 
@@ -93,7 +93,11 @@ ntimesteps <- 50
 ncores <- 20
 ```
 
-
+```{r}
+res <- 600
+width.png <- 3200
+height.png <- 2000
+```
 
 ## Geographic data
 
@@ -102,6 +106,28 @@ Set up base landscape layer
 ```{r ch_rst}
 ch_rst <- raster(x = "data/grids/eco_v12.img") %T>%
   plot
+```
+
+```{r}
+png(file = "output/plots/ch_rst.png",
+    width = width.png,
+    height = height.png, res = res)
+plot(ch_rst)
+dev.off()
+```
+
+
+```{r}
+ch_ic <- raster(x = "~/s1/IC_2019_V6.img") %T>%
+  plot
+```
+
+```{r}
+png(file = "output/plots/ch_ic.png",
+    width = width.png,
+    height = height.png, res = res)
+plot(ch_ic)
+dev.off()
 ```
 
 ```{r proj ext res}
@@ -162,6 +188,13 @@ fire_history
 ```{r plot fire_history}
 plot(fire_history)
 ```
+```{r}
+png(file = "output/plots/fire_history.png",
+    width = width.png,
+    height = height.png, res = res)
+plot(fire_history)
+dev.off()
+```
 
 #### Logging history
 ```{r logging_history}
@@ -179,6 +212,15 @@ logging_history
 ```{r plot logging_history}
 plot(logging_history)
 ```
+
+```{r}
+png(file = "output/plots/logging_history.png",
+    width = width.png,
+    height = height.png, res = res)
+plot(logging_history)
+dev.off()
+```
+
 
 ## Occurrence data
 
@@ -217,6 +259,16 @@ plot_gg_pa_all <- pg.pa(gg_pa_all, ch_rfa) +
 
 plot_gg_pa_all
 ```
+
+```{r}
+png(file = "output/plots/gg_pa_all.png",
+    width = width.png,
+    height = height.png, res = res)
+
+plot_gg_pa_all
+dev.off()
+```
+
 
 ```{r gg_pa_ch}
 gg_pa_ch <- gg_pa_all[ch_rfa,]
@@ -260,12 +312,38 @@ st_write(gg_pa_ch, "output/shapefiles/pa/ch/gg_pa_ch.shp", delete_layer = TRUE)
 st_write(gg_pa_ch_psab, "output/shapefiles/pa/ch/gg_pa_ch_psab.shp", delete_layer = TRUE)
 ```
 
-```{r pg_gg_pa_ch}
-pg_gg_pa_ch <- pg.pa(gg_pa_ch %>% mutate(pseudo_abs = "vba") %>% rbind(bg_gg %>% mutate(pseudo_abs = "pseudo_absences")), ch_rfa) +
-  facet_grid(.~pseudo_abs)
-
+```{r}
+pg_gg_pa_ch <- pg.pa(gg_pa_ch, ch_rfa)
 pg_gg_pa_ch
 ```
+
+```{r}
+png(file = "output/plots/gg_pa_ch.png",
+    width = width.png,
+    height = height.png, res = res)
+
+pg_gg_pa_ch
+
+dev.off()
+```
+
+
+```{r pg_gg_pa_ch_ps}
+pg_gg_pa_ch_ps <- pg.pa(gg_pa_ch %>% mutate(pseudo_abs = "vba") %>% rbind(bg_gg %>% mutate(pseudo_abs = "pseudo_absences")), ch_rfa) +
+  facet_grid(.~pseudo_abs)
+
+pg_gg_pa_ch_ps
+```
+```{r}
+png(file = "output/plots/gg_pa_ch_ps.png",
+    width = width.png,
+    height = height.png, res = res)
+
+pg_gg_pa_ch_ps
+
+dev.off()
+```
+
 
 ### LBP Occurrence data
 ```{r read lb occ}
@@ -278,6 +356,16 @@ plot_lb_pa_all <- pg.pa(lb_pa_all, ch_rfa) +
 
 plot_lb_pa_all
 ```
+
+```{r}
+png(file = "output/plots/lv_pa_all.png",
+    width = width.png,
+    height = height.png, res = res)
+
+plot_lb_pa_all
+dev.off()
+```
+
 
 ```{r lb_pa_ch}
 lb_pa_ch <- lb_pa_all[ch_rfa,]
@@ -312,13 +400,36 @@ st_write(lb_pa_ch, "output/shapefiles/pa/ch/lb_pa_ch.shp", delete_layer = TRUE)
 st_write(lb_pa_ch_psab, "output/shapefiles/pa/ch/lb_pa_ch_psab.shp", delete_layer = TRUE)
 ```
 
-
-```{r pg_lb_pa_ch}
-pg_lb_pa_ch <- pg.pa(lb_pa_ch %>% mutate(pseudo_abs = "vba") %>% rbind(bg_lb %>% mutate(pseudo_abs = "pseudo_absences")), ch_rfa) +
-  facet_grid(.~pseudo_abs)
-
+```{r}
+pg_lb_pa_ch <- pg.pa(lb_pa_ch, ch_rfa)
 pg_lb_pa_ch
 ```
+
+```{r}
+png(file = "output/plots/lb_pa_ch.png",
+    width = width.png,
+    height = height.png, res = res)
+pg_lb_pa_ch
+
+dev.off()
+```
+
+
+```{r pg_lb_pa_ch_ps}
+pg_lb_pa_ch_ps <- pg.pa(lb_pa_ch %>% mutate(pseudo_abs = "vba") %>% rbind(bg_lb %>% mutate(pseudo_abs = "pseudo_absences")), ch_rfa) +
+  facet_grid(.~pseudo_abs)
+
+pg_lb_pa_ch_ps
+```
+```{r}
+png(file = "output/plots/lb_pa_ch_ps.png",
+    width = width.png,
+    height = height.png, res = res)
+pg_lb_pa_ch_ps
+
+dev.off()
+```
+
 
 ```{r save image occu}
 save.image("output/session_images/landscape-occupancy.RData")
@@ -348,6 +459,98 @@ s1_vars_landis <- get.landis.vars(
 plot(s1_vars_landis[[1]][[1:12]])
 plot(s1_vars_landis[[1]][[13:22]])
 ```
+
+
+```{r}
+png(file = "output/plots/s1_vars_1.png",
+    width = width.png,
+    height = height.png, res = res)
+plot(s1_vars_landis[[1]][[1:12]])
+
+dev.off()
+
+png(file = "output/plots/s1_vars_2.png",
+    width = width.png,
+    height = height.png, res = res)
+plot(s1_vars_landis[[1]][[13:22]])
+
+dev.off()
+```
+
+
+```{r}
+saveGIF({
+  for (i in 1:length(s1_vars_landis)){
+    plot(s1_vars_landis[[i]][[20]], zlim = c(0,5))
+    title(main = paste0("Year ", i-1))
+  }
+}, interval = 0.2, movie.name = "s1_harvest.gif")
+```
+
+```{r}
+saveGIF({
+  for (i in 1:length(s1_vars_landis)){
+    plot(s1_vars_landis[[i]][[21]], zlim = c(0,5))
+    title(main = paste0("Year ",i-1))
+  }
+}, interval = 0.2, movie.name = "s1_firesev.gif")
+```
+
+```{r}
+saveGIF({
+  for (i in 1:length(s1_vars_landis)){
+    plot(s1_vars_landis[[i]][[1]], zlim = c(0,1))
+    title(main = paste0("Year ", i-1))
+  }
+}, interval = 0.2, movie.name = "s1_lbm.gif")
+```
+
+```{r}
+saveGIF({
+  for (i in 1:length(s1_vars_landis)){
+    plot(s1_vars_landis[[i]][[5]], zlim = c(0,1))
+    title(main = paste0("Year ",i-1))
+  }
+}, interval = 0.2, movie.name = "s1_ggf_prop.gif")
+```
+
+```{r}
+saveGIF({
+  for (i in 1:length(s1_vars_landis)){
+    plot(s1_vars_landis[[i]][[13]], zlim = c(0,1))
+    title(main = paste0("Year ",i-1))
+  }
+}, interval = 0.2, movie.name = "s1_prop_regnans.gif")
+```
+
+```{r}
+saveGIF({
+  for (i in 1:length(s1_vars_landis)){
+    plot(s1_vars_landis[[i]][[15]], zlim = c(0,1))
+    title(main = paste0("Year ",i-1))
+  }
+}, interval = 0.2, movie.name = "s1_prop_150.gif")
+```
+
+```{r}
+saveGIF({
+  for (i in 1:length(s1_vars_landis)){
+    plot(s1_vars_landis[[i]][[16]], zlim = c(0,1))
+    title(main = paste0("Year ",i-1))
+  }
+}, interval = 0.2, movie.name = "s1_prop_200.gif")
+```
+
+```{r}
+saveGIF({
+  for (i in 1:length(s1_vars_landis)){
+    plot(s1_vars_landis[[i]][[16]], zlim = c(0,1))
+    title(main = paste0("Year ",i-1))
+  }
+}, interval = 0.2, movie.name = "s1_prop_oge.gif")
+```
+
+
 
 ```{r plot s1_vars_landis last}
 plot(s1_vars_landis[[ntimesteps + 1]][[1:12]])
@@ -385,6 +588,81 @@ plot(s2_vars_landis[[ntimesteps + 1]][[13:22]])
 ```
 
 
+```{r}
+saveGIF({
+  for (i in 1:length(s2_vars_landis)){
+    plot(s2_vars_landis[[i]][[20]], zlim = c(0,5))
+    title(main = paste0("Year ", i-1))
+  }
+}, interval = 0.2, movie.name = "s2_harvest.gif")
+```
+
+```{r}
+saveGIF({
+  for (i in 1:length(s2_vars_landis)){
+    plot(s2_vars_landis[[i]][[21]], zlim = c(0,5))
+    title(main = paste0("Year ",i-1))
+  }
+}, interval = 0.2, movie.name = "s2_firesev.gif")
+```
+
+```{r}
+saveGIF({
+  for (i in 1:length(s2_vars_landis)){
+    plot(s2_vars_landis[[i]][[1]], zlim = c(0,1))
+    title(main = paste0("Year ", i-1))
+  }
+}, interval = 0.2, movie.name = "s2_lbm.gif")
+```
+
+```{r}
+saveGIF({
+  for (i in 1:length(s2_vars_landis)){
+    plot(s2_vars_landis[[i]][[5]], zlim = c(0,1))
+    title(main = paste0("Year ",i-1))
+  }
+}, interval = 0.2, movie.name = "s2_ggf_prop.gif")
+```
+
+```{r}
+saveGIF({
+  for (i in 1:length(s2_vars_landis)){
+    plot(s2_vars_landis[[i]][[13]], zlim = c(0,1))
+    title(main = paste0("Year ",i-1))
+  }
+}, interval = 0.2, movie.name = "s2_prop_regnans.gif")
+```
+
+```{r}
+saveGIF({
+  for (i in 1:length(s2_vars_landis)){
+    plot(s2_vars_landis[[i]][[15]], zlim = c(0,1))
+    title(main = paste0("Year ",i-1))
+  }
+}, interval = 0.2, movie.name = "s2_prop_150.gif")
+```
+
+```{r}
+saveGIF({
+  for (i in 1:length(s2_vars_landis)){
+    plot(s2_vars_landis[[i]][[16]], zlim = c(0,1))
+    title(main = paste0("Year ",i-1))
+  }
+}, interval = 0.2, movie.name = "s2_prop_200.gif")
+```
+
+```{r}
+saveGIF({
+  for (i in 1:length(s2_vars_landis)){
+    plot(s2_vars_landis[[i]][[16]], zlim = c(0,1))
+    title(main = paste0("Year ",i-1))
+  }
+}, interval = 0.2, movie.name = "s2_prop_oge.gif")
+```
+
+
+
+
 ```{r s2_vars_landis save load}
 save(s2_vars_landis, file = "output/habitat_vars/s2_vars_landis")
 
@@ -420,6 +698,82 @@ plot(s3_vars_landis[[ntimesteps + 1]][[13:22]])
 save(s3_vars_landis, file = "output/habitat_vars/s3_vars_landis")
 
 # load(file = "output/habitat_vars/s3_vars_landis_fut")
+```
+
+```{r}
+saveGIF({
+  for (i in 1:length(s3_vars_landis)){
+    plot(s3_vars_landis[[i]][[20]], zlim = c(0,5))
+    title(main = paste0("Year ", i-1))
+  }
+}, interval = 0.2, movie.name = "s3_harvest.gif")
+```
+
+```{r}
+saveGIF({
+  for (i in 1:length(s3_vars_landis)){
+    plot(s3_vars_landis[[i]][[21]], zlim = c(0,5))
+    title(main = paste0("Year ",i-1))
+  }
+}, interval = 0.2, movie.name = "s3_firesev.gif")
+```
+
+```{r}
+saveGIF({
+  for (i in 1:length(s3_vars_landis)){
+    plot(s3_vars_landis[[i]][[1]], zlim = c(0,1))
+    title(main = paste0("Year ", i-1))
+  }
+}, interval = 0.2, movie.name = "s3_lbm.gif")
+```
+
+```{r}
+saveGIF({
+  for (i in 1:length(s3_vars_landis)){
+    plot(s3_vars_landis[[i]][[5]], zlim = c(0,1))
+    title(main = paste0("Year ",i-1))
+  }
+}, interval = 0.2, movie.name = "s3_ggf_prop.gif")
+```
+
+```{r}
+saveGIF({
+  for (i in 1:length(s3_vars_landis)){
+    plot(s3_vars_landis[[i]][[13]], zlim = c(0,1))
+    title(main = paste0("Year ",i-1))
+  }
+}, interval = 0.2, movie.name = "s3_prop_regnans.gif")
+```
+
+```{r}
+saveGIF({
+  for (i in 1:length(s3_vars_landis)){
+    plot(s3_vars_landis[[i]][[15]], zlim = c(0,1))
+    title(main = paste0("Year ",i-1))
+  }
+}, interval = 0.2, movie.name = "s3_prop_150.gif")
+```
+
+```{r}
+saveGIF({
+  for (i in 1:length(s3_vars_landis)){
+    plot(s3_vars_landis[[i]][[16]], zlim = c(0,1))
+    title(main = paste0("Year ",i-1))
+  }
+}, interval = 0.2, movie.name = "s3_prop_200.gif")
+```
+
+```{r}
+saveGIF({
+  for (i in 1:length(s3_vars_landis)){
+    plot(s3_vars_landis[[i]][[16]], zlim = c(0,1))
+    title(main = paste0("Year ",i-1))
+  }
+}, interval = 0.2, movie.name = "s3_prop_oge.gif")
+```
+
+```{r}
+1+,
 ```
 
 ### Scenario 4: Current planned burning, no harvesting, climate change under RCP 4.5, current bushfire regime
@@ -487,6 +841,26 @@ Last time since fire
 plot(s1_fire_vars[[ntimesteps + 1]][["tsf"]])
 ```
 
+
+```{r}
+saveGIF({
+  for (i in 1:length(s1_vars_landis)){
+    plot(s1_fire_vars[[i]][[1]], zlim = c(1850,2070))
+    title(main = paste0("Year ", i-1))
+  }
+}, interval = 0.2, movie.name = "s1_fihi.gif")
+```
+
+```{r}
+saveGIF({
+  for (i in 1:length(s1_vars_landis)){
+    plot(s1_fire_vars[[i]][[2]], zlim = c(0, 220))
+    title(main = paste0("Year ", i-1))
+  }
+}, interval = 0.2, movie.name = "s1_tsf.gif")
+```
+
+
 #### Scenario 2
 ```{r s2_fire_vars}
 s2_fire_vars <- get.disturbance(disturbances =  lapply(s2_vars_landis, FUN = function(x){x[["firesev"]]}),
@@ -515,6 +889,25 @@ plot(s2_fire_vars[[1]][["tsf"]])
 Last time since fire
 ```{r plot s2_fire_var time since fire last}
 plot(s2_fire_vars[[ntimesteps + 1]][["tsf"]])
+```
+
+
+```{r}
+saveGIF({
+  for (i in 1:length(s2_fire_vars)){
+    plot(s2_fire_vars[[i]][[1]], zlim = c(1850,2070))
+    title(main = paste0("Year ", i-1))
+  }
+}, interval = 0.2, movie.name = "s2_fihi.gif")
+```
+
+```{r}
+saveGIF({
+  for (i in 1:length(s2_fire_vars)){
+    plot(s2_fire_vars[[i]][[2]], zlim = c(0, 220))
+    title(main = paste0("Year ", i-1))
+  }
+}, interval = 0.2, movie.name = "s2_tsf.gif")
 ```
 
 #### Scenario 3
@@ -548,7 +941,23 @@ plot(s3_fire_vars[[ntimesteps + 1]][["tsf"]])
 ```
 
 
+```{r}
+saveGIF({
+  for (i in 1:length(s3_fire_vars)){
+    plot(s3_fire_vars[[i]][[1]], zlim = c(1850,2070))
+    title(main = paste0("Year ", i-1))
+  }
+}, interval = 0.2, movie.name = "s3_fihi.gif")
+```
 
+```{r}
+saveGIF({
+  for (i in 1:length(s3_fire_vars)){
+    plot(s3_fire_vars[[i]][[2]], zlim = c(0, 220))
+    title(main = paste0("Year ", i-1))
+  }
+}, interval = 0.2, movie.name = "s3_tsf.gif")
+```
 
 #### Scenario 4
 ```{r s4_fire_vars}
@@ -614,6 +1023,26 @@ Last time since fire
 plot(s1_logging_vars[[ntimesteps + 1]][["tsl"]])
 ```
 
+CHECK YEARS FOR ZLIM
+
+```{r}
+saveGIF({
+  for (i in 1:length(s1_logging_vars)){
+    plot(s1_logging_vars[[i]][[1]], zlim = c(1750,2070))
+    title(main = paste0("Year ", i-1))
+  }
+}, interval = 0.2, movie.name = "s1_lohi.gif")
+```
+
+```{r}
+saveGIF({
+  for (i in 1:length(s1_logging_vars)){
+    plot(s1_logging_vars[[i]][[2]], zlim = c(0, 220))
+    title(main = paste0("Year ", i-1))
+  }
+}, interval = 0.2, movie.name = "s1_tsl.gif")
+```
+
 #### Scenario 2
 ```{r s2_logging_vars}
 s2_logging_vars <- get.disturbance(disturbances =  lapply(s2_vars_landis, FUN = function(x){x[["harvest"]]}),
@@ -644,6 +1073,24 @@ Last time since fire
 plot(s2_logging_vars[[ntimesteps + 1]][["tsl"]])
 ```
 
+```{r}
+saveGIF({
+  for (i in 1:length(s2_logging_vars)){
+    plot(s2_logging_vars[[i]][[1]], zlim = c(1750,2070))
+    title(main = paste0("Year ", i-1))
+  }
+}, interval = 0.2, movie.name = "s2_lohi.gif")
+```
+
+```{r}
+saveGIF({
+  for (i in 1:length(s2_logging_vars)){
+    plot(s2_logging_vars[[i]][[2]], zlim = c(0, 220))
+    title(main = paste0("Year ", i-1))
+  }
+}, interval = 0.2, movie.name = "s2_tsl.gif")
+```
+
 #### Scenario 3
 ```{r s3_logging_vars}
 s3_logging_vars <- get.disturbance(disturbances =  lapply(s3_vars_landis, FUN = function(x){x[["harvest"]]}),
@@ -672,6 +1119,24 @@ plot(s3_logging_vars[[1]][["tsl"]])
 Last time since fire
 ```{r plot s3_logging_var time since logging last}
 plot(s3_logging_vars[[ntimesteps + 1]][["tsl"]])
+```
+
+```{r}
+saveGIF({
+  for (i in 1:length(s3_logging_vars)){
+    plot(s3_logging_vars[[i]][[1]], zlim = c(1750,2070))
+    title(main = paste0("Year ", i-1))
+  }
+}, interval = 0.2, movie.name = "s3_lohi.gif")
+```
+
+```{r}
+saveGIF({
+  for (i in 1:length(s3_logging_vars)){
+    plot(s3_logging_vars[[i]][[2]], zlim = c(0, 220))
+    title(main = paste0("Year ", i-1))
+  }
+}, interval = 0.2, movie.name = "s3_tsl.gif")
 ```
 
 #### Scenario 4
@@ -1368,6 +1833,16 @@ summary(brt_gg_1)
 ```{r gbm.plot brt_gg_1}
 gbm.plot(brt_gg_1)
 ```
+
+```{r}
+png(file = "output/plots/brt_gg_1.png",
+    width = width.png,
+    height = height.png, res = res)
+gbm.plot(brt_gg_1)
+
+dev.off()
+```
+
 
 ```{r initial pred brt_gg_1}
 ip_gg_1 <- brtpredict(variables = s1_v,
@@ -2172,9 +2647,9 @@ ageClassNames <- c('Newborn','Juvenile','Adult')
 
 ##### Mid fecundity
 ```{r gg_trans_mat_fm}
-tm_gg_fm <- matrix(c(0.00,0.00,0.50,
+tm_gg_fm <- matrix(c(0.00,0.00,0.40,
                      0.50,0.00,0.00,
-                     0.00,0.85,0.85),
+                     0.00,0.83,0.83),
                    nrow = 3,
                    ncol = 3,
                    byrow = TRUE)
@@ -2338,6 +2813,11 @@ p0_gg_1_1 <- initpop(hs = s1_p_gg_1[[1]],
                      species = "gg") %T>%
   plot
 ```
+```{r}
+pop0_gg_1_1 <- colSums(getValues(p0_gg_1_1), na.rm = TRUE)
+```
+
+
 ###### Model 1 ps
 ```{r p0_gg_1_1_ps}
 p0_gg_1_1_ps <- initpop(hs = s1_p_gg_1_ps[[1]],
@@ -2351,6 +2831,10 @@ p0_gg_1_1_ps <- initpop(hs = s1_p_gg_1_ps[[1]],
                      species = "gg") %T>%
   plot
 ```
+```{r}
+pop0_gg_1_1_ps <- colSums(getValues(p0_gg_1_1_ps), na.rm = TRUE)
+```
+
 ###### Model 1 low fecondity
 ```{r p0_gg_1_1_fl}
 p0_gg_1_1_fl <- initpop(hs = s1_p_gg_1[[1]],
@@ -2364,6 +2848,10 @@ p0_gg_1_1_fl <- initpop(hs = s1_p_gg_1[[1]],
                      species = "gg") %T>%
   plot
 ```
+```{r}
+pop0_gg_1_1_fl <- colSums(getValues(p0_gg_1_1_fl), na.rm = TRUE)
+```
+
 ###### Model 1 ps low fecundity
 ```{r p0_gg_1_1_ps_fl}
 p0_gg_1_1_ps_fl <- initpop(hs = s1_p_gg_1_ps[[1]],
@@ -2377,7 +2865,9 @@ p0_gg_1_1_ps_fl <- initpop(hs = s1_p_gg_1_ps[[1]],
                      species = "gg") %T>%
   plot
 ```
-
+```{r}
+pop0_gg_1_1_ps_fl <- colSums(getValues(p0_gg_1_1_ps_fl), na.rm = TRUE)
+```
 ###### Model 4
 ```{r p0_gg_1_4}
 p0_gg_1_4 <- initpop(hs = s1_p_gg_4[[1]],
@@ -2390,6 +2880,9 @@ p0_gg_1_4 <- initpop(hs = s1_p_gg_4[[1]],
                      varset = "4",
                      species = "gg") %T>%
   plot
+```
+```{r}
+pop0_gg_1_4 <- colSums(getValues(p0_gg_1_4), na.rm = TRUE)
 ```
 ###### Model 4 ps
 ```{r p0_gg_1_4_ps}
@@ -2404,7 +2897,9 @@ p0_gg_1_4_ps <- initpop(hs = s1_p_gg_4_ps[[1]],
                      species = "gg") %T>%
   plot
 ```
-
+```{r}
+pop0_gg_1_4_ps <- colSums(getValues(p0_gg_1_4_ps), na.rm = TRUE)
+```
 ##### Scenario 2
 ###### Model 1
 ```{r p0_gg_2_1}
@@ -2419,7 +2914,9 @@ p0_gg_2_1 <- initpop(hs = s2_p_gg_1[[1]],
                      species = "gg") %T>%
   plot
 ```
-
+```{r}
+pop0_gg_2_1 <- colSums(getValues(p0_gg_2_1), na.rm = TRUE)
+```
 ###### Model 1 ps
 ```{r p0_gg_2_1_ps}
 p0_gg_2_1_ps <- initpop(hs = s2_p_gg_1_ps[[1]],
@@ -2432,6 +2929,9 @@ p0_gg_2_1_ps <- initpop(hs = s2_p_gg_1_ps[[1]],
                      varset = "1_ps",
                      species = "gg") %T>%
   plot
+```
+```{r}
+pop0_gg_2_1_ps <- colSums(getValues(p0_gg_2_1_ps), na.rm = TRUE)
 ```
 
 ##### Scenario 3
@@ -2448,7 +2948,9 @@ p0_gg_3_1 <- initpop(hs = s3_p_gg_1[[1]],
                      species = "gg") %T>%
   plot
 ```
-
+```{r}
+pop0_gg_3_1 <- colSums(getValues(p0_gg_3_1), na.rm = TRUE)
+```
 ###### Model 1 ps
 ```{r p0_gg_3_1_ps}
 p0_gg_3_1_ps <- initpop(hs = s3_p_gg_1_ps[[1]],
@@ -2462,7 +2964,9 @@ p0_gg_3_1_ps <- initpop(hs = s3_p_gg_1_ps[[1]],
                      species = "gg") %T>%
   plot
 ```
-
+```{r}
+pop0_gg_3_1_ps <- colSums(getValues(p0_gg_3_1_ps), na.rm = TRUE)
+```
 ##### Scenario 4
 ###### Model 1
 ```{r p0_gg_4_1}
@@ -2621,10 +3125,6 @@ pd_gg_fm_dl <- population_dynamics(
   )
 ```
 
-```{r}
-1+,
-```
-
 
 ```{r}
 save.image(file = "output/session_images/gg_pva_objects.RData")
@@ -2674,7 +3174,7 @@ saveRDS(object = popsize_gg_1_1,
 ```{r spop_gg_1_1}
 spop_gg_1_1 <- psr(popmat = popsize_gg_1_1)
 
-pdf(file = "output/plots/pop/tpop_gg_1_1.pdf",
+pdf(file = "output/plots/pop/spop_gg_1_1.pdf",
     width = width.pdf,
     height = height.pdf)
 psr(popmat = popsize_gg_1_1)
@@ -2725,7 +3225,7 @@ saveRDS(object = popsize_gg_1_1_ps,
 ```{r spop_gg_1_1_ps}
 spop_gg_1_1_ps <- psr(popmat = popsize_gg_1_1_ps)
 
-pdf(file = "output/plots/pop/tpop_gg_1_1_ps.pdf",
+pdf(file = "output/plots/pop/spop_gg_1_1_ps.pdf",
     width = width.pdf,
     height = height.pdf)
 psr(popmat = popsize_gg_1_1_ps)
@@ -2772,28 +3272,28 @@ saveRDS(object = popsize_gg_1_4,
         file = "output/pva_popmat/popsize_gg_1_4")
 ```
 
-```{r spop_gg_1_1_ps}
-spop_gg_1_1_ps <- psr(popmat = popsize_gg_1_1_ps)
+```{r spop_gg_1_4}
+spop_gg_1_4 <- psr(popmat = popsize_gg_1_4)
 
-pdf(file = "output/plots/pop/tpop_gg_1_1_ps.pdf",
+pdf(file = "output/plots/pop/spop_gg_1_4.pdf",
     width = width.pdf,
     height = height.pdf)
-psr(popmat = popsize_gg_1_1_ps)
+psr(popmat = popsize_gg_1_4)
 dev.off()
 
-spop_gg_1_1_ps
+spop_gg_1_4
 ```
 
-```{r tpop_gg_1_1_ps}
-tpop_gg_1_1_ps <- psr(popmat = popsize_gg_1_1_ps, stages = 0)
+```{r tpop_gg_1_4}
+tpop_gg_1_4 <- psr(popmat = popsize_gg_1_4, stages = 0)
 
-pdf(file = "output/plots/pop/tpop_gg_1_1_ps.pdf",
+pdf(file = "output/plots/pop/tpop_gg_1_4.pdf",
     width = width.pdf,
     height = height.pdf)
-psr(popmat = popsize_gg_1_1_ps, stages = 0)
+psr(popmat = popsize_gg_1_4, stages = 0)
 dev.off()
 
-tpop_gg_1_1_ps
+tpop_gg_1_4
 ```
 
 ##### Model 4 ps
@@ -2825,7 +3325,7 @@ saveRDS(object = popsize_gg_1_4_ps,
 ```{r spop_gg_1_4_ps}
 spop_gg_1_4_ps <- psr(popmat = popsize_gg_1_4_ps)
 
-pdf(file = "output/plots/pop/tpop_gg_1_4_ps.pdf",
+pdf(file = "output/plots/pop/spop_gg_1_4_ps.pdf",
     width = width.pdf,
     height = height.pdf)
 psr(popmat = popsize_gg_1_4_ps)
@@ -2877,7 +3377,7 @@ saveRDS(object = popsize_gg_2_1,
 ```{r spop_gg_2_1}
 spop_gg_2_1 <- psr(popmat = popsize_gg_2_1)
 
-pdf(file = "output/plots/pop/tpop_gg_2_1.pdf",
+pdf(file = "output/plots/pop/spop_gg_2_1.pdf",
     width = width.pdf,
     height = height.pdf)
 psr(popmat = popsize_gg_2_1)
@@ -2928,7 +3428,7 @@ saveRDS(object = popsize_gg_2_1_ps,
 ```{r spop_gg_2_1_ps}
 spop_gg_2_1_ps <- psr(popmat = popsize_gg_2_1_ps)
 
-pdf(file = "output/plots/pop/tpop_gg_2_1_ps.pdf",
+pdf(file = "output/plots/pop/spop_gg_2_1_ps.pdf",
     width = width.pdf,
     height = height.pdf)
 psr(popmat = popsize_gg_2_1_ps)
@@ -2940,7 +3440,7 @@ spop_gg_2_1_ps
 ```{r tpop_gg_2_1_ps}
 tpop_gg_2_1_ps <- psr(popmat = popsize_gg_2_1_ps, stages = 0)
 
-pdf(file = "output/plots/pop/tpop_gg_2_1_ps.pdf",
+pdf(file = "output/plots/pop/spop_gg_2_1_ps.pdf",
     width = width.pdf,
     height = height.pdf)
 psr(popmat = popsize_gg_2_1_ps, stages = 0)
@@ -2980,7 +3480,7 @@ saveRDS(object = popsize_gg_3_1,
 ```{r spop_gg_3_1}
 spop_gg_3_1 <- psr(popmat = popsize_gg_3_1)
 
-pdf(file = "output/plots/pop/tpop_gg_3_1.pdf",
+pdf(file = "output/plots/pop/spop_gg_3_1.pdf",
     width = width.pdf,
     height = height.pdf)
 psr(popmat = popsize_gg_3_1)
@@ -3031,7 +3531,7 @@ saveRDS(object = popsize_gg_3_1_ps,
 ```{r spop_gg_3_1_ps}
 spop_gg_3_1_ps <- psr(popmat = popsize_gg_3_1_ps)
 
-pdf(file = "output/plots/pop/tpop_gg_3_1_ps.pdf",
+pdf(file = "output/plots/pop/spop_gg_3_1_ps.pdf",
     width = width.pdf,
     height = height.pdf)
 psr(popmat = popsize_gg_3_1_ps)
@@ -3052,6 +3552,8 @@ dev.off()
 tpop_gg_3_1_ps
 ```
 
+
+
 ## Leadbeater's Possum
 
 ### PVA Input variables
@@ -3064,9 +3566,9 @@ ageClassNames <- c('Newborn','Juvenile','Adult')
 
 ##### Mid fecundity
 ```{r lb_trans_mat_fm}
-tm_lb_fm <- matrix(c(0.00,0.00,2.00,
+tm_lb_fm <- matrix(c(0.00,0.00,1.10,
                      0.59,0.00,0.00,
-                     0.00,0.59,0.79),
+                     0.00,0.59,0.59),
                    nrow = 3,
                    ncol = 3,
                    byrow = TRUE)
@@ -3253,12 +3755,12 @@ p0_lb_1_1_ps_fl <- initpop(hs = s1_p_lb_1_ps[[1]],
 ```{r p0_lb_1_1_pl}
 p0_lb_1_1_pl <- initpop(hs = s1_p_lb_1[[1]],
                      cc = cc_lb_1_1,
-                     tm = tm_lb_pl,
+                     tm = tm_lb_fm,
                      popsize = 2500,
                      proj_mask = ch_mask,
                      out_path = "output/pva_vars/",
                      scn_id = "s1",
-                     varset = "1_pl",
+                     varset = "1_fl",
                      species = "lb") %T>%
   plot
 ```
@@ -3266,7 +3768,7 @@ p0_lb_1_1_pl <- initpop(hs = s1_p_lb_1[[1]],
 ```{r p0_lb_1_1_ps_pl}
 p0_lb_1_1_ps_pl <- initpop(hs = s1_p_lb_1_ps[[1]],
                      cc = cc_lb_1_1_ps,
-                     tm = tm_lb_pl,
+                     tm = tm_lb_fm,
                      popsize = 2500,
                      proj_mask = ch_mask,
                      out_path = "output/pva_vars/",
@@ -3281,8 +3783,8 @@ p0_lb_1_1_ps_pl <- initpop(hs = s1_p_lb_1_ps[[1]],
 ```{r p0_lb_1_1_ph}
 p0_lb_1_1_ph <- initpop(hs = s1_p_lb_1[[1]],
                      cc = cc_lb_1_1,
-                     tm = tm_lb_ph,
-                     popsize = 5000,
+                     tm = tm_lb_fm,
+                     popsize = 9000,
                      proj_mask = ch_mask,
                      out_path = "output/pva_vars/",
                      scn_id = "s1",
@@ -3294,8 +3796,8 @@ p0_lb_1_1_ph <- initpop(hs = s1_p_lb_1[[1]],
 ```{r p0_lb_1_1_ps_ph}
 p0_lb_1_1_ps_ph <- initpop(hs = s1_p_lb_1_ps[[1]],
                      cc = cc_lb_1_1_ps,
-                     tm = tm_lb_ph,
-                     popsize = 5000,
+                     tm = tm_lb_fm,
+                     popsize = 9000,
                      proj_mask = ch_mask,
                      out_path = "output/pva_vars/",
                      scn_id = "s1",
@@ -3532,7 +4034,7 @@ l_lb_3_1_ps <- landscape(
 pd_lb_fm_dm <- population_dynamics(
   change = growth(transition_matrix = tm_lb_fm,
                   global_stochasticity = 0.1),
-  dispersal =  cellular_automata_dispersal(max_cells = c(0, 325, 325),
+  dispersal =  cellular_automata_dispersal(max_cells = c(0, 50, 50),
                                           dispersal_proportion = carrying_capacity_dispersal())
   )
 ```
@@ -3542,7 +4044,7 @@ pd_lb_fm_dm <- population_dynamics(
 pd_lb_fl_dm <- population_dynamics(
   change = growth(transition_matrix = tm_lb_fl,
                   global_stochasticity = 0.1),
-  dispersal =  cellular_automata_dispersal(max_cells = c(0, 325, 325),
+  dispersal =  cellular_automata_dispersal(max_cells = c(0, 50, 50),
                                           dispersal_proportion = carrying_capacity_dispersal())
   )
 ```
@@ -3552,7 +4054,7 @@ pd_lb_fl_dm <- population_dynamics(
 pd_lb_fm_dl <- population_dynamics(
   change = growth(transition_matrix = tm_lb_fm,
                   global_stochasticity = 0.1),
-  dispersal =  cellular_automata_dispersal(max_cells = c(0, 160, 160),
+  dispersal =  cellular_automata_dispersal(max_cells = c(0, 20, 20),
                                           dispersal_proportion = carrying_capacity_dispersal())
   )
 ```
@@ -3606,7 +4108,7 @@ saveRDS(object = popsize_lb_1_1,
 ```{r spop_lb_1_1}
 spop_lb_1_1 <- psr(popmat = popsize_lb_1_1)
 
-pdf(file = "output/plots/pop/tpop_lb_1_1.pdf",
+pdf(file = "output/plots/pop/spop_lb_1_1.pdf",
     width = width.pdf,
     height = height.pdf)
 psr(popmat = popsize_lb_1_1)
@@ -3657,7 +4159,7 @@ saveRDS(object = popsize_lb_1_1_ps,
 ```{r spop_lb_1_1_ps}
 spop_lb_1_1_ps <- psr(popmat = popsize_lb_1_1_ps)
 
-pdf(file = "output/plots/pop/tpop_lb_1_1_ps.pdf",
+pdf(file = "output/plots/pop/spop_lb_1_1_ps.pdf",
     width = width.pdf,
     height = height.pdf)
 psr(popmat = popsize_lb_1_1_ps)
@@ -3707,7 +4209,7 @@ saveRDS(object = popsize_lb_1_3,
 ```{r spop_lb_1_1_ps}
 spop_lb_1_1_ps <- psr(popmat = popsize_lb_1_1_ps)
 
-pdf(file = "output/plots/pop/tpop_lb_1_1_ps.pdf",
+pdf(file = "output/plots/pop/spop_lb_1_1_ps.pdf",
     width = width.pdf,
     height = height.pdf)
 psr(popmat = popsize_lb_1_1_ps)
@@ -3757,7 +4259,7 @@ saveRDS(object = popsize_lb_1_3_ps,
 ```{r spop_lb_1_3_ps}
 spop_lb_1_3_ps <- psr(popmat = popsize_lb_1_3_ps)
 
-pdf(file = "output/plots/pop/tpop_lb_1_3_ps.pdf",
+pdf(file = "output/plots/pop/spop_lb_1_3_ps.pdf",
     width = width.pdf,
     height = height.pdf)
 psr(popmat = popsize_lb_1_3_ps)
@@ -3809,7 +4311,7 @@ saveRDS(object = popsize_lb_2_1,
 ```{r spop_lb_2_1}
 spop_lb_2_1 <- psr(popmat = popsize_lb_2_1)
 
-pdf(file = "output/plots/pop/tpop_lb_2_1.pdf",
+pdf(file = "output/plots/pop/spop_lb_2_1.pdf",
     width = width.pdf,
     height = height.pdf)
 psr(popmat = popsize_lb_2_1)
@@ -3860,7 +4362,7 @@ saveRDS(object = popsize_lb_2_1_ps,
 ```{r spop_lb_2_1_ps}
 spop_lb_2_1_ps <- psr(popmat = popsize_lb_2_1_ps)
 
-pdf(file = "output/plots/pop/tpop_lb_2_1_ps.pdf",
+pdf(file = "output/plots/pop/spop_lb_2_1_ps.pdf",
     width = width.pdf,
     height = height.pdf)
 psr(popmat = popsize_lb_2_1_ps)
@@ -3912,7 +4414,7 @@ saveRDS(object = popsize_lb_3_1,
 ```{r spop_lb_3_1}
 spop_lb_3_1 <- psr(popmat = popsize_lb_3_1)
 
-pdf(file = "output/plots/pop/tpop_lb_3_1.pdf",
+pdf(file = "output/plots/pop/spop_lb_3_1.pdf",
     width = width.pdf,
     height = height.pdf)
 psr(popmat = popsize_lb_3_1)
@@ -3963,7 +4465,7 @@ saveRDS(object = popsize_lb_3_1_ps,
 ```{r spop_lb_3_1_ps}
 spop_lb_3_1_ps <- psr(popmat = popsize_lb_3_1_ps)
 
-pdf(file = "output/plots/pop/tpop_lb_3_1_ps.pdf",
+pdf(file = "output/plots/pop/spop_lb_3_1_ps.pdf",
     width = width.pdf,
     height = height.pdf)
 psr(popmat = popsize_lb_3_1_ps)
@@ -4021,7 +4523,7 @@ saveRDS(object = popsize_gg_1_1_fl,
 ```{r spop_gg_1_1_fl}
 spop_gg_1_1_fl <- psr(popmat = popsize_gg_1_1_fl)
 
-pdf(file = "output/plots/pop/tpop_gg_1_1_fl.pdf",
+pdf(file = "output/plots/pop/spop_gg_1_1_fl.pdf",
     width = width.pdf,
     height = height.pdf)
 psr(popmat = popsize_gg_1_1_fl)
@@ -4072,7 +4574,7 @@ saveRDS(object = popsize_gg_1_1_ps_fl,
 ```{r spop_gg_1_1_ps_fl}
 spop_gg_1_1_ps_fl <- psr(popmat = popsize_gg_1_1_ps_fl)
 
-pdf(file = "output/plots/pop/tpop_gg_1_1_ps_fl.pdf",
+pdf(file = "output/plots/pop/spop_gg_1_1_ps_fl.pdf",
     width = width.pdf,
     height = height.pdf)
 psr(popmat = popsize_gg_1_1_ps_fl)
@@ -4126,7 +4628,7 @@ saveRDS(object = popsize_gg_1_1_dl,
 ```{r spop_gg_1_1_dl}
 spop_gg_1_1_dl <- psr(popmat = popsize_gg_1_1_dl)
 
-pdf(file = "output/plots/pop/tpop_gg_1_1_dl.pdf",
+pdf(file = "output/plots/pop/spop_gg_1_1_dl.pdf",
     width = width.pdf,
     height = height.pdf)
 psr(popmat = popsize_gg_1_1_dl)
@@ -4177,7 +4679,7 @@ saveRDS(object = popsize_gg_1_1_ps_dl,
 ```{r spop_gg_1_1_ps_dl}
 spop_gg_1_1_ps_dl <- psr(popmat = popsize_gg_1_1_ps_dl)
 
-pdf(file = "output/plots/pop/tpop_gg_1_1_ps_dl.pdf",
+pdf(file = "output/plots/pop/spop_gg_1_1_ps_dl.pdf",
     width = width.pdf,
     height = height.pdf)
 psr(popmat = popsize_gg_1_1_ps_dl)
@@ -4196,4 +4698,208 @@ psr(popmat = popsize_gg_1_1_ps_dl, stages = 0)
 dev.off()
 
 tpop_gg_1_1_ps_dl
+```
+
+Extra LBP
+
+##### Model 1 pl
+```{r sim_lb_1_1_pl}
+sim_lb_1_1_pl <- parsim(
+  landscape = l_lb_1_1_pl,
+  population_dynamics = pd_lb_fm_dm,
+  timesteps = ntimesteps,
+  replicates = nreplicates,
+  workers = nworkers,
+  proj_mask = ch_mask,
+  out_path = "output/pva_pops/",
+  scn_id = "s1",
+  varset = "1_pl",
+  species = "lb"
+)
+
+gc()
+```
+
+```{r popsize_lb_1_1_pl}
+popsize_lb_1_1_pl <- gps(x = sim_lb_1_1_pl,
+                      workers = nworkers)
+
+saveRDS(object = popsize_lb_1_1_pl,
+        file = "output/pva_popmat/popsize_lb_1_1_pl")
+```
+
+```{r spop_lb_1_1_pl}
+spop_lb_1_1_pl <- psr(popmat = popsize_lb_1_1_pl)
+
+pdf(file = "output/plots/pop/spop_lb_1_1_pl.pdf",
+    width = width.pdf,
+    height = height.pdf)
+psr(popmat = popsize_lb_1_1_pl)
+dev.off()
+
+spop_lb_1_1_pl
+```
+
+```{r tpop_lb_1_1_pl}
+tpop_lb_1_1_pl <- psr(popmat = popsize_lb_1_1_pl, stages = 0)
+
+pdf(file = "output/plots/pop/tpop_lb_1_1_pl.pdf",
+    width = width.pdf,
+    height = height.pdf)
+psr(popmat = popsize_lb_1_1_pl, stages = 0)
+dev.off()
+
+tpop_lb_1_1_pl
+```
+
+
+##### Model 1 ps pl
+```{r sim_lb_1_1_ps_pl}
+sim_lb_1_1_ps_pl <- parsim(
+  landscape = l_lb_1_1_ps_pl,
+  population_dynamics = pd_lb_fm_dm,
+  timesteps = ntimesteps,
+  replicates = nreplicates,
+  workers = nworkers,
+  proj_mask = ch_mask,
+  out_path = "output/pva_pops/",
+  scn_id = "s1",
+  varset = "1_ps_pl",
+  species = "lb"
+)
+
+gc()
+```
+
+```{r popsize_lb_1_1_ps_pl}
+popsize_lb_1_1_ps_pl <- gps(x = sim_lb_1_1_ps_pl,
+                      workers = nworkers)
+
+saveRDS(object = popsize_lb_1_1_ps_pl,
+        file = "output/pva_popmat/popsize_lb_1_1_ps_pl")
+```
+
+```{r spop_lb_1_1_ps_pl}
+spop_lb_1_1_ps_pl <- psr(popmat = popsize_lb_1_1_ps_pl)
+
+pdf(file = "output/plots/pop/spop_lb_1_1_ps_pl.pdf",
+    width = width.pdf,
+    height = height.pdf)
+psr(popmat = popsize_lb_1_1_ps_pl)
+dev.off()
+
+spop_lb_1_1_ps_pl
+```
+
+```{r tpop_lb_1_1_ps_pl}
+tpop_lb_1_1_ps_pl <- psr(popmat = popsize_lb_1_1_ps_pl, stages = 0)
+
+pdf(file = "output/plots/pop/tpop_lb_1_1_ps_pl.pdf",
+    width = width.pdf,
+    height = height.pdf)
+psr(popmat = popsize_lb_1_1_ps_pl, stages = 0)
+dev.off()
+
+tpop_lb_1_1_ps_pl
+```
+
+#### Model 1 ph
+```{r sim_lb_1_1_ph}
+sim_lb_1_1_ph <- parsim(
+  landscape = l_lb_1_1_ph,
+  population_dynamics = pd_lb_fm_dm,
+  timesteps = ntimesteps,
+  replicates = nreplicates,
+  workers = nworkers,
+  proj_mask = ch_mask,
+  out_path = "output/pva_pops/",
+  scn_id = "s1",
+  varset = "1_ph",
+  species = "lb"
+)
+
+gc()
+```
+
+```{r popsize_lb_1_1_ph}
+popsize_lb_1_1_ph <- gps(x = sim_lb_1_1_ph,
+                      workers = nworkers)
+
+saveRDS(object = popsize_lb_1_1_ph,
+        file = "output/pva_popmat/popsize_lb_1_1_ph")
+```
+
+```{r spop_lb_1_1_ph}
+spop_lb_1_1_ph <- psr(popmat = popsize_lb_1_1_ph)
+
+pdf(file = "output/plots/pop/spop_lb_1_1_ph.pdf",
+    width = width.pdf,
+    height = height.pdf)
+psr(popmat = popsize_lb_1_1_ph)
+dev.off()
+
+spop_lb_1_1_ph
+```
+
+```{r tpop_lb_1_1_ph}
+tpop_lb_1_1_ph <- psr(popmat = popsize_lb_1_1_ph, stages = 0)
+
+pdf(file = "output/plots/pop/tpop_lb_1_1_ph.pdf",
+    width = width.pdf,
+    height = height.pdf)
+psr(popmat = popsize_lb_1_1_ph, stages = 0)
+dev.off()
+
+tpop_lb_1_1_ph
+```
+
+
+##### Model 1 ps pl
+```{r sim_lb_1_1_ps_ph}
+sim_lb_1_1_ps_ph <- parsim(
+  landscape = l_lb_1_1_ps_ph,
+  population_dynamics = pd_lb_fm_dm,
+  timesteps = ntimesteps,
+  replicates = nreplicates,
+  workers = nworkers,
+  proj_mask = ch_mask,
+  out_path = "output/pva_pops/",
+  scn_id = "s1",
+  varset = "1_ps_ph",
+  species = "lb"
+)
+
+gc()
+```
+
+```{r popsize_lb_1_1_ps_ph}
+popsize_lb_1_1_ps_ph <- gps(x = sim_lb_1_1_ps_ph,
+                      workers = nworkers)
+
+saveRDS(object = popsize_lb_1_1_ps_ph,
+        file = "output/pva_popmat/popsize_lb_1_1_ps_ph")
+```
+
+```{r spop_lb_1_1_ps_ph}
+spop_lb_1_1_ps_ph <- psr(popmat = popsize_lb_1_1_ps_ph)
+
+pdf(file = "output/plots/pop/spop_lb_1_1_ps_ph.pdf",
+    width = width.pdf,
+    height = height.pdf)
+psr(popmat = popsize_lb_1_1_ps_ph)
+dev.off()
+
+spop_lb_1_1_ps_ph
+```
+
+```{r tpop_lb_1_1_ps_ph}
+tpop_lb_1_1_ps_ph <- psr(popmat = popsize_lb_1_1_ps_ph, stages = 0)
+
+pdf(file = "output/plots/pop/tpop_lb_1_1_ps_ph.pdf",
+    width = width.pdf,
+    height = height.pdf)
+psr(popmat = popsize_lb_1_1_ps_ph, stages = 0)
+dev.off()
+
+tpop_lb_1_1_ps_ph
 ```

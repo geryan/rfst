@@ -85,7 +85,7 @@ psr <- function(
                     col = grDevices::grey(0.4))
     
     if (emp) {
-      graphics::abline(h = round(mean(apply(pop, 3, function(x) min(rowSums(x)))), 0), lwd = 1, lty = 2)
+      graphics::abline(h = round(min(apply(pop, 3, function(x) min(rowSums(x)))), 0), lwd = 1, lty = 2)
     }
     
   }

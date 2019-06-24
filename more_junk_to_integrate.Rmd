@@ -1,0 +1,618 @@
+
+```{r}
+res <- 600
+width.png <- 3200
+height.png <- 2000
+```
+
+```{r}
+png(file = "output/plots/.png",
+    width = width.png,
+    height = height.png, res = res)
+
+
+dev.off()
+```
+
+
+
+```{r spop_gg_1_1}
+spop_gg_1_1 <- psr(popmat = popsize_gg_1_1)
+
+png(file = "output/plots/pop/spop_gg_1_1.png",
+    width = width.png,
+    height = height.png, res = res)
+psr(popmat = popsize_gg_1_1)
+dev.off()
+
+spop_gg_1_1
+```
+
+```{r tpop_gg_1_1}
+tpop_gg_1_1 <- psr(popmat = popsize_gg_1_1, stages = 0)
+
+png(file = "output/plots/pop/tpop_gg_1_1.png",
+    width = width.png,
+    height = height.png, res = res)
+psr(popmat = popsize_gg_1_1, stages = 0)
+dev.off()
+
+tpop_gg_1_1
+```
+
+
+
+```{r spop_gg_1_1_ps}
+spop_gg_1_1_ps <- psr(popmat = popsize_gg_1_1_ps)
+
+png(file = "output/plots/pop/spop_gg_1_1_ps.png",
+    width = width.png,
+    height = height.png, res = res)
+psr(popmat = popsize_gg_1_1_ps)
+dev.off()
+
+spop_gg_1_1_ps
+```
+
+```{r tpop_gg_1_1_ps}
+tpop_gg_1_1_ps <- psr(popmat = popsize_gg_1_1_ps, stages = 0)
+
+png(file = "output/plots/pop/tpop_gg_1_1_ps.png",
+    width = width.png,
+    height = height.png, res = res)
+psr(popmat = popsize_gg_1_1_ps, stages = 0)
+dev.off()
+
+tpop_gg_1_1_ps
+```
+
+
+```{r spop_gg_1_4}
+spop_gg_1_4 <- psr(popmat = popsize_gg_1_4)
+
+png(file = "output/plots/pop/spop_gg_1_4.png",
+    width = width.png,
+    height = height.png, res = res)
+psr(popmat = popsize_gg_1_4)
+dev.off()
+
+spop_gg_1_4
+```
+
+```{r tpop_gg_1_4}
+tpop_gg_1_4 <- psr(popmat = popsize_gg_1_4, stages = 0)
+
+png(file = "output/plots/pop/tpop_gg_1_4.png",
+    width = width.png,
+    height = height.png, res = res)
+psr(popmat = popsize_gg_1_4, stages = 0)
+dev.off()
+
+tpop_gg_1_4
+```
+
+
+```{r spop_gg_1_4_ps}
+spop_gg_1_4_ps <- psr(popmat = popsize_gg_1_4_ps)
+
+png(file = "output/plots/pop/spop_gg_1_4_ps.png",
+    width = width.png,
+    height = height.png, res = res)
+psr(popmat = popsize_gg_1_4_ps)
+dev.off()
+
+spop_gg_1_4_ps
+```
+
+```{r tpop_gg_1_4_ps}
+tpop_gg_1_4_ps <- psr(popmat = popsize_gg_1_4_ps, stages = 0)
+
+png(file = "output/plots/pop/tpop_gg_1_4_ps.png",
+    width = width.png,
+    height = height.png, res = res)
+psr(popmat = popsize_gg_1_4_ps, stages = 0)
+dev.off()
+
+tpop_gg_1_4_ps
+```
+
+
+```{r spop_gg_2_1}
+spop_gg_2_1 <- psr(popmat = popsize_gg_2_1)
+
+png(file = "output/plots/pop/spop_gg_2_1.png",
+    width = width.png,
+    height = height.png, res = res)
+psr(popmat = popsize_gg_2_1)
+dev.off()
+
+spop_gg_2_1
+```
+
+```{r tpop_gg_2_1}
+tpop_gg_2_1 <- psr(popmat = popsize_gg_2_1, stages = 0)
+
+png(file = "output/plots/pop/tpop_gg_2_1.png",
+    width = width.png,
+    height = height.png, res = res)
+psr(popmat = popsize_gg_2_1, stages = 0)
+dev.off()
+
+tpop_gg_2_1
+```
+
+
+
+```{r spop_gg_2_1_ps}
+spop_gg_2_1_ps <- psr(popmat = popsize_gg_2_1_ps)
+
+png(file = "output/plots/pop/spop_gg_2_1_ps.png",
+    width = width.png,
+    height = height.png, res = res)
+psr(popmat = popsize_gg_2_1_ps)
+dev.off()
+
+spop_gg_2_1_ps
+```
+
+```{r tpop_gg_2_1_ps}
+tpop_gg_2_1_ps <- psr(popmat = popsize_gg_2_1_ps, stages = 0)
+
+png(file = "output/plots/pop/spop_gg_2_1_ps.png",
+    width = width.png,
+    height = height.png, res = res)
+psr(popmat = popsize_gg_2_1_ps, stages = 0)
+dev.off()
+
+tpop_gg_2_1_ps
+```
+
+```{r spop_gg_3_1}
+spop_gg_3_1 <- psr(popmat = popsize_gg_3_1)
+
+png(file = "output/plots/pop/spop_gg_3_1.png",
+    width = width.png,
+    height = height.png, res = res)
+psr(popmat = popsize_gg_3_1)
+dev.off()
+
+spop_gg_3_1
+```
+
+```{r tpop_gg_3_1}
+tpop_gg_3_1 <- psr(popmat = popsize_gg_3_1, stages = 0)
+
+png(file = "output/plots/pop/tpop_gg_3_1.png",
+    width = width.png,
+    height = height.png, res = res)
+psr(popmat = popsize_gg_3_1, stages = 0)
+dev.off()
+
+tpop_gg_3_1
+```
+
+
+```{r spop_gg_3_1_ps}
+spop_gg_3_1_ps <- psr(popmat = popsize_gg_3_1_ps)
+
+png(file = "output/plots/pop/spop_gg_3_1_ps.png",
+    width = width.png,
+    height = height.png, res = res)
+psr(popmat = popsize_gg_3_1_ps)
+dev.off()
+
+spop_gg_3_1_ps
+```
+
+```{r tpop_gg_3_1_ps}
+tpop_gg_3_1_ps <- psr(popmat = popsize_gg_3_1_ps, stages = 0)
+
+png(file = "output/plots/pop/tpop_gg_3_1_ps.png",
+    width = width.png,
+    height = height.png, res = res)
+psr(popmat = popsize_gg_3_1_ps, stages = 0)
+dev.off()
+
+tpop_gg_3_1_ps
+```
+
+
+
+```{r spop_lb_1_1}
+spop_lb_1_1 <- psr(popmat = popsize_lb_1_1)
+
+png(file = "output/plots/pop/spop_lb_1_1.png",
+    width = width.png,
+    height = height.png, res = res)
+psr(popmat = popsize_lb_1_1)
+dev.off()
+
+spop_lb_1_1
+```
+
+```{r tpop_lb_1_1}
+tpop_lb_1_1 <- psr(popmat = popsize_lb_1_1, stages = 0)
+
+png(file = "output/plots/pop/tpop_lb_1_1.png",
+    width = width.png,
+    height = height.png, res = res)
+psr(popmat = popsize_lb_1_1, stages = 0)
+dev.off()
+
+tpop_lb_1_1
+```
+
+
+```{r spop_lb_1_1_ps}
+spop_lb_1_1_ps <- psr(popmat = popsize_lb_1_1_ps)
+
+png(file = "output/plots/pop/spop_lb_1_1_ps.png",
+    width = width.png,
+    height = height.png, res = res)
+psr(popmat = popsize_lb_1_1_ps)
+dev.off()
+
+spop_lb_1_1_ps
+```
+
+```{r tpop_lb_1_1_ps}
+tpop_lb_1_1_ps <- psr(popmat = popsize_lb_1_1_ps, stages = 0)
+
+png(file = "output/plots/pop/tpop_lb_1_1_ps.png",
+    width = width.png,
+    height = height.png, res = res)
+psr(popmat = popsize_lb_1_1_ps, stages = 0)
+dev.off()
+
+tpop_lb_1_1_ps
+```
+
+
+```{r spop_lb_1_1_ps}
+spop_lb_1_1_ps <- psr(popmat = popsize_lb_1_1_ps)
+
+png(file = "output/plots/pop/spop_lb_1_1_ps.png",
+    width = width.png,
+    height = height.png, res = res)
+psr(popmat = popsize_lb_1_1_ps)
+dev.off()
+
+spop_lb_1_1_ps
+```
+
+```{r tpop_lb_1_1_ps}
+tpop_lb_1_1_ps <- psr(popmat = popsize_lb_1_1_ps, stages = 0)
+
+png(file = "output/plots/pop/tpop_lb_1_1_ps.png",
+    width = width.png,
+    height = height.png, res = res)
+psr(popmat = popsize_lb_1_1_ps, stages = 0)
+dev.off()
+
+tpop_lb_1_1_ps
+```
+
+```{r spop_lb_1_3_ps}
+spop_lb_1_3_ps <- psr(popmat = popsize_lb_1_3_ps)
+
+png(file = "output/plots/pop/spop_lb_1_3_ps.png",
+    width = width.png,
+    height = height.png, res = res)
+psr(popmat = popsize_lb_1_3_ps)
+dev.off()
+
+spop_lb_1_3_ps
+```
+
+```{r tpop_lb_1_3_ps}
+tpop_lb_1_3_ps <- psr(popmat = popsize_lb_1_3_ps, stages = 0)
+
+png(file = "output/plots/pop/tpop_lb_1_3_ps.png",
+    width = width.png,
+    height = height.png, res = res)
+psr(popmat = popsize_lb_1_3_ps, stages = 0)
+dev.off()
+
+tpop_lb_1_3_ps
+```
+
+
+```{r spop_lb_2_1}
+spop_lb_2_1 <- psr(popmat = popsize_lb_2_1)
+
+png(file = "output/plots/pop/spop_lb_2_1.png",
+    width = width.png,
+    height = height.png, res = res)
+psr(popmat = popsize_lb_2_1)
+dev.off()
+
+spop_lb_2_1
+```
+
+```{r tpop_lb_2_1}
+tpop_lb_2_1 <- psr(popmat = popsize_lb_2_1, stages = 0)
+
+png(file = "output/plots/pop/tpop_lb_2_1.png",
+    width = width.png,
+    height = height.png, res = res)
+psr(popmat = popsize_lb_2_1, stages = 0)
+dev.off()
+
+tpop_lb_2_1
+```
+
+
+
+```{r spop_lb_2_1_ps}
+spop_lb_2_1_ps <- psr(popmat = popsize_lb_2_1_ps)
+
+png(file = "output/plots/pop/spop_lb_2_1_ps.png",
+    width = width.png,
+    height = height.png, res = res)
+psr(popmat = popsize_lb_2_1_ps)
+dev.off()
+
+spop_lb_2_1_ps
+```
+
+```{r tpop_lb_2_1_ps}
+tpop_lb_2_1_ps <- psr(popmat = popsize_lb_2_1_ps, stages = 0)
+
+png(file = "output/plots/pop/tpop_lb_2_1_ps.png",
+    width = width.png,
+    height = height.png, res = res)
+psr(popmat = popsize_lb_2_1_ps, stages = 0)
+dev.off()
+
+tpop_lb_2_1_ps
+```
+
+
+```{r spop_lb_3_1}
+spop_lb_3_1 <- psr(popmat = popsize_lb_3_1)
+
+png(file = "output/plots/pop/spop_lb_3_1.png",
+    width = width.png,
+    height = height.png, res = res)
+psr(popmat = popsize_lb_3_1)
+dev.off()
+
+spop_lb_3_1
+```
+
+```{r tpop_lb_3_1}
+tpop_lb_3_1 <- psr(popmat = popsize_lb_3_1, stages = 0)
+
+png(file = "output/plots/pop/tpop_lb_3_1.png",
+    width = width.png,
+    height = height.png, res = res)
+psr(popmat = popsize_lb_3_1, stages = 0)
+dev.off()
+
+tpop_lb_3_1
+```
+
+
+```{r spop_lb_3_1_ps}
+spop_lb_3_1_ps <- psr(popmat = popsize_lb_3_1_ps)
+
+png(file = "output/plots/pop/spop_lb_3_1_ps.png",
+    width = width.png,
+    height = height.png, res = res)
+psr(popmat = popsize_lb_3_1_ps)
+dev.off()
+
+spop_lb_3_1_ps
+```
+
+```{r tpop_lb_3_1_ps}
+tpop_lb_3_1_ps <- psr(popmat = popsize_lb_3_1_ps, stages = 0)
+
+png(file = "output/plots/pop/tpop_lb_3_1_ps.png",
+    width = width.png,
+    height = height.png, res = res)
+psr(popmat = popsize_lb_3_1_ps, stages = 0)
+dev.off()
+
+tpop_lb_3_1_ps
+```
+
+```{r spop_gg_1_1_fl}
+spop_gg_1_1_fl <- psr(popmat = popsize_gg_1_1_fl)
+
+png(file = "output/plots/pop/spop_gg_1_1_fl.png",
+    width = width.png,
+    height = height.png, res = res)
+psr(popmat = popsize_gg_1_1_fl)
+dev.off()
+
+spop_gg_1_1_fl
+```
+
+```{r tpop_gg_1_1_fl}
+tpop_gg_1_1_fl <- psr(popmat = popsize_gg_1_1_fl, stages = 0)
+
+png(file = "output/plots/pop/tpop_gg_1_1_fl.png",
+    width = width.png,
+    height = height.png, res = res)
+psr(popmat = popsize_gg_1_1_fl, stages = 0)
+dev.off()
+
+tpop_gg_1_1_fl
+```
+
+
+```{r spop_gg_1_1_ps_fl}
+spop_gg_1_1_ps_fl <- psr(popmat = popsize_gg_1_1_ps_fl)
+
+png(file = "output/plots/pop/spop_gg_1_1_ps_fl.png",
+    width = width.png,
+    height = height.png, res = res)
+psr(popmat = popsize_gg_1_1_ps_fl)
+dev.off()
+
+spop_gg_1_1_ps_fl
+```
+
+```{r tpop_gg_1_1_ps_fl}
+tpop_gg_1_1_ps_fl <- psr(popmat = popsize_gg_1_1_ps_fl, stages = 0)
+
+png(file = "output/plots/pop/tpop_gg_1_1_ps_fl.png",
+    width = width.png,
+    height = height.png, res = res)
+psr(popmat = popsize_gg_1_1_ps_fl, stages = 0)
+dev.off()
+
+tpop_gg_1_1_ps_fl
+```
+
+
+```{r spop_gg_1_1_dl}
+spop_gg_1_1_dl <- psr(popmat = popsize_gg_1_1_dl)
+
+png(file = "output/plots/pop/spop_gg_1_1_dl.png",
+    width = width.png,
+    height = height.png, res = res)
+psr(popmat = popsize_gg_1_1_dl)
+dev.off()
+
+spop_gg_1_1_dl
+```
+
+```{r tpop_gg_1_1_dl}
+tpop_gg_1_1_dl <- psr(popmat = popsize_gg_1_1_dl, stages = 0)
+
+png(file = "output/plots/pop/tpop_gg_1_1_dl.png",
+    width = width.png,
+    height = height.png, res = res)
+psr(popmat = popsize_gg_1_1_dl, stages = 0)
+dev.off()
+
+tpop_gg_1_1_dl
+```
+
+
+
+```{r spop_gg_1_1_ps_dl}
+spop_gg_1_1_ps_dl <- psr(popmat = popsize_gg_1_1_ps_dl)
+
+png(file = "output/plots/pop/spop_gg_1_1_ps_dl.png",
+    width = width.png,
+    height = height.png, res = res)
+psr(popmat = popsize_gg_1_1_ps_dl)
+dev.off()
+
+spop_gg_1_1_ps_dl
+```
+
+```{r tpop_gg_1_1_ps_dl}
+tpop_gg_1_1_ps_dl <- psr(popmat = popsize_gg_1_1_ps_dl, stages = 0)
+
+png(file = "output/plots/pop/tpop_gg_1_1_ps_dl.png",
+    width = width.png,
+    height = height.png, res = res)
+psr(popmat = popsize_gg_1_1_ps_dl, stages = 0)
+dev.off()
+
+tpop_gg_1_1_ps_dl
+```
+
+
+```{r spop_lb_1_1_pl}
+spop_lb_1_1_pl <- psr(popmat = popsize_lb_1_1_pl)
+
+png(file = "output/plots/pop/spop_lb_1_1_pl.png",
+    width = width.png,
+    height = height.png, res = res)
+psr(popmat = popsize_lb_1_1_pl)
+dev.off()
+
+spop_lb_1_1_pl
+```
+
+```{r tpop_lb_1_1_pl}
+tpop_lb_1_1_pl <- psr(popmat = popsize_lb_1_1_pl, stages = 0)
+
+png(file = "output/plots/pop/tpop_lb_1_1_pl.png",
+    width = width.png,
+    height = height.png, res = res)
+psr(popmat = popsize_lb_1_1_pl, stages = 0)
+dev.off()
+
+tpop_lb_1_1_pl
+```
+
+
+```{r spop_lb_1_1_ps_pl}
+spop_lb_1_1_ps_pl <- psr(popmat = popsize_lb_1_1_ps_pl)
+
+png(file = "output/plots/pop/spop_lb_1_1_ps_pl.png",
+    width = width.png,
+    height = height.png, res = res)
+psr(popmat = popsize_lb_1_1_ps_pl)
+dev.off()
+
+spop_lb_1_1_ps_pl
+```
+
+```{r tpop_lb_1_1_ps_pl}
+tpop_lb_1_1_ps_pl <- psr(popmat = popsize_lb_1_1_ps_pl, stages = 0)
+
+png(file = "output/plots/pop/tpop_lb_1_1_ps_pl.png",
+    width = width.png,
+    height = height.png, res = res)
+psr(popmat = popsize_lb_1_1_ps_pl, stages = 0)
+dev.off()
+
+tpop_lb_1_1_ps_pl
+```
+
+
+```{r spop_lb_1_1_ph}
+spop_lb_1_1_ph <- psr(popmat = popsize_lb_1_1_ph)
+
+png(file = "output/plots/pop/spop_lb_1_1_ph.png",
+    width = width.png,
+    height = height.png, res = res)
+psr(popmat = popsize_lb_1_1_ph)
+dev.off()
+
+spop_lb_1_1_ph
+```
+
+```{r tpop_lb_1_1_ph}
+tpop_lb_1_1_ph <- psr(popmat = popsize_lb_1_1_ph, stages = 0)
+
+png(file = "output/plots/pop/tpop_lb_1_1_ph.png",
+    width = width.png,
+    height = height.png, res = res)
+psr(popmat = popsize_lb_1_1_ph, stages = 0)
+dev.off()
+
+tpop_lb_1_1_ph
+```
+
+
+```{r spop_lb_1_1_ps_ph}
+spop_lb_1_1_ps_ph <- psr(popmat = popsize_lb_1_1_ps_ph)
+
+png(file = "output/plots/pop/spop_lb_1_1_ps_ph.png",
+    width = width.png,
+    height = height.png, res = res)
+psr(popmat = popsize_lb_1_1_ps_ph)
+dev.off()
+
+spop_lb_1_1_ps_ph
+```
+
+```{r tpop_lb_1_1_ps_ph}
+tpop_lb_1_1_ps_ph <- pssr(popmat = popsize_lb_1_1_ps_ph, stages = 0)
+
+png(file = "output/plots/pop/tpop_lb_1_1_ps_ph.png",
+    width = width.png,
+    height = height.png, res = res)
+psr(popmat = popsize_lb_1_1_ps_ph, stages = 0)
+dev.off()
+
+tpop_lb_1_1_ps_ph
+```
