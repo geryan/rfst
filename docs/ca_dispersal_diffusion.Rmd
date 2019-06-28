@@ -1,0 +1,52 @@
+---
+title: "Cellular automation dispersal diffusion"
+output: html_notebook
+---
+
+
+```{r}
+source(file = "R/functions/cadispersal.R")
+```
+
+```{r}
+library(dplyr)
+library(tibble)
+library(purrr)
+```
+
+```{r}
+dat <- tibble(p = rep.int(seq(from = 0.05, to = 0.95, by = 0.05), times = 100000)) %>%
+  mutate(cad = map(.x = p,
+                   .f = cadispersal)) %>%
+  mutate(n = map(.x = cad,
+                 .f = ~ .x$n),
+         n = unlist(n),
+         x = map(.x = cad,
+                 .f = ~ .x$x),
+         x = unlist(x),
+         y = map(.x = cad,
+                 .f = ~ .x$y),
+         y = unlist(y),
+         d = map(.x = cad,
+                 .f = ~ .x$d),
+         d = unlist(d))
+
+dat
+```
+
+```{r}
+ggplot(dat) + 
+  geom_bin2d(aes(x = x, y = y), binwidth = c(1,1)) +
+  facet_wrap(~ p, scales = "free") +
+  scale_fill_viridis_c()
+```
+```{r}
+ggplot(dat) +
+  geom_histogram(aes(d), binwidth = 1) +
+  facet_wrap(~p, scales = "free")
+```
+```{r}
+ggplot(dat) +
+  geom_histogram(aes(n), binwidth = 1) +
+  facet_wrap(~p, scales = "free")
+```

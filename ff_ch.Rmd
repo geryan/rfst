@@ -2706,6 +2706,17 @@ cc_gg_1_1_ps <- rst.op(input1 = s1_p_gg_1_ps[[1]],
                     size = 3) %T>%
   plot
 ```
+
+```{r}
+png(file = "output/plots/cc_gg_1_1_ps.png",
+    width = width.png,
+    height = height.png, res = res)
+
+plot(cc_gg_1_1_ps)
+dev.off()
+```
+
+
 ##### Model 4
 ```{r cc_gg_1_4}
 cc_gg_1_4 <- rst.op(input1 = s1_p_gg_4[[1]],

@@ -114,6 +114,51 @@ saveGIF({
 }, interval = 0.2, movie.name = "pred_lb_s3_1ps.gif")
 
 
+saveGIF({
+  for (i in 1:51){
+    plot(clim_vars_4.5[[i]][[1]], zlim = c(0,100))
+    title(main = paste0("Year ", i-1))
+  }
+}, interval = 0.2, movie.name = "prec01.gif")
+
+p0_gg_1_1_ps_1km <- aggregate(p0_gg_1_1_ps, fact = 10, fun = sum, na.rm = TRUE)
+
+p0_gg_1_1_ps_1km_all <- p0_gg_1_1_ps_1km[[1]] +p0_gg_1_1_ps_1km[[2]] + p0_gg_1_1_ps_1km[[3]]
+
+png(file = "output/plots/p0_gg_1_1_ps_1km.png",
+    width = width.png,
+    height = height.png, res = res)
+plot(p0_gg_1_1_ps_1km)
+
+dev.off()
+
+png(file = "output/plots/p0_gg_1_1_ps_1km_all.png",
+    width = width.png,
+    height = height.png, res = res)
+plot(p0_gg_1_1_ps_1km_all, zlim = c(0,30))
+
+dev.off()
+
+p51x <- aggregate(sim_gg_1_1_ps[[1]][[50]]$population, fact = 10, fun = sum, na.rm = TRUE)
+
+
+p51xall <- p51x[[1]] + p51x[[2]] + p51x[[3]]
+
+
+png(file = "output/plots/p51x.png",
+    width = width.png,
+    height = height.png, res = res)
+plot(p51x)
+
+dev.off()
+
+png(file = "output/plots/p51xall.png",
+    width = width.png,
+    height = height.png, res = res)
+
+plot(p51xall, zlim = c(0,30))
+dev.off()
+
 ###
 pop0_lb_1_1 <- colSums(getValues(p0_lb_1_1), na.rm = TRUE)
 pop0_lb_1_1_ps <- colSums(getValues(p0_lb_1_1_ps), na.rm = TRUE)
