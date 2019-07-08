@@ -55,7 +55,7 @@ arbmammch <- arbmamm[ch_rfa,]
 
 
 ```{r}
-buff_gg_am <- st_buffer(ggpach %>% dplyr::select(-date) %>% filter(PA == 1), 1000)
+buff_gg_am <- st_buffer(ggpach %>% dplyr::select(-date) %>% filter(PA == 1), 500)
 
 aminbuff <- arbmammch[buff_gg_am,] %>%
   mutate(inbuff = 1)

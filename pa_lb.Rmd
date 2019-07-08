@@ -17,3 +17,65 @@ lbch <- lbch[!duplicated(lbch),]
 ```
 
 
+```{r}
+vba_petaurus <- proc.vba2(x = "data/tabular/vba_petaurus_all_20190703.csv", project.crs = ch_proj)
+vba_pseudocheirus <- proc.vba2(x = "data/tabular/vba_pseudocheirus_all_20190703.csv", project.crs = ch_proj)
+vba_tcunninghami <- proc.vba2(x = "data/tabular/vba_trichosuruscunninghami_all_20190703.csv", project.crs = ch_proj)
+vba_tvulpecula <- proc.vba2(x = "data/tabular/vba_trichosurusvulpecula_all_20190703.csv", project.crs = ch_proj)
+
+am <- rbind(vba_petaurus, vba_pseudocheirus, vba_tcunninghami, vba_tvulpecula)
+
+am <- am[!duplicated(am),]
+
+amch <- am[ch_rfa,]
+```
+
+
+```{r}
+buff_lbam <- st_buffer(lbch %>% dplyr::select(-date) %>% filter(PA == 1), 1000)
+
+
+amlb_in_buffer_lb <- amch[buff_lbam, ] %>%
+  mutate(inbuff =1)
+
+am_out_buffer_lb <- st_join(amch, amlb_in_buffer_lb) %>%
+  filter(is.na(inbuff)) %>%
+  dplyr::select(-inbuff) %>%
+  mutate(PA = PA.x,
+         date = date.x) %>%
+  dplyr::select(PA, date, geometry)
+
+am_out_buffer_lb
+```
+
+
+
+
+```{r}
+ggplot() +
+  geom_sf(data = buff_lbam, colour = "black") +
+  geom_sf(data = lbch, aes(colour = as.factor(PA)), size = 0.5) +
+  geom_sf(data = amch, colour = "yellow", shape = 2, size = 0.5)
+  
+```
+```{r}
+#plot(buff_lbam)
+#plot(amlb_in_buffer, add = TRUE)
+
+ggplot() + 
+  geom_sf(data = buff_lbam, aes(colour = PA)) +
+  geom_sf(data = amlb_in_buffer, aes(colour = PA))
+```
+
+
+```{r}
+lbamch_unfiltered <- rbind(lbch, am_out_buffer_lb)
+```
+
+
+```{r}
+samplerst <- aggregate(x = ch_mask, fact = 10, na.rm = TRUE)
+
+samplegrid <- st_make_grid(ch_rfa, cellsize = 1000)
+```
+

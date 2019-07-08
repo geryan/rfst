@@ -1290,6 +1290,17 @@ evtr ~ evapotranspiration
 
 ### Current climate
 From WorldClim
+
+
+
+
+**NEED TO ENSURE PREDICTIONS FROM CLIMATE SCENARIOS MATCH WORLDCLIM SCALE (PROB NEED TO SCALE DOWN TEMPERATURES)**
+
+
+
+
+
+
 #### Max temperature in January
 ```{r tmax01}
 tmax01 <- getData(name = "worldclim", var = "tmax", path = paste0(proj_path, "/output/wc_30sec/tmax/"), res = 0.5, lat = -60, lon = 120)[[1]] %>%
