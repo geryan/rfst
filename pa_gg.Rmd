@@ -1,0 +1,261 @@
+---
+title: "PA data exploration"
+output: html_notebook
+---
+
+
+
+```{r gg_ari}
+gg_ari <- read_excel(path = "data/tabular/BoA_SB_Combined_VBA_upload_v4.xls") %>%
+  dplyr::select(-starts_with("leave")) %>%
+  rename("lon" = `X-coordinate (easting or longitude)`, "lat" = `Y-coordinate (northing or latitude)`, date = `Start date`) %>%
+  fill(lon, lat, .direction = "down") %>%
+  fill(date, .direction = "down") %>%
+  filter(`Taxon Name` == "Misc Target taxa not found") %>%
+  dplyr::select(date, lon, lat) %>%
+  mutate(date = as.Date(date),
+         PA = 0) %>%
+  st_as_sf(coords = c("lon", "lat"), crs = st_crs(28355)) %>%
+  st_transform(crs = st_crs(ch_rst)) %>%
+  dplyr::select(PA, date, geometry)
+
+gg_ari
+```
+
+
+
+```{r}
+gv <- proc.vba("data/tabular/vba_gg_all_20190703.csv", project.crs = ch_proj)
+```
+
+```{r}
+ggpa <- gv %>%
+  rbind(gg_ari) %>%
+  dplyr::arrange(date)
+
+ggpach <- ggpa[ch_rfa, ]
+
+ggpach <- ggpach[!duplicated(ggpach),]
+
+ggpach
+```
+
+```{r}
+vba_petaurus <- proc.vba2(x = "data/tabular/vba_petaurus_all_20190703.csv", project.crs = ch_proj)
+vba_pseudocheirus <- proc.vba2(x = "data/tabular/vba_pseudocheirus_all_20190703.csv", project.crs = ch_proj)
+vba_tcunninghami <- proc.vba2(x = "data/tabular/vba_trichosuruscunninghami_all_20190703.csv", project.crs = ch_proj)
+vba_tvulpecula <- proc.vba2(x = "data/tabular/vba_trichosurusvulpecula_all_20190703.csv", project.crs = ch_proj)
+
+arbmamm <- rbind(vba_petaurus, vba_pseudocheirus, vba_tcunninghami, vba_tvulpecula)
+
+arbmamm <- arbmamm[!duplicated(arbmamm),]
+
+arbmammch <- arbmamm[ch_rfa,]
+```
+
+
+```{r}
+buff_gg_am <- st_buffer(ggpach %>% dplyr::select(-date) %>% filter(PA == 1), 1000)
+
+aminbuff <- arbmammch[buff_gg_am,] %>%
+  mutate(inbuff = 1)
+
+```
+```{r}
+amnobuff <- st_join(arbmammch, aminbuff) %>%
+  filter(is.na(inbuff)) %>%
+  dplyr::select(-inbuff) %>%
+  mutate(PA = PA.x,
+         date = date.x) %>%
+  dplyr::select(PA, date, geometry)
+```
+
+```{r}
+ggpacharb <- rbind(ggpach, amnobuff)
+```
+
+```{r}
+st_write(ggpacharb, "output/test/gg_pa_ch.shp", delete_layer = TRUE)
+```
+
+```{r}
+st_write(obj = ggpacharb, dsn = "output/shapefiles/pa/ch/gg_pa_ch_arbmammbackground.shp", delete_layer = TRUE)
+```
+
+
+```{r}
+aa <- pg.pa(ggpacharb, ch_rfa)
+
+aa
+```
+
+
+```{r}
+samplerst <- aggregate(x = ch_mask, fact = 10, na.rm = TRUE)
+
+samplegrid <- st_make_grid(ch_rfa, cellsize = 1000)
+```
+
+```{r}
+ggpacharb0 <- ggpacharb %>% filter(PA == 0)
+ggpacharb1 <- ggpacharb %>% filter(PA == 1)
+
+pawin0 <- t(st_within(ggpacharb0, samplegrid))
+pawin1 <- t(st_within(ggpacharb1, samplegrid))
+```
+```{r}
+pw0 <- numeric(length(samplegrid))
+pw1 <- numeric(length(samplegrid))
+
+for(i in 1:length(samplegrid)){
+  pw0[i] <- ifelse(is_empty(pawin0[[i]]), 0, ifelse(length(pawin0[[i]]) == 1, pawin0[[i]][1], sample(pawin0[[i]], 1)))
+  pw1[i] <- ifelse(is_empty(pawin1[[i]]), 0, ifelse(length(pawin1[[i]]) == 1, pawin1[[i]][1], sample(pawin1[[i]], 1)))
+}
+
+sp0 <- ggpacharb0[pw0,]
+sp1 <- ggpacharb1[pw1,]
+```
+```{r}
+ggclean <- rbind(sp0, sp1)
+```
+```{r}
+st_write(obj = ggclean, dsn = "output/shapefiles/gg_arb_clean.shp", delete_layer = TRUE)
+```
+
+
+```{r}
+spts <- numeric(length = length(polys))
+
+pwin <- t(st_within(pts, polys))
+
+for(i in 1:length(polys)){
+  
+  spts[i] <- ifelse(is_empty())
+}
+
+
+nspts <- pts[spts]
+
+
+plot(polys)
+plot(pts, add = TRUE)
+plot(nspts, add = TRUE, col = "red", pch = 19)
+
+
+```
+
+
+```{r}
+plot(lv2[[9]][["max_age"]])
+```
+```{r}
+plot(lv2[[10]][["max_age"]])
+```
+
+
+```{r}
+plot(lv2[[11]][["max_age"]])
+```
+
+
+
+```{r}
+lv2 <- get.landis.vars2(
+  scn_path = "~/s1/",
+  proj_path = proj_path,
+  out_path = "/output/test/",
+  scn_id = "s1",
+  proj_mask = ch_mask,
+  timesteps = 50,
+  cores = 20
+  )
+```
+
+```{r}
+saveGIF({
+  for (i in 1:51){
+    plot(lv2[[i]][[60]], zlim = c(0,350))
+    title(main = paste0("Year ", i-1))
+  }
+}, interval = 0.2, movie.name = "maxage.gif")
+```
+
+```{r}
+vlv2 <- lv2 %>%
+  mapply(clim_vars_4.5,
+         ari_v,
+         sapply(s1_fire_vars, "[[", "tsf"),
+         sapply(s1_logging_vars, "[[", "tsl"),
+         FUN = stack)
+
+```
+
+```{r}
+ggmd <- vlv2[[1]] %>%
+  raster::extract(y = st_coordinates(ggpacharb)) %>%
+  cbind("PA" = ggpacharb$PA, .) %>%
+  as.data.frame %>%
+  cbind("date" = ggpacharb$date, .) %>%
+  na.omit
+
+```
+
+
+```{r}
+ggmdtruetsf <- ggmd %>%
+  mutate(nd = as.numeric(ymd("2019-01-01") - date)/365) %>%
+  mutate(tsf = tsf - nd) %>%
+  filter(tsf > 0)
+```
+
+```{r}
+ggbrt <- gbm.step(data = ggmdtruetsf,
+                     gbm.x = c(8, 11, 12, 13, 65:73),
+                     gbm.y = 2,
+                     family = "bernoulli",
+                     tree.complexity = 5,
+                    learning.rate = 0.01,
+                    step.size = 1,
+                    bag.fraction = 0.5,
+                    prev.stratify = FALSE,
+                    verbose = FALSE,
+                    max.trees = 2000)
+```
+
+```{r}
+summary(ggbrt)
+```
+```{r}
+gbm.plot(ggbrt)
+```
+  
+```{r}
+ip_gg <- brtpredict(variables = vlv2,
+                      model = ggbrt,
+                      scn_id = "ip",
+                      varset = "test",
+                      species = "gg")
+
+plot(ip_gg)
+```
+  
+```{r}
+predgg <- brtpredict(variables = vlv2,
+                      model = ggbrt,
+                      scn_id = "test",
+                      varset = "test",
+                      species = "gg",
+                      initial = FALSE,
+                      ncores = 20)
+```
+
+```{r}
+saveGIF({
+  for (i in 1:51){
+    plot(predgg[[i]], zlim = c(0,01))
+    title(main = paste0("Year ", i-1))
+  }
+}, interval = 0.2, movie.name = "predgg.gif")
+```
+  
+  

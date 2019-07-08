@@ -1,0 +1,19 @@
+---
+title: "LB SDM self-contained"
+output: html_notebook
+---
+
+
+```{r}
+lbv <- proc.vba("data/tabular/vba_lb_all_20190703.csv", project.crs = ch_proj) %>%
+  arrange(date)
+
+
+lbch <- lbv[ch_rfa, ]
+
+lbch <- lbch[!duplicated(lbch),]
+
+
+```
+
+

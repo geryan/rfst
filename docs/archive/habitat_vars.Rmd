@@ -100,6 +100,9 @@ for(i in 1:length(spp)){
   
 }
 ```
+```{r}
+1
+```
 
 
 **need to up update species list in next run**
@@ -133,10 +136,24 @@ for(i in 1:length(spp)){
 ```{r max age}
 max_age <- ch_mask
 
-max_age[] <- paste0(cspath, "AGE-MAX-0.img") %>%
+max_age[] <- paste0("~/s1/output/cohort-stats/", "AGE-MAX-0.img") %>%
   raster %>%
   getValues
 ```
+
+```{r}
+ma <- rst.op(input1 = max_age,
+                      op = "writeonly",
+                      proj_mask = ch_mask,
+                      filename = sprintf("%s/%s/%s_max_age_%03d.grd",
+                                  proj_path,
+                                  "/output/habitat_vars/",
+                                  "s1",
+                                  0),
+                      layernames = "max_age")
+```
+
+
 
 
 

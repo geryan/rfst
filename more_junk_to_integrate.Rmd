@@ -606,7 +606,7 @@ spop_lb_1_1_ps_ph
 ```
 
 ```{r tpop_lb_1_1_ps_ph}
-tpop_lb_1_1_ps_ph <- pssr(popmat = popsize_lb_1_1_ps_ph, stages = 0)
+tpop_lb_1_1_ps_ph <- psr(popmat = popsize_lb_1_1_ps_ph, stages = 0)
 
 png(file = "output/plots/pop/tpop_lb_1_1_ps_ph.png",
     width = width.png,

@@ -153,6 +153,7 @@ ch_rfa <- rfa[rfa$NAME== "CENTRAL HIGHLANDS",]
 ch_rfa
 ```
 
+
 ```{r plot ch_rfa}
 pg.sf(ch_rfa)
 ```
@@ -1254,9 +1255,9 @@ twi <- raster(x = "data/grids/Env_covariates_noClimate_VicGrid94/wetness_index_t
 
 #### Initial variables
 ```{r ari_iv}
-ari_iv <- stack(lvdaw, lvdma, lvdmi, lvdsw)
+ari_iv <- stack(lvdaw, lvdma, lvdmi, lvdsw, ahr, tho)
 
-names(ari_iv) <- c("lvdaw", "lvdma", "lvdmi", "lvdsw")
+names(ari_iv) <- c("lvdaw", "lvdma", "lvdmi", "lvdsw", "ahr", "tho")
 ```
 
 #### Future variables 
