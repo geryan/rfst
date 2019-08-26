@@ -31,7 +31,7 @@ library(readxl)
 library(ggplot2)
 library(lubridate)
 library(foreach)
-library(doMC)
+library(doMC) # doMC not currently working with R 3.6.1
 library(future)
 library(future.apply)
 library(tidyr)
