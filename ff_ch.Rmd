@@ -31,7 +31,7 @@ library(readxl)
 library(ggplot2)
 library(lubridate)
 library(foreach)
-library(doMC) # doMC not currently working with R 3.6.1
+library(doMC)
 library(future)
 library(future.apply)
 library(tidyr)
@@ -158,6 +158,13 @@ ch_rfa
 pg.sf(ch_rfa)
 ```
 
+
+*change mask to ch layer it's silly using this one*
+
+ch_rst <- raster(<path to existing landis eco rst>)
+mask <- ch_rst
+
+extent(mask) <- round(extent(ch_rst))
 
 ```{r ch_mask}
 ch_mask <- rasterize(ch_rfa, ch_rst, field = 1, filename = "./output/landscape_vars/ch_mask.grd", overwrite = TRUE) 
@@ -1272,7 +1279,7 @@ for(i in 1:(ntimesteps+1)){
 
 
 
-## Climactic data
+## Climatic data
 pc ~ percentage change
 ac ~ absolute change
 
@@ -2646,7 +2653,7 @@ s3_p_lb_1_ps <- stackbrtpred(scn_id = "s3", varset = "1_ps" , species = "lb")
 
 
 # Population viability analysis
-
+x
 ## Greater Glider
 
 ### PVA Input variables

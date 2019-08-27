@@ -1,4 +1,4 @@
-get.landis.vars <- function(
+get.landis.vars3 <- function(
   scn_path,
   proj_path,
   out_path = "/output/habitat_vars/",
@@ -40,7 +40,7 @@ get.landis.vars <- function(
   
   registerDoMC(cores = cores)
   
-  result <- foreach(j = 0:timesteps) %dopar% {
+  result <- foreach(j = 0:timesteps) %do% {
     
     #### BIOMASS
     
@@ -87,13 +87,22 @@ get.landis.vars <- function(
     
     ### GET OVERALL MAX AGE
     
-    max_age <- proj_mask
+    # max_age <- proj_mask
+    # 
+    # max_age[] <- paste0(cspath, "AGE-MAX-", j,".img") %>%
+    #   raster %>%
+    #   getValues
     
-    max_age[] <- paste0(cspath, "AGE-MAX-", j,".img") %>%
+    max_age <- paste0(cspath, "AGE-MAX-", j,".img") %>%
       raster %>%
-      getValues
-    
-    
+      rst.op(op = "writeonly",
+             proj_mask = proj_mask,
+             filename = sprintf("%s/%s/%s_max_age_%03d.grd",
+                                proj_path,
+                                out_path,
+                                scn_id,
+                                j),
+             layernames = "max_age")
     ### INDICES
     
     #### MAX AGE
@@ -566,7 +575,8 @@ get.landis.vars <- function(
           prop_oge_1k,
           harvest,
           firesev,
-          woody
+          woody,
+          max_age
     )
   }
   

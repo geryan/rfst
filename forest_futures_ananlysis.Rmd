@@ -1,0 +1,120 @@
+---
+title: "Forest Futures Analysis"
+output: html_notebook:
+  toc: true
+  toc_depth: 3
+author: GE Ryan
+date: 20190827
+---
+
+# Setup and data preparation
+
+## Controls and software
+
+### Packages
+```{r packages}
+ library(magrittr)
+ library(dplyr)
+# library(tibble)
+# library(sf)
+# library(lwgeom)
+ library(rgdal)
+ library(readr)
+ library(readxl)
+ library(ggplot2)
+ library(lubridate)
+ library(foreach)
+# library(doMC)
+ library(future)
+ library(future.apply)
+ library(tidyr)
+ library(dismo)
+ library(gbm)
+ library(steps)
+ library(raster)
+```
+
+### Functions
+```{r functions}
+source(file = "R/functions/pg.sf.R")
+source(file = "R/functions/pg.pa.R")
+source(file = "R/functions/read.vba.R")
+source(file = "R/functions/proc.vba.R")
+source(file = "R/functions/get.landis.vars.R")
+source(file = "R/functions/rascc.R")
+source(file = "R/functions/read.multi.line.header.R")
+source(file = "R/functions/interpolate.climdat.R")
+source(file = "R/functions/rst.op.R")
+source(file = "R/functions/get.disturbance.R")
+source(file = "R/functions/gbmstep.R")
+source(file = "R/functions/brtpredict.R")
+source(file = "R/functions/initpop.R")
+source(file = "R/functions/parsim.R")
+source(file = "R/functions/bind.simulation.repetitions.R")
+source(file = "R/functions/get.stable.states.R")
+source(file = "R/functions/rmax.R")
+source(file = "R/functions/stackbrtpred.R")
+source(file = "R/functions/gpr.R")
+source(file = "R/functions/gps.R")
+source(file = "R/functions/psr.R")
+```
+
+### Paths
+```{r proj_paths}
+proj_path <- "/home/unimelb.edu.au/ryange/rfst"
+# proj_path <- "D:/Users/ryan/Dropbox/Work/RFA_STEPS/rfst/"
+```
+
+### Start year
+```{r year0}
+year0 <- 2019
+```
+
+### Timesteps
+```{r ntimesteps}
+ntimesteps <- 50
+```
+
+### Cores to use
+```{r ncores}
+ncores <- 20
+```
+
+### Save computing controls
+```{r save computing controls}
+save(year0,
+     ntimesteps,
+     ncores,
+     file = "RData/00_comp_controls.RData")
+```
+
+
+### Image controls
+
+#### Png controls
+```{r png controls}
+res <- 600
+width.png <- 3200
+height.png <- 2000
+```
+
+
+## Landscape
+
+## Species occurrences
+## LANDIS outputs
+## Disturbance variables
+## Geoophysical variables
+## Climatic variables
+
+# Distribution modelling
+
+# Population viability analysis 
+
+
+
+
+
+
+
+
