@@ -13,29 +13,31 @@ date: 20190827
 
 ### Packages
 ```{r packages}
- library(magrittr)
- library(dplyr)
+library(magrittr)
+library(dplyr)
 # library(tibble)
-# library(sf)
-# library(lwgeom)
- library(rgdal)
- library(readr)
- library(readxl)
- library(ggplot2)
- library(lubridate)
- library(foreach)
-# library(doMC)
- library(future)
- library(future.apply)
- library(tidyr)
- library(dismo)
- library(gbm)
- library(steps)
- library(raster)
+library(sf)
+library(lwgeom)
+library(rgdal)
+library(readr)
+library(readxl)
+library(ggplot2)
+library(lubridate)
+library(foreach)
+library(doMC)
+library(future)
+library(future.apply)
+library(tidyr)
+library(dismo)
+library(gbm)
+library(steps)
+library(raster)
+library(rasterVis)
 ```
 
 ### Functions
 ```{r functions}
+source(file = "R/functions/round.extent.R")
 source(file = "R/functions/pg.sf.R")
 source(file = "R/functions/pg.pa.R")
 source(file = "R/functions/read.vba.R")
@@ -80,12 +82,22 @@ ntimesteps <- 50
 ncores <- 20
 ```
 
+### LANDIS scenarios
+```{r LANDIS scenarios}
+scn_list <- c("1", "4", "8")
+rep_list <- sprintf("%02d", 1:10)
+```
+
+
 ### Save computing controls
 ```{r save computing controls}
-save(year0,
+save(proj_path,
+     year0,
      ntimesteps,
      ncores,
-     file = "RData/00_comp_controls.RData")
+     scn_list,
+     rep_list,
+     file = "output/RData/00_comp_controls.RData")
 ```
 
 
@@ -100,10 +112,123 @@ height.png <- 2000
 
 
 ## Landscape
+```{r source landscape}
+source(file = "R/01_landscape_variables.R")
+```
 
+```{r load landscape vars}
+load(file = "output/RData/01_landscape_variables.RData")
+```
+
+Mask of central highlands
+```{r plot ch_mask}
+levelplot(ch_mask, margin = FALSE)
+```
+LANDIS Ecoregions
+```{r plot ch_eco}
+levelplot(ch_eco, margin = FALSE)
+```
+Fire ecoregions
+```{r plot ch_fire_eco}
+levelplot(ch_fire_eco, margin = FALSE)
+```
+LANDIS initial conditions
+```{r plot ch_ic}
+levelplot(ch_ic, margin = FALSE)
+```
+Management zones
+```{r plot ch_mgt}
+levelplot(ch_mgt, margin = FALSE)
+```
+Aspect
+```{r plot ch_aspect}
+levelplot(ch_aspect, margin = FALSE)
+```
+Slope
+```{r plot ch_slope}
+levelplot(ch_slope, margin = FALSE)
+```
+Stand classifications
+```{r plot ch_stands}
+levelplot(ch_stands, margin = FALSE)
+```
+Fire history
+```{r plot ch_fire_history}
+levelplot(ch_fire_history, margin = FALSE)
+```
+
+```{r}
+plot(ch_fire_history, col = viridis(100, option = 2))
+```
+
+
+Logging history
 ## Species occurrences
+
+
 ## LANDIS outputs
+```{r source LANDIS variables}
+source(file = "R/03_LANDIS_variables.R")
+```
+
+```{r load LANDIS variables}
+load(file = "output/RData/03_LANDIS_variables.RData")
+```
+
+### Scenario 1: BAU: Timber harvesting, planned burning, climate change RCP 4.5
+```{r}
+levelplot(lv_1_01[[1]])
+```
+```{r}
+levelplot(lv_1_01[[1]][[1]], margin = FALSE)
+```
+
+```{r}
+levelplot(lv_1_01[[1]][[15]], margin = FALSE)
+```
+
+```{r}
+levelplot(lv_1_01[[1]][[20]], margin = FALSE)
+```
+```{r}
+levelplot(lv_1_01[[1]][[13]], margin = FALSE)
+```
+
+```{r}
+levelplot(lv_1_01[[51]][[13]], margin = FALSE)
+```
+
+```{r}
+levelplot(lv_4_01[[51]][[13]], margin = FALSE)
+```
+
+```{r}
+levelplot(lv_8_01[[51]][[13]], margin = FALSE)
+```
+
+```{r}
+levelplot(lv_4_01[[3]][[19]], margin = FALSE)
+```
+```{r}
+levelplot(lv_4_01[[3]][[13]], margin = FALSE)
+```
+
+```{r}
+levelplot(lv_4_01[[4]][[13]], margin = FALSE)
+```
+
+```{r}
+plot(ch_fire_history, col = viridis(100, option = 2))
+```
+
+
 ## Disturbance variables
+```{r source landscape_variables}
+source(file = "R/04_disturbance_variables.R")
+```
+
+
+
 ## Geoophysical variables
 ## Climatic variables
 

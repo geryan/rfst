@@ -3,8 +3,9 @@ get.disturbance <- function(
   disturbance_history,
   out_path,
   scn_id,
+  proj_mask,
   layernames,
-  ntimesteps,
+  timesteps,
   year0
 ){
   
@@ -15,7 +16,7 @@ get.disturbance <- function(
   hi[[1]] <- rst.op(input1 = disturbances[[1]],
                     input2 = disturbance_history,
                     op = "history",
-                    proj_mask = ch_mask,
+                    proj_mask = proj_mask,
                     filename = sprintf("%s/%s/%s_%s_%s.grd",
                                        out_path,
                                        layernames[1],
@@ -29,7 +30,7 @@ get.disturbance <- function(
     hi[[i]] <- rst.op(input1 = disturbances[[i]],
                       input2 = hi[[i-1]],
                       op = "history",
-                      proj_mask = ch_mask,
+                      proj_mask = proj_mask,
                       filename = sprintf("%s/%s/%s_%s_%s.grd",
                                          out_path,
                                          layernames[1],
@@ -45,7 +46,7 @@ get.disturbance <- function(
     ts[[i]] <- rst.op(input1 = disturbances[[i]],
                       input2 = hi[[i]],
                       op = "timesince",
-                      proj_mask = ch_mask,
+                      proj_mask = proj_mask,
                       filename = sprintf("%s/%s/%s_%s_%s.grd",
                                          out_path,
                                          layernames[2],

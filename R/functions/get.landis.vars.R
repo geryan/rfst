@@ -1,4 +1,4 @@
-get.landis.vars3 <- function(
+get.landis.vars <- function(
   scn_path,
   proj_path,
   out_path = "/output/habitat_vars/",
@@ -12,6 +12,9 @@ get.landis.vars3 <- function(
   library(doMC)
   library(raster)
   library(dplyr)
+  
+  source(file = "R/functions/rst.op.R")
+  
   
   bmpath <- paste0(scn_path, "/output/biomass/")
   cspath <- paste0(scn_path, "/output/cohort-stats/")
@@ -28,19 +31,12 @@ get.landis.vars3 <- function(
   
   win1k <- ifelse(win1k > 0, 1, 0)
   
-  win3h <- focalWeight(raster(ncols=3,
-                              nrows=3,
-                              xmn = 0,
-                              resolution = 100),
-                       d = 300,
-                       type = 'rectangle')
-  
-  win3h <- ifelse(win3h > 0, 1, 0)
+  win3h <- matrix(rep(1, 9), nrow = 3)
   
   
   registerDoMC(cores = cores)
   
-  result <- foreach(j = 0:timesteps) %do% {
+  result <- foreach(j = 0:timesteps) %dopar% {
     
     #### BIOMASS
     
@@ -169,13 +165,19 @@ get.landis.vars3 <- function(
                                       bioAge_eucadeli,
                                       bioAge_eucadent,
                                       bioAge_eucadive,
+                                      bioAge_eucaglau,
                                       bioAge_eucaglob,
+                                      bioAge_eucamacr,
+                                      bioAge_eucamicr,
                                       bioAge_eucanite,
                                       bioAge_eucaobli,
                                       bioAge_eucapauh,
                                       bioAge_eucapaul,
+                                      bioAge_eucapoly,
                                       bioAge_eucaradi,
                                       bioAge_eucaregn,
+                                      bioAge_eucarubi,
+                                      bioAge_eucasieb,
                                       bioAge_eucatric,
                                       bioAge_eucavimi),
                        input2 = biomass_TotalBiomass,
@@ -194,13 +196,19 @@ get.landis.vars3 <- function(
                                          bioAge_eucadeli,
                                          bioAge_eucadent,
                                          bioAge_eucadive,
+                                         bioAge_eucaglau,
                                          bioAge_eucaglob,
+                                         bioAge_eucamacr,
+                                         bioAge_eucamicr,
                                          bioAge_eucanite,
                                          bioAge_eucaobli,
                                          bioAge_eucapauh,
                                          bioAge_eucapaul,
+                                         bioAge_eucapoly,
                                          bioAge_eucaradi,
                                          bioAge_eucaregn,
+                                         bioAge_eucarubi,
+                                         bioAge_eucasieb,
                                          bioAge_eucatric,
                                          bioAge_eucavimi),
                           input2 = biomass_TotalBiomass,
@@ -220,13 +228,19 @@ get.landis.vars3 <- function(
                                          bioAge_eucadeli,
                                          bioAge_eucadent,
                                          bioAge_eucadive,
+                                         bioAge_eucaglau,
                                          bioAge_eucaglob,
+                                         bioAge_eucamacr,
+                                         bioAge_eucamicr,
                                          bioAge_eucanite,
                                          bioAge_eucaobli,
                                          bioAge_eucapauh,
                                          bioAge_eucapaul,
+                                         bioAge_eucapoly,
                                          bioAge_eucaradi,
                                          bioAge_eucaregn,
+                                         bioAge_eucarubi,
+                                         bioAge_eucasieb,
                                          bioAge_eucatric,
                                          bioAge_eucavimi),
                           input2 = biomass_TotalBiomass,
@@ -241,39 +255,39 @@ get.landis.vars3 <- function(
                           window = win1k)
     
     #### HOLLOW BEARING TREE INDEX
-    hbt <- proj_mask
+    # hbt <- proj_mask
+    # 
+    # hbt[] <- getValues(max_age)
+    # hbt[hbt < 150] <- 0
+    # hbt[hbt > 200] <- 1
+    # hbt[hbt > 1] <- (hbt[hbt > 1] - 150)/50
     
-    hbt[] <- getValues(max_age)
-    hbt[hbt < 150] <- 0
-    hbt[hbt > 200] <- 1
-    hbt[hbt > 1] <- (hbt[hbt > 1] - 150)/50
     
-    
-    hbt_3h <- rst.op(input1 = max_age,
-                     op = "lessthanscale",
-                     proj_mask = proj_mask,
-                     filename = sprintf("%s/%s/%s_hbt_3h_%03d.grd",
-                                        proj_path,
-                                        out_path,
-                                        scn_id,
-                                        j),
-                     layernames = "hbt_3h",
-                     window = win3h,
-                     lessthan = 150,
-                     scaleto = 200)
-    
-    hbt_1k <- rst.op(input1 = max_age,
-                     op = "lessthanscale",
-                     proj_mask = proj_mask,
-                     filename = sprintf("%s/%s/%s_hbt_1k_%03d.grd",
-                                        proj_path,
-                                        out_path,
-                                        scn_id,
-                                        j),
-                     layernames = "hbt_1k",
-                     window = win1k,
-                     lessthan = 150,
-                     scaleto = 200)
+    # hbt_3h <- rst.op(input1 = max_age,
+    #                  op = "lessthanscale",
+    #                  proj_mask = proj_mask,
+    #                  filename = sprintf("%s/%s/%s_hbt_3h_%03d.grd",
+    #                                     proj_path,
+    #                                     out_path,
+    #                                     scn_id,
+    #                                     j),
+    #                  layernames = "hbt_3h",
+    #                  window = win3h,
+    #                  lessthan = 150,
+    #                  scaleto = 200)
+    # 
+    # hbt_1k <- rst.op(input1 = max_age,
+    #                  op = "lessthanscale",
+    #                  proj_mask = proj_mask,
+    #                  filename = sprintf("%s/%s/%s_hbt_1k_%03d.grd",
+    #                                     proj_path,
+    #                                     out_path,
+    #                                     scn_id,
+    #                                     j),
+    #                  layernames = "hbt_1k",
+    #                  window = win1k,
+    #                  lessthan = 150,
+    #                  scaleto = 200)
     
     
     #### GG DEN
@@ -486,16 +500,16 @@ get.landis.vars3 <- function(
     
     ##### WOODY BIOMASS
     
-    woody <- paste0(bmpath, "woody-", j,".img") %>%
-      raster %>%
-      rst.op(op = "writeonly",
-             proj_mask = proj_mask,
-             filename = sprintf("%s/%s/%s_woody_%03d.grd",
-                                proj_path,
-                                out_path,
-                                scn_id,
-                                j),
-             layernames = "woody")
+    # woody <- paste0(bmpath, "woody-", j,".img") %>%
+    #   raster %>%
+    #   rst.op(op = "writeonly",
+    #          proj_mask = proj_mask,
+    #          filename = sprintf("%s/%s/%s_woody_%03d.grd",
+    #                             proj_path,
+    #                             out_path,
+    #                             scn_id,
+    #                             j),
+    #          layernames = "woody")
     
     #### COMBINE VARIABLES
     
@@ -564,8 +578,8 @@ get.landis.vars3 <- function(
           ggd_prop_og,
           ggd_biom,
           ggd_biom_og,
-          hbt_3h,
-          hbt_1k,
+          #hbt_3h,
+          #hbt_1k,
           prop_bio_regn,
           prop_bio_targ,
           prop_old_150,
@@ -575,7 +589,7 @@ get.landis.vars3 <- function(
           prop_oge_1k,
           harvest,
           firesev,
-          woody,
+          #woody,
           max_age
     )
   }
