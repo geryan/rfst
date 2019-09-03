@@ -33,6 +33,7 @@ library(gbm)
 library(steps)
 library(raster)
 library(rasterVis)
+library(viridis)
 ```
 
 ### Functions
@@ -113,7 +114,7 @@ height.png <- 2000
 
 ## Landscape
 ```{r source landscape}
-source(file = "R/01_landscape_variables.R")
+#source(file = "R/01_landscape_variables.R")
 ```
 
 ```{r load landscape vars}
@@ -168,7 +169,7 @@ Logging history
 
 ## LANDIS outputs
 ```{r source LANDIS variables}
-source(file = "R/03_LANDIS_variables.R")
+#source(file = "R/03_LANDIS_variables.R")
 ```
 
 ```{r load LANDIS variables}
@@ -221,16 +222,53 @@ levelplot(lv_4_01[[4]][[13]], margin = FALSE)
 plot(ch_fire_history, col = viridis(100, option = 2))
 ```
 
-
-## Disturbance variables
-```{r source landscape_variables}
-source(file = "R/04_disturbance_variables.R")
+```{r}
+lp(ch_fire_history)
+```
+```{r plot fire history}
+lp(ch_logging_history)
 ```
 
 
 
+## Disturbance variables
+```{r source landscape_variables}
+#source(file = "R/04_disturbance_variables.R")
+```
+
+
+```{r load disturbance variables}
+load(file = "output/RData/04_disturbance_variables.RData")
+```
+
+Logging history
+```{r plot logging history s1}
+lp(stack(dv_1_01[[1]][[1]], dv_1_01[[51]][[1]]))
+```
+
+```{r plot logging history s1}
+lp(stack(dv_8_01[[1]][[1]], dv_8_01[[51]][[1]]))
+```
+
+```{r}
+lp(stack(dv_8_01[[1]][[2]], dv_8_01[[51]][[2]]))
+```
+```{r}
+lp(stack(dv_8_01[[1]][[3]], dv_8_01[[51]][[3]]))
+```
+
+```{r}
+lp(stack(dv_8_01[[1]][[4]], dv_8_01[[51]][[4]]))
+```
+
 ## Geoophysical variables
 ## Climatic variables
+
+*pseudocode to fix things together later*
+```{r}
+mapply(lv, dv, FUN = stack)
+```
+
 
 # Distribution modelling
 

@@ -196,6 +196,7 @@ fire_history
 ```{r plot fire_history}
 plot(fire_history)
 ```
+
 ```{r}
 png(file = "output/plots/fire_history.png",
     width = width.png,
@@ -1299,11 +1300,7 @@ evtr ~ evapotranspiration
 From WorldClim
 
 
-
-
 **NEED TO ENSURE PREDICTIONS FROM CLIMATE SCENARIOS MATCH WORLDCLIM SCALE (PROB NEED TO SCALE DOWN TEMPERATURES)**
-
-
 
 
 

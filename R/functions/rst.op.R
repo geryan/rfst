@@ -13,7 +13,9 @@ rst.op <- function(
     "history",
     "timesince",
     "cc",
-    "pop"),
+    "pop",
+    "pb",
+    "harvest"),
   proj_mask,
   filename,
   layernames,
@@ -162,6 +164,44 @@ rst.op <- function(
       v2 <- getValues(input2, row = bs$row[i], nrows = bs$nrows[i])
       
       v <- rbinom(n = length(v1), size = v2, prob = v1*propn)
+      
+    } else if (op == "pb"){
+      
+      if(max(v1, na.rm = TRUE) == 1){
+        
+        v <- v1
+        
+      } else if (max(v1, na.rm = TRUE) > 1){
+        
+        v <- ifelse(v1 == 5, 1, 0)
+        
+      } else if (max(v1, na.rm = TRUE) == 0){
+        
+        v <- V1
+        
+      }
+        
+    } else if (op == "harvest"){
+      
+      if(max(v1, na.rm = TRUE) == 1){
+        
+        v <- rep_len(0, length.out = length(v1))
+        
+      } else if (max(v1, na.rm = TRUE) > 1){
+        
+        v <- ifelse(is.na(v1), 0, ifelse(v1 == 0, 0, ifelse(v1 == 5, 0, 1)))
+        
+      } else if (max(v1, na.rm = TRUE) == 0){
+        
+        v <- v1
+        
+      }
+      
+    } else if (op == "fire"){
+      
+      v2 <- getValues(input2, row = bs$row[i], nrows = bs$nrows[i])
+      
+      v <- ifelse(v1 == 1, 1, ifelse(v2 == 1, 1, 0))
       
     }
       

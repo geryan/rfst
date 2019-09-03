@@ -58,7 +58,7 @@ get.disturbance <- function(
   
   }
 
-  result <- mapply(hi, ts, disturbances, FUN = stack)
+  result <- mapply(hi, ts, FUN = stack)
   
   return(result)
   
