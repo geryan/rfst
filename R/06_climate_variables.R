@@ -11,23 +11,38 @@ source.functions("R/functions")
 # Current climate
 # -----------------------------------------
 
-tmax01 <- getData(name = "worldclim", var = "tmax", path = paste0(proj_path, "/output/wc_30sec/tmax/"), res = 0.5, lat = -60, lon = 120)[[1]] %>%
+raw_tmax01 <- getData(name = "worldclim", var = "tmax", path = paste0(proj_path, "/output/wc_30sec/tmax/"), res = 0.5, lat = -60, lon = 120)[[1]] %>%
   projectRaster(to = ch_mask) %>%
-  mask(mask = ch_mask, filename = "output/clim_vars/tmax01.grd", overwrite = TRUE)
+  mask(mask = ch_mask, filename = "output/clim_vars/raw_tmax01.grd", overwrite = TRUE)
 
-names(tmax01) <- "tmax01"
+names(raw_tmax01) <- "raw_tmax01"
 
-tmin07 <- getData(name = "worldclim", var = "tmin", path = paste0(proj_path, "/output/wc_30sec/tmin/"), res = 0.5, lat = -60, lon = 120)[[7]] %>%
+tmax01 <- rst.op(input1 = raw_tmax01,
+                 op = "div10",
+                 proj_mask = ch_mask,
+                 filename = "output/clim_vars/tmax01.grd",
+                 layernames = "tmax01")
+
+
+raw_tmin07 <- getData(name = "worldclim", var = "tmin", path = paste0(proj_path, "/output/wc_30sec/tmin/"), res = 0.5, lat = -60, lon = 120)[[7]] %>%
   projectRaster(to = ch_mask) %>%
-  mask(mask = ch_mask, filename = "output/clim_vars/tmin07.grd", overwrite = TRUE)
+  mask(mask = ch_mask, filename = "output/clim_vars/raw_tmin07.grd", overwrite = TRUE)
 
-names(tmin07) <- "tmin07"
+names(raw_tmin07) <- "raw_tmin07"
+
+tmin07 <- rst.op(input1 = raw_tmin07,
+                 op = "div10",
+                 proj_mask = ch_mask,
+                 filename = "output/clim_vars/tmin07.grd",
+                 layernames = "tmin07")
+
 
 prec01 <- getData(name = "worldclim", var = "prec", path = paste0(proj_path, "/output/wc_30sec/prec/"), res = 0.5, lat = -60, lon = 120)[[1]] %>%
   projectRaster(to = ch_mask) %>%
   mask(mask = ch_mask, filename = "output/clim_vars/prec01.grd", overwrite = TRUE)
 
 names(prec01) <- "prec01"
+
 
 prec07 <- getData(name = "worldclim", var = "prec", path = paste0(proj_path, "/output/wc_30sec/prec/"), res = 0.5, lat = -60, lon = 120)[[7]] %>%
   projectRaster(to = ch_mask) %>%

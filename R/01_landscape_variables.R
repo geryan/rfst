@@ -50,6 +50,16 @@ ch_extent <- extent(ch_eco)
 ch_res <- res(ch_eco)
 
 
+# RFA shapefile ---------
+
+rfa <- read_sf("data/shapefiles/RFA/")%>%
+  st_transform(crs = ch_proj)
+
+ch_rfa <- rfa[rfa$NAME== "CENTRAL HIGHLANDS",] 
+
+ch_rfa
+
+
 # Fire and logging histories ----
 
 ch_fire_history <- read_sf("data/shapefiles/DELWP_2019_interim_fire/FIRE_HISTOY_VICGRID_updated.shp") %>%
@@ -81,6 +91,8 @@ save(
   ch_mask,
   ch_proj,
   ch_extent,
+  ch_res,
+  ch_rfa,
   ch_fire_history,
   ch_logging_history,
   file = "output/RData/01_landscape_variables.RData"

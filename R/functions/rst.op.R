@@ -16,7 +16,8 @@ rst.op <- function(
     "pop",
     "pb",
     "harvest",
-    "fire"),
+    "fire",
+    "div10"),
   proj_mask,
   filename,
   layernames,
@@ -204,11 +205,15 @@ rst.op <- function(
       
       v <- ifelse(v1 == 1, 1, ifelse(v2 == 1, 1, 0))
       
+    } else if (op == "div10"){
+      
+      v <- v1/10
+      
     }
       
     out <- writeValues(out, v, bs$row[i])
     
-  }
+  } 
     
   out <- writeStop(out)
     

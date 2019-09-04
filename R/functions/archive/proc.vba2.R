@@ -1,4 +1,6 @@
-proc.vba <- function(x, project.crs, vba.crs = 4283, cutoff.date = "2009-03-01", sm = FALSE, pattern = "spotlight"){
+proc.vba.survey <- function(x, project.crs, vba.crs = 4283, cutoff.date = "2009-03-01", pattern = "spotlight"){
+  
+  source(file = "R/functions/read.vba.R")
   
   library(dplyr)
   
@@ -17,22 +19,12 @@ proc.vba <- function(x, project.crs, vba.crs = 4283, cutoff.date = "2009-03-01",
     st_as_sf(coords = c("lon", "lat"), crs = vba.crs) %>%
     st_transform(crs = project.crs)
   
+  z <- z[grep(pattern = pattern,
+              x = z$sm,
+              ignore.case = TRUE),] %>%
+    mutate(PA = 0) %>%
+    dplyr::select(PA, date, geometry)
   
-  if(sm){
-    
-    z <- z[grep(pattern = pattern,
-                x = z$sm,
-                ignore.case = TRUE),] %>%
-      mutate(PA = 0) %>%
-      dplyr::select(PA, date, geometry)
-    
-  } else{
-    
-    z <- z %>%
-      dplyr::select(PA, date, geometry)
-    
-  }
-
   
   return(z)
 }

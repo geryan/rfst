@@ -132,47 +132,47 @@ load(file = "output/RData/01_landscape_variables.RData")
 
 Mask of central highlands
 ```{r plot ch_mask}
-levelplot(ch_mask, margin = FALSE)
+lp(ch_mask)
 ```
 LANDIS Ecoregions
 ```{r plot ch_eco}
-levelplot(ch_eco, margin = FALSE)
+lp(ch_eco)
 ```
 Fire ecoregions
 ```{r plot ch_fire_eco}
-levelplot(ch_fire_eco, margin = FALSE)
+lp(ch_fire_eco)
 ```
 LANDIS initial conditions
 ```{r plot ch_ic}
-levelplot(ch_ic, margin = FALSE)
+lp(ch_ic)
 ```
 Management zones
 ```{r plot ch_mgt}
-levelplot(ch_mgt, margin = FALSE)
+lp(ch_mgt)
 ```
 Aspect
 ```{r plot ch_aspect}
-levelplot(ch_aspect, margin = FALSE)
+lp(ch_aspect)
 ```
 Slope
 ```{r plot ch_slope}
-levelplot(ch_slope, margin = FALSE)
+lp(ch_slope)
 ```
 Stand classifications
 ```{r plot ch_stands}
-levelplot(ch_stands, margin = FALSE)
+lp(ch_stands)
 ```
 Fire history
 ```{r plot ch_fire_history}
-levelplot(ch_fire_history, margin = FALSE)
+lp(ch_fire_history)
 ```
-
-```{r}
-plot(ch_fire_history, col = viridis(100, option = 2))
-```
-
 
 Logging history
+```{r plot logging history}
+lp(ch_logging_history)
+```
+
+
 ## Species occurrences
 
 
@@ -187,7 +187,7 @@ load(file = "output/RData/03_LANDIS_variables.RData")
 
 ### Scenario 1: BAU: Timber harvesting, planned burning, climate change RCP 4.5
 ```{r}
-levelplot(lv_1_01[[1]])
+lp(lv_1_01[[1]])
 ```
 ```{r}
 levelplot(lv_1_01[[1]][[1]], margin = FALSE)
@@ -227,16 +227,6 @@ levelplot(lv_4_01[[3]][[13]], margin = FALSE)
 levelplot(lv_4_01[[4]][[13]], margin = FALSE)
 ```
 
-```{r}
-plot(ch_fire_history, col = viridis(100, option = 2))
-```
-
-```{r}
-lp(ch_fire_history)
-```
-```{r plot fire history}
-lp(ch_logging_history)
-```
 
 
 
@@ -271,7 +261,23 @@ lp(stack(dv_8_01[[1]][[4]], dv_8_01[[51]][[4]]))
 ```
 
 ## Geoophysical variables
+```{r source geophysical variables}
+#source(file = "R/05_geophysical_variables.R")
+```
+
+```{r load geophysicial variables}
+load(file = "output/RData/05_geophys_vars.RData")
+```
+
 ## Climatic variables
+```{r source climate variables}
+source(file = "R/06_climate_variables.R")
+```
+
+```{r load climate variables}
+load(flie = "output/RData/06_climate_variables.RData")
+```
+
 
 *pseudocode to fix things together later*
 ```{r}
