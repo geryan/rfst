@@ -242,11 +242,11 @@ load(file = "output/RData/04_disturbance_variables.RData")
 
 Logging history
 ```{r plot logging history s1}
-lp(stack(dv_1_01[[1]][[1]], dv_1_01[[51]][[1]]))
+lp(stack(dv_1_01[[1]][[6]], dv_1_01[[51]][[6]]))
 ```
 
 ```{r plot logging history s1}
-lp(stack(dv_8_01[[1]][[1]], dv_8_01[[51]][[1]]))
+lp(stack(dv_8_01[[1]][[4]], dv_8_01[[51]][[4]]))
 ```
 
 ```{r}
@@ -259,6 +259,11 @@ lp(stack(dv_8_01[[1]][[3]], dv_8_01[[51]][[3]]))
 ```{r}
 lp(stack(dv_8_01[[1]][[4]], dv_8_01[[51]][[4]]))
 ```
+
+```{r}
+lp(lv_1_01[[1]][[20]], )
+```
+
 
 ## Geoophysical variables
 ```{r source geophysical variables}

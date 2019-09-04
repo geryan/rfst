@@ -148,7 +148,7 @@ get.dist <- function(
     tsf[[i]] <- rst.op(
       input1 = fi[[i]],
       input2 = fihi[[i]],
-      op = "history",
+      op = "timesince",
       proj_mask = proj_mask,
       filename = sprintf(
         "%s/tsf/tsf_%s_%s.grd",
@@ -163,7 +163,7 @@ get.dist <- function(
     tsl[[i]] <- rst.op(
       input1 = lo[[i]],
       input2 = lohi[[i]],
-      op = "history",
+      op = "timesince",
       proj_mask = proj_mask,
       filename = sprintf(
         "%s/tsl/tsl_%s_%s.grd",

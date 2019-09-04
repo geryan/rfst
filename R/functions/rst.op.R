@@ -203,7 +203,7 @@ rst.op <- function(
       
       v2 <- getValues(input2, row = bs$row[i], nrows = bs$nrows[i])
       
-      v <- ifelse(v1 == 1, 1, ifelse(v2 == 1, 1, 0))
+      v <- ifelse(v1 > 0, 1, ifelse(v2 > 0, 1, 0))
       
     } else if (op == "div10"){
       
