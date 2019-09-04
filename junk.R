@@ -44,3 +44,19 @@ aa[aa < 5] <- NA
 aa <- rst.op(input1 = h125, op = "pb", proj_mask = ch_mask, filename = "test.grd", layernames = "pb")
 
 bb  <- rst.op(input1 = h125, op = "harvest", proj_mask = ch_mask, filename = "test2.grd", layernames = "logging")
+
+lapply(get(sprintf("lv_%s_%s",
+                   scn_list[i],
+                   rep_list[j])),
+       FUN = function(x){x[["harvest"]]})
+
+
+aa <- get.dist(fire_history = ch_fire_history,
+               logging_history = ch_logging_history,
+               fs = lapply(lv_1_01, FUN = function(x){x[["firesev"]]}),
+               ha = lapply(lv_1_01, FUN = function(x){x[["harvest"]]}),
+               out_path = "output/landscape_vars",
+               scn_id = "1_01",
+               proj_mask = ch_mask,
+               timesteps = 5,
+               year0 = 2019)

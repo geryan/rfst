@@ -15,7 +15,8 @@ rst.op <- function(
     "cc",
     "pop",
     "pb",
-    "harvest"),
+    "harvest",
+    "fire"),
   proj_mask,
   filename,
   layernames,
@@ -177,7 +178,7 @@ rst.op <- function(
         
       } else if (max(v1, na.rm = TRUE) == 0){
         
-        v <- V1
+        v <- v1
         
       }
         

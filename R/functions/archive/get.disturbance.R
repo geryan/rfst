@@ -9,8 +9,10 @@ get.disturbance <- function(
   year0
 ){
   
-  hi <- vector("list", ntimesteps + 1)
-  ts <- vector("list", ntimesteps + 1)
+  library(raster)
+  
+  hi <- vector("list", timesteps + 1)
+  ts <- vector("list", timesteps + 1)
   
   
   hi[[1]] <- rst.op(input1 = disturbances[[1]],
@@ -26,7 +28,7 @@ get.disturbance <- function(
                     layernames = layernames[1],
                     year = year0)
   
-  for (i in 2:(ntimesteps+1)){
+  for (i in 2:(timesteps+1)){
     hi[[i]] <- rst.op(input1 = disturbances[[i]],
                       input2 = hi[[i-1]],
                       op = "history",
@@ -41,7 +43,7 @@ get.disturbance <- function(
                       year = year0 + i - 1)
   }
   
-  for(i in 1:(ntimesteps + 1)){
+  for(i in 1:(timesteps + 1)){
     
     ts[[i]] <- rst.op(input1 = disturbances[[i]],
                       input2 = hi[[i]],

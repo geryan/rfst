@@ -38,29 +38,37 @@ library(viridis)
 
 ### Functions
 ```{r functions}
-source(file = "R/functions/round.extent.R")
-source(file = "R/functions/pg.sf.R")
-source(file = "R/functions/pg.pa.R")
-source(file = "R/functions/read.vba.R")
-source(file = "R/functions/proc.vba.R")
-source(file = "R/functions/get.landis.vars.R")
-source(file = "R/functions/rascc.R")
-source(file = "R/functions/read.multi.line.header.R")
-source(file = "R/functions/interpolate.climdat.R")
-source(file = "R/functions/rst.op.R")
-source(file = "R/functions/get.disturbance.R")
-source(file = "R/functions/gbmstep.R")
-source(file = "R/functions/brtpredict.R")
-source(file = "R/functions/initpop.R")
-source(file = "R/functions/parsim.R")
 source(file = "R/functions/bind.simulation.repetitions.R")
+source(file = "R/functions/brtpredict.R")
+source(file = "R/functions/gbmstep.R")
+#source(file = "R/functions/get.disturbance.R")
+source(file = "R/functions/get.dist.R")
+source(file = "R/functions/get.landis.vars.R")
 source(file = "R/functions/get.stable.states.R")
-source(file = "R/functions/rmax.R")
-source(file = "R/functions/stackbrtpred.R")
 source(file = "R/functions/gpr.R")
 source(file = "R/functions/gps.R")
+source(file = "R/functions/initpop.R")
+source(file = "R/functions/interpolate.climdat.R")
+source(file = "R/functions/lp.R")
+source(file = "R/functions/parsim.R")
+source(file = "R/functions/pg.pa.R")
+source(file = "R/functions/pg.sf.R")
+source(file = "R/functions/proc.vba.R")
 source(file = "R/functions/psr.R")
+source(file = "R/functions/rascc.R")
+source(file = "R/functions/read.multi.line.header.R")
+source(file = "R/functions/read.vba.R")
+source(file = "R/functions/rmax.R")
+source(file = "R/functions/round.extent.R")
+source(file = "R/functions/rst.op.R")
+source(file = "R/functions/stackbrtpred.R")
 ```
+
+```{r source all functions}
+source(file = "R/functions/source.functions.R")
+source.functions("R/functions")
+```
+
 
 ### Paths
 ```{r proj_paths}
@@ -98,6 +106,7 @@ save(proj_path,
      ncores,
      scn_list,
      rep_list,
+     source.functions,
      file = "output/RData/00_comp_controls.RData")
 ```
 

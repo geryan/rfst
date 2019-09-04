@@ -8,7 +8,7 @@ library(lwgeom)
 
 load(file = "output/RData/00_comp_controls.RData")
 
-source(file = "R/functions/round.extent.R")
+source.functions("R/functions")
 
 # load landscape objects ----
 
@@ -40,7 +40,10 @@ ch_mask <- ch_eco
 ch_mask[!is.na(ch_mask)] <- 1
 ch_mask[ch_eco == 132] <- NA
 
-ch_mask <- mask(mask = ch_mask, filename = "output/landscape_vars/ch_mask.grd", overwrite = TRUE)
+ch_mask <- mask(x = ch_mask,
+                mask = ch_mask,
+                filename = "output/landscape_vars/ch_mask.grd",
+                overwrite = TRUE)
 
 ch_proj <- ch_eco@crs
 ch_extent <- extent(ch_eco)

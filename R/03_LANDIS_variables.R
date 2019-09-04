@@ -3,8 +3,9 @@
 load(file = "output/RData/00_comp_controls.RData")
 load(file = "output/RData/01_landscape_variables.RData")
 
-source(file = "R/functions/get.landis.vars.R")
+source.functions("R/functions")
 
+# -------------------------------------------------
 
 for (i in 1:length(scn_list)){
   for (j in 1:length(rep_list)){

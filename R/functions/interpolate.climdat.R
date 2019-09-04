@@ -28,7 +28,7 @@ interpolate.climdat <- function(initras, futras, ntimesteps, data_years, year0, 
                        input2 = allras[[qq]], 
                        op = "weightsum",
                        proj_mask = proj_mask,
-                       filename = sprintf("%s_%s.grd", filename, zz[i]),
+                       filename = sprintf("%s_int_%s.grd", filename, zz[i]),
                        layernames = sprintf("%s_%s", varname, zz[i]),
                        weight1 = r,
                        weight2 = rr)
