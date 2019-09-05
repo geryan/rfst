@@ -36,6 +36,17 @@ tho <- raster(x = "data/grids/Env_covariates_noClimate_VicGrid94/sept2014thorium
   mask(mask = ch_mask, filename = "output/habitat_vars/ari_tho.grd", overwrite = TRUE)
 
 
+gv_i <- stack(lvdaw, lvdma, lvdmi, lvdsw, ahr, tho)
+
+names(gv_i) <- c("lvdaw", "lvdma", "lvdmi", "lvdsw", "ahr", "tho")
+
+
+gv <- vector("list", ntimesteps + 1)
+
+for(i in 1:(ntimesteps+1)){
+  gv[[i]] <- gv_i
+}
+
 save(
   ahr,
   lvdaw,
@@ -43,5 +54,6 @@ save(
   lvdmi,
   lvdsw,
   tho,
+  gv
   file = "output/RData/05_geophys_vars.RData"
 )

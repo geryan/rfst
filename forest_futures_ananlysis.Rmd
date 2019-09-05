@@ -33,6 +33,7 @@ library(gbm)
 library(steps)
 library(raster)
 library(rasterVis)
+library(rlang)
 library(viridis)
 ```
 
@@ -280,17 +281,91 @@ source(file = "R/06_climate_variables.R")
 ```
 
 ```{r load climate variables}
-load(flie = "output/RData/06_climate_variables.RData")
+load(file = "output/RData/06_climate_variables.RData")
 ```
 
 
-*pseudocode to fix things together later*
 ```{r}
-mapply(lv, dv, FUN = stack)
+v_1_01 <- mapply(FUN = stack, lv_1_01, dv_1_01, gv, clim_vars_4.5)
 ```
 
+
+
+```{r}
+md_lb_09 <- get.model.data(pa_gg_09, v_1_01) %>%
+  mutate(nd = as.numeric(ymd("2019-01-01") - date)/365) %>%
+  mutate(ttsf = tsf - nd,
+         tmax_age = max_age - nd) %>%
+  mutate(ttsf = ifelse(ttsf >= 0, ttsf, NA),
+         tmax_age = ifelse(tmax_age >= 0, tmax_age, NA)) %>%
+  na.omit
+  
+nd_lb_09 <- get.model.data(pa_gg_09, v_1_01, na.omit = FALSE) %>%
+  mutate(nd = as.numeric(ymd("2019-01-01") - date)/365) %>%
+  mutate(ttsf = tsf - nd,
+         tmax_age = max_age - nd) %>%
+  mutate(ttsf = ifelse(ttsf >= 0, ttsf, NA),
+         tmax_age = ifelse(tmax_age >= 0, tmax_age, NA))
+```
 
 # Distribution modelling
+```{r}
+colnames(md_lb_09)
+```
+```{r}
+brt_lb09_n <- gbm.step(data = nd_lb_09,
+                     gbm.x = c(3, 15, 17, 30:39, 41, 42),
+                     gbm.y = 2,
+                     family = "bernoulli",
+                     tree.complexity = 5,
+                    learning.rate = 0.01,
+                    step.size = 1,
+                    bag.fraction = 0.5,
+                    prev.stratify = FALSE,
+                    verbose = FALSE,
+                    max.trees = 2000)
+```
+
+```{r}
+brt_lb09_m <- gbm.step(data = md_lb_09,
+                     gbm.x = c(3, 15, 17, 30:39, 41, 42),
+                     gbm.y = 2,
+                     family = "bernoulli",
+                     tree.complexity = 5,
+                    learning.rate = 0.01,
+                    step.size = 1,
+                    bag.fraction = 0.5,
+                    prev.stratify = FALSE,
+                    verbose = FALSE,
+                    max.trees = 2000)
+```
+
+
+```{r}
+ip_lb09_n <- brtpredict(variables = v_1_01,
+                      model = brt_lb09_n,
+                      scn_id = "ip",
+                      varset = "test",
+                      species = "lb")
+```
+
+```{r}
+plot(ip_lb09_n)
+```
+
+
+```{r}
+ip_lb09_m <- brtpredict(variables = v_1_01,
+                      model = brt_lb09_m,
+                      scn_id = "ip",
+                      varset = "test",
+                      species = "lb")
+```
+
+```{r}
+plot(ip_lb09_m)
+```
+
 
 # Population viability analysis 
 
