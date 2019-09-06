@@ -1,6 +1,7 @@
 proc.vba <- function(x, project.crs, vba.crs = 4283, cutoff.date = "2009-03-01", sm = FALSE, pattern = "spotlight"){
   
   library(dplyr)
+  library(lubridate)
   
   z <- read.vba(x) %>%
     dplyr::rename("date" = `Survey Start Date`,
