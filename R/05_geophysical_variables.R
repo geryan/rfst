@@ -54,6 +54,6 @@ save(
   lvdmi,
   lvdsw,
   tho,
-  gv
+  gv,
   file = "output/RData/05_geophys_vars.RData"
 )
