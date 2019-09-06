@@ -4,6 +4,9 @@ library(dplyr)
 library(magrittr)
 library(raster)
 library(sf)
+library(readr)
+library(readxl)
+library(tidyr)
 
 load(file = "output/RData/00_comp_controls.RData")
 load(file = "output/RData/01_landscape_variables.RData")
@@ -12,15 +15,15 @@ source.functions("R/functions")
 
 ## LBP raw ---- 
 
-lb_all <- proc.vba("data/tabular/vba_lb_all_20190826.csv", project.crs = ch_proj, cutoff.date = "1984-01-01") %>%
+lb_80 <- proc.vba("data/tabular/vba_lb_all_20190826.csv", project.crs = ch_proj, cutoff.date = "1980-01-01") %>%
   arrange(date)
 
 
-lb_all <- lb_all[ch_rfa, ]
+lb_80 <- lb_80[ch_rfa, ]
 
-lb_all <- lb_all[!duplicated(lb_all),]
+lb_80 <- lb_80[!duplicated(lb_80),]
 
-lb_09 <- lb_all %>%
+lb_09 <- lb_80 %>%
   filter(date > ymd("2009-03-01"))
 
 
@@ -39,16 +42,18 @@ gg0_ari <- read_excel(path = "data/tabular/BoA_SB_Combined_VBA_upload_v4.xls") %
   st_transform(crs = st_crs(ch_mask)) %>%
   dplyr::select(PA, date, geometry)
 
-gg_vba <- proc.vba("data/tabular/vba_gg_all_20190826.csv", project.crs = ch_proj, cutoff.date = "1984-01-01") %>%
+gg_vba_80 <- proc.vba("data/tabular/vba_gg_all_20190826.csv", project.crs = ch_proj, cutoff.date = "1980-01-01") %>%
   arrange(date)
 
-gg_all <- gg_vba %>%
+gg_80 <- gg_vba_80 %>%
   rbind(gg0_ari) %>%
   dplyr::arrange(date)
 
-gg_all <- gg_all[!duplicated(gg_all),]
+gg_80 <- gg_80[ch_rfa, ]
 
-gg_09 <- gg_all %>%
+gg_80 <- gg_80[!duplicated(gg_80),]
+
+gg_09 <- gg_80 %>%
   filter(date > ymd("2009-03-01"))
 
 ## Arboreal mammal supp data ----
@@ -66,13 +71,18 @@ am <- am[ch_rfa,]
 
 ## Buffer and sample PA data
 
-pa_lb_all <- buff.sample.pa(
-  x = lb_all,
+pa_lb_80 <- buff.sample.pa(
+  x = lb_80,
   y = am,
   rfa = ch_rfa,
   cellsize = 500
 )
 
+st_write(
+  obj = pa_lb_80,
+  dsn = "output/pa/pa_lb_80_ch.shp",
+  delete_dsn = TRUE
+)
 
 pa_lb_09 <- buff.sample.pa(
   x = lb_09,
@@ -81,11 +91,23 @@ pa_lb_09 <- buff.sample.pa(
   cellsize = 500
 )
 
-pa_gg_all <- buff.sample.pa(
-  x = gg_all,
+st_write(
+  obj = pa_lb_09,
+  dsn = "output/pa/pa_lb_09_ch.shp",
+  delete_dsn = TRUE
+)
+
+pa_gg_80 <- buff.sample.pa(
+  x = gg_80,
   y = am,
   rfa = ch_rfa,
   cellsize = 500
+)
+
+st_write(
+  obj = pa_gg_80,
+  dsn = "output/pa/pa_gg_80_ch.shp",
+  delete_dsn = TRUE
 )
 
 pa_gg_09 <- buff.sample.pa(
@@ -95,13 +117,28 @@ pa_gg_09 <- buff.sample.pa(
   cellsize = 500
 )
 
+st_write(
+  obj = pa_gg_09,
+  dsn = "output/pa/pa_gg_09_ch.shp",
+  delete_dsn = TRUE
+)
+
+
+save(
+  pa_lb_09,
+  pa_lb_80,
+  pa_gg_09,
+  pa_gg_80,
+  file = "output/RData/02_species_occurrences.RData"
+)
 
 ## ARI data ----
 
 # lb_ari <- read_csv(file = "data/tabular/ari/Leadbeaters010319.txt") %>%
-#   t_as_sf(coords = c("lon", "lat"), crs = st_crs(28355)) %>%
-#   st_transform(crs = st_crs(ch_mask)) %>%
+#   st_as_sf(coords = c("LONGITUDED", "LATITUDEDD"), crs = st_crs(28355)) %>%
+#   st_transform(crs = ch_proj) %>%
+#   mutate(date = dmy(SURVEY_STA))
 #   dplyr::select(PA, date, geometry)
-# 
-# gg_ari <- 
+
+
 

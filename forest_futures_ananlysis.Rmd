@@ -38,33 +38,6 @@ library(viridis)
 ```
 
 ### Functions
-```{r functions}
-source(file = "R/functions/bind.simulation.repetitions.R")
-source(file = "R/functions/brtpredict.R")
-source(file = "R/functions/gbmstep.R")
-#source(file = "R/functions/get.disturbance.R")
-source(file = "R/functions/get.dist.R")
-source(file = "R/functions/get.landis.vars.R")
-source(file = "R/functions/get.stable.states.R")
-source(file = "R/functions/gpr.R")
-source(file = "R/functions/gps.R")
-source(file = "R/functions/initpop.R")
-source(file = "R/functions/interpolate.climdat.R")
-source(file = "R/functions/lp.R")
-source(file = "R/functions/parsim.R")
-source(file = "R/functions/pg.pa.R")
-source(file = "R/functions/pg.sf.R")
-source(file = "R/functions/proc.vba.R")
-source(file = "R/functions/psr.R")
-source(file = "R/functions/rascc.R")
-source(file = "R/functions/read.multi.line.header.R")
-source(file = "R/functions/read.vba.R")
-source(file = "R/functions/rmax.R")
-source(file = "R/functions/round.extent.R")
-source(file = "R/functions/rst.op.R")
-source(file = "R/functions/stackbrtpred.R")
-```
-
 ```{r source all functions}
 source(file = "R/functions/source.functions.R")
 source.functions("R/functions")
@@ -176,6 +149,37 @@ lp(ch_logging_history)
 
 ## Species occurrences
 
+```{r source species occurrences}
+#source(file = "R/02_species_occurrence.R")
+```
+
+```{r load species occurrences}
+load(file = "output/RData/02_species_occurrences.RData")
+```
+
+```{r plot pa_lb_09}
+ggplot() +
+  geom_sf(data = ch_rfa) +
+  geom_sf(data = pa_lb_09, aes(col = as.factor(PA), alpha = date))
+```
+
+```{r plot pa_lb_80}
+ggplot() +
+  geom_sf(data = ch_rfa) +
+  geom_sf(data = pa_lb_80, aes(col = as.factor(PA), alpha = date))
+```
+
+```{r plot pa_gg_09}
+ggplot() +
+  geom_sf(data = ch_rfa) +
+  geom_sf(data = pa_gg_09, aes(col = as.factor(PA), alpha = date))
+```
+
+```{r plot pa_gg_80}
+ggplot() +
+  geom_sf(data = ch_rfa) +
+  geom_sf(data = pa_gg_80, aes(col = as.factor(PA), alpha = date))
+```
 
 ## LANDIS outputs
 ```{r source LANDIS variables}
@@ -283,6 +287,9 @@ source(file = "R/06_climate_variables.R")
 ```{r load climate variables}
 load(file = "output/RData/06_climate_variables.RData")
 ```
+
+
+
 
 
 ```{r}
@@ -393,8 +400,6 @@ aa <- raster::predict(object = stack(
 ```
 
 
-
-
 ```{r}
 bb <- stack(
   v_1_01[[1]][[1]],
@@ -412,10 +417,6 @@ bb <- stack(
   v_1_01[[1]][[37]])
 ```
 
-
-```{r}
-lp(aa, ip_lb09_n)
-```
 ```{r}
 lp(aa)
 ```
