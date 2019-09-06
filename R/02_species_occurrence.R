@@ -75,7 +75,7 @@ pa_lb_all <- buff.sample.pa(
 
 
 pa_lb_09 <- buff.sample.pa(
-  x = gg_all,
+  x = lb_09,
   y = am,
   rfa = ch_rfa,
   cellsize = 500
