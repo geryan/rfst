@@ -1,0 +1,132 @@
+---
+title: "Are our pre- and post-breeding census matrix models consistent and therefore possibly correctly specified or are Gerry and Casey dimwits with no hope of ever grasping anything?"
+output:
+  pdf_document: default
+  html_notebook: default
+---
+
+```{r}
+library(dplyr)
+```
+
+Pre-breeding census matrix
+
+|     |Juv    |Adult              |
+|-----|-------|-------------------|
+|  Juv|-      |NewbSurv * AdultFec|
+|Adult|JuvSurv|AdultSurv          |
+```{r}
+premat <- matrix(data = c(0.00, 0.50*0.50,
+                          0.85,      0.85),
+                 nrow = 2,
+                 byrow = TRUE)
+
+
+premat
+```
+Postbreeding census matrix
+
+|     |Newb    | Juv              | Adult              |
+|-----|--------|------------------|--------------------|
+|Newb |-       |JuvSurv * AdultFec|AdultSurv * AdultFec|
+|Juv  |NewbSurv|-                 |-                   |
+|Adult|-       |JuvSurv           |AdultSurv           |
+```{r}
+postmat <- matrix(data = c(0.00, 0.85*0.50, 0.85*0.50,
+                           0.50,      0.00,      0.00,
+                           0.00,      0.85,      0.85),
+                  nrow = 3,
+                  byrow = TRUE)
+
+postmat
+```
+
+Take a population of 100 adults immediately before breeding at time t0
+
+```{r}
+prepop0 <- matrix(c(0,
+                    100),
+                  nrow = 2)
+
+prepop0
+```
+
+The same population immediately after breeding but still at time t0
+```{r}
+postpop0 <- matrix(c(100*0.5,
+                     0,
+                     100),
+                   nrow = 3)
+
+postpop0
+```
+
+
+Now after the first timestep our prebreeding population would be
+```{r}
+prepop1 <- premat %*% prepop0 # note matrix multiplicaiton symbol %*%
+
+prepop1
+```
+
+
+> *NB: initial population needs to be a vertical matrix, not a vector or the numbers don't work out correctly, E.g.:*
+```{r}
+premat* c(0, 100)
+```
+> *This suggests that there are 170 animals from a population of 100 with a fecundity of 0.25 - clearly rubbish.*
+
+> *Alternatively you need to transpose the original matrix*
+```{r}
+t(premat) * c(0, 100)
+```
+> *So I think it's easier for me to work in the same way I would write it, with a vertical matrix, but whatever you want to do be careful that everything agrees, anyhow. But back to the main point.*
+
+So our pre-breeding population immediately *after* breeding at time t1 would be
+```{r}
+prepop1_post <- matrix(c(85*0.5,
+                       25,
+                       85),
+                       nrow = 3) %>%
+  round
+
+prepop1_post
+```
+
+Meanwhile our postbreeding population at 
+```{r}
+postpop1 <- postmat %*% postpop0 %>%
+  round
+
+postpop1
+```
+ **Yay! It's consistent!**
+ 
+ How about into t2?
+```{r}
+prepop2 <- premat %*% prepop1 %>%
+  round
+
+prepop2
+```
+ 
+Which after breeding at t2 becomes
+```{r}
+prepop2_post <- matrix(c(94 * 0.5,
+                         21,
+                         94),
+                       nrow = 3)
+
+prepop2_post
+```
+
+And our post-breeding population at t2 is
+```{r}
+postpop2 <- postmat %*% postpop1 %>%
+  round
+
+postpop2
+```
+
+# **FUCK YEAH**
+We're not complete idiots.
