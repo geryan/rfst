@@ -15,7 +15,7 @@ date: 20190827
 ```{r packages}
 library(magrittr)
 library(dplyr)
-# library(tibble)
+library(tibble)
 library(sf)
 library(lwgeom)
 library(rgdal)
@@ -37,7 +37,7 @@ library(rlang)
 library(viridis)
 ```
 
-```{r}
+```{r load everything}
 load(file = "output/RData/00_comp_controls.RData")
 load(file = "output/RData/01_landscape_variables.RData")
 load(file = "output/RData/02_species_occurrences.RData")
@@ -46,7 +46,7 @@ load(file = "output/RData/04_disturbance_variables.RData")
 load(file = "output/RData/05_geophys_vars.RData")
 load(file = "output/RData/06_climate_variables.RData")
 load(file = "output/RData/07_combined_variables.RData")
-#load(file = "output/RData/08_distribution_model_data.RData")
+load(file = "output/RData/08_distribution_model_data.RData")
 #load(file = "output/RData/")
 ```
 
@@ -279,9 +279,6 @@ lp(stack(dv_8_01[[1]][[3]], dv_8_01[[51]][[3]]))
 lp(stack(dv_8_01[[1]][[4]], dv_8_01[[51]][[4]]))
 ```
 
-```{r}
-lp(lv_1_01[[1]][[20]], )
-```
 
 
 ## Geoophysical variables
@@ -304,7 +301,6 @@ load(file = "output/RData/06_climate_variables.RData")
 
 
 ## 07 Combined variables
-
 ```{r source combined variables}
 #source(file = "R/07_combined_variables.R")
 ```
@@ -314,31 +310,46 @@ load(file = "output/RData/06_climate_variables.RData")
 load(file = "output/RData/07_combined_variables.RData")
 ```
 ## 08 Distribution model data
+```{r source distrinbution model data}
+#source(file = "R/08_distribution_model_data.R")
+```
+
+```{r load distribution model data}
+load(file = "output/RData/08_distribution_model_data.RData")
+```
 
 
 
 # Distribution modelling
 
+## Leadbeater's Possum
+
+### Table of models
+```{r lbp dist table}
+dt_lb <- tibble(year.from = c(80, 09),
+                bg = c(TRUE, FALSE),
+                varset = list(vn_lb_1, vn_lb_2)) %>%
+  expand(year.from, bg, varset) %>%
+  rowwise %>%
+  mutate(pa.data = list(get(sprintf("pa_lb_%02d%s", year.from, ifelse(bg, "", "x"))))) %>%
+  mutate(model.data = map(.x = get.model.data,
+                          .f = pa.data))
+
+dt_lb
+```
 ```{r}
-md_lb_09 <- get.model.data(pa_lb_09, v_1_01) %>%
-  mutate(nd = as.numeric(ymd("2019-01-01") - date)/365) %>%
-  mutate(tsf = tsf - nd,
-         max_age = max_age - nd) %>%
-  mutate(tsf = ifelse(tsf >= 0, tsf, NA),
-         max_age = ifelse(max_age >= 0, max_age, NA)) %>%
-  na.omit
-  
-nd_lb_09 <- get.model.data(pa_lb_09, v_1_01, na.omit = FALSE) %>%
-  mutate(nd = as.numeric(ymd("2019-01-01") - date)/365) %>%
-  mutate(tsf = tsf - nd,
-         max_age = max_age - nd) %>%
-  mutate(tsf = ifelse(tsf >= 0, tsf, NA),
-         max_age = ifelse(max_age >= 0, max_age, NA))
+aa <- get.model.data(pa_lb_09, vars_1_01, na.omit = FALSE)
+
+aa
+```
+
+```{r}
+clean.model.data(aa, y = vn_lb_1)
 ```
 
 
 ```{r}
-xx <- get.model.data(pa_lb_09, vars_1_01, na.omit = FALSE) %>%
+get.model.data(pa_lb_09, vars_1_01, na.omit = FALSE) %>%
   mutate(nd = as.numeric(ymd("2019-01-01") - date)/365,
          nd = ifelse(nd > 0, nd, 0)) %>%
   mutate(tsf = tsf - nd,
@@ -350,9 +361,35 @@ xx <- get.model.data(pa_lb_09, vars_1_01, na.omit = FALSE) %>%
                              TRUE ~ max_age)) %>%
   mutate(tsf = ifelse(tsf >= 0, tsf, NA),
          tsl = ifelse(tsl >= 0, tsl, NA))
-
-xx
 ```
+
+```{r}
+aa <- tibble(a = 1:10, b = 2:11, c = 5:14)
+
+aa
+```
+
+
+```{r}
+zz <- function(x, y){
+  
+  result <- x %>%
+    dplyr::select(a, y)
+  
+  return(result)
+}
+```
+
+
+
+```{r}
+zz(aa, c("b"))
+```
+
+```{r}
+zz(mtcars, c("cyl", "mpg"))
+```
+
 
 
 ```{r}
@@ -415,46 +452,7 @@ plot(ip_lb09_m)
 
 # Population viability analysis 
 
-  gbm.x = c(3, 15, 17, 30:39),
-```{r}
-aa <- raster::predict(object = stack(
-  v_1_01[[1]][[1]],
-  v_1_01[[1]][[13]],
-  v_1_01[[1]][[15]],
-  v_1_01[[1]][[28]],
-  v_1_01[[1]][[29]],
-  v_1_01[[1]][[30]],
-  v_1_01[[1]][[31]],
-  v_1_01[[1]][[32]],
-  v_1_01[[1]][[33]],
-  v_1_01[[1]][[34]],
-  v_1_01[[1]][[35]],
-  v_1_01[[1]][[36]],
-  v_1_01[[1]][[37]]),
-                              model = brt_lb09_n,
-                              type = "response",
-                              n.trees = brt_lb09_n$gbm.call$best.trees,
-                              filename = "test.grd",
-                              overwrite = TRUE)
-```
-
-
-```{r}
-bb <- stack(
-  v_1_01[[1]][[1]],
-  v_1_01[[1]][[13]],
-  v_1_01[[1]][[15]],
-  v_1_01[[1]][[28]],
-  v_1_01[[1]][[29]],
-  v_1_01[[1]][[30]],
-  v_1_01[[1]][[31]],
-  v_1_01[[1]][[32]],
-  v_1_01[[1]][[33]],
-  v_1_01[[1]][[34]],
-  v_1_01[[1]][[35]],
-  v_1_01[[1]][[36]],
-  v_1_01[[1]][[37]])
-```
+  
 
 ```{r}
 lp(aa)
