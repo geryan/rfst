@@ -58,10 +58,10 @@ gg_09 <- gg_80 %>%
 
 ## Arboreal mammal supp data ----
 
-vba_petaurus <- proc.vba(x = "data/tabular/vba_petaurus_all_20190703.csv", project.crs = ch_proj, sm = TRUE)
-vba_pseudocheirus <- proc.vba(x = "data/tabular/vba_pseudocheirus_all_20190703.csv", project.crs = ch_proj, sm = TRUE)
-vba_tcunninghami <- proc.vba(x = "data/tabular/vba_trichosuruscunninghami_all_20190703.csv", project.crs = ch_proj, sm = TRUE)
-vba_tvulpecula <- proc.vba(x = "data/tabular/vba_trichosurusvulpecula_all_20190703.csv", project.crs = ch_proj, sm = TRUE)
+vba_petaurus      <- proc.vba(x = "data/tabular/vba_petaurus_all_20190703.csv",               project.crs = ch_proj, sm = TRUE, pattern = "spotlight|camera")
+vba_pseudocheirus <- proc.vba(x = "data/tabular/vba_pseudocheirus_all_20190703.csv",          project.crs = ch_proj, sm = TRUE, pattern = "spotlight|camera")
+vba_tcunninghami  <- proc.vba(x = "data/tabular/vba_trichosuruscunninghami_all_20190703.csv", project.crs = ch_proj, sm = TRUE, pattern = "spotlight|camera")
+vba_tvulpecula    <- proc.vba(x = "data/tabular/vba_trichosurusvulpecula_all_20190703.csv",   project.crs = ch_proj, sm = TRUE, pattern = "spotlight|camera")
 
 am <- rbind(vba_petaurus, vba_pseudocheirus, vba_tcunninghami, vba_tvulpecula)
 
@@ -71,11 +71,28 @@ am <- am[ch_rfa,]
 
 ## Buffer and sample PA data
 
+# LBP from 1980 without background
+
+pa_lb_80x <- sample.pa(
+  lb_80,
+  ch_rfa,
+  cellsize = 500
+)
+
+st_write(
+  obj = pa_lb_80x,
+  dsn = "output/pa/pa_lb_80x_ch.shp",
+  delete_dsn = TRUE
+)
+
+# LBP from 1980 with background
+
 pa_lb_80 <- buff.sample.pa(
   x = lb_80,
   y = am,
   rfa = ch_rfa,
-  cellsize = 500
+  cellsize = 500,
+  buff.dist = 500
 )
 
 st_write(
@@ -84,11 +101,28 @@ st_write(
   delete_dsn = TRUE
 )
 
+# LBP from 2009 without background
+
+pa_lb_09x <- sample.pa(
+  lb_09,
+  ch_rfa,
+  cellsize = 500
+)
+
+st_write(
+  obj = pa_lb_09x,
+  dsn = "output/pa/pa_lb_09x_ch.shp",
+  delete_dsn = TRUE
+)
+
+# LBP from 2009 with background
+
 pa_lb_09 <- buff.sample.pa(
   x = lb_09,
   y = am,
   rfa = ch_rfa,
-  cellsize = 500
+  cellsize = 500,
+  buff.dist = 500
 )
 
 st_write(
@@ -97,11 +131,28 @@ st_write(
   delete_dsn = TRUE
 )
 
+# GG from 1980 without background
+
+pa_gg_80x <- sample.pa(
+  gg_80,
+  ch_rfa,
+  cellsize = 500
+)
+
+st_write(
+  obj = pa_gg_80x,
+  dsn = "output/pa/pa_gg_80x_ch.shp",
+  delete_dsn = TRUE
+)
+
+# GG from 1980 with background
+
 pa_gg_80 <- buff.sample.pa(
   x = gg_80,
   y = am,
   rfa = ch_rfa,
-  cellsize = 500
+  cellsize = 500,
+  buff.dist = 500
 )
 
 st_write(
@@ -110,16 +161,33 @@ st_write(
   delete_dsn = TRUE
 )
 
-pa_gg_09 <- buff.sample.pa(
-  x = gg_09,
-  y = am,
-  rfa = ch_rfa,
+# GG from 2009 without background
+
+pa_gg_09x <- sample.pa(
+  gg_09,
+  ch_rfa,
   cellsize = 500
 )
 
 st_write(
-  obj = pa_gg_09,
-  dsn = "output/pa/pa_gg_09_ch.shp",
+  obj = pa_gg_09x,
+  dsn = "output/pa/pa_gg_09x_ch.shp",
+  delete_dsn = TRUE
+)
+
+# GG from 2009 with background
+
+pa_gg_09 <- buff.sample.pa(
+  x = gg_09,
+  y = am,
+  rfa = ch_rfa,
+  cellsize = 500,
+  buff.dist = 500
+)
+
+st_write(
+  obj = pa_lb_09,
+  dsn = "output/pa/pa_lb_09_ch.shp",
   delete_dsn = TRUE
 )
 
@@ -129,6 +197,10 @@ save(
   pa_lb_80,
   pa_gg_09,
   pa_gg_80,
+  pa_lb_09x,
+  pa_lb_80x,
+  pa_gg_09x,
+  pa_gg_80x,
   file = "output/RData/02_species_occurrences.RData"
 )
 

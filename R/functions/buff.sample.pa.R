@@ -1,8 +1,9 @@
-buff.sample.pa <- function(x, y, rfa, cellsize = 500){
+buff.sample.pa <- function(x, y, rfa, cellsize = 500, buff.dist = 500){
   
   z <- add.buffered(
     x = x,
-    y = y
+    y = y,
+    buff.dist = buff.dist
   )
   
   result <- sample.pa(
@@ -12,6 +13,5 @@ buff.sample.pa <- function(x, y, rfa, cellsize = 500){
   )
   
   return(result)
-  
   
 }

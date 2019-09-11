@@ -1,9 +1,10 @@
-outside.buffer <- function(x, y){ # x is target species y is background species
+outside.buffer <- function(x, y, buff.dist = 500){ # x is target species y is background species
   
   library(sf)
   library(dplyr)
   
-  buff <- st_buffer(x %>% dplyr::select(-date) %>% filter(PA == 1), 500)
+  buff <- st_buffer(x %>% dplyr::select(-date) %>% filter(PA == 1),
+                    dist = buff.dist)
   
   yinbuff <- y[buff,] %>%
     mutate(inbuff = 1)
