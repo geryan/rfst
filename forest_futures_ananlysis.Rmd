@@ -35,6 +35,7 @@ library(raster)
 library(rasterVis)
 library(rlang)
 library(viridis)
+library(purrr)
 ```
 
 ```{r load everything}
@@ -332,135 +333,61 @@ dt_lb <- tibble(year.from = c(80, 09),
   expand(year.from, bg, varset) %>%
   rowwise %>%
   mutate(pa.data = list(get(sprintf("pa_lb_%02d%s", year.from, ifelse(bg, "", "x"))))) %>%
-  mutate(model.data = map(.x = get.model.data,
-                          .f = pa.data))
+  ungroup %>%
+  mutate(model.data = map(.x = pa.data,
+                          .f = get.model.data,
+                          y = vars_1_01,
+                          na.omit = FALSE),
+         model.data = map2(.x = model.data,
+                           .y = varset,
+                           .f = clean.model.data))
 
 dt_lb
 ```
 ```{r}
-aa <- get.model.data(pa_lb_09, vars_1_01, na.omit = FALSE)
-
-aa
+brt_lb <- dt_lb %>%
+  mutate(brt.fit = map(.x = model.data,
+                       .f = gbmstep,
+                       learning.rate = 0.01,
+                       bag.fraction = 0.75))
 ```
 
 ```{r}
-clean.model.data(aa, y = vn_lb_1)
-```
-
-
-```{r}
-get.model.data(pa_lb_09, vars_1_01, na.omit = FALSE) %>%
-  mutate(nd = as.numeric(ymd("2019-01-01") - date)/365,
-         nd = ifelse(nd > 0, nd, 0)) %>%
-  mutate(tsf = tsf - nd,
-         tsl = tsl - nd,
-         max_age = max_age - nd) %>%
-  mutate(max_age = case_when(tsf < 0 ~ NA_real_,
-                             tsl < 0 ~ NA_real_,
-                             max_age < 0 ~ NA_real_,
-                             TRUE ~ max_age)) %>%
-  mutate(tsf = ifelse(tsf >= 0, tsf, NA),
-         tsl = ifelse(tsl >= 0, tsl, NA))
-```
-
-```{r}
-aa <- tibble(a = 1:10, b = 2:11, c = 5:14)
-
-aa
-```
-
-
-```{r}
-zz <- function(x, y){
-  
-  result <- x %>%
-    dplyr::select(a, y)
-  
-  return(result)
-}
+rbrt_lb <- brt_lb %>%
+  mutate(auc = map(.x = brt.fit,
+                   .f = brt_auc),
+         pred = map(.x = brt.fit,
+                    .f = brtpredict,
+                    ))
 ```
 
 
 
-```{r}
-zz(aa, c("b"))
+### 
+```{r brt_lb_09_1}
+brt_lb_09_1 <- gbmstep(data = md_lb_09 %>% dplyr::select("PA", vn_lb_1),
+                       learning.rate = 0.01,
+                       bag.fraction = 0.75)
 ```
 
-```{r}
-zz(mtcars, c("cyl", "mpg"))
+```{r summary brt_lb_09_1}
+summary(brt_lb_09_1)
 ```
-
-
-
-```{r}
-colnames(md_lb_09)
+```{r gbm.plot brt_lb_09_1}
+gbm.plot(brt_lb_09_1)
 ```
-```{r}
-brt_lb09_n <- gbm.step(data = nd_lb_09,
-                     gbm.x = c(3, 15, 17, 30:39),
-                     gbm.y = 2,
-                     family = "bernoulli",
-                     tree.complexity = 5,
-                    learning.rate = 0.1,
-                    step.size = 1,
-                    bag.fraction = 0.5,
-                    prev.stratify = FALSE,
-                    verbose = FALSE,
-                    max.trees = 2000)
-```
-
-```{r}
-brt_lb09_m <- gbm.step(data = md_lb_09,
-                     gbm.x = c(3, 15, 17, 30:39),
-                     gbm.y = 2,
-                     family = "bernoulli",
-                     tree.complexity = 5,
-                    learning.rate = 0.01,
-                    step.size = 1,
-                    bag.fraction = 0.5,
-                    prev.stratify = FALSE,
-                    verbose = FALSE,
-                    max.trees = 2000)
+```{r auc brt_lb_09_1}
+brt_auc(brt_lb_09_1)
 ```
 
 
-```{r}
-ip_lb09_n <- brtpredict(variables = v_1_01,
-                      model = brt_lb09_n,
-                      scn_id = "ip",
-                      varset = "test",
-                      species = "lb")
+```{r ip_lb_09_1}
+ip_lb_09_1 <- brtpredict(variables = vlb1_1_01,
+                         model = brt_lb_09_1,
+                         scn_id = "s1_01",
+                         varset = "09_1",
+                         species = "lb") %T>%
+  lp
 ```
 
-```{r}
-plot(ip_lb09_n)
-```
-
-
-```{r}
-ip_lb09_m <- brtpredict(variables = v_1_01,
-                      model = brt_lb09_m,
-                      scn_id = "ip",
-                      varset = "test",
-                      species = "lb")
-```
-
-```{r}
-plot(ip_lb09_m)
-```
-
-
-# Population viability analysis 
-
-  
-
-```{r}
-lp(aa)
-```
-
-
-```{r}
-plot(aa, col = viridis(100, option = "A"))
-plot(pa_lb_09, add = TRUE)
-```
 

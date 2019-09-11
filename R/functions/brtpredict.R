@@ -20,6 +20,8 @@ brtpredict <- function(variables,
                                                  species),
                               overwrite = TRUE)
     
+    names(result) <- "sdm_0"
+    
     
   } else {
     

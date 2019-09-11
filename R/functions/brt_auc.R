@@ -1,4 +1,4 @@
-brt_auc <- function(x){
+brt_auc <- function(x, res = "auc"){
   
   # calculate area under roc curve for BRT
   
@@ -6,7 +6,19 @@ brt_auc <- function(x){
   
   auc <- round(x$cv.statistics$discrimination.mean, 2)
   
+  if(res == "auc"){
+    return(auc)
+  }
+  
   err <- round(x$cv.statistics$discrimination.se, 2)
   
-  paste("Discrimination is", auc, "+/-", err)
+  if(res == "err"){
+    return(err)
+  }
+  
+  return(paste("Discrimination is", auc, "+/-", err))
+  
+  
+  
+  
 }
