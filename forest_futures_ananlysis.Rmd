@@ -327,7 +327,7 @@ load(file = "output/RData/08_distribution_model_data.RData")
 
 ### Table of models
 ```{r lbp dist table}
-dt_lb <- tibble(year.from = c(80, 09),
+dt_lb <- tibble(year.from = c("80", "09"),
                 bg = c(TRUE, FALSE),
                 varset = list(vn_lb_1, vn_lb_2)) %>%
   expand(year.from, bg, varset) %>%
@@ -345,18 +345,57 @@ dt_lb <- tibble(year.from = c(80, 09),
 dt_lb
 ```
 ```{r}
+plan(multisession, workers = 2)
+
 brt_lb <- dt_lb %>%
-  mutate(brt.fit = map(.x = model.data,
+  filter(year.from == 9) %>%
+  filter(bg) %>%
+  mutate(brt.fit = future_map(.x = model.data,
                        .f = gbmstep,
                        learning.rate = 0.01,
                        bag.fraction = 0.75))
+
+brt_lb
 ```
 
 ```{r}
-rbrt_lb <- brt_lb %>%
+
+brtlb <- tibble(year.from = c("80", "09"),
+                bg = c(TRUE, FALSE),
+                varset = list(vn_lb_1, vn_lb_2)) %>%
+  expand(year.from, bg, varset) %>%
+  rowwise %>%
+  mutate(pa.data = list(get(sprintf("pa_lb_%s%s", year.from, ifelse(bg, "", "x"))))) %>%
+  ungroup %>%
+  mutate(partn = 1:8) %>%
+  partition(cluster) %>%
+  mutate(model.data = map(.x = pa.data,
+                          .f = get.model.data,
+                          y = vars_1_01,
+                          na.omit = FALSE),
+         model.data = map2(.x = model.data,
+                           .y = varset,
+                           .f = clean.model.data))
+
+brtlb
+```
+
+```{r}
+zbrt_lb <- brt_lb %>%
   mutate(auc = map(.x = brt.fit,
                    .f = brt_auc),
-         pred = map(.x = brt.fit,
+         varset = paste0("%2d_%s%s", year.from, ifelse(bg, "b", "x")))
+
+zbrt_lb
+         
+
+ip_lb_09_1 <- brtpredict(variables = vlb1_1_01,
+                         model = brt_lb_09_1,
+                         scn_id = "s1_01",
+                         varset = "09_1",
+                         species = "lb")
+
+pred = map(.x = brt.fit,
                     .f = brtpredict,
                     ))
 ```
