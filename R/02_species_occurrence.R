@@ -87,7 +87,7 @@ st_write(
 
 # LBP from 1980 with background
 
-pa_lb_80 <- buff.sample.pa(
+pa_lb_80b <- buff.sample.pa(
   x = lb_80,
   y = am,
   rfa = ch_rfa,
@@ -96,8 +96,8 @@ pa_lb_80 <- buff.sample.pa(
 )
 
 st_write(
-  obj = pa_lb_80,
-  dsn = "output/pa/pa_lb_80_ch.shp",
+  obj = pa_lb_80b,
+  dsn = "output/pa/pa_lb_80b_ch.shp",
   delete_dsn = TRUE
 )
 
@@ -117,7 +117,7 @@ st_write(
 
 # LBP from 2009 with background
 
-pa_lb_09 <- buff.sample.pa(
+pa_lb_09b <- buff.sample.pa(
   x = lb_09,
   y = am,
   rfa = ch_rfa,
@@ -126,8 +126,8 @@ pa_lb_09 <- buff.sample.pa(
 )
 
 st_write(
-  obj = pa_lb_09,
-  dsn = "output/pa/pa_lb_09_ch.shp",
+  obj = pa_lb_09b,
+  dsn = "output/pa/pa_lb_09b_ch.shp",
   delete_dsn = TRUE
 )
 
@@ -147,7 +147,7 @@ st_write(
 
 # GG from 1980 with background
 
-pa_gg_80 <- buff.sample.pa(
+pa_gg_80b <- buff.sample.pa(
   x = gg_80,
   y = am,
   rfa = ch_rfa,
@@ -156,8 +156,8 @@ pa_gg_80 <- buff.sample.pa(
 )
 
 st_write(
-  obj = pa_gg_80,
-  dsn = "output/pa/pa_gg_80_ch.shp",
+  obj = pa_gg_80b,
+  dsn = "output/pa/pa_gg_80b_ch.shp",
   delete_dsn = TRUE
 )
 
@@ -177,7 +177,7 @@ st_write(
 
 # GG from 2009 with background
 
-pa_gg_09 <- buff.sample.pa(
+pa_gg_09b <- buff.sample.pa(
   x = gg_09,
   y = am,
   rfa = ch_rfa,
@@ -186,17 +186,17 @@ pa_gg_09 <- buff.sample.pa(
 )
 
 st_write(
-  obj = pa_lb_09,
-  dsn = "output/pa/pa_lb_09_ch.shp",
+  obj = pa_lb_09b,
+  dsn = "output/pa/pa_lb_09b_ch.shp",
   delete_dsn = TRUE
 )
 
 
 save(
-  pa_lb_09,
-  pa_lb_80,
-  pa_gg_09,
-  pa_gg_80,
+  pa_lb_09b,
+  pa_lb_80b,
+  pa_gg_09b,
+  pa_gg_80b,
   pa_lb_09x,
   pa_lb_80x,
   pa_gg_09x,
