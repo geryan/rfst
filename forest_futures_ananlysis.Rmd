@@ -326,6 +326,42 @@ load(file = "output/RData/08_distribution_model_data.RData")
 ## Leadbeater's Possum
 
 ### Table of models
+```{r}
+load(file = "output/RData/09_fit_distribution_models.RData")
+```
+
+```{r}
+brt_lb %>%
+  unnest(auc) %>%
+  varset.name 
+```
+
+**USE FUTURE_MAPPLY TO DO PREDICTIONS FOR MAPS**
+
+
+```{r}
+ip_lb_09b_1 <- brtpredict(variables = vlb1_1_01,
+                         model = brt_lb$brt.fit[[3]],
+                         scn_id = "s1_01",
+                         varset = "09b_1",
+                         species = "lb")
+
+ip_lb_80b_1 <- brtpredict(variables = vlb1_1_01,
+                         model = brt_lb$brt.fit[[7]],
+                         scn_id = "s1_01",
+                         varset = "80b_1",
+                         species = "lb")
+```
+
+```{r}
+lp(ip_lb_09b_1)
+```
+
+```{r}
+lp(ip_lb_80b_1)
+```
+
+
 ```{r lbp dist table}
 dt_lb <- tibble(year.from = c("80", "09"),
                 bg = c(TRUE, FALSE),
