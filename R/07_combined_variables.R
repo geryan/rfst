@@ -108,11 +108,11 @@ for (i in 1:length(scn_list)){
 }
 
 save(
+  vn_lb_1,
+  vn_lb_2,
+  vn_gg_1,
+  vn_gg_2,
   list = c(
-    vn_lb_1,
-    vn_lb_2,
-    vn_gg_1,
-    vn_gg_2,
     ls()[grep("vars_", ls())],
     ls()[grep("vgg", ls())],
     ls()[grep("vlb", ls())]

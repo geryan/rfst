@@ -360,6 +360,10 @@ lp(ip_lb_09b_1)
 ```{r}
 lp(ip_lb_80b_1)
 ```
+```{r}
+plot(ip_lb_80b_1, col = viridis(100, option = "A"))
+plot(pa_lb_80["PA"], add = TRUE)
+```
 
 
 ```{r lbp dist table}
