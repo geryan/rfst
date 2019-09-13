@@ -323,150 +323,21 @@ load(file = "output/RData/08_distribution_model_data.RData")
 
 # Distribution modelling
 
-## Leadbeater's Possum
+## Fit models 
+```{r source fit distribution models}
+#source(file = "R/09_fit_distribution_models.R")
+```
 
-### Table of models
-```{r}
+
+```{r load fit distribution models}
 load(file = "output/RData/09_fit_distribution_models.RData")
 ```
 
-```{r}
-brt_lb %>%
-  unnest(auc) %>%
-  varset.name 
-```
 
-**USE FUTURE_MAPPLY TO DO PREDICTIONS FOR MAPS**
+## Leadbeater's Possum
 
 
 ```{r}
-ip_lb_09b_1 <- brtpredict(variables = vlb1_1_01,
-                         model = brt_lb$brt.fit[[3]],
-                         scn_id = "s1_01",
-                         varset = "09b_1",
-                         species = "lb")
-
-ip_lb_80b_1 <- brtpredict(variables = vlb1_1_01,
-                         model = brt_lb$brt.fit[[7]],
-                         scn_id = "s1_01",
-                         varset = "80b_1",
-                         species = "lb")
-```
-
-```{r}
-lp(ip_lb_09b_1)
-```
-
-```{r}
-lp(ip_lb_80b_1)
-```
-```{r}
-plot(ip_lb_80b_1, col = viridis(100, option = "A"))
-plot(pa_lb_80["PA"], add = TRUE)
-```
-
-
-```{r lbp dist table}
-dt_lb <- tibble(year.from = c("80", "09"),
-                bg = c(TRUE, FALSE),
-                varset = list(vn_lb_1, vn_lb_2)) %>%
-  expand(year.from, bg, varset) %>%
-  rowwise %>%
-  mutate(pa.data = list(get(sprintf("pa_lb_%02d%s", year.from, ifelse(bg, "", "x"))))) %>%
-  ungroup %>%
-  mutate(model.data = map(.x = pa.data,
-                          .f = get.model.data,
-                          y = vars_1_01,
-                          na.omit = FALSE),
-         model.data = map2(.x = model.data,
-                           .y = varset,
-                           .f = clean.model.data))
-
-dt_lb
-```
-```{r}
-plan(multisession, workers = 2)
-
-brt_lb <- dt_lb %>%
-  filter(year.from == 9) %>%
-  filter(bg) %>%
-  mutate(brt.fit = future_map(.x = model.data,
-                       .f = gbmstep,
-                       learning.rate = 0.01,
-                       bag.fraction = 0.75))
-
 brt_lb
 ```
-
-```{r}
-
-brtlb <- tibble(year.from = c("80", "09"),
-                bg = c(TRUE, FALSE),
-                varset = list(vn_lb_1, vn_lb_2)) %>%
-  expand(year.from, bg, varset) %>%
-  rowwise %>%
-  mutate(pa.data = list(get(sprintf("pa_lb_%s%s", year.from, ifelse(bg, "", "x"))))) %>%
-  ungroup %>%
-  mutate(partn = 1:8) %>%
-  partition(cluster) %>%
-  mutate(model.data = map(.x = pa.data,
-                          .f = get.model.data,
-                          y = vars_1_01,
-                          na.omit = FALSE),
-         model.data = map2(.x = model.data,
-                           .y = varset,
-                           .f = clean.model.data))
-
-brtlb
-```
-
-```{r}
-zbrt_lb <- brt_lb %>%
-  mutate(auc = map(.x = brt.fit,
-                   .f = brt_auc),
-         varset = paste0("%2d_%s%s", year.from, ifelse(bg, "b", "x")))
-
-zbrt_lb
-         
-
-ip_lb_09_1 <- brtpredict(variables = vlb1_1_01,
-                         model = brt_lb_09_1,
-                         scn_id = "s1_01",
-                         varset = "09_1",
-                         species = "lb")
-
-pred = map(.x = brt.fit,
-                    .f = brtpredict,
-                    ))
-```
-
-
-
-### 
-```{r brt_lb_09_1}
-brt_lb_09_1 <- gbmstep(data = md_lb_09 %>% dplyr::select("PA", vn_lb_1),
-                       learning.rate = 0.01,
-                       bag.fraction = 0.75)
-```
-
-```{r summary brt_lb_09_1}
-summary(brt_lb_09_1)
-```
-```{r gbm.plot brt_lb_09_1}
-gbm.plot(brt_lb_09_1)
-```
-```{r auc brt_lb_09_1}
-brt_auc(brt_lb_09_1)
-```
-
-
-```{r ip_lb_09_1}
-ip_lb_09_1 <- brtpredict(variables = vlb1_1_01,
-                         model = brt_lb_09_1,
-                         scn_id = "s1_01",
-                         varset = "09_1",
-                         species = "lb") %T>%
-  lp
-```
-
 
