@@ -25,6 +25,9 @@ brtpredict <- function(variables,
     
   } else {
     
+    library(doMC)
+    library(foreach)
+    
     registerDoMC(cores = ncores)
     
     result <- foreach(i = seq_len(length(variables))) %dopar% {

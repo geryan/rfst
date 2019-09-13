@@ -9,6 +9,7 @@ library(tibble)
 library(future)
 library(furrr)
 library(tidyr)
+library(future.apply)
 
 load(file = "output/RData/00_comp_controls.RData")
 load(file = "output/RData/01_landscape_variables.RData")
@@ -60,8 +61,8 @@ brt_lb <- tibble(year.from = c("80", "09"),
 
 ip_lb <- future_mapply(
   FUN = brtpredict,
-  model = lb_brt$brt.fit,
-  varset = lb_brt$varsetn,
+  model = brt_lb$brt.fit,
+  varset = brt_lb$varsetn,
   MoreArgs = list(variables = vlb1_1_01,
                   scn_id = "s1_01",
                   species = "lb"),
@@ -69,7 +70,7 @@ ip_lb <- future_mapply(
 
 
 
-brt_lb %>%
+brt_lb <- brt_lb %>%
   mutate(init.pred = ip_lb)
   
   
@@ -114,8 +115,8 @@ brt_gg <- tibble(year.from = c("80", "09"),
 
 ip_gg <- future_mapply(
   FUN = brtpredict,
-  model = gg_brt$brt.fit,
-  varset = gg_brt$varsetn,
+  model = brt_gg$brt.fit,
+  varset = brt_gg$varsetn,
   MoreArgs = list(variables = vgg1_1_01,
                   scn_id = "s1_01",
                   species = "gg"),
@@ -123,7 +124,7 @@ ip_gg <- future_mapply(
 
 
 
-brt_gg %>%
+brt_gg <- brt_gg %>%
   mutate(init.pred = ip_gg)
 
   

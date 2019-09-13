@@ -333,11 +333,63 @@ load(file = "output/RData/08_distribution_model_data.RData")
 load(file = "output/RData/09_fit_distribution_models.RData")
 ```
 
+## Interrogate models
 
-## Leadbeater's Possum
+### Leadbeater's Possum
+
+
+```{r brt_lb}
+brt_lb
+```
+
+```{r}
+brt_lb %>%
+  dplyr::select(year.from, bg, varset, lr, bf, auc, trees)
+  
+```
 
 
 ```{r}
-brt_lb
+lp(brt_lb)
 ```
+
+### Greater Glider
+
+
+## Predict to future
+
+### Leadbeater's possum
+```{r}
+preds_lb <- expand.grid(
+  scenario = scn_list,
+  rep = rep_list
+) %>%
+  as_tibble %>%
+  mutate(
+    scn_id = sprintf("s%s_%s", scenario, rep),
+    v_id = sprintf("vlb1_%s_%s", scenario, rep)
+  ) %>%
+  rowwise %>%
+  mutate(
+    variables = map(
+      .x = v_id,
+      .f = get
+    )
+  )
+
+preds_lb
+```
+
+```{r}
+ip_lb <- future_mapply(
+  FUN = brtpredict,
+  model = brt_lb$brt.fit,
+  varset = brt_lb$varsetn,
+  MoreArgs = list(variables = vlb1_1_01,
+                  scn_id = "s1_01",
+                  species = "lb"),
+  future.packages = c("gbm", "raster", "dismo"))
+
+```
+
 
