@@ -7,6 +7,10 @@ brtpredict <- function(variables,
                        initial = TRUE,
                        ncores){
   
+  library(gbm)
+  library(raster)
+  library(dismo)
+  
   if(initial){
     
     result <- raster::predict(object = variables[[1]],
@@ -25,12 +29,12 @@ brtpredict <- function(variables,
     
   } else {
     
-    library(doMC)
-    library(foreach)
+    #library(doMC)
+    #library(foreach)
     
-    registerDoMC(cores = ncores)
+    #registerDoMC(cores = ncores)
     
-    result <- foreach(i = seq_len(length(variables))) %dopar% {
+    result <- foreach(i = seq_len(length(variables)), .packages = c("gbm", "raster", "dismo")) %do% {
       
       raster::predict(object = variables[[i]],
                       model = model,

@@ -6,6 +6,8 @@ library(dplyr)
 library(purrr)
 library(tibble)
 library(tidyr)
+library(future)
+library(future.apply)
 library(raster)
 library(sp)
 
@@ -14,10 +16,6 @@ load(file = "output/RData/00_comp_controls.RData")
 load(file = "output/RData/01_landscape_variables.RData")
 load(file = "output/RData/07_combined_variables.RData")
 load(file = "output/RData/09_fit_distribution_models.RData")
-
-
-library(raster)
-library(sp)
 
 source.functions("R/functions")
 
@@ -37,11 +35,14 @@ preds_lb <- expand.grid(
   mutate(
     variables = map(
       .x = v_id,
-      .f = get
+      .f = get,
+      envir = .GlobalEnv
     )
   )
 
-predmaps_lb <- mapply(
+plan(multisession, workers = ncores)
+
+predmaps_lb <- future_mapply(
   FUN = brtpredict,
   variables = preds_lb$variables,
   scn_id = preds_lb$scn_id,
@@ -55,8 +56,10 @@ predmaps_lb <- mapply(
 )
 
 
-preds_lb <- preds_lb %>%
-  mutate(predmaps = predmaps_lb)
+pms_lb <- tibble(predmaps = predmaps_lb)
+
+preds_lb <- bind_cols(preds_lb, pms_)
+
 
 # Predict GG -------------------
 

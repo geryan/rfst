@@ -53,6 +53,15 @@ names(prec07) <- "prec07"
 # Future climate
 # -------------------------------------------------------------
 
+## NEED TO 
+
+climdat <- expand.grid(model = c("CSIRO_Mk3-6"), rcp = c(8.5, 4.5), var = c("tmax01", "tmin07", "prec01", "prec07")) %>%
+  tibble %>%
+  
+
+#  info('tasmax_Amon_CSIRO-Mk3-6-0_rcp45_r1i1p1_abs-change-wrt-seasavg-clim_native', url = "http://nrm-erddap.nci.org.au/erddap/")
+  
+#  griddap(aa, latitude = c(-40.10297775, -32.64199448), longitude = c(140.625, 150), time = c("2025-01-01T12:00:00", "2090-01-01T12:00:00"), fields = "tasmax_january", url = "http://nrm-erddap.nci.org.au/erddap/")
 # Absolute change in temperature
 raw_tmax01_4.5_ac <- read.multi.line.header(file = "http://nrm-erddap.nci.org.au/erddap/griddap/tasmax_Amon_CSIRO-Mk3-6-0_rcp45_r1i1p1_abs-change-wrt-seasavg-clim_native.csv?tasmax_january[(2025-01-01T12:00:00Z):1:(2090-01-01T12:00:00Z)][(-40.10297775):1:(-32.64199448)][(140.625):1:(150)]")
 raw_tmax01_8.5_ac <- read.multi.line.header(file = "http://nrm-erddap.nci.org.au/erddap/griddap/tasmax_Amon_CSIRO-Mk3-6-0_rcp85_r1i1p1_abs-change-wrt-seasavg-clim_native.csv?tasmax_january[(2025-01-01T12:00:00Z):1:(2090-01-01T12:00:00Z)][(-40.10297775):1:(-32.64199448)][(140.625):1:(150)]")

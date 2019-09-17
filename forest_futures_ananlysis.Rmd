@@ -48,6 +48,8 @@ load(file = "output/RData/05_geophys_vars.RData")
 load(file = "output/RData/06_climate_variables.RData")
 load(file = "output/RData/07_combined_variables.RData")
 load(file = "output/RData/08_distribution_model_data.RData")
+load(file = "output/RData/09_fit_distribution_models.RData")
+load(file = "output/RData/10_predict_SDMs.RData")
 #load(file = "output/RData/")
 ```
 
