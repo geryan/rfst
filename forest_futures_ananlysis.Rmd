@@ -382,6 +382,8 @@ preds_lb <- expand.grid(
 preds_lb
 ```
 
+**NEXT IS TO GET MORTALITY LAYER OUT OF DV AND BIND TO COLUMN IN PREDS LB**
+
 ```{r}
 ip_lb <- future_mapply(
   FUN = brtpredict,

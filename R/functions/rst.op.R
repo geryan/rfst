@@ -17,7 +17,8 @@ rst.op <- function(
     "pb",
     "harvest",
     "fire",
-    "div10"),
+    "div10",
+    "mort"),
   proj_mask,
   filename,
   layernames,
@@ -209,6 +210,11 @@ rst.op <- function(
       
       v <- v1/10
       
+    } else if (op == "mort"){
+      
+      v2 <- getValues(input2, row = bs$row[i], nrows = bs$nrows[i])
+      
+      v <- ifelse(v1 == 1, 1, v2/6)
     }
       
     out <- writeValues(out, v, bs$row[i])

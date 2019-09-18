@@ -21,6 +21,7 @@ get.dist <- function(
   fihi  <- vector("list", timesteps + 1)
   tsl <- vector("list", timesteps + 1)
   tsf <- vector("list", timesteps + 1)
+  mort <- vector("list", timesteps + 1)
   
   # Get planned burning and logging layers separated from harvest layer
   # Create fire layer from planned burning and fire severity
@@ -172,6 +173,21 @@ get.dist <- function(
         year0 + i - 1
       ),
       layernames = "tsl",
+      year = year0 + i - 1
+    )
+    
+    mort[[i]] <- rst.op(
+      input1 = lo[[i]],
+      input2 = fs[[i]],
+      op = "mort",
+      proj_mask = proj_mask,
+      filename = sprintf(
+        "%s/mort/mort_%s_%s.grd",
+        out_path,
+        scn_id,
+        year0 + i - 1
+      ),
+      layernames = "mort",
       year = year0 + i - 1
     )
   }

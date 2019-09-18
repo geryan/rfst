@@ -95,6 +95,7 @@ save(
   ch_rfa,
   ch_fire_history,
   ch_logging_history,
+  rfa,
   file = "output/RData/01_landscape_variables.RData"
 )
 
