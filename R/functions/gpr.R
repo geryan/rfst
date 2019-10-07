@@ -3,7 +3,7 @@ gpr <- function(x, workers) {
   library(future)
   library(future.apply)
   
-  plan(multiprocess, workers = workers)
+  plan(multisession, workers = workers)
   
   total_stages <- raster::nlayers(x[[1]]$population)
   idx <- which(!is.na(raster::getValues(x[[1]]$population[[1]])))

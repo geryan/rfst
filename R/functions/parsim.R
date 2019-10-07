@@ -22,7 +22,8 @@ parsim <- function(
                           landscape = landscape,
                           population_dynamics = population_dynamics,
                           timesteps = timesteps,
-                          replicates = 1)
+                          replicates = 1,
+                          verbose = FALSE)
   
   result <- bind.simulation.repetitions(result)
   

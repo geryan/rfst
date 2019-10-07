@@ -6,10 +6,22 @@ psr <- function(
   ...
 ){
   
+  dev.off()
   
   if(missing(ageClassNames)){
     ageClassNames <- c("Newborn", "Juvenile", "Adult")
   }
+  
+  
+  graph.pal <- c(
+    "#6da36b",
+    "#eb7d75",
+    "#80b1d3",
+    "#bebada",
+    "#f0ab7e",
+    "#969696"
+  )
+  
   
   total_stages <- dim(popmat)[2]
   reps <- dim(popmat)[3]
@@ -31,7 +43,7 @@ psr <- function(
                      xlab = "Timesteps",
                      #lwd = 3,
                      col = graph.pal[i],
-                     ylim=range(pretty(pop)),
+                     ylim = range(pretty(pop)),
                      xaxt = 'n',
                      ...)
       axis(side = 1, at = unique(c(c(1, seq(0, length(pop.mn[, i]), by = round(ifelse(length(pop.mn[, i]) < 10, 10, length(pop.mn[, i])) / 10))[-1]), length(pop.mn[, i]))))
@@ -57,6 +69,8 @@ psr <- function(
     # draw the 95% CI polygon (if available) and median line
     quants <- t(apply(apply(pop, 3, rowSums),1, stats::quantile, c(0.025, 0.5, 0.975)))
     
+    tpop <- t(apply(pop, MARGIN = 3, FUN = rowSums))
+    
     xaxs <- seq_len(nrow(pop[ , , 1]))
     
     graphics::plot(quants[, 2], #rowSums(pop[ , , 1]),
@@ -80,12 +94,25 @@ psr <- function(
                       col = grDevices::grey(0.9),
                       border = NA)
     
+    
+    for (j in 1:reps) {
+      graphics::lines(tpop[j , ],
+                      col = grDevices::grey(0.8),
+                      lwd = 1)
+    }
+    
     graphics::lines(quants[, 2] ~ xaxs,
                     #lwd = 2,
-                    col = grDevices::grey(0.4))
+                    col = grDevices::grey(0.2))
+    
+    
     
     if (emp) {
-      graphics::abline(h = round(min(apply(pop, 3, function(x) min(rowSums(x)))), 0), lwd = 1, lty = 2)
+      
+      empcol <- ifelse(round(min(apply(pop, 3, function(x) min(rowSums(x)))), 0) == 0, "red", "black")
+      
+      graphics::abline(h = round(min(apply(pop, 3, function(x) min(rowSums(x)))), 0), lwd = 1, lty = 2, col = empcol)
+      
     }
     
   }

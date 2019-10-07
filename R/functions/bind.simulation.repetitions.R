@@ -2,9 +2,9 @@ bind.simulation.repetitions <- function(arglist){ # means of overcoming memory l
   
   if(!is.list(arglist)){stop("Please pass simulation results in a list")}
   
-  for(i in 1:length(arglist)){
-    if(!is.simulation_results(arglist[[i]])) stop("Arguments are not STEPS simulation results")
-  }
+  # for(i in 1:length(arglist)){
+  #   if(!is.simulation_results(arglist[[i]])) stop("Arguments are not STEPS simulation results")
+  # }
   
   for( i in 2:length(arglist)){
     

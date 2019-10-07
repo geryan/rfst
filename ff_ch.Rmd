@@ -3617,7 +3617,7 @@ tm_lb_fl <- matrix(c(0.00,0.00,1.10,
                      0.00,0.59,0.79),
                    nrow = 3,
                    ncol = 3,
-                   byrow = TRUE)# based on Possingham et al 1994
+                   byrow = TRUE)
 
 colnames(tm_lb_fl) <- rownames(tm_lb_fl) <- ageClassNames
 

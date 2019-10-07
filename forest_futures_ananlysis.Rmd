@@ -350,50 +350,240 @@ brt_lb %>%
   
 ```
 
-
-```{r}
-lp(brt_lb)
-```
-
 ### Greater Glider
-
 
 ## Predict to future
 
+```{r source predict_SDMs}
+#source(file = "R/10_predict_SDMs.R")
+```
+
+```{r load predict_SDMs}
+load(file = "output/RData/10_predict_SDMs.RData")
+```
+
+
 ### Leadbeater's possum
+
 ```{r}
-preds_lb <- expand.grid(
-  scenario = scn_list,
-  rep = rep_list
-) %>%
-  as_tibble %>%
+tm_lb <- matrix(c(0.00, 0.59 * 0.75, 0.79 *0.75,
+                 0.59,        0.00,       0.00,
+                 0.00,        0.59,       0.79),
+               nrow = 3,
+               ncol = 3,
+               byrow = TRUE,
+               dimnames = list(c('Newborn','Juvenile','Adult'),
+                               c('Newborn','Juvenile','Adult')))
+
+
+ss_lb <- get.stable.states(tm_lb)
+
+ss_lb
+
+rmax(tm = tm_lb)
+```
+
+
+
+```{r}
+set_lb <- preds_lb[1:3,] %>%
   mutate(
-    scn_id = sprintf("s%s_%s", scenario, rep),
-    v_id = sprintf("vlb1_%s_%s", scenario, rep)
-  ) %>%
+    dv_id = sprintf("dv_%s_%s", scenario, rep)
+    ) %>%
   rowwise %>%
   mutate(
-    variables = map(
-      .x = v_id,
+    dvs = map(
+      .x = dv_id,
       .f = get
     )
-  )
+  ) %>%
+  ungroup %>%
+  mutate(
+    mort = map(
+      .x = dvs,
+      .f = function(y){lapply(y, FUN = function(x){x[["mort"]]})}
+    ),
+    hs = map(
+      .x = predmaps,
+      .f =  function(x){x[["sdm_0"]]}
+    )
+  ) %>%
+  dplyr::select(-v_id, -variables, -dv_id, -dvs)
 
-preds_lb
+set_lb
 ```
 
-**NEXT IS TO GET MORTALITY LAYER OUT OF DV AND BIND TO COLUMN IN PREDS LB**
+
+
 
 ```{r}
-ip_lb <- future_mapply(
-  FUN = brtpredict,
-  model = brt_lb$brt.fit,
-  varset = brt_lb$varsetn,
-  MoreArgs = list(variables = vlb1_1_01,
-                  scn_id = "s1_01",
-                  species = "lb"),
-  future.packages = c("gbm", "raster", "dismo"))
+ccs <- mapply(
+  FUN = mapcc,
+  inputlist = set_lb$predmaps,
+  scn_id = set_lb$scn_id,
+  MoreArgs = list(
+    proj_mask = ch_mask,
+    size = 6
+  )
+)
+
+ccs <- tibble(cc = ccs)
+
 
 ```
 
+
+```{r}
+initpops <- mapply(
+  FUN = initpop,
+  hs = set_lb$hs,
+  cc = ccs$carrying_capacity,
+  scn_id = set_lb$scn_id,
+  MoreArgs = list(
+    popsize = 5000,
+    proj_mask = ch_mask,
+    out_path = "output/pva_vars",
+    varset = "",
+    species = "lb",
+    tm = tm_lb
+  )
+)
+
+initpops <- tibble(init_pop = initpops)
+```
+
+```{r}
+tml <- vector("list", 3) # 3 because tibble is 3 rows long. change for longer one
+
+for (i in 1:3){
+  tml[[i]] <- tm_lb
+}
+
+tml
+```
+
+```{r}
+simset_lb <- set_lb %>%
+  mutate(transition.matrix = tml)
+
+simset_lb <- bind_cols(simset_lb, ccs, initpops)
+
+simset_lb
+```
+
+
+```{r}
+sslb <- simset_lb %>%
+  mply_landscape
+
+sslb
+```
+```{r}
+ mapply(
+    FUN = landscape,
+    population = x$init_pop,
+    suitability = x$hs,
+    carrying_capacity = x$cc
+  )
+```
+
+
+```{r}
+mply_landscape <- function(x){
+  
+  library(tibble)
+  library(magrittr)
+  library(dplyr)
+  
+  z <- mapply(
+    FUN = landscape,
+    population = x$init_pop,
+    suitability = x$hs,
+    carrying_capacity = x$cc
+  )
+  
+  zz <- tibble(landscape = z)
+  
+  result <- bind_cols(x, zz)
+  
+  return(result)
+  
+}
+```
+
+
+
+```{r}
+aa <- set_lb %$%
+mapply(
+  FUN = mapcc,
+  inputlist = predmaps,
+  scn_id = scn_id,
+  MoreArgs = list(
+    proj_mask = ch_mask,
+    size = 6
+  )
+)
+
+aa
+```
+
+
+```{r}
+l1 <- landscape(
+  population = simset_lb$init.pop[[1]],
+  suitability = simset_lb$predmaps[[1]],
+  carrying_capacity = simset_lb$carrying_capacity[[1]]
+)
+```
+
+
+```{r}
+d1 <- population_dynamics(
+  change = growth(
+    transition_matrix = matrix(c(0.00, 0.59 * 0.75, 0.79 *0.75,
+                 0.59,        0.00,       0.00,
+                 0.00,        0.59,       0.79),
+               nrow = 3,
+               ncol = 3,
+               byrow = TRUE,
+               dimnames = list(c('Newborn','Juvenile','Adult'),
+                               c('Newborn','Juvenile','Adult'))),
+    global_stochasticity = 0.1
+  ),
+  dispersal =  cellular_automata_dispersal(
+    max_cells = c(0, 50, 50),
+    dispersal_proportion = density_dependence_dispersing()
+    )
+)
+```
+
+```{r}
+sim_lb_1_1 <- parsim(
+  landscape = l1,
+  population_dynamics = d1,
+  timesteps = 10,
+  replicates = 10,
+  workers = 10,
+  proj_mask = ch_mask,
+  out_path = "output/pva_pops/",
+  scn_id = "s1",
+  varset = "1",
+  species = "lb"
+)
+```
+
+```{r}
+plan(sequential)
+s1 <- simulation(landscape = l1, population_dynamics = d1, timesteps = 10, replicates = 10)
+```
+
+```{r}
+pp <- preds_lb[1:3,]
+```
+
+
+```{r}
+
+```
 

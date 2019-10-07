@@ -196,7 +196,7 @@ get.dist <- function(
   # Combine lists of rasters into a list of raster stacks
   # ----
   
-  result <- mapply(pb, fi, lo, fihi, lohi, tsf, tsl, FUN = stack)
+  result <- mapply(pb, fi, lo, fihi, lohi, tsf, tsl, mort, FUN = stack)
   
   return(result)
   

@@ -58,7 +58,7 @@ predmaps_lb <- future_mapply(
 
 pms_lb <- tibble(predmaps = predmaps_lb)
 
-preds_lb <- bind_cols(preds_lb, pms_)
+preds_lb <- bind_cols(preds_lb, pms_lb)
 
 
 # Predict GG -------------------
