@@ -408,6 +408,12 @@ set_lb <- preds_lb[1:3,] %>%
       .f =  function(x){x[["sdm_0"]]}
     )
   ) %>%
+  mutate(
+    mort = map(
+      .x = mort,
+      .f = stack
+    )
+  ) %>%
   dplyr::select(-v_id, -variables, -dv_id, -dvs)
 
 set_lb
@@ -437,7 +443,7 @@ ccs <- tibble(cc = ccs)
 initpops <- mapply(
   FUN = initpop,
   hs = set_lb$hs,
-  cc = ccs$carrying_capacity,
+  cc = ccs$cc,
   scn_id = set_lb$scn_id,
   MoreArgs = list(
     popsize = 5000,
@@ -464,76 +470,44 @@ tml
 
 ```{r}
 simset_lb <- set_lb %>%
-  mutate(transition.matrix = tml)
-
-simset_lb <- bind_cols(simset_lb, ccs, initpops)
+  mutate(tm = tml) %>%
+  bind_cols(ccs, initpops) %>%
+  mply.landscape %>%
+  mply.population_dynamics %>%
+  mutate(
+    varset = "",
+    species = "lb"
+  ) %>%
+  mply.simulation(
+    ntimesteps = 5,
+    nreplicates = 10,
+    ncores = 10,
+    proj_mask = ch_mask
+  )
 
 simset_lb
 ```
 
-
 ```{r}
-sslb <- simset_lb %>%
-  mply_landscape
-
-sslb
-```
-```{r}
- mapply(
-    FUN = landscape,
-    population = x$init_pop,
-    suitability = x$hs,
-    carrying_capacity = x$cc
+sr_lb <- simset_lb %>%
+  #rowwise %>%
+  mutate(
+    popsize = map(
+      .x = pva,
+      .f = gps,
+      workers = 10
+    )
   )
-```
 
-
-```{r}
-mply_landscape <- function(x){
-  
-  library(tibble)
-  library(magrittr)
-  library(dplyr)
-  
-  z <- mapply(
-    FUN = landscape,
-    population = x$init_pop,
-    suitability = x$hs,
-    carrying_capacity = x$cc
-  )
-  
-  zz <- tibble(landscape = z)
-  
-  result <- bind_cols(x, zz)
-  
-  return(result)
-  
-}
-```
-
-
-
-```{r}
-aa <- set_lb %$%
-mapply(
-  FUN = mapcc,
-  inputlist = predmaps,
-  scn_id = scn_id,
-  MoreArgs = list(
-    proj_mask = ch_mask,
-    size = 6
-  )
-)
-
-aa
+sr_lb
 ```
 
 
 ```{r}
 l1 <- landscape(
-  population = simset_lb$init.pop[[1]],
-  suitability = simset_lb$predmaps[[1]],
-  carrying_capacity = simset_lb$carrying_capacity[[1]]
+  population = simset_lb$init_pop[[1]],
+  suitability = simset_lb$hs[[1]],
+  carrying_capacity = simset_lb$cc[[1]]
 )
 ```
 
@@ -584,6 +558,19 @@ pp <- preds_lb[1:3,]
 
 
 ```{r}
+ss11 <- parsim(
+  landscape = simset_lb$lsc[[1]],
+  population_dynamics = simset_lb$pd[[1]],
+  timesteps = 5,
+  replicates = 5,
+  workers = 5,
+  proj_mask = ch_mask,
+  out_path = "output/pva_pops/",
+  scn_id = "s1",
+  varset = "1",
+  species = "lb"
+)
 
+ss11
 ```
 

@@ -6,7 +6,7 @@ psr <- function(
   ...
 ){
   
-  dev.off()
+  #dev.off()
   
   if(missing(ageClassNames)){
     ageClassNames <- c("Newborn", "Juvenile", "Adult")

@@ -215,6 +215,8 @@ rst.op <- function(
       v2 <- getValues(input2, row = bs$row[i], nrows = bs$nrows[i])
       
       v <- ifelse(v1 == 1, 1, v2/6)
+      
+      v <- 1 - v
     }
       
     out <- writeValues(out, v, bs$row[i])
