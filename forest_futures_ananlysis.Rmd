@@ -459,6 +459,14 @@ initpops <- tibble(init_pop = initpops)
 ```
 
 ```{r}
+sum(getValues(initpops$init_pop[[3]][[1]]),
+    getValues(initpops$init_pop[[3]][[2]]),
+    getValues(initpops$init_pop[[3]][[3]]),
+    na.rm = TRUE)
+```
+
+
+```{r}
 tml <- vector("list", 3) # 3 because tibble is 3 rows long. change for longer one
 
 for (i in 1:3){

@@ -29,7 +29,7 @@ rst.op <- function(
   weight2,
   year,
   size,
-  propn){
+  popsize){
   
   library("raster")
   
@@ -83,145 +83,168 @@ rst.op <- function(
   
   out <- writeStart(x = out, filename = filename, overwrite = TRUE)
   
+  if(op == "pop"){
     
-  for (i in 1:bs$n){
+    v1 <- getValues(input1)
+    v2 <- getValues(input2)
+    
+    v <- ifelse(is.na(v1), NA_real_, 0)
+    
+    n <- length(v1)
+    
+    while(sum(v, na.rm = TRUE) < popsize){
       
-    v1 <- getValues(input1, row = bs$row[i], nrows = bs$nrows[i])
+      z <- sample(1:n, 1)
       
-    if(op == "writeonly"){
+      x <- suppressWarnings(rbinom(n = 1, size = 1, p = v1[z]))
       
-      if(class(input1) == "RasterStack" | class(input1) == "RasterBrick"){
-        
-        v1 <- rowSums(v1)
-        
+      if(!is.na(x)){
+        if(x == 1){
+          if(v[z] <= v2[z]){
+            v[z] <- v[z] + 1
+          }
+        }
       }
+      
+    }
+    
+    out <- writeValues(out, v, 1)
+    
+  } else{
+    for (i in 1:bs$n){
+      
+      v1 <- getValues(input1, row = bs$row[i], nrows = bs$nrows[i])
+      
+      if(op == "writeonly"){
         
-      v <- v1
-        
-    } else if(op == "sub1"){
-        
-      v <- ifelse(v1 == 0, v1, v1-1)
-        
-    } else if(op == "prop"){
-        
-      if(class(input1) == "RasterStack" | class(input1) == "RasterBrick"){
+        if(class(input1) == "RasterStack" | class(input1) == "RasterBrick"){
           
-        v1 <- rowSums(v1)
-        
+          v1 <- rowSums(v1)
+          
         }
         
-      v2 <- getValues(input2, row = bs$row[i], nrows = bs$nrows[i])
-      v <- ifelse(v2 == 0 , 0, v1/v2)
-        
-    } else if(op == "addabs"){
-        
-      v2 <- getValues(input2, row = bs$row[i], nrows = bs$nrows[i])
-      v <- v1 + v2
-        
-    } else if(op == "addper"){
-        
-      v2 <- getValues(input2, row = bs$row[i], nrows = bs$nrows[i])
-      v <- v1 * (1 + v2/100)
-      
-    } else if(op == "lessthan"){
-      
-      v <- v1
-      v[v < lessthan] <- 0
-      v[v != 0] <- 1
-      
-    } else if(op == "lessthanscale"){
-      
-      v <- v1
-      v[v < lessthan] <- 0
-      v[v > scaleto] <- 1
-      v[v > 1] <- (v[v > 1] - lessthan)/(scaleto - lessthan)
-      
-    } else if (op == "weightsum"){
-      
-      v2 <- getValues(input2, row = bs$row[i], nrows = bs$nrows[i])
-      
-      w <- weight1 + weight2
-      
-      v <- v1*(w - weight1)/w + v2*(w - weight2)/w
-      
-    } else if (op == "history"){
-      
-      v2 <- getValues(input2, row = bs$row[i], nrows = bs$nrows[i])
-      
-      v <- ifelse(v1 > 0, year, v2)
-      
-    } else if (op == "timesince"){
-      
-      v2 <- getValues(input2, row = bs$row[i], nrows = bs$nrows[i])
-      
-      v2 <- year - v2
-      
-      v <- ifelse(v1 > 0, 0, v2)
-      
-    } else if (op == "cc"){
-      
-      v <- rbinom(n = length(v1), size = size, prob = v1)
-      
-    } else if (op == "pop"){
-      
-      v2 <- getValues(input2, row = bs$row[i], nrows = bs$nrows[i])
-      
-      v <- rbinom(n = length(v1), size = v2, prob = v1*propn)
-      
-    } else if (op == "pb"){
-      
-      if(max(v1, na.rm = TRUE) == 1){
-        
         v <- v1
         
-      } else if (max(v1, na.rm = TRUE) > 1){
+      } else if(op == "sub1"){
         
-        v <- ifelse(v1 == 5, 1, 0)
+        v <- ifelse(v1 == 0, v1, v1-1)
         
-      } else if (max(v1, na.rm = TRUE) == 0){
+      } else if(op == "prop"){
+        
+        if(class(input1) == "RasterStack" | class(input1) == "RasterBrick"){
+          
+          v1 <- rowSums(v1)
+          
+        }
+        
+        v2 <- getValues(input2, row = bs$row[i], nrows = bs$nrows[i])
+        v <- ifelse(v2 == 0 , 0, v1/v2)
+        
+      } else if(op == "addabs"){
+        
+        v2 <- getValues(input2, row = bs$row[i], nrows = bs$nrows[i])
+        v <- v1 + v2
+        
+      } else if(op == "addper"){
+        
+        v2 <- getValues(input2, row = bs$row[i], nrows = bs$nrows[i])
+        v <- v1 * (1 + v2/100)
+        
+      } else if(op == "lessthan"){
         
         v <- v1
+        v[v < lessthan] <- 0
+        v[v != 0] <- 1
         
+      } else if(op == "lessthanscale"){
+        
+        v <- v1
+        v[v < lessthan] <- 0
+        v[v > scaleto] <- 1
+        v[v > 1] <- (v[v > 1] - lessthan)/(scaleto - lessthan)
+        
+      } else if (op == "weightsum"){
+        
+        v2 <- getValues(input2, row = bs$row[i], nrows = bs$nrows[i])
+        
+        w <- weight1 + weight2
+        
+        v <- v1*(w - weight1)/w + v2*(w - weight2)/w
+        
+      } else if (op == "history"){
+        
+        v2 <- getValues(input2, row = bs$row[i], nrows = bs$nrows[i])
+        
+        v <- ifelse(v1 > 0, year, v2)
+        
+      } else if (op == "timesince"){
+        
+        v2 <- getValues(input2, row = bs$row[i], nrows = bs$nrows[i])
+        
+        v2 <- year - v2
+        
+        v <- ifelse(v1 > 0, 0, v2)
+        
+      } else if (op == "cc"){
+        
+        v <- ceiling(v1*size)
+        
+      } else if (op == "pb"){
+        
+        if(max(v1, na.rm = TRUE) == 1){
+          
+          v <- v1
+          
+        } else if (max(v1, na.rm = TRUE) > 1){
+          
+          v <- ifelse(v1 == 5, 1, 0)
+          
+        } else if (max(v1, na.rm = TRUE) == 0){
+          
+          v <- v1
+          
+        }
+        
+      } else if (op == "harvest"){
+        
+        if(max(v1, na.rm = TRUE) == 1){
+          
+          v <- rep_len(0, length.out = length(v1))
+          
+        } else if (max(v1, na.rm = TRUE) > 1){
+          
+          v <- ifelse(is.na(v1), 0, ifelse(v1 == 0, 0, ifelse(v1 == 5, 0, 1)))
+          
+        } else if (max(v1, na.rm = TRUE) == 0){
+          
+          v <- v1
+          
+        }
+        
+      } else if (op == "fire"){
+        
+        v2 <- getValues(input2, row = bs$row[i], nrows = bs$nrows[i])
+        
+        v <- ifelse(v1 > 0, 1, ifelse(v2 > 0, 1, 0))
+        
+      } else if (op == "div10"){
+        
+        v <- v1/10
+        
+      } else if (op == "mort"){
+        
+        v2 <- getValues(input2, row = bs$row[i], nrows = bs$nrows[i])
+        
+        v <- ifelse(v1 == 1, 1, v2/6)
+        
+        v <- 1 - v
       }
-        
-    } else if (op == "harvest"){
       
-      if(max(v1, na.rm = TRUE) == 1){
-        
-        v <- rep_len(0, length.out = length(v1))
-        
-      } else if (max(v1, na.rm = TRUE) > 1){
-        
-        v <- ifelse(is.na(v1), 0, ifelse(v1 == 0, 0, ifelse(v1 == 5, 0, 1)))
-        
-      } else if (max(v1, na.rm = TRUE) == 0){
-        
-        v <- v1
-        
-      }
+      out <- writeValues(out, v, bs$row[i])
       
-    } else if (op == "fire"){
-      
-      v2 <- getValues(input2, row = bs$row[i], nrows = bs$nrows[i])
-      
-      v <- ifelse(v1 > 0, 1, ifelse(v2 > 0, 1, 0))
-      
-    } else if (op == "div10"){
-      
-      v <- v1/10
-      
-    } else if (op == "mort"){
-      
-      v2 <- getValues(input2, row = bs$row[i], nrows = bs$nrows[i])
-      
-      v <- ifelse(v1 == 1, 1, v2/6)
-      
-      v <- 1 - v
     }
-      
-    out <- writeValues(out, v, bs$row[i])
+  }
     
-  } 
     
   out <- writeStop(out)
     

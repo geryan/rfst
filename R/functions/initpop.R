@@ -22,8 +22,6 @@ initpop <- function(
     popsize <- maxpop
   }
   
-  propn <- popsize/maxpop
-  
   Newborn <- rst.op(input1 = hs,
                     input2 = cc,
                     op = "pop",
@@ -36,7 +34,7 @@ initpop <- function(
                       species
                     ),
                     layernames = "Newborn",
-                    propn = propn*ss[1])
+                    popsize = round(popsize*ss[1]))
   
   Juvenile <- rst.op(input1 = hs,
                      input2 = cc,
@@ -50,7 +48,7 @@ initpop <- function(
                        species
                      ),
                      layernames = "Juvenile",
-                     propn = propn*ss[2])
+                     popsize = round(popsize*ss[2]))
   
   
   Adult <- rst.op(input1 = hs,
@@ -65,7 +63,7 @@ initpop <- function(
                     species
                   ),
                   layernames = "Adult",
-                  propn = propn*ss[3])
+                  popsize = round(popsize*ss[2]))
   
   
   result <- stack(Newborn, Juvenile, Adult)
