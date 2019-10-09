@@ -23,7 +23,7 @@ initpop <- function(
   }
   
   Newborn <- rst.op(input1 = hs,
-                    input2 = cc,
+                    input2 = round(cc*ss[1]),
                     op = "pop",
                     proj_mask = proj_mask,
                     filename = sprintf(
@@ -37,7 +37,7 @@ initpop <- function(
                     popsize = round(popsize*ss[1]))
   
   Juvenile <- rst.op(input1 = hs,
-                     input2 = cc,
+                     input2 = round(cc*ss[1]),
                      op = "pop",
                      proj_mask = proj_mask,
                      filename = sprintf(
@@ -52,7 +52,7 @@ initpop <- function(
   
   
   Adult <- rst.op(input1 = hs,
-                  input2 = cc,
+                  input2 = round(cc*ss[1]),
                   op = "pop",
                   proj_mask = proj_mask,
                   filename = sprintf(
@@ -63,7 +63,7 @@ initpop <- function(
                     species
                   ),
                   layernames = "Adult",
-                  popsize = round(popsize*ss[2]))
+                  popsize = round(popsize*ss[3]))
   
   
   result <- stack(Newborn, Juvenile, Adult)

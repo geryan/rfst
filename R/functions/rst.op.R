@@ -187,7 +187,7 @@ rst.op <- function(
         
       } else if (op == "cc"){
         
-        v <- ceiling(v1*size)
+        v <- round(v1*size)
         
       } else if (op == "pb"){
         
