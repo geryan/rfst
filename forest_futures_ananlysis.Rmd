@@ -366,9 +366,9 @@ load(file = "output/RData/10_predict_SDMs.RData")
 ### Leadbeater's possum
 
 ```{r}
-tm_lb <- matrix(c(0.00, 0.59 * 0.75, 0.79 *0.75,
-                 0.59,        0.00,       0.00,
-                 0.00,        0.59,       0.79),
+tm_lb <- matrix(c(0.00, 0.53 * 0.75, 0.79 *0.75,
+                 0.53,        0.00,       0.00,
+                 0.00,        0.53,       0.79),
                nrow = 3,
                ncol = 3,
                byrow = TRUE,
@@ -478,10 +478,12 @@ tml
 
 ```{r}
 simset_lb <- set_lb %>%
-  mutate(tm = tml) %>%
+  mutate(tm = tml,
+         popsize = 5000) %>%
+  mply.initpop
   bind_cols(ccs, initpops) %>%
   mply.landscape %>%
-  mply.population_dynamics %>%
+  mply.population_dynamics(stoch = 0.1) %>%
   mutate(
     varset = "",
     species = "lb"
@@ -490,11 +492,23 @@ simset_lb <- set_lb %>%
     ntimesteps = 5,
     nreplicates = 10,
     ncores = 10,
-    proj_mask = ch_mask
+    proj_mask = ch_mask,
+    out_path = "output/pva_pops/"
   )
 
 simset_lb
 ```
+
+```{r}
+set_lb %>%
+  mutate(tm = tml,
+         popsize = 5000) %>%
+  mply.initpop(
+    proj_mask = ch_mask,
+    out_path = "output/pva_vars"
+  )
+```
+
 
 ```{r}
 sr_lb <- simset_lb %>%

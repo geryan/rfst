@@ -1,4 +1,4 @@
-mply.simulation <- function(x, ntimesteps, nreplicates, ncores, proj_mask){
+mply.simulation <- function(x, ntimesteps, nreplicates, ncores, proj_mask, out_path){
   
   library(tibble)
   library(magrittr)
@@ -15,7 +15,8 @@ mply.simulation <- function(x, ntimesteps, nreplicates, ncores, proj_mask){
       timesteps = ntimesteps,
       replicates = nreplicates,
       workers = ncores,
-      proj_mask = proj_mask
+      proj_mask = proj_mask,
+      out_path = out_path
     )
   )
   

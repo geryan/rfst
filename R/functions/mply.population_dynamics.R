@@ -4,9 +4,6 @@ mply.population_dynamics <- function(x, stoch){
   library(magrittr)
   library(dplyr)
   
-  x <- simset_lb
-  stoch <- 0.1
-  
   gr <- lapply(
     X = x$tm,
     FUN = growth,

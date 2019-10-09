@@ -1,12 +1,13 @@
-mply.initpop <- function(x, proj_mask, out_path = "output/pva_vars"){
+mply.carcap <- function(x, carcap, proj_mask, out_path = "output/pva_vars"){
+  
+  ## TOTALLY INCOMPLETE
   
   library(tibble)
-  library(magrittr)
   library(dplyr)
   
   z <- mapply(
-    FUN = initpop,
-    hs = x$hs,
+    FUN = mapcc,
+    inputlist,
     cc = x$cc,
     popsize = x$popsize,
     varset = x$varset,
