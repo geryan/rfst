@@ -29,7 +29,8 @@ rst.op <- function(
   weight2,
   year,
   size,
-  popsize){
+  popsize,
+  cc){
   
   library("raster")
   
@@ -86,7 +87,6 @@ rst.op <- function(
   if(op == "pop"){
     
     v1 <- getValues(input1)
-    v2 <- getValues(input2)
     
     v <- ifelse(is.na(v1), NA_real_, 0)
     
@@ -100,7 +100,7 @@ rst.op <- function(
       
       if(!is.na(x)){
         if(x == 1){
-          if(v[z] <= v2[z]){
+          if(v[z] <= cc - round(cc * dlogis(v1[z], scale = 0.25))){
             v[z] <- v[z] + 1
           }
         }

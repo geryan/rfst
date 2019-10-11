@@ -11,4 +11,4 @@ cc_6 <- function (landscape, timestep) {
   
   calc(suit, fun)
   
-}
+}   

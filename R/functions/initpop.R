@@ -12,19 +12,19 @@ initpop <- function(
   
   ss <- get.stable.states(tm)
   
-  maxpop <- sum(getValues(cc), na.rm = TRUE)
-  
+  maxpop <- sum(cc - round(cc * dlogis(getValues(hs), scale = 0.25)), na.rm = TRUE)
+
   if(missing(popsize)){
     popsize <- maxpop
   }
-  
+
   if(popsize > maxpop){
     popsize <- maxpop
   }
   
   Newborn <- rst.op(input1 = hs,
-                    input2 = round(cc*ss[1]),
                     op = "pop",
+                    cc = ceiling(cc*ss[1]),
                     proj_mask = proj_mask,
                     filename = sprintf(
                       "%s/pop0_n_%s_%s_%s.grd",
@@ -37,8 +37,8 @@ initpop <- function(
                     popsize = round(popsize*ss[1]))
   
   Juvenile <- rst.op(input1 = hs,
-                     input2 = round(cc*ss[1]),
                      op = "pop",
+                     cc = ceiling(cc*ss[2]),
                      proj_mask = proj_mask,
                      filename = sprintf(
                        "%s/pop0_j_%s_%s_%s.grd",
@@ -52,8 +52,8 @@ initpop <- function(
   
   
   Adult <- rst.op(input1 = hs,
-                  input2 = round(cc*ss[1]),
                   op = "pop",
+                  cc = ceiling(cc*ss[3]),
                   proj_mask = proj_mask,
                   filename = sprintf(
                     "%s/pop0_a_%s_%s_%s.grd",
