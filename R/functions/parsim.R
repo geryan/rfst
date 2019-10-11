@@ -8,7 +8,8 @@ parsim <- function(
   out_path,
   scn_id,
   varset,
-  species){
+  species,
+  cc = TRUE){
   
   library(future)
   library(future.apply)
@@ -70,6 +71,21 @@ parsim <- function(
                         j),
                       layernames = "Adult")
       
+      if(cc){
+        carrying_capacity <- rst.op(input1 = result[[i]][[j]][[3]],
+                                    op = "writeonly",
+                                    proj_mask = proj_mask,
+                                    filename = sprintf(
+                                      "%s/cc_%s_%s_%s_%s_%s.grd",
+                                      out_path,
+                                      scn_id,
+                                      varset,
+                                      species,
+                                      i,
+                                      j),
+                                    layernames = sprintf("Carrying_Capacity_%s", j))
+      }
+      
     }
   }
   
@@ -111,8 +127,25 @@ parsim <- function(
       
       result[[i]][[j]][[1]] <- stack(Newborn, Juvenile, Adult)
       
+      if(cc){
+        carrying_capacity <- raster(
+          sprintf(
+            "%s/cc_%s_%s_%s_%s_%s.grd",
+            out_path,
+            scn_id,
+            varset,
+            species,
+            i,
+            j)
+        )
+        
+        result[[i]][[j]][[3]] <- carrying_capacity
+        
+      }
     }
   }
+  
+  gc(verbose = FALSE)
   
   return(result)
 }

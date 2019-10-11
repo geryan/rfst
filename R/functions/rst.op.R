@@ -30,7 +30,8 @@ rst.op <- function(
   year,
   size,
   popsize,
-  cc){
+  cc,
+  threshold = 0){
   
   library("raster")
   
@@ -90,11 +91,12 @@ rst.op <- function(
     
     v <- ifelse(is.na(v1), NA_real_, 0)
     
-    n <- length(v1)
+    
+    y <- which(v1 >= threshold)
     
     while(sum(v, na.rm = TRUE) < popsize){
       
-      z <- sample(1:n, 1)
+      z <- sample(y, 1)
       
       x <- suppressWarnings(rbinom(n = 1, size = 1, p = v1[z]))
       

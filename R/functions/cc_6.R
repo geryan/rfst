@@ -1,5 +1,7 @@
 cc_6 <- function (landscape, timestep) {
   
+  library(raster)
+  
   fun <- function(suitability) {
     6 - round(6 * dlogis(suitability, scale = 0.25))
   }

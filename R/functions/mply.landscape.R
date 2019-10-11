@@ -1,4 +1,4 @@
-mply.landscape <- function(x){
+mply.landscape <- function(x, ccfun){
   
   library(tibble)
   library(magrittr)
@@ -7,9 +7,11 @@ mply.landscape <- function(x){
   z <- mapply(
     FUN = landscape,
     population = x$init_pop,
-    suitability = x$hs,
-    carrying_capacity = x$cc,
-    "mortality" = x$mort
+    suitability = x$predmaps,
+    "mortality" = x$mort,
+    MoreArgs = list(
+      carrying_capacity = ccfun
+    )
   )
   
   z <- apply(

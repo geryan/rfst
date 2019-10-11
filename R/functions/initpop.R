@@ -1,13 +1,15 @@
 initpop <- function(
   hs,
   cc,
+  threshold = 0.7,
   tm,
   popsize,
   proj_mask,
   out_path,
   scn_id,
   varset,
-  species
+  species,
+  rf = "round"
 ){
   
   ss <- get.stable.states(tm)
@@ -22,9 +24,12 @@ initpop <- function(
     popsize <- maxpop
   }
   
+  roundfun <- ifelse(rf == "round", round, ceiling)
+  
   Newborn <- rst.op(input1 = hs,
                     op = "pop",
-                    cc = ceiling(cc*ss[1]),
+                    cc = roundfun(cc*ss[1]),
+                    threshold = threshold,
                     proj_mask = proj_mask,
                     filename = sprintf(
                       "%s/pop0_n_%s_%s_%s.grd",
@@ -38,7 +43,8 @@ initpop <- function(
   
   Juvenile <- rst.op(input1 = hs,
                      op = "pop",
-                     cc = ceiling(cc*ss[2]),
+                     cc = roundfun(cc*ss[2]),
+                     threshold = threshold,
                      proj_mask = proj_mask,
                      filename = sprintf(
                        "%s/pop0_j_%s_%s_%s.grd",
@@ -53,7 +59,8 @@ initpop <- function(
   
   Adult <- rst.op(input1 = hs,
                   op = "pop",
-                  cc = ceiling(cc*ss[3]),
+                  cc = roundfun(cc*ss[3]),
+                  threshold = threshold,
                   proj_mask = proj_mask,
                   filename = sprintf(
                     "%s/pop0_a_%s_%s_%s.grd",

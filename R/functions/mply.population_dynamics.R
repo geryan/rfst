@@ -7,7 +7,10 @@ mply.population_dynamics <- function(x, stoch){
   gr <- lapply(
     X = x$tm,
     FUN = growth,
-    global_stochasticity = stoch
+    global_stochasticity = stoch,
+    transition_function =  modified_transition(
+      survival_layer = "suitability",
+      fecundity_layer = "suitability")
   )
   
   
