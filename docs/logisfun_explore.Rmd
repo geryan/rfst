@@ -1,0 +1,34 @@
+---
+title: "Logistic function"
+output: html_notebook
+---
+
+```{r}
+logisfun <- function(x, y){1/(1+exp(-y*(x-0.5)))}
+```
+
+```{r}
+zz <- tibble(x = seq(0, 1, 0.01)) %>%
+  mutate(
+    y01 = logisfun(x, y = 01),
+    y02 = logisfun(x, y = 02),
+    y05 = logisfun(x, y = 05),
+    y08 = logisfun(x, y = 08),
+    y09 = logisfun(x, y = 09),
+    y10 = logisfun(x, y = 10),
+    y11 = logisfun(x, y = 11),
+    y15 = logisfun(x, y = 15),
+    y20 = logisfun(x, y = 20),
+    y50 = logisfun(x, y = 50)
+  ) %>%
+  gather(key = "k", value = y, -x)
+
+zz
+```
+
+```{r}
+ggplot(zz) +
+  geom_line(aes(x = x, y = y, col = k))
+```
+
+

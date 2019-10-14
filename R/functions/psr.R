@@ -64,7 +64,7 @@ psr <- function(
   
   if(!is.null(stages) && stages == 0) {
     
-    graphics::par(mar = c(5.1, 4.1, 4.1, 2.1))
+    graphics::par(mar = c(5.1, 4.1, 4.1, 2.1), mfrow = c(1,1))
     
     # draw the 95% CI polygon (if available) and median line
     quants <- t(apply(apply(pop, 3, rowSums),1, stats::quantile, c(0.025, 0.5, 0.975)))

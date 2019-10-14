@@ -9,7 +9,8 @@ parsim <- function(
   scn_id,
   varset,
   species,
-  cc = TRUE){
+  cc = TRUE,
+  save = FALSE){
   
   library(future)
   library(future.apply)
@@ -146,6 +147,19 @@ parsim <- function(
   }
   
   gc(verbose = FALSE)
+  
+  if(save){
+    saveRDS(
+      object = result,
+      file = sprintf(
+        "%s/pva_%s_%s_%s.Rds",
+        "output/pva_objects",
+        scn_id,
+        varset,
+        species
+      )
+    )
+  }
   
   return(result)
 }

@@ -22,9 +22,9 @@ load(file = "output/RData/10_predict_SDMs.RData")
 
 source.functions("R/functions")
 
-tm_lb <- matrix(c(0.00, 0.59 * 0.75, 0.79 *0.75,
+tm_lb <- matrix(c(0.00, 0.79 * 0.75, 0.79 *0.75,
                   0.59,        0.00,       0.00,
-                  0.00,        0.59,       0.79),
+                  0.00,        0.79,       0.79),
                 nrow = 3,
                 ncol = 3,
                 byrow = TRUE,
@@ -38,6 +38,8 @@ ss_lb <- get.stable.states(tm_lb)
 # 
 # rmax(tm = tm_lb)
 
+preds_lb <- preds_lb
+
 npvas <- dim(preds_lb)[1]
 
 tml <- vector("list", npvas) # 3 because tibble is 3 rows long. change for longer one
@@ -50,8 +52,10 @@ tml
 
 
 #ntimesteps <- 4
-nreplicates <- 20
+nreplicates <- 10
 #ncores <- 20
+
+myenv <- environment()
 
 simset_lb <- preds_lb %>%
   mutate(
@@ -61,7 +65,8 @@ simset_lb <- preds_lb %>%
   mutate(
     dvs = map(
       .x = dv_id,
-      .f = get
+      .f = get,
+      envir = myenv
     )
   ) %>%
   ungroup %>%
