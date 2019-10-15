@@ -57,7 +57,7 @@ nreplicates <- 10
 
 myenv <- environment()
 
-simset_lb <- preds_lb %>%
+set_lb <- preds_lb %>%
   mutate(
     dv_id = sprintf("dv_%s_%s", scenario, rep)
   ) %>%
@@ -102,13 +102,18 @@ simset_lb <- preds_lb %>%
   mply.landscape(
     ccfun = cc_6
   ) %>%
-  mply.population_dynamics(stoch = 0.1) %>%
+  mply.population_dynamics(stoch = 0.1)
+
+# ----
+
+simset_lb_1 <- set_lb[1:10,] %>%
   mply.simulation(
     ntimesteps = ntimesteps,
     nreplicates = nreplicates,
     ncores = ncores,
     proj_mask = ch_mask,
-    out_path = "output/pva_pops/"
+    out_path = "output/pva_pops/",
+    save = TRUE
   ) %>%
   mutate(
     simpop = map(
@@ -117,6 +122,65 @@ simset_lb <- preds_lb %>%
       workers = ncores
     )
   )
+
+saveRDS(
+  object = simset_lb1,
+  file = "output/pva_objects/simset_lb1.Rds"
+)
+
+
+# ----
+
+simset_lb_2 <- set_lb[11:20,] %>%
+  mply.simulation(
+    ntimesteps = ntimesteps,
+    nreplicates = nreplicates,
+    ncores = ncores,
+    proj_mask = ch_mask,
+    out_path = "output/pva_pops/",
+    save = TRUE
+  ) %>%
+  mutate(
+    simpop = map(
+      .x = pva,
+      .f = gps,
+      workers = ncores
+    )
+  )
+
+saveRDS(
+  object = simset_lb2,
+  file = "output/pva_objects/simset_lb2.Rds"
+)
+
+# ----
+
+simset_lb_3 <- set_lb[21:30,] %>%
+  mply.simulation(
+    ntimesteps = ntimesteps,
+    nreplicates = nreplicates,
+    ncores = ncores,
+    proj_mask = ch_mask,
+    out_path = "output/pva_pops/",
+    save = TRUE
+  ) %>%
+  mutate(
+    simpop = map(
+      .x = pva,
+      .f = gps,
+      workers = ncores
+    )
+  )
+
+saveRDS(
+  object = simset_lb3,
+  file = "output/pva_objects/simset_lb3.Rds"
+)
+
+
+# ----
+
+simset_lb <- bind_rows(simset_lb1, simset_lb2, simset_lb3)
 
 save(
   simset_lb,
