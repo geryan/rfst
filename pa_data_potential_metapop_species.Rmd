@@ -35,7 +35,7 @@ eg_rfa
 
 ### VBA data available
 ```{r br_all}
-br_all <- proc.vba(x = "data/tabular/vba_Lichenostomus-melanops-cassidix.csv", project.crs = ch_proj, cutoff.date = "1700-01-01") %>%
+br_all <- proc.vba(x = "data/tabular/vba_Petaurus-australis.csv", project.crs = ch_proj, cutoff.date = "1700-01-01") %>%
   mutate(year = year(date),
          decade = year - (year %% 10))
 
@@ -108,3 +108,14 @@ ggplot() +
   scale_fill_viridis_d() +
   guides(col = guide_legend(title = "Decade"), fill = guide_legend(title = "Decade"))
 ```
+
+
+```{r}
+# library(jsonlite)
+```
+
+```{r}
+# tok <- GET("https://api.vba.dse.vic.gov.au/auth/username/password")
+```
+
+
