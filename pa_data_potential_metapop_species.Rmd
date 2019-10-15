@@ -1,0 +1,121 @@
+---
+title: "Presence-absence data from VBA for potential PVA species"
+author: Gerry Ryan
+date: September 16, 2019
+output: html_document
+---
+
+```{r setup, echo = FALSE, include = FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE)
+```
+
+```{r prelims, echo = FALSE, include = FALSE}
+library(knitr)
+library(dplyr)
+library(sp)
+library(sf)
+library(readr)
+library(readxl)
+library(tidyr)
+library(ggplot2)
+library(lubridate)
+
+load(file = "output/RData/00_comp_controls.RData")
+load(file = "output/RData/01_landscape_variables.RData")
+
+source.functions("R/functions")
+```
+
+```{r eg_rfa, include = FALSE}
+eg_rfa <- rfa[rfa$NAME== "EAST GIPPSLAND",] 
+
+eg_rfa
+```
+
+
+### VBA data available
+```{r br_all}
+br_all <- proc.vba(x = "data/tabular/vba_Petaurus-australis.csv", project.crs = ch_proj, cutoff.date = "1700-01-01") %>%
+  mutate(year = year(date),
+         decade = year - (year %% 10))
+
+br_all
+```
+
+### Table of presences and absences
+```{r br presence-absence}
+table(br_all$PA)
+```
+### PAs by decade
+```{r br pa-decade}
+table(br_all$decade, br_all$PA)
+```
+### Map of PAs with reference to RFA regions
+
+```{r br map all rfa}
+ggplot() +
+  geom_sf(data = rfa) +
+  geom_sf(data = br_all, aes(col = as.factor(decade), fill = as.factor(decade))) +
+  scale_colour_viridis_d() +
+  scale_fill_viridis_d() +
+  guides(col = guide_legend(title = "Decade"), fill = guide_legend(title = "Decade"))
+```
+
+### And in the RFA regions of interest
+```{r br rfa}
+br_ch <- br_all[ch_rfa, ]
+br_eg <- br_all[eg_rfa, ]
+```
+
+### PA records in the Central Highlands
+```{r pa br_ch}
+table(br_ch$PA)
+```
+### And East Gippsland
+```{r ba br_eg}
+table(br_eg$PA)
+```
+
+### And by decade...
+
+### In the Central Highlands
+```{r pa br_ch decade}
+table(br_ch$decade, br_ch$PA)
+```
+### And East Gippsland
+```{r pa br_eg decade}
+table(br_eg$decade, br_eg$PA)
+```
+
+### Map of PAs in Central Highlands
+
+```{r br map ch_rfa}
+ggplot() +
+  geom_sf(data = ch_rfa) +
+  geom_sf(data = br_ch, aes(col = as.factor(decade), fill = as.factor(decade))) +
+  scale_colour_viridis_d() +
+  scale_fill_viridis_d() +
+  guides(col = guide_legend(title = "Decade"), fill = guide_legend(title = "Decade"))
+```
+
+### And East Gippsland
+
+```{r br map eg_rfa}
+ggplot() +
+  geom_sf(data = eg_rfa) +
+  geom_sf(data = br_eg, aes(col = as.factor(decade), fill = as.factor(decade))) +
+  scale_colour_viridis_d() +
+  scale_fill_viridis_d() +
+  guides(col = guide_legend(title = "Decade"), fill = guide_legend(title = "Decade"))
+```
+
+
+```{r}
+# library(jsonlite)
+```
+
+```{r}
+# tok <- GET("https://api.vba.dse.vic.gov.au/auth/username/password")
+```
+
+
