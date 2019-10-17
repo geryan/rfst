@@ -2,6 +2,7 @@
 
 library(raster)
 library(magrittr)
+library(rerddap)
 
 load(file = "output/RData/00_comp_controls.RData")
 load(file = "output/RData/01_landscape_variables.RData")
@@ -52,25 +53,39 @@ names(prec07) <- "prec07"
 
 # Future climate
 # -------------------------------------------------------------
-
-## NEED TO 
-
-#climdat <- expand.grid(model = c("CSIRO_Mk3-6"), rcp = c(8.5, 4.5), var = c("tmax01", "tmin07", "prec01", "prec07")) %>%
-  #tibble %>%
-  
-  #library(rerddap)
-
-#  info('tasmax_Amon_CSIRO-Mk3-6-0_rcp45_r1i1p1_abs-change-wrt-seasavg-clim_native', url = "http://nrm-erddap.nci.org.au/erddap/")
-  
-#  griddap(aa, latitude = c(-40.10297775, -32.64199448), longitude = c(140.625, 150), time = c("2025-01-01T12:00:00", "2090-01-01T12:00:00"), fields = "tasmax_january", url = "http://nrm-erddap.nci.org.au/erddap/")
-# the above returns a list object which includes a dataframe with the same objects as raw objects below. more powerful when increasing the number of climate models used.
-
 # Absolute change in temperature
 
-raw_tmax01_4.5_ac <- read.multi.line.header(file = "http://nrm-erddap.nci.org.au/erddap/griddap/tasmax_Amon_CSIRO-Mk3-6-0_rcp45_r1i1p1_abs-change-wrt-seasavg-clim_native.csv?tasmax_january[(2025-01-01T12:00:00Z):1:(2090-01-01T12:00:00Z)][(-40.10297775):1:(-32.64199448)][(140.625):1:(150)]")
-raw_tmax01_8.5_ac <- read.multi.line.header(file = "http://nrm-erddap.nci.org.au/erddap/griddap/tasmax_Amon_CSIRO-Mk3-6-0_rcp85_r1i1p1_abs-change-wrt-seasavg-clim_native.csv?tasmax_january[(2025-01-01T12:00:00Z):1:(2090-01-01T12:00:00Z)][(-40.10297775):1:(-32.64199448)][(140.625):1:(150)]")
-raw_tmin07_4.5_ac <- read.multi.line.header(file = "http://nrm-erddap.nci.org.au/erddap/griddap/tasmin_Amon_CSIRO-Mk3-6-0_rcp45_r1i1p1_abs-change-wrt-seasavg-clim_native.csv?tasmin_july[(2025-01-01T12:00:00Z):1:(2090-01-01T12:00:00Z)][(-40.10297775):1:(-32.64199448)][(140.625):1:(150)]") 
-raw_tmin07_8.5_ac <- read.multi.line.header(file = "http://nrm-erddap.nci.org.au/erddap/griddap/tasmin_Amon_CSIRO-Mk3-6-0_rcp85_r1i1p1_abs-change-wrt-seasavg-clim_native.csv?tasmin_july[(2025-01-01T12:00:00Z):1:(2090-01-01T12:00:00Z)][(-40.10297775):1:(-32.64199448)][(140.625):1:(150)]")
+raw_tmax01_4.5_ac <- griddap(
+  x = "tasmax_Amon_ACCESS1-0_rcp45_r1i1p1_abs-change-wrt-seasavg-clim_native",
+  latitude = c(-40.10297775, -32.64199448),
+  longitude = c(140.625, 150),
+  time = c("2025-01-01T12:00:00", "2090-01-01T12:00:00"),
+  fields = "tasmax_january",
+  url = "http://nrm-erddap.nci.org.au/erddap/")
+
+raw_tmax01_8.5_ac <- griddap(
+  x = "tasmax_Amon_ACCESS1-0_rcp85_r1i1p1_abs-change-wrt-seasavg-clim_native",
+  latitude = c(-40.10297775, -32.64199448),
+  longitude = c(140.625, 150),
+  time = c("2025-01-01T12:00:00", "2090-01-01T12:00:00"),
+  fields = "tasmax_january",
+  url = "http://nrm-erddap.nci.org.au/erddap/")
+
+raw_tmin07_4.5_ac <- griddap(
+  x = "tasmin_Amon_ACCESS1-0_rcp45_r1i1p1_abs-change-wrt-seasavg-clim_native",
+  latitude = c(-40.10297775, -32.64199448),
+  longitude = c(140.625, 150),
+  time = c("2025-01-01T12:00:00", "2090-01-01T12:00:00"),
+  fields = "tasmin_january",
+  url = "http://nrm-erddap.nci.org.au/erddap/")
+
+raw_tmin07_8.5_ac <- griddap(
+  x = "tasmin_Amon_ACCESS1-0_rcp85_r1i1p1_abs-change-wrt-seasavg-clim_native",
+  latitude = c(-40.10297775, -32.64199448),
+  longitude = c(140.625, 150),
+  time = c("2025-01-01T12:00:00", "2090-01-01T12:00:00"),
+  fields = "tasmin_january",
+  url = "http://nrm-erddap.nci.org.au/erddap/")
 
 # Years data available
 n_tmax01_4.5 <- as.numeric(sub("-.*", "", unique(raw_tmax01_4.5_ac$time)))
@@ -85,11 +100,40 @@ tmin07_4.5_ac <- rascc(raw_tmin07_4.5_ac, new.proj.layer = ch_mask, filename = "
 tmin07_8.5_ac <- rascc(raw_tmin07_8.5_ac, new.proj.layer = ch_mask, filename = "output/clim_vars/tmin07_8.5_ac.grd")
 
 ##### Percentage change in precipitation
-raw_prec01_4.5_pc <- read.multi.line.header(file = "http://nrm-erddap.nci.org.au/erddap/griddap/pr_Amon_CSIRO-Mk3-6-0_rcp45_r1i1p1_perc-change-wrt-seassum-clim_native.csv?pr_january[(2025-01-01T12:00:00Z):1:(2090-01-01T12:00:00Z)][(-40.10297775):1:(-32.64199448)][(140.625):1:(150)]")
-raw_prec01_8.5_pc <- read.multi.line.header(file = "http://nrm-erddap.nci.org.au/erddap/griddap/pr_Amon_CSIRO-Mk3-6-0_rcp85_r1i1p1_perc-change-wrt-seassum-clim_native.csv?pr_january[(2025-01-01T12:00:00Z):1:(2090-01-01T12:00:00Z)][(-40.10297775):1:(-32.64199448)][(140.625):1:(150)]")
-raw_prec07_4.5_pc <- read.multi.line.header(file = "http://nrm-erddap.nci.org.au/erddap/griddap/pr_Amon_CSIRO-Mk3-6-0_rcp45_r1i1p1_perc-change-wrt-seassum-clim_native.csv?pr_july[(2025-01-01T12:00:00Z):1:(2090-01-01T12:00:00Z)][(-40.10297775):1:(-32.64199448)][(140.625):1:(150)]")
-raw_prec07_8.5_pc <- read.multi.line.header(file = "http://nrm-erddap.nci.org.au/erddap/griddap/pr_Amon_CSIRO-Mk3-6-0_rcp85_r1i1p1_perc-change-wrt-seassum-clim_native.csv?pr_july[(2025-01-01T12:00:00Z):1:(2090-01-01T12:00:00Z)][(-40.10297775):1:(-32.64199448)][(140.625):1:(150)]")
+raw_prec01_4.5_pc <- griddap(
+  x = "pr_Amon_ACCESS1-0_rcp45_r1i1p1_perc-change-wrt-seassum-clim_native",
+  latitude = c(-40.10297775, -32.64199448),
+  longitude = c(140.625, 150),
+  time = c("2025-01-01T12:00:00", "2090-01-01T12:00:00"),
+  fields = "pr_january",
+  url = "http://nrm-erddap.nci.org.au/erddap/")
 
+raw_prec01_8.5_pc <- griddap(
+  x = "pr_Amon_ACCESS1-0_rcp85_r1i1p1_perc-change-wrt-seassum-clim_native",
+  latitude = c(-40.10297775, -32.64199448),
+  longitude = c(140.625, 150),
+  time = c("2025-01-01T12:00:00", "2090-01-01T12:00:00"),
+  fields = "pr_january",
+  url = "http://nrm-erddap.nci.org.au/erddap/")
+
+raw_prec07_4.5_pc <- griddap(
+  x = "pr_Amon_ACCESS1-0_rcp45_r1i1p1_perc-change-wrt-seassum-clim_native",
+  latitude = c(-40.10297775, -32.64199448),
+  longitude = c(140.625, 150),
+  time = c("2025-01-01T12:00:00", "2090-01-01T12:00:00"),
+  fields = "pr_july",
+  url = "http://nrm-erddap.nci.org.au/erddap/")
+
+raw_prec07_8.5_pc <- griddap(
+  x = "pr_Amon_ACCESS1-0_rcp85_r1i1p1_perc-change-wrt-seassum-clim_native",
+  latitude = c(-40.10297775, -32.64199448),
+  longitude = c(140.625, 150),
+  time = c("2025-01-01T12:00:00", "2090-01-01T12:00:00"),
+  fields = "pr_july",
+  url = "http://nrm-erddap.nci.org.au/erddap/")
+
+
+# NEED TO FIX PROCESSING BECAUSE RAW DATA FRAMES NOW ggriddap_nc class
 
 #Years data available
 n_prec01_4.5 <- as.numeric(sub("-.*", "", unique(raw_prec01_4.5_pc$time)))
