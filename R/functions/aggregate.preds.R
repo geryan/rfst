@@ -25,6 +25,5 @@ aggregate.preds <- function(
     
     return(result)
     
-  }
   
 }

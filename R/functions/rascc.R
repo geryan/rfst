@@ -3,14 +3,15 @@ rascc <- function(dat, new.proj.layer, filename, input.projection = "+proj=longl
   library(tidyr)
   library(dplyr)
   library(raster)
+  library(rlang)
   
   
-  var <- colnames(dat)[[4]]
+  var <- colnames(dat$data)[[4]]
   var <- enquo(var)
   
-  result <- dat %>%
+  result <- dat$data %>%
     mutate(year = sub("-.*", "", time)) %>%
-    dplyr::select(longitude, latitude, everything(), -time) %>%
+    dplyr::select(lon, lat, everything(), -time) %>%
     spread(year, !!var) %>%
     rasterFromXYZ(crs = input.projection)
   
@@ -18,7 +19,7 @@ rascc <- function(dat, new.proj.layer, filename, input.projection = "+proj=longl
     
     result <- projectRaster(from = result,
                             to = new.proj.layer,
-                            method = "ngb"
+                            method = "bilinear"
                             )
     
     

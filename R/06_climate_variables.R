@@ -76,7 +76,7 @@ raw_tmin07_4.5_ac <- griddap(
   latitude = c(-40.10297775, -32.64199448),
   longitude = c(140.625, 150),
   time = c("2025-01-01T12:00:00", "2090-01-01T12:00:00"),
-  fields = "tasmin_january",
+  fields = "tasmin_july",
   url = "http://nrm-erddap.nci.org.au/erddap/")
 
 raw_tmin07_8.5_ac <- griddap(
@@ -84,14 +84,14 @@ raw_tmin07_8.5_ac <- griddap(
   latitude = c(-40.10297775, -32.64199448),
   longitude = c(140.625, 150),
   time = c("2025-01-01T12:00:00", "2090-01-01T12:00:00"),
-  fields = "tasmin_january",
+  fields = "tasmin_july",
   url = "http://nrm-erddap.nci.org.au/erddap/")
 
 # Years data available
-n_tmax01_4.5 <- as.numeric(sub("-.*", "", unique(raw_tmax01_4.5_ac$time)))
-n_tmax01_8.5 <- as.numeric(sub("-.*", "", unique(raw_tmax01_8.5_ac$time)))
-n_tmin07_4.5 <- as.numeric(sub("-.*", "", unique(raw_tmin07_4.5_ac$time)))
-n_tmin07_8.5 <- as.numeric(sub("-.*", "", unique(raw_tmin07_8.5_ac$time)))
+n_tmax01_4.5 <- as.numeric(sub("-.*", "", unique(raw_tmax01_4.5_ac$data$time)))
+n_tmax01_8.5 <- as.numeric(sub("-.*", "", unique(raw_tmax01_8.5_ac$data$time)))
+n_tmin07_4.5 <- as.numeric(sub("-.*", "", unique(raw_tmin07_4.5_ac$data$time)))
+n_tmin07_8.5 <- as.numeric(sub("-.*", "", unique(raw_tmin07_8.5_ac$data$time)))
 
 # Reporojected layers
 tmax01_4.5_ac <- rascc(raw_tmax01_4.5_ac, new.proj.layer = ch_mask, filename = "output/clim_vars/tmax01_4.5_ac.grd")
