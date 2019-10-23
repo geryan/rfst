@@ -1,4 +1,14 @@
-mply.simulation <- function(x, ntimesteps, nreplicates, ncores, proj_mask, out_path, save = FALSE){
+mply.simulation <- function(
+  x,
+  ntimesteps,
+  nreplicates,
+  ncores,
+  proj_mask,
+  out_path,
+  save.sims = FALSE,
+  ss.path = "output/pva_objects",
+  save.pops = FALSE,
+  sp.path = "output/pva_pops"){
   
   library(tibble)
   library(magrittr)
@@ -17,7 +27,10 @@ mply.simulation <- function(x, ntimesteps, nreplicates, ncores, proj_mask, out_p
       workers = ncores,
       proj_mask = proj_mask,
       out_path = out_path,
-      save = save
+      save.sims = save.sims,
+      ss.path = ss.path,
+      save.pops = save.pops,
+      sp.path = sp.path
     )
   )
   
@@ -27,7 +40,7 @@ mply.simulation <- function(x, ntimesteps, nreplicates, ncores, proj_mask, out_p
     FUN = as.simulation_results
   )
   
-  zz <- tibble(pva = z)
+  zz <- tibble(pva_res = z)
   
   result <- bind_cols(x, zz)
   

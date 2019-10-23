@@ -10,7 +10,10 @@ parsim <- function(
   varset,
   species,
   cc = TRUE,
-  save = FALSE){
+  save.sims = FALSE,
+  ss.path = "output/pva_objects",
+  save.pops = FALSE,
+  sp.path = "output/pva_pops"){
   
   library(future)
   library(future.apply)
@@ -19,21 +22,27 @@ parsim <- function(
   
   plan(multisession, workers = workers)
   
-  result <- future_lapply(X = li,
-                          FUN = simulation,
-                          landscape = landscape,
-                          population_dynamics = population_dynamics,
-                          timesteps = timesteps,
-                          replicates = 1,
-                          verbose = FALSE)
+  sims <- future_lapply(
+    X = li,
+    FUN = simulation,
+    landscape = landscape,
+    population_dynamics = population_dynamics,
+    timesteps = timesteps,
+    replicates = 1,
+    verbose = FALSE)
   
-  result <- bind.simulation.repetitions(result)
+  sims <- bind.simulation.repetitions(sims)
+  
+  pops <- gps(
+    x = sims,
+    workers = workers
+  )
   
   registerDoMC(cores = workers)
   
   foreach (i = 1:replicates) %do% {
     foreach(j = 1:timesteps) %dopar% {
-      Newborn <- rst.op(input1 = result[[i]][[j]][[1]][[1]],
+      Newborn <- rst.op(input1 = sims[[i]][[j]][[1]][[1]],
                         op = "writeonly",
                         proj_mask = proj_mask,
                         filename = sprintf(
@@ -46,7 +55,7 @@ parsim <- function(
                           j),
                         layernames = "Newborn")
       
-      Juvenile <- rst.op(input1 = result[[i]][[j]][[1]][[2]],
+      Juvenile <- rst.op(input1 = sims[[i]][[j]][[1]][[2]],
                          op = "writeonly",
                          proj_mask = proj_mask,
                          filename = sprintf(
@@ -59,7 +68,7 @@ parsim <- function(
                            j),
                          layernames = "Juvenile")
       
-      Adult <- rst.op(input1 = result[[i]][[j]][[1]][[3]],
+      Adult <- rst.op(input1 = sims[[i]][[j]][[1]][[3]],
                       op = "writeonly",
                       proj_mask = proj_mask,
                       filename = sprintf(
@@ -73,7 +82,7 @@ parsim <- function(
                       layernames = "Adult")
       
       if(cc){
-        carrying_capacity <- rst.op(input1 = result[[i]][[j]][[3]],
+        carrying_capacity <- rst.op(input1 = sims[[i]][[j]][[3]],
                                     op = "writeonly",
                                     proj_mask = proj_mask,
                                     filename = sprintf(
@@ -126,7 +135,7 @@ parsim <- function(
           j)
       )
       
-      result[[i]][[j]][[1]] <- stack(Newborn, Juvenile, Adult)
+      sims[[i]][[j]][[1]] <- stack(Newborn, Juvenile, Adult)
       
       if(cc){
         carrying_capacity <- raster(
@@ -140,7 +149,7 @@ parsim <- function(
             j)
         )
         
-        result[[i]][[j]][[3]] <- carrying_capacity
+        sims[[i]][[j]][[3]] <- carrying_capacity
         
       }
     }
@@ -148,18 +157,36 @@ parsim <- function(
   
   gc(verbose = FALSE)
   
-  if(save){
+  if(save.sims){
     saveRDS(
-      object = result,
+      object = sims,
       file = sprintf(
         "%s/pva_%s_%s_%s.Rds",
-        "output/pva_objects",
+        ss.path,
         scn_id,
         varset,
         species
       )
     )
   }
+  
+  if(save.pops){
+    saveRDS(
+      object = pops,
+      file = sprintf(
+        "%s/pva_pop_%s_%s_%s.Rds",
+        sp.path,
+        scn_id,
+        varset,
+        species
+      )
+    )
+  }
+  
+  result <- list(
+    "simulations" = sims,
+    "pops" = pops
+    )
   
   return(result)
 }

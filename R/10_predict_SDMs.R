@@ -10,6 +10,8 @@ library(future)
 library(future.apply)
 library(raster)
 library(sp)
+library(gbm)
+library(dismo)
 
 
 load(file = "output/RData/00_comp_controls.RData")

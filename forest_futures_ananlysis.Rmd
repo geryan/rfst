@@ -36,6 +36,7 @@ library(rasterVis)
 library(rlang)
 library(viridis)
 library(purrr)
+library(rerddap)
 ```
 
 ```{r load everything}
@@ -50,6 +51,8 @@ load(file = "output/RData/07_combined_variables.RData")
 load(file = "output/RData/08_distribution_model_data.RData")
 load(file = "output/RData/09_fit_distribution_models.RData")
 load(file = "output/RData/10_predict_SDMs.RData")
+load(file = "output/RData/10.1_preds_agg.RData")
+#load(file = "output/RData/11_pvas.RData")
 #load(file = "output/RData/")
 ```
 
@@ -366,9 +369,9 @@ load(file = "output/RData/10_predict_SDMs.RData")
 ### Leadbeater's possum
 
 ```{r}
-tm_lb <- matrix(c(0.00, 0.59 * 0.75, 0.79 *0.75,
+tm_lb <- matrix(c(0.00, 0.79 * 0.75, 0.79 *0.75,
                  0.59,        0.00,       0.00,
-                 0.00,        0.59,       0.79),
+                 0.00,        0.79,       0.79),
                nrow = 3,
                ncol = 3,
                byrow = TRUE,
@@ -384,125 +387,51 @@ rmax(tm = tm_lb)
 ```
 
 
+```{r}
+npvas <- dim(preds_lb[1:3,])[1]
+
+tml <- vector("list", npvas) # 3 because tibble is 3 rows long. change for longer one
+
+for (i in 1:npvas){
+  tml[[i]] <- tm_lb
+}
+
+tml
+
+```
+
 
 ```{r}
-set_lb <- preds_lb[1:3,] %>%
-  mutate(
-    dv_id = sprintf("dv_%s_%s", scenario, rep)
-    ) %>%
-  rowwise %>%
-  mutate(
-    dvs = map(
-      .x = dv_id,
-      .f = get
-    )
-  ) %>%
+myenv <- environment()
+
+set_lb <- preds_lb_agg[1:3,] %>%
   ungroup %>%
   mutate(
-    mort = map(
-      .x = dvs,
-      .f = function(y){lapply(y, FUN = function(x){x[["mort"]]})}
-    ),
+    tm = tml,
+    popsize = 5000,
+    varset = "",
+    species = "lb"
+  ) %>%
+  mutate(
     hs = map(
       .x = predmaps,
       .f =  function(x){x[["sdm_0"]]}
     )
   ) %>%
-  mutate(
-    mort = map(
-      .x = mort,
-      .f = stack
-    )
-  ) %>%
-  dplyr::select(-v_id, -variables, -dv_id, -dvs)
-
-set_lb
-```
-
-
-
-
-```{r}
-ccs <- mapply(
-  FUN = mapcc,
-  inputlist = set_lb$predmaps,
-  scn_id = set_lb$scn_id,
-  MoreArgs = list(
-    proj_mask = ch_mask,
-    size = 6
-  )
-)
-
-ccs <- tibble(cc = ccs)
-
-
-```
-
-
-```{r}
-initpops <- mapply(
-  FUN = initpop,
-  hs = set_lb$hs,
-  cc = ccs$cc,
-  scn_id = set_lb$scn_id,
-  MoreArgs = list(
-    popsize = 5000,
-    proj_mask = ch_mask,
-    out_path = "output/pva_vars",
-    varset = "",
-    species = "lb",
-    tm = tm_lb
-  )
-)
-
-initpops <- tibble(init_pop = initpops)
-```
-
-```{r}
-sum(getValues(initpops$init_pop[[1]][[1]]),
-    getValues(initpops$init_pop[[1]][[2]]),
-    getValues(initpops$init_pop[[1]][[3]]),
-    na.rm = TRUE)
-```
-
-
-```{r}
-tml <- vector("list", 3) # 3 because tibble is 3 rows long. change for longer one
-
-for (i in 1:3){
-  tml[[i]] <- tm_lb
-}
-
-tml
-```
-
-```{r}
-simset_lb <- set_lb  %>%
-  mply.landscape(
-    ccfun = cc_6
-  ) %>%
-  mply.population_dynamics(stoch = 0.1) %>%
-  mply.simulation(
-    ntimesteps = 5,
-    nreplicates = 10,
-    ncores = 10,
-    proj_mask = ch_mask,
-    out_path = "output/pva_pops/"
-  )
-  
-
-simset_lb
-```
-
-```{r}
-set_lb %>%
-  mutate(tm = tml,
-         popsize = 5000) %>%
   mply.initpop(
-    proj_mask = ch_mask,
-    out_path = "output/pva_vars"
-  )
+    cc = 490,
+    proj_mask = ch_mask_agg,
+    out_path = "output/pva_vars",
+    ncores = ncores
+  ) %>%
+  mply.landscape(
+    ccfun = cc_490
+  ) %>%
+  mply.population_dynamics(stoch = 0.1)
 ```
+
+
+
 
 
 ```{r}
@@ -576,18 +505,31 @@ pp <- preds_lb[1:3,]
 
 ```{r}
 ss11 <- parsim(
-  landscape = simset_lb$lsc[[1]],
-  population_dynamics = simset_lb$pd[[1]],
+  landscape = set_lb$lsc[[1]],
+  population_dynamics = set_lb$pd[[1]],
   timesteps = 5,
   replicates = 5,
   workers = 5,
-  proj_mask = ch_mask,
+  proj_mask = ch_mask_agg,
   out_path = "output/pva_pops/",
   scn_id = "s1",
   varset = "1",
-  species = "lb"
+  species = "lb",
+  save.sims = TRUE,
+  ss.path = "output/pva_objects",
+  save.pops = TRUE,
+  sp.path = "output/pva_pops"
 )
 
 ss11
+```
+```{r}
+plan(sequential)
+zz <- simulation(
+  landscape = set_lb$lsc[[1]],
+  population_dynamics = set_lb$pd[[1]],
+  timesteps = 50,
+  replicates = 1
+)
 ```
 

@@ -136,10 +136,10 @@ raw_prec07_8.5_pc <- griddap(
 # NEED TO FIX PROCESSING BECAUSE RAW DATA FRAMES NOW ggriddap_nc class
 
 #Years data available
-n_prec01_4.5 <- as.numeric(sub("-.*", "", unique(raw_prec01_4.5_pc$time)))
-n_prec01_8.5 <- as.numeric(sub("-.*", "", unique(raw_prec01_4.5_pc$time)))
-n_prec07_4.5 <- as.numeric(sub("-.*", "", unique(raw_prec07_4.5_pc$time)))
-n_prec07_8.5 <- as.numeric(sub("-.*", "", unique(raw_prec07_4.5_pc$time)))
+n_prec01_4.5 <- as.numeric(sub("-.*", "", unique(raw_prec01_4.5_pc$data$time)))
+n_prec01_8.5 <- as.numeric(sub("-.*", "", unique(raw_prec01_4.5_pc$data$time)))
+n_prec07_4.5 <- as.numeric(sub("-.*", "", unique(raw_prec07_4.5_pc$data$time)))
+n_prec07_8.5 <- as.numeric(sub("-.*", "", unique(raw_prec07_4.5_pc$data$time)))
 
 #Reprojected layers
 prec01_4.5_pc <- rascc(raw_prec01_4.5_pc, new.proj.layer = ch_mask, filename = "output/clim_vars/prec01_4.5_pc.grd")

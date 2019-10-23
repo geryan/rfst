@@ -29,12 +29,10 @@ brtpredict <- function(variables,
     
   } else {
     
-    #library(doMC)
-    #library(foreach)
+    library(foreach)
+  
     
-    #registerDoMC(cores = ncores)
-    
-    result <- foreach(i = seq_len(length(variables)), .packages = c("gbm", "raster", "dismo")) %do% {
+    result <- foreach(i = seq_len(length(variables)), .packages = c("gbm", "raster", "dismo")) %dopar% {
       
       raster::predict(object = variables[[i]],
                       model = model,

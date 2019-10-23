@@ -1,7 +1,8 @@
-aggregate.preds <- function(
+maggregate <- function(
   x,
   fact,
-  out_path = "output/habitat_pred/",
+  out_path = "/output/habitat_pred_aggregated/",
+  aggname = "aggpred",
   scn_id,
   varset,
   species
@@ -15,12 +16,14 @@ aggregate.preds <- function(
       fun = mean,
       na.rm = TRUE,
       filename = sprintf(
-        "%s/aggpred_%s_%s_%s.grd",
+        "%s/%s_%s_%s_%s.grd",
         out_path,
+        aggname,
         scn_id,
         varset,
         species
-      )
+      ),
+      overwrite = TRUE
     )
     
     return(result)

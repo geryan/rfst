@@ -49,6 +49,14 @@ ch_proj <- ch_eco@crs
 ch_extent <- extent(ch_eco)
 ch_res <- res(ch_eco)
 
+ch_mask_agg <- aggregate(
+  x = ch_mask,
+  fact = 10,
+  fun = mean,
+  na.rm = TRUE,
+  filename = "output/landscape_vars/ch_mask_agg.grd",
+  overwrite = TRUE
+  )
 
 # RFA shapefile ---------
 
