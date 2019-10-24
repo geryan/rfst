@@ -23,6 +23,9 @@ load(file = "output/RData/10.1_preds_agg.RData")
 
 source.functions("R/functions")
 
+
+# -----------------
+
 tm_lb <- matrix(c(0.00, 0.79 * 0.75, 0.79 *0.75,
                   0.59,        0.00,       0.00,
                   0.00,        0.79,       0.79),
@@ -36,7 +39,7 @@ tm_lb <- matrix(c(0.00, 0.79 * 0.75, 0.79 *0.75,
 ss_lb <- get.stable.states(tm_lb)
 
 
-npvas <- dim(preds_lb_agg[1:3,])[1]
+npvas <- dim(preds_lb_agg)[1]
 
 tml <- vector("list", npvas)
 
@@ -45,13 +48,15 @@ for (i in 1:npvas){
 }
 
 
-ntimesteps <- 4
-nreplicates <- 4
-ncores <- 4
+#ntimesteps <- 4
+nreplicates <- 50
+#ncores <- 4
 
 myenv <- environment()
 
-set_lb <- preds_lb_agg[1:3,] %>%
+# set ---------------------
+
+set_lb <- preds_lb_agg %>%
   # mutate(
   #   dv_id = sprintf("dv_%s_%s", scenario, rep)
   # ) %>%
@@ -63,17 +68,17 @@ set_lb <- preds_lb_agg[1:3,] %>%
   #     envir = myenv
   #   )
   # ) %>%
-  # ungroup %>%
-  # mutate(
+  ungroup %>%
+  mutate(
   #   mort = map(
   #     .x = dvs,
   #     .f = function(y){lapply(y, FUN = function(x){x[["mort"]]})}
   #   ),
-  #   hs = map(
-  #     .x = predmaps,
-  #     .f =  function(x){x[["sdm_0"]]}
-  #   )
-  # ) %>%
+    hs = map(
+      .x = predmaps,
+      .f =  function(x){x[["sdm_0"]]}
+    )
+  ) %>%
   # mutate(
   #   mort = map(
   #     .x = mort,
@@ -88,7 +93,7 @@ set_lb <- preds_lb_agg[1:3,] %>%
     species = "lb"
   ) %>%
   mply.initpop(
-    cc = 6,
+    cc = 490,
     proj_mask = ch_mask_agg,
     out_path = "output/pva_vars",
     ncores = ncores
@@ -98,9 +103,9 @@ set_lb <- preds_lb_agg[1:3,] %>%
   ) %>%
   mply.population_dynamics(stoch = 0.1)
 
-# ----
+# simset ----
 
-simset_lb_1 <- set_lb %>%
+simset_lb <- set_lb %>%
   mply.simulation(
     ntimesteps = ntimesteps,
     nreplicates = nreplicates,
@@ -115,11 +120,11 @@ simset_lb_1 <- set_lb %>%
   mutate(
     pva_sims = map(
       .x = pva_res,
-      .f = x$simulations
+      .f = ~ .x$simulations
     ),
     pva_pops = map(
       .x = pva_res,
-      .f = x$pops
+      .f = ~ .x$pops
     )
   ) #%>%
   #dplyr::select(-pva_res)

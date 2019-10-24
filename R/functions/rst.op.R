@@ -102,7 +102,7 @@ rst.op <- function(
       
       if(!is.na(x)){
         if(x == 1){
-          if(v[z] <= (round(cc * 1/(1 + exp(-10*(suitability - 0.5)))))){
+          if(v[z] <= (round(cc * 1/(1 + exp(-10*(v1[z] - 0.5)))))){
             v[z] <- v[z] + 1
           }
         }

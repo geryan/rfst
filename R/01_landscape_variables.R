@@ -97,6 +97,7 @@ save(
   ch_slope,
   ch_stands,
   ch_mask,
+  ch_mask_agg,
   ch_proj,
   ch_extent,
   ch_res,
