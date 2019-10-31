@@ -40,6 +40,7 @@ ss_lb <- get.stable.states(tm_lb)
 
 
 npvas <- dim(preds_lb_agg)[1]
+#npvas <- 2
 
 tml <- vector("list", npvas)
 
@@ -130,6 +131,6 @@ simset_lb <- set_lb %>%
 
 save(
   simset_lb,
-  file = "output/RData/11_pvas_lb.RData"
+  file = "output/RData/11_pvas_lb_test.RData"
 )
 

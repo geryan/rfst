@@ -4,6 +4,7 @@ psr <- function(
   stages = NULL,
   emp = TRUE,
   extx = FALSE,
+  p0 = NULL,
   ...
 ){
   
@@ -29,6 +30,21 @@ psr <- function(
   stage_names <- ageClassNames
   
   pop <- popmat
+  
+  if(!is.null){
+    
+    ss <- get.stable.states(tm)
+    
+    pop0 <- round(p0*ss)
+    
+    pop <- array(dim = c(dim(popmat)[1] + 1, dim(popmat)[2:3]))
+    
+    pop[1,,] <- pop0
+    
+    pop[2:(dim(popmat)[1] + 1),,] <- popmat
+    
+  }
+  
   pop.mn <- round(apply(pop, c(1,2), mean), 0)
   
   
