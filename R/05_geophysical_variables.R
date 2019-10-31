@@ -33,7 +33,7 @@ lvdsw <- raster(x = "data/grids/Env_covariates_noClimate_VicGrid94/log_vertical_
 
 tho <- raster(x = "data/grids/Env_covariates_noClimate_VicGrid94/sept2014thorium") %>%
   projectRaster(to = ch_mask) %>%
-  mask(mask = ch_mask, filename = "output/habitat_vars/ari_tho.grd", overwrite = TRUE)
+  mask(mask = ch_mask, filename = "output/geophys_vars/ari_tho.grd", overwrite = TRUE)
 
 
 gv_i <- stack(lvdaw, lvdma, lvdmi, lvdsw, ahr, tho)

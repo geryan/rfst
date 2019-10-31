@@ -18,7 +18,7 @@ load(file = "output/RData/00_comp_controls.RData")
 load(file = "output/RData/01_landscape_variables.RData")
 load(file = "output/RData/04_disturbance_variables.RData")
 load(file = "output/RData/09_fit_distribution_models.RData")
-#load(file = "output/RData/10_predict_SDMs.RData")
+load(file = "output/RData/10_predict_SDMs.RData")
 load(file = "output/RData/10.1_preds_agg.RData")
 
 source.functions("R/functions")
@@ -26,9 +26,9 @@ source.functions("R/functions")
 
 # -----------------
 
-tm_lb <- matrix(c(0.00, 0.79 * 0.75, 0.79 *0.75,
-                  0.59,        0.00,       0.00,
-                  0.00,        0.79,       0.79),
+tm_lb <- matrix(c(0.00, 0.70 * 0.75, 0.80 *0.75,
+                  0.50,        0.00,       0.00,
+                  0.00,        0.70,       0.80),
                 nrow = 3,
                 ncol = 3,
                 byrow = TRUE,
@@ -47,10 +47,7 @@ for (i in 1:npvas){
   tml[[i]] <- tm_lb
 }
 
-
-#ntimesteps <- 4
-nreplicates <- 50
-#ncores <- 4
+print(ncores)
 
 myenv <- environment()
 
@@ -88,18 +85,18 @@ set_lb <- preds_lb_agg %>%
   # dplyr::select(-v_id, -variables, -dv_id, -dvs)%>%
   mutate(
     tm = tml,
-    popsize = 5000,
+    popsize = 3000,
     varset = "",
     species = "lb"
   ) %>%
   mply.initpop(
-    cc = 490,
+    cc = 245,
     proj_mask = ch_mask_agg,
     out_path = "output/pva_vars",
     ncores = ncores
   ) %>%
   mply.landscape(
-    ccfun = cc_490
+    ccfun = cc_245
   ) %>%
   mply.population_dynamics(stoch = 0.1)
 
@@ -126,13 +123,13 @@ simset_lb <- set_lb %>%
       .x = pva_res,
       .f = ~ .x$pops
     )
-  ) #%>%
-  #dplyr::select(-pva_res)
+  ) %>%
+  dplyr::select(-pva_res)
 
 
 
 save(
   simset_lb,
-  file = "output/RData/11_pvas.RData"
+  file = "output/RData/11_pvas_lb.RData"
 )
 

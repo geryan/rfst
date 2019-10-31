@@ -3,10 +3,10 @@ psr <- function(
   ageClassNames,
   stages = NULL,
   emp = TRUE,
+  extx = FALSE,
   ...
 ){
   
-  #dev.off()
   
   if(missing(ageClassNames)){
     ageClassNames <- c("Newborn", "Juvenile", "Adult")
@@ -21,6 +21,7 @@ psr <- function(
     "#f0ab7e",
     "#969696"
   )
+
   
   
   total_stages <- dim(popmat)[2]
@@ -58,7 +59,18 @@ psr <- function(
                       lwd = 3,
                       col = graph.pal[i])
       
+      if(extx){
+        text(
+          x = dim(popmat)[1]/2,
+          y = range(pretty(pop))[2]/2,
+          labels = "ILLUSTRATIVE ONLY",
+          col = "red"
+        )
+      }
+      
     }
+    
+    
     
   }
   
@@ -114,33 +126,55 @@ psr <- function(
       graphics::abline(h = round(min(apply(pop, 3, function(x) min(rowSums(x)))), 0), lwd = 1, lty = 2, col = empcol)
       
     }
-    
+   
+    if(extx){
+      text(
+        x = dim(popmat)[1]/2,
+        y = range(pretty(quants))[2]/2,
+        labels = "ILLUSTRATIVE ONLY",
+        col = "red"
+      )
+    }
+     
   }
   
   if (!is.null(stages) && stages > 0) {
-    
+
     graphics::par(mar=c(5.1, 4.1, 4.1, 2.1), mfrow=c(1, length(stages)))
     
-    graphics::plot(pop.mn[ , stages],
-                   type = 'l',
-                   ylab = paste("Total Population: ", stage_names[stages]),
-                   xlab = "Timesteps",
-                   #lwd = 3,
-                   col = graph.pal[stages],
-                   xaxt = 'n',
-                   ...)
-    axis(side = 1, at = unique(c(c(1, seq(0, length(pop.mn[ , stages]), by = round(length(pop.mn[ , stages]) / 10))[-1]), length(pop.mn[ , stages]))))
-    
-    for (j in 1:reps) {
-      graphics::lines(pop[ , stages, j],
-                      col = 'grey',
-                      lwd = 1)
-    }
-    
-    graphics::lines(pop.mn[ , stages],
-                    lwd = 3,
-                    col = graph.pal[stages])    
-    
+    for (i in stages){
+      
+      graphics::plot(pop.mn[, i],
+                     type = 'l',
+                     ylab = paste("Total Population: ", stage_names[i]),
+                     xlab = "Timesteps",
+                     #lwd = 3,
+                     col = graph.pal[i],
+                     ylim = range(pretty(pop)),
+                     xaxt = 'n',
+                     ...)
+      axis(side = 1, at = unique(c(c(1, seq(0, length(pop.mn[, i]), by = round(ifelse(length(pop.mn[, i]) < 10, 10, length(pop.mn[, i])) / 10))[-1]), length(pop.mn[, i]))))
+      
+      for (j in 1:reps) {
+        graphics::lines(pop[ , i, j],
+                        col = 'grey',
+                        lwd = 1)
+      }
+      
+      graphics::lines(pop.mn[, i],
+                      lwd = 3,
+                      col = graph.pal[i])
+      
+      if(extx){
+        text(
+          x = dim(popmat)[1]/2,
+          y = range(pretty(pop))[2]/2,
+          labels = "ILLUSTRATIVE ONLY",
+          col = "red"
+        )
+      }
+      
+    }    
   }
   
 }
