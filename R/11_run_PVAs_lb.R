@@ -8,6 +8,7 @@ library(dplyr)
 library(purrr)
 library(tibble)
 library(tidyr)
+library(magrittr)
 library(future)
 library(future.apply)
 library(raster)
@@ -17,12 +18,12 @@ library(sp)
 load(file = "output/RData/00_comp_controls.RData")
 load(file = "output/RData/01_landscape_variables.RData")
 load(file = "output/RData/04_disturbance_variables.RData")
-load(file = "output/RData/09_fit_distribution_models.RData")
 load(file = "output/RData/10_predict_SDMs.RData")
 load(file = "output/RData/10.1_preds_agg.RData")
 
 source.functions("R/functions")
 
+plan(strategy = multisession, workers = ncores)
 
 # -----------------
 
@@ -38,6 +39,7 @@ tm_lb <- matrix(c(0.00, 0.70 * 0.75, 0.80 *0.75,
 
 ss_lb <- get.stable.states(tm_lb)
 
+nreplicates <- 50
 
 npvas <- dim(preds_lb_agg)[1]
 #npvas <- 2
@@ -47,8 +49,6 @@ tml <- vector("list", npvas)
 for (i in 1:npvas){
   tml[[i]] <- tm_lb
 }
-
-print(ncores)
 
 myenv <- environment()
 
@@ -93,8 +93,7 @@ set_lb <- preds_lb_agg %>%
   mply.initpop(
     cc = 245,
     proj_mask = ch_mask_agg,
-    out_path = "output/pva_vars",
-    ncores = ncores
+    out_path = "output/pva_vars"
   ) %>%
   mply.landscape(
     ccfun = cc_245
@@ -103,7 +102,7 @@ set_lb <- preds_lb_agg %>%
 
 # simset ----
 
-simset_lb <- set_lb %>%
+simset_lb3 <- set_lb[21:30,] %>%
   mply.simulation(
     ntimesteps = ntimesteps,
     nreplicates = nreplicates,
@@ -130,7 +129,7 @@ simset_lb <- set_lb %>%
 
 
 save(
-  simset_lb,
-  file = "output/RData/11_pvas_lb_test.RData"
+  simset_lb3,
+  file = "output/RData/11_pvas_lb_all3.RData"
 )
 

@@ -1,4 +1,4 @@
-mply.initpop <- function(x, cc, proj_mask, out_path = "output/pva_vars", ncores, inparallel = TRUE){
+mply.initpop <- function(x, cc, proj_mask, out_path = "output/pva_vars"){
   
   library(tibble)
   library(magrittr)
@@ -6,12 +6,6 @@ mply.initpop <- function(x, cc, proj_mask, out_path = "output/pva_vars", ncores,
   
   library(future)
   library(future.apply)
-  
-  if(inparallel){
-    plan(multisession, workers = ncores) 
-  } else(
-    plan(sequential)
-  )
   
   z <- future_mapply(
     FUN = initpop,

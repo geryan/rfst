@@ -25,6 +25,8 @@ source.functions("R/functions")
 
 ncores <- 10
 
+plan(strategy = multisession, workers = ncores)
+
 # -----------------
 
 tm_gg <- matrix(c(0.00, 0.85 * 0.50, 0.85 *0.50,
@@ -91,8 +93,7 @@ ungroup %>%
   mply.initpop(
     cc = 60,
     proj_mask = ch_mask_agg,
-    out_path = "output/pva_vars",
-    ncores = ncores
+    out_path = "output/pva_vars"
   ) %>%
   mply.landscape(
     ccfun = cc_60

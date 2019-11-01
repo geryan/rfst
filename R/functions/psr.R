@@ -3,8 +3,9 @@ psr <- function(
   ageClassNames,
   stages = NULL,
   emp = TRUE,
-  extx = FALSE,
+  extx = TRUE,
   p0 = NULL,
+  tm,
   ...
 ){
   
@@ -31,7 +32,7 @@ psr <- function(
   
   pop <- popmat
   
-  if(!is.null){
+  if(!is.null(p0)){
     
     ss <- get.stable.states(tm)
     

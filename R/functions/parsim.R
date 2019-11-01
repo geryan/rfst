@@ -22,8 +22,6 @@ parsim <- function(
   
   li <- vector("list", replicates)
   
-  plan(multisession, workers = workers)
-  
   sims <- future_lapply(
     X = li,
     FUN = simulation,

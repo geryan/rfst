@@ -3,7 +3,7 @@ psrm <- function(
   ageClassNames,
   stages = NULL,
   emp = TRUE,
-  extx = FALSE,
+  extx = TRUE,
   ...
 ){
   
