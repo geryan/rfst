@@ -45,6 +45,7 @@ load(file = "output/RData/01_landscape_variables.RData")
 load(file = "output/RData/02_species_occurrences.RData")
 load(file = "output/RData/03_LANDIS_variables.RData")
 load(file = "output/RData/04_disturbance_variables.RData")
+load(file = "output/RData/04.01_aggregated_disturbance.RData")
 load(file = "output/RData/05_geophys_vars.RData")
 load(file = "output/RData/06_climate_variables.RData")
 load(file = "output/RData/07_combined_variables.RData")
@@ -562,3 +563,54 @@ ggplot(aa, aes(x = scenario, y = min.pop)) +
   geom_boxplot(aes(col = rep)) 
 
 ```
+
+
+```{r}
+simset_lb28 <- set_lb[28,] %>%
+  mply.simulation(
+    ntimesteps = 50,
+    nreplicates = 2,
+    ncores = ncores,
+    proj_mask = ch_mask_agg,
+    out_path = "output/pva_pops/",
+    save.sims = TRUE,
+    ss.path = "output/pva_objects",
+    save.pops = TRUE,
+    sp.path = "output/pva_pops"
+  ) %>%
+  mutate(
+    pva_sims = map(
+      .x = pva_res,
+      .f = ~ .x$simulations
+    ),
+    pva_pops = map(
+      .x = pva_res,
+      .f = ~ .x$pops
+    )
+  ) %>%
+  dplyr::select(-pva_res)
+
+
+
+```
+
+```{r}
+psr(simset_lb28$pva_pops[[1]], stages = 0)
+```
+
+
+```{r}
+zz <- simulation(landscape = aa$lsc[[1]], population_dynamics = aa$pd[[1]], timesteps = 50, replicates = 10)
+```
+
+```{r}
+zz <- simulation(
+  landscape = landscape(
+    population = aa$init_pop
+  ),
+  population_dynamics = aa$pd,
+  timesteps = 5,
+  replicates = 1
+)
+```
+

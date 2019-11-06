@@ -39,7 +39,7 @@ tm_lb <- matrix(c(0.00, 0.70 * 0.75, 0.80 *0.75,
 
 ss_lb <- get.stable.states(tm_lb)
 
-nreplicates <- 50
+#nreplicates <- 100
 
 npvas <- dim(preds_lb_agg)[1]
 #npvas <- 2
@@ -102,7 +102,7 @@ set_lb <- preds_lb_agg %>%
 
 # simset ----
 
-simset_lb3 <- set_lb[21:30,] %>%
+simset_lb <- set_lb %>%
   mply.simulation(
     ntimesteps = ntimesteps,
     nreplicates = nreplicates,
@@ -129,7 +129,7 @@ simset_lb3 <- set_lb[21:30,] %>%
 
 
 save(
-  simset_lb3,
-  file = "output/RData/11_pvas_lb_all3.RData"
+  simset_lb,
+  file = "output/RData/11_pvas_lb.RData"
 )
 

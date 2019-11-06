@@ -28,6 +28,8 @@ ints <- matrix(
 
 nints <- 5
 
+intnames <- c("19-28","29-38","39-48","49-58","59-68")
+
 registerDoMC(cores = ncores)
 
 advs <- foreach (i = 1:length(scn_list)) %:%
@@ -63,7 +65,7 @@ advs <- foreach (i = 1:length(scn_list)) %:%
           ints[k,1],
           ints[k,2]
         ),
-        layernames = "ag.fi"
+        layernames = sprintf("fire_20%s", intnames[k])
       )
       
       return(ag.fire)
@@ -98,7 +100,7 @@ advs <- foreach (i = 1:length(scn_list)) %:%
           ints[k,1],
           ints[k,2]
         ),
-        layernames = "ag.lo"
+        layernames = sprintf("harvest_20%s", intnames[k])
       )
       
       return(ag.harvest)
@@ -132,7 +134,7 @@ advs <- foreach (i = 1:length(scn_list)) %:%
           ints[k,1],
           ints[k,2]
         ),
-        layernames = "ag.pb"
+        layernames = sprintf("PB_20%s", intnames[k])
       )
       
       return(ag.pb)
@@ -141,7 +143,9 @@ advs <- foreach (i = 1:length(scn_list)) %:%
     
     ag.pb <- stack(ag.pb)
     
-    adv <- list()
+    adv <- list("fire" = ag.fire,
+                "harvest" = ag.harvest,
+                "PB" = ag.pb)
     
   }
 

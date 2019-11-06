@@ -1,10 +1,150 @@
 ---
 title: "Illustrative Results for Leadbeater's Possum"
-output: html_document
+output: html_notebook
+author: GE Ryan
 ---
 
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(include = FALSE)
+```
 
-```{r max_age}
+```{r packages}
+library(magrittr)
+library(dplyr)
+library(tibble)
+library(sf)
+library(lwgeom)
+library(rgdal)
+library(readr)
+library(readxl)
+library(ggplot2)
+library(lubridate)
+library(foreach)
+library(doMC)
+library(future)
+library(future.apply)
+library(tidyr)
+library(dismo)
+library(gbm)
+library(steps)
+library(raster)
+library(rasterVis)
+library(rlang)
+library(viridis)
+library(purrr)
+library(rerddap)
+```
+
+```{r load everything}
+load(file = "output/RData/00_comp_controls.RData")
+load(file = "output/RData/01_landscape_variables.RData")
+load(file = "output/RData/02_species_occurrences.RData")
+load(file = "output/RData/03_LANDIS_variables.RData")
+load(file = "output/RData/04_disturbance_variables.RData")
+load(file = "output/RData/05_geophys_vars.RData")
+load(file = "output/RData/06_climate_variables.RData")
+load(file = "output/RData/07_combined_variables.RData")
+load(file = "output/RData/08_distribution_model_data.RData")
+#load(file = "output/RData/09_fit_distribution_models.RData")
+load(file = "output/RData/10_predict_SDMs.RData")
+load(file = "output/RData/10.1_preds_agg.RData")
+#load(file = "output/RData/11_pvas.RData")
+#load(file = "output/RData/")
+```
+
+
+```{r source all functions}
+source(file = "R/functions/source.functions.R")
+source.functions("R/functions")
+```
+
+
+# Input variables
+
+## Maximum age
+
+### Business as usual
+```{r max_age 1_01}
+max_age_1_01 <- lxtract(
+  x = vgg1_1_01[c(1,11,21,31,41,51)],
+  y = "max_age",
+  layernames = sprintf("max_age_20%s9", 1:6)
+)
+
+lp(max_age_1_01)
+```
+
+### No harvest after 30 years
+```{r max_age 4_01}
+max_age_4_01 <- lxtract(
+  x = vgg1_4_01[c(1,11,21,31,41,51)],
+  y = "max_age",
+  layernames = sprintf("max_age_20%s9", 1:6)
+)
+
+lp(max_age_4_01)
+```
+
+### No harvest
+```{r max_age 8_01}
+max_age_8_01 <- lxtract(
+  x = vgg1_8_01[c(1,11,21,31,41,51)],
+  y = "max_age",
+  layernames = sprintf("max_age_20%s9", 1:6)
+)
+
+lp(max_age_8_01)
+```
+
+## Average biomass of old-growth forest in 1km radius
+
+### Business as usual
+```{r biom_oge_1k 1_01}
+biom_oge_1k_1_01 <- lxtract(
+  x = vgg1_1_01[c(1,11,21,31,41,51)],
+  y = "biom_oge_1k",
+  layernames = sprintf("OGbiom_20%s9", 1:6)
+)
+
+lp(biom_oge_1k_1_01)
+```
+
+### No harvest after 30 years
+```{r biom_oge_1k 4_01}
+biom_oge_1k_4_01 <- lxtract(
+  x = vgg1_4_01[c(1,11,21,31,41,51)],
+  y = "biom_oge_1k",
+  layernames = sprintf("OGbiom_20%s9", 1:6)
+)
+
+lp(biom_oge_1k_4_01)
+```
+
+### No harvest
+```{r biom_oge_1k 8_01}
+biom_oge_1k_8_01 <- lxtract(
+  x = vgg1_8_01[c(1,11,21,31,41,51)],
+  y = "biom_oge_1k",
+  layernames = sprintf("OGbiom_20%s9", 1:6)
+)
+
+lp(biom_oge_1k_8_01)
+```
+
+## Average biomass of old-growth forest in 1km radius
+
+### Business as usual
+```{r biom_oge_1k 1_01}
+
+```
+
+### No harvest after 30 years
+```{r biom_oge_1k 4_01}
+
+```
+
+### No harvest
+```{r biom_oge_1k 8_01}
 
 ```
 
