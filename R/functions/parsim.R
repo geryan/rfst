@@ -79,7 +79,7 @@ parsim <- function(
                         j),
                       layernames = "Adult")
       
-      sims[[i]][[j]][[1]] <- stack(Newborn, Juvenile, Adult)
+      
       
       if(cc){
         carrying_capacity <- rst.op(input1 = sims[[i]][[j]][[3]],
@@ -95,6 +95,17 @@ parsim <- function(
                                       j),
                                     layernames = sprintf("Carrying_Capacity_%s", j))
         
+        carrying_capacity <- raster(
+          sprintf(
+            "%s/cc_%s_%s_%s_%s_%s.grd",
+            out_path,
+            scn_id,
+            varset,
+            species,
+            i,
+            j)
+        )
+        
         sims[[i]][[j]][[3]] <- carrying_capacity
       }
       
@@ -102,7 +113,63 @@ parsim <- function(
   
 
   
-  gc(verbose = FALSE)
+  
+  for(i in 1:replicates){
+    for(j in 1:timesteps){
+      Newborn <- raster(
+        sprintf(
+          "%s/simpop_%s_%s_%s_%s_%s_n.grd",
+          out_path,
+          scn_id,
+          varset,
+          species,
+          i,
+          j)
+      )
+      
+      Juvenile <- raster(
+        sprintf(
+          "%s/simpop_%s_%s_%s_%s_%s_j.grd",
+          out_path,
+          scn_id,
+          varset,
+          species,
+          i,
+          j)
+      )
+      
+      Adult <- raster(
+        sprintf(
+          "%s/simpop_%s_%s_%s_%s_%s_a.grd",
+          out_path,
+          scn_id,
+          varset,
+          species,
+          i,
+          j)
+      )
+      
+      
+      sims[[i]][[j]][[1]] <- stack(Newborn, Juvenile, Adult)
+      
+      if(cc){
+        
+        carrying_capacity <- raster(
+          sprintf(
+            "%s/cc_%s_%s_%s_%s_%s.grd",
+            out_path,
+            scn_id,
+            varset,
+            species,
+            i,
+            j)
+        )
+        
+        sims[[i]][[j]][[3]] <- carrying_capacity
+      }
+    }
+  }
+  
   
   if(save.sims){
     saveRDS(
