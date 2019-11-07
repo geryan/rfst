@@ -15,14 +15,15 @@ parsim <- function(
   save.pops = FALSE,
   sp.path = "output/pva_pops"){
   
-  library(future)
-  library(future.apply)
-  library(foreach)
-  library(doMC)
+#  library(future)
+#  library(future.apply)
+#  library(foreach)
+#  library(doMC)
   
   li <- vector("list", replicates)
   
-  sims <- future_lapply(
+  #sims <- future_lapply(
+  sims <- lapply(
     X = li,
     FUN = simulation,
     landscape = landscape,
@@ -36,10 +37,11 @@ parsim <- function(
   
   pops <- get_pop_simulation(sims)
   
-  registerDoMC(cores = workers)
+ # registerDoMC(cores = workers)
   
   foreach (i = 1:replicates) %:%
-    foreach(j = 1:timesteps) %dopar% {
+    #foreach(j = 1:timesteps) %dopar% {
+    foreach(j = 1:timesteps) %do% {
       Newborn <- rst.op(input1 = sims[[i]][[j]][[1]][[1]],
                         op = "writeonly",
                         proj_mask = proj_mask,

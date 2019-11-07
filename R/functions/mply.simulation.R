@@ -13,8 +13,11 @@ mply.simulation <- function(
   library(tibble)
   library(magrittr)
   library(dplyr)
+  library(future)
+  library(future.apply)
   
-  z <- mapply(
+  #z <- mapply(
+  z <- future_mapply(
     FUN = parsim,
     landscape = x$lsc,
     population_dynamics = x$pd,
@@ -31,6 +34,11 @@ mply.simulation <- function(
       ss.path = ss.path,
       save.pops = save.pops,
       sp.path = sp.path
+    ),
+    future.packages = c(
+      "steps",
+      "raster",
+      "sp"
     )
   )
   

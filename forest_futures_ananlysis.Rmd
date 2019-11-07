@@ -347,23 +347,6 @@ load(file = "output/RData/08_distribution_model_data.RData")
 load(file = "output/RData/09_fit_distribution_models.RData")
 ```
 
-## Interrogate models
-
-### Leadbeater's Possum
-
-
-```{r brt_lb}
-brt_lb
-```
-
-```{r}
-brt_lb %>%
-  dplyr::select(year.from, bg, varset, lr, bf, auc, trees)
-  
-```
-
-### Greater Glider
-
 ## Predict to future
 
 ```{r source predict_SDMs}
@@ -374,244 +357,22 @@ brt_lb %>%
 load(file = "output/RData/10_predict_SDMs.RData")
 ```
 
+# Population Viability Analyses
 
-### Leadbeater's possum
-
-```{r}
-tm_lb <- matrix(c(0.00, 0.79 * 0.75, 0.79 *0.75,
-                 0.59,        0.00,       0.00,
-                 0.00,        0.79,       0.79),
-               nrow = 3,
-               ncol = 3,
-               byrow = TRUE,
-               dimnames = list(c('Newborn','Juvenile','Adult'),
-                               c('Newborn','Juvenile','Adult')))
-
-
-ss_lb <- get.stable.states(tm_lb)
-
-ss_lb
-
-rmax(tm = tm_lb)
-```
+## 
 
 
 ```{r}
-npvas <- dim(preds_lb[1:3,])[1]
-
-tml <- vector("list", npvas) # 3 because tibble is 3 rows long. change for longer one
-
-for (i in 1:npvas){
-  tml[[i]] <- tm_lb
-}
-
-tml
-
-```
-
-
-```{r}
-myenv <- environment()
-
-set_lb <- preds_lb_agg[1:3,] %>%
-  ungroup %>%
-  mutate(
-    tm = tml,
-    popsize = 5000,
-    varset = "",
-    species = "lb"
-  ) %>%
-  mutate(
-    hs = map(
-      .x = predmaps,
-      .f =  function(x){x[["sdm_0"]]}
-    )
-  ) %>%
-  mply.initpop(
-    cc = 490,
-    proj_mask = ch_mask_agg,
-    out_path = "output/pva_vars",
-    ncores = ncores
-  ) %>%
-  mply.landscape(
-    ccfun = cc_490
-  ) %>%
-  mply.population_dynamics(stoch = 0.1)
-```
-
-
-
-
-
-```{r}
-sr_lb <- simset_lb %>%
-  #rowwise %>%
-  mutate(
-    popsize = map(
-      .x = pva,
-      .f = gps,
-      workers = 10
-    )
-  )
-
-sr_lb
-```
-
-
-```{r}
-l1 <- landscape(
-  population = simset_lb$init_pop[[1]],
-  suitability = simset_lb$hs[[1]],
-  carrying_capacity = simset_lb$cc[[1]]
-)
-```
-
-
-```{r}
-d1 <- population_dynamics(
-  change = growth(
-    transition_matrix = matrix(c(0.00, 0.59 * 0.75, 0.79 *0.75,
-                 0.59,        0.00,       0.00,
-                 0.00,        0.59,       0.79),
-               nrow = 3,
-               ncol = 3,
-               byrow = TRUE,
-               dimnames = list(c('Newborn','Juvenile','Adult'),
-                               c('Newborn','Juvenile','Adult'))),
-    global_stochasticity = 0.1
-  ),
-  dispersal =  cellular_automata_dispersal(
-    max_cells = c(0, 50, 50),
-    dispersal_proportion = density_dependence_dispersing()
-    )
-)
-```
-
-```{r}
-sim_lb_1_1 <- parsim(
-  landscape = l1,
-  population_dynamics = d1,
-  timesteps = 10,
-  replicates = 10,
-  workers = 10,
-  proj_mask = ch_mask,
-  out_path = "output/pva_pops/",
-  scn_id = "s1",
-  varset = "1",
-  species = "lb"
-)
-```
-
-```{r}
-plan(sequential)
-s1 <- simulation(landscape = l1, population_dynamics = d1, timesteps = 10, replicates = 10)
-```
-
-```{r}
-pp <- preds_lb[1:3,]
-```
-
-
-```{r}
-zz <- parsim(
-  landscape = simset_lb$lsc[[1]],
-  population_dynamics = simset_lb$pd[[1]],
-  timesteps = 10,
-  replicates = 10,
-  workers = 10,
-  proj_mask = ch_mask_agg,
-  out_path = "test/",
-  scn_id = "s1_1",
-  varset = "",
-  species = "lb"
-)
-```
-
-
-```{r}
-zz <- simset_lb %>%
-  dplyr::select(scenario, rep, pva_pops) %>%
-  rowwise %>%
-  mutate(
-    emp = emp(pva_pops),
-    pr.ex = pr.ex(pva_pops),
-    all.emp = emp.all(pva_pops)
-  ) %>%
-  mutate(scenario = case_when(scenario == 1 ~ "BAU",
-                              scenario == 4 ~ "No harvest",
-                              scenario == 8 ~ "Cease harvest Y30"))
-
-zz
-```
-```{r}
-aa <- zz %>%
-  dplyr::select(scenario, rep, all.emp) %>%
-  unnest(all.emp) %>%
-  rename(min.pop = all.emp)
-
-aa
-```
-
-```{r}
-ggplot(zz, aes(x = scenario, y = emp)) +
+ggplot(pops, aes(x = scenario, y = emp)) +
   geom_boxplot() +
-  geom_point()
+  geom_point(aes(colour = rep), position = position_jitter(width = 0.1, height = 0))
   
 ```
 
 ```{r}
-ggplot(aa, aes(x = scenario, y = min.pop)) +
-  geom_boxplot(aes(col = rep)) 
+ggplot(pops.all, aes(x = rep, y = min.pop)) +
+  geom_boxplot(aes(col = scenario)) 
 
 ```
 
-
-```{r}
-simset_lb28 <- set_lb[28,] %>%
-  mply.simulation(
-    ntimesteps = 50,
-    nreplicates = 2,
-    ncores = ncores,
-    proj_mask = ch_mask_agg,
-    out_path = "output/pva_pops/",
-    save.sims = TRUE,
-    ss.path = "output/pva_objects",
-    save.pops = TRUE,
-    sp.path = "output/pva_pops"
-  ) %>%
-  mutate(
-    pva_sims = map(
-      .x = pva_res,
-      .f = ~ .x$simulations
-    ),
-    pva_pops = map(
-      .x = pva_res,
-      .f = ~ .x$pops
-    )
-  ) %>%
-  dplyr::select(-pva_res)
-
-
-
-```
-
-```{r}
-psr(simset_lb28$pva_pops[[1]], stages = 0)
-```
-
-
-```{r}
-zz <- simulation(landscape = aa$lsc[[1]], population_dynamics = aa$pd[[1]], timesteps = 50, replicates = 10)
-```
-
-```{r}
-zz <- simulation(
-  landscape = landscape(
-    population = aa$init_pop
-  ),
-  population_dynamics = aa$pd,
-  timesteps = 5,
-  replicates = 1
-)
-```
 

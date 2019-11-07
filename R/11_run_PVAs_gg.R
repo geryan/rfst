@@ -23,8 +23,6 @@ load(file = "output/RData/10.1_preds_agg.RData")
 
 source.functions("R/functions")
 
-ncores <- 10
-
 plan(strategy = multisession, workers = ncores)
 
 # -----------------

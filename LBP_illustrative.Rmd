@@ -162,7 +162,7 @@ lp(precipJul4.5)
 ## Temperature
 
 ### January, maximum temperature, RCP 4.5
-```{r precipJan4.5}
+```{r tmaxJan4.5}
 tmaxJan4.5 <- lxtract(
   x = vgg1_4_01[c(1,11,21,31,41,51)],
   y = "tmax01",
@@ -173,7 +173,7 @@ lp(tmaxJan4.5)
 ```
 
 ### July, maximum temperature, RCP 4.5
-```{r precipJan4.5}
+```{r tminJul4.5}
 tminJul4.5 <- lxtract(
   x = vgg1_4_01[c(1,11,21,31,41,51)],
   y = "tmin07",

@@ -17,8 +17,8 @@ load(file = "output/RData/11_pvas_gg.RData")
 source.functions("R/functions")
 
 pops <- bind_rows(
-  simset_lb,
-  simset_gg
+  simset_lb#,
+  #simset_gg
 )  %>%
   dplyr::select(
     species,
