@@ -129,6 +129,7 @@ simset_lb <- set_lb %>%
 
 
 save(
+  tm_lb,
   simset_lb,
   file = "output/RData/11_pvas_lb.RData"
 )

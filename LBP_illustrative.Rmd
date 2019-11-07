@@ -41,12 +41,13 @@ load(file = "output/RData/01_landscape_variables.RData")
 load(file = "output/RData/02_species_occurrences.RData")
 load(file = "output/RData/03_LANDIS_variables.RData")
 load(file = "output/RData/04_disturbance_variables.RData")
+load(file = "output/RData/04.01_aggregated_disturbance.RData")
 load(file = "output/RData/05_geophys_vars.RData")
 load(file = "output/RData/06_climate_variables.RData")
 load(file = "output/RData/07_combined_variables.RData")
 load(file = "output/RData/08_distribution_model_data.RData")
 #load(file = "output/RData/09_fit_distribution_models.RData")
-load(file = "output/RData/10_predict_SDMs.RData")
+#load(file = "output/RData/10_predict_SDMs.RData")
 load(file = "output/RData/10.1_preds_agg.RData")
 #load(file = "output/RData/11_pvas.RData")
 #load(file = "output/RData/")
@@ -64,7 +65,7 @@ source.functions("R/functions")
 ## Maximum age
 
 ### Business as usual
-```{r max_age 1_01}
+```{r max_age 1_01 bau}
 max_age_1_01 <- lxtract(
   x = vgg1_1_01[c(1,11,21,31,41,51)],
   y = "max_age",
@@ -75,18 +76,7 @@ lp(max_age_1_01)
 ```
 
 ### No harvest after 30 years
-```{r max_age 4_01}
-max_age_4_01 <- lxtract(
-  x = vgg1_4_01[c(1,11,21,31,41,51)],
-  y = "max_age",
-  layernames = sprintf("max_age_20%s9", 1:6)
-)
-
-lp(max_age_4_01)
-```
-
-### No harvest
-```{r max_age 8_01}
+```{r max_age 8_01 h30}
 max_age_8_01 <- lxtract(
   x = vgg1_8_01[c(1,11,21,31,41,51)],
   y = "max_age",
@@ -96,10 +86,22 @@ max_age_8_01 <- lxtract(
 lp(max_age_8_01)
 ```
 
+
+### No harvest
+```{r max_age 4_01 nth}
+max_age_4_01 <- lxtract(
+  x = vgg1_4_01[c(1,11,21,31,41,51)],
+  y = "max_age",
+  layernames = sprintf("max_age_20%s9", 1:6)
+)
+
+lp(max_age_4_01)
+```
+
 ## Average biomass of old-growth forest in 1km radius
 
 ### Business as usual
-```{r biom_oge_1k 1_01}
+```{r biom_oge_1k 1_01 bau}
 biom_oge_1k_1_01 <- lxtract(
   x = vgg1_1_01[c(1,11,21,31,41,51)],
   y = "biom_oge_1k",
@@ -110,18 +112,7 @@ lp(biom_oge_1k_1_01)
 ```
 
 ### No harvest after 30 years
-```{r biom_oge_1k 4_01}
-biom_oge_1k_4_01 <- lxtract(
-  x = vgg1_4_01[c(1,11,21,31,41,51)],
-  y = "biom_oge_1k",
-  layernames = sprintf("OGbiom_20%s9", 1:6)
-)
-
-lp(biom_oge_1k_4_01)
-```
-
-### No harvest
-```{r biom_oge_1k 8_01}
+```{r biom_oge_1k 8_01 h30}
 biom_oge_1k_8_01 <- lxtract(
   x = vgg1_8_01[c(1,11,21,31,41,51)],
   y = "biom_oge_1k",
@@ -131,20 +122,199 @@ biom_oge_1k_8_01 <- lxtract(
 lp(biom_oge_1k_8_01)
 ```
 
-## Average biomass of old-growth forest in 1km radius
+### No harvest
+```{r biom_oge_1k 4_01 nth}
+biom_oge_1k_4_01 <- lxtract(
+  x = vgg1_4_01[c(1,11,21,31,41,51)],
+  y = "biom_oge_1k",
+  layernames = sprintf("OGbiom_20%s9", 1:6)
+)
 
-### Business as usual
-```{r biom_oge_1k 1_01}
-
+lp(biom_oge_1k_4_01)
 ```
 
-### No harvest after 30 years
-```{r biom_oge_1k 4_01}
+# Climate
 
+## Precipitation
+
+### January, RCP 4.5
+```{r precipJan4.5}
+precipJan4.5 <- lxtract(
+  x = vgg1_4_01[c(1,11,21,31,41,51)],
+  y = "prec01",
+  layernames = sprintf("PrJan_20%s9", 1:6)
+)
+
+lp(precipJan4.5)
+```
+
+### July, RCP 4.5
+```{r precipJul4.5}
+precipJul4.5 <- lxtract(
+  x = vgg1_4_01[c(1,11,21,31,41,51)],
+  y = "prec07",
+  layernames = sprintf("PrJul_20%s9", 1:6)
+)
+
+lp(precipJul4.5)
+```
+
+## Temperature
+
+### January, maximum temperature, RCP 4.5
+```{r precipJan4.5}
+tmaxJan4.5 <- lxtract(
+  x = vgg1_4_01[c(1,11,21,31,41,51)],
+  y = "tmax01",
+  layernames = sprintf("tmaxJan_20%s9", 1:6)
+)
+
+lp(tmaxJan4.5)
+```
+
+### July, maximum temperature, RCP 4.5
+```{r precipJan4.5}
+tminJul4.5 <- lxtract(
+  x = vgg1_4_01[c(1,11,21,31,41,51)],
+  y = "tmin07",
+  layernames = sprintf("tminJul_20%s9", 1:6)
+)
+
+lp(tminJul4.5)
+```
+
+# Disturbances
+
+## Fires
+
+### Business as usual
+```{r fire_1_01 bau}
+lp(adv_1_01$fire)
+```
+
+And the additional run of this scenario
+```{r fire_1_10 bau}
+lp(adv_1_10$fire)
+```
+
+
+### No harvest after 30 years
+```{r fire_8_01 h30}
+lp(adv_8_01$fire)
 ```
 
 ### No harvest
-```{r biom_oge_1k 8_01}
-
+```{r fire_4_01 nth}
+lp(adv_4_01$fire)
 ```
+
+## Timber harvest
+
+### Business as usual
+```{r harvest_1_01 bau}
+lp(adv_1_01$harvest)
+```
+
+```{r harvest_1_10 bau}
+lp(adv_1_10$harvest)
+```
+
+### No harvest after 30 years
+```{r harvest_8_01 h30}
+lp(adv_8_01$harvest)
+```
+
+### No harvest
+```{r harvest_4_01 nth}
+lp(adv_4_01$harvest)
+```
+
+
+## Planned burning
+
+### Business as usual
+```{r pb_1_01 bau}
+lp(adv_1_01$PB)
+```
+
+### No harvest after 30 years
+```{r pb_8_01 h30}
+lp(adv_8_01$PB)
+```
+
+### No harvest
+```{r pb_4_01 nth}
+lp(adv_4_01$PB)
+```
+
+# Derived variables
+
+## Acacia and midstorey biomass
+
+### Business as usual
+```{r lbm_biom 1_01 bau}
+lbm_biom_1_01 <- lxtract(
+  x = vlb1_1_01[c(1,11,21,31,41,51)],
+  y = "lbm_biom",
+  layernames = sprintf("lbm_biom_20%s9", 1:6)
+)
+
+lp(lbm_biom_1_01)
+```
+
+### No harvest after 30 years
+```{r lbm_biom 8_01 h30}
+lbm_biom_8_01 <- lxtract(
+  x = vlb1_8_01[c(1,11,21,31,41,51)],
+  y = "lbm_biom",
+  layernames = sprintf("lbm_biom_20%s9", 1:6)
+)
+
+lp(lbm_biom_8_01)
+```
+
+
+### No harvest
+```{r lbm_biom 4_01 nth}
+lbm_biom_4_01 <- lxtract(
+  x = vlb1_4_01[c(1,11,21,31,41,51)],
+  y = "lbm_biom",
+  layernames = sprintf("lbm_biom_20%s9", 1:6)
+)
+
+lp(lbm_biom_4_01)
+```
+
+
+# Species distribution model
+
+### Business as usual
+```{r 1_01 bau}
+plb_1_01 <- preds_lb_agg$predmaps[[1]][[c(1,11,21,31,41,51)]]
+
+names(plb_1_01) <- sprintf("sdm_20%s9", 1:6)
+
+lp(plb_1_01)
+```
+
+### No harvest after 30 years
+```{r 8_01 h30}
+plb_8_01 <- preds_lb_agg$predmaps[[3]][[c(1,11,21,31,41,51)]]
+
+names(plb_8_01) <- sprintf("sdm_20%s9", 1:6)
+
+lp(plb_8_01)
+```
+
+
+### No harvest
+```{r 4_01 nth}
+plb_4_01 <- preds_lb_agg$predmaps[[2]][[c(1,11,21,31,41,51)]]
+
+names(plb_4_01) <- sprintf("sdm_20%s9", 1:6)
+
+lp(plb_4_01)
+```
+
+
 

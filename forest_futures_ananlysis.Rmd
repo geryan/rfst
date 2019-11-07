@@ -53,7 +53,8 @@ load(file = "output/RData/08_distribution_model_data.RData")
 #load(file = "output/RData/09_fit_distribution_models.RData")
 #load(file = "output/RData/10_predict_SDMs.RData")
 load(file = "output/RData/10.1_preds_agg.RData")
-#load(file = "output/RData/11_pvas.RData")
+#load(file = "output/RData/11_pvas_gg.RData")
+load(file = "output/RData/11_pvas_lb.RData")
 #load(file = "output/RData/")
 ```
 
@@ -519,7 +520,7 @@ zz <- parsim(
   replicates = 10,
   workers = 10,
   proj_mask = ch_mask_agg,
-  out_path = "output/pva_pops/",
+  out_path = "test/",
   scn_id = "s1_1",
   varset = "",
   species = "lb"
