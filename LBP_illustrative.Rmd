@@ -49,8 +49,9 @@ load(file = "output/RData/08_distribution_model_data.RData")
 #load(file = "output/RData/09_fit_distribution_models.RData")
 #load(file = "output/RData/10_predict_SDMs.RData")
 load(file = "output/RData/10.1_preds_agg.RData")
-#load(file = "output/RData/11_pvas.RData")
-#load(file = "output/RData/")
+load(file = "output/RData/11_pvas_lb.RData")
+load(file = "output/RData/11_pvas_gg.RData")
+load(file = "output/RData/12_pva_pops.RData")
 ```
 
 
@@ -289,7 +290,7 @@ lp(lbm_biom_4_01)
 # Species distribution model
 
 ### Business as usual
-```{r 1_01 bau}
+```{r sdm 1_01 bau}
 plb_1_01 <- preds_lb_agg$predmaps[[1]][[c(1,11,21,31,41,51)]]
 
 names(plb_1_01) <- sprintf("sdm_20%s9", 1:6)
@@ -298,17 +299,15 @@ lp(plb_1_01)
 ```
 
 ### No harvest after 30 years
-```{r 8_01 h30}
+```{r sdm 8_01 h30}
 plb_8_01 <- preds_lb_agg$predmaps[[3]][[c(1,11,21,31,41,51)]]
 
 names(plb_8_01) <- sprintf("sdm_20%s9", 1:6)
 
 lp(plb_8_01)
 ```
-
-
 ### No harvest
-```{r 4_01 nth}
+```{r sdm 4_01 nth}
 plb_4_01 <- preds_lb_agg$predmaps[[2]][[c(1,11,21,31,41,51)]]
 
 names(plb_4_01) <- sprintf("sdm_20%s9", 1:6)
@@ -318,3 +317,56 @@ lp(plb_4_01)
 
 
 
+
+# PVAs
+
+## All stages
+
+### Business as usual
+```{r pop all stages 1_01 bau}
+psr(simset_lb$pva_pops[[1]])
+```
+
+### No harvest after 30 years
+```{r pop all stages 8_01 h30}
+psr(simset_lb$pva_pops[[2]])
+```
+
+### No harvest
+```{r pop all stages 4_01 nth}
+psr(simset_lb$pva_pops[[3]])
+```
+
+## Total population
+
+### Business as usual
+```{r pop total 1_01 bau}
+psr(simset_lb$pva_pops[[1]], stages = 0)
+```
+
+### No harvest after 30 years
+```{r pop total 8_01 h30}
+psr(simset_lb$pva_pops[[2]], stages = 0)
+```
+
+### No harvest
+```{r pop total 4_01 nth}
+psr(simset_lb$pva_pops[[3]], stages = 0)
+```
+
+##############################################
+
+### Business as usual
+```{r 1_01 bau}
+
+```
+
+### No harvest after 30 years
+```{r 8_01 h30}
+
+```
+
+### No harvest
+```{r 4_01 nth}
+
+```
