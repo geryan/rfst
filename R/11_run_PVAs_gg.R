@@ -27,9 +27,9 @@ plan(strategy = multisession, workers = ncores)
 
 # -----------------
 
-tm_gg <- matrix(c(0.00, 0.85 * 0.50, 0.85 *0.50,
-                  0.50,        0.00,       0.00,
-                  0.00,        0.85,       0.85),
+tm_gg <- matrix(c(0.00, 0.85 * 0.55, 0.85 *0.55,
+                  0.75,        0.00,       0.00,
+                  0.00,        0.90,       0.90),
                 nrow = 3,
                 ncol = 3,
                 byrow = TRUE,

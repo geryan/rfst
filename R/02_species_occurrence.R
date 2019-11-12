@@ -131,6 +131,8 @@ st_write(
   delete_dsn = TRUE
 )
 
+
+
 # GG from 1980 without background
 
 pa_gg_80x <- sample.pa(
@@ -186,8 +188,22 @@ pa_gg_09b <- buff.sample.pa(
 )
 
 st_write(
-  obj = pa_lb_09b,
-  dsn = "output/pa/pa_lb_09b_ch.shp",
+  obj = pa_gg_09b,
+  dsn = "output/pa/pa_gg_09b_ch.shp",
+  delete_dsn = TRUE
+)
+
+pa_gg_09bb <- buff.sample.pa(
+  x = gg_09,
+  y = am,
+  rfa = ch_rfa,
+  cellsize = 2000,
+  buff.dist = 2000
+)
+
+st_write(
+  obj = pa_gg_09bb,
+  dsn = "output/pa/pa_lb_09bg_ch.shp",
   delete_dsn = TRUE
 )
 
@@ -196,6 +212,7 @@ save(
   pa_lb_09b,
   pa_lb_80b,
   pa_gg_09b,
+  ba_gg_09bb,
   pa_gg_80b,
   pa_lb_09x,
   pa_lb_80x,

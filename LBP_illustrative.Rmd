@@ -1,6 +1,6 @@
 ---
 title: "Illustrative Results for Leadbeater's Possum"
-output: html_notebook
+output: word_document
 author: GE Ryan
 ---
 
@@ -353,6 +353,27 @@ psr(simset_lb$pva_pops[[2]], stages = 0)
 ```{r pop total 4_01 nth}
 psr(simset_lb$pva_pops[[3]], stages = 0)
 ```
+
+## Spatial population
+
+### Business as usual
+```{r spat pop adult 1_01 bau}
+psr_raster(simset_lb$pva_sims[[1]], timesteps = c(1,10,20,30,40,50))
+```
+
+### No harvest after 30 years
+```{r 8_01 h30}
+psr_raster(simset_lb$pva_sims[[2]], timesteps = c(1,10,20,30,40,50))
+```
+
+### No harvest
+```{r 4_01 nth}
+psr_raster(simset_lb$pva_sims[[3]], timesteps = c(1,10,20,30,40,50))
+```
+
+##
+
+
 
 ##############################################
 

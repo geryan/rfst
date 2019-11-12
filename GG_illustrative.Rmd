@@ -1,0 +1,116 @@
+---
+title: "Illustrative Results for Leadbeater's Possum"
+output: word_document
+author: GE Ryan
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(include = FALSE)
+```
+
+# Derived variables
+
+# Species distribution model
+
+### Business as usual
+```{r sdm 1_01 bau}
+pgg_1_01 <- preds_gg_agg$predmaps[[1]][[c(1,11,21,31,41,51)]]
+
+names(pgg_1_01) <- sprintf("sdm_20%s9", 1:6)
+
+lp(pgg_1_01)
+```
+
+### No harvest after 30 years
+```{r sdm 8_01 h30}
+pgg_8_01 <- preds_gg_agg$predmaps[[3]][[c(1,11,21,31,41,51)]]
+
+names(pgg_8_01) <- sprintf("sdm_20%s9", 1:6)
+
+lp(pgg_8_01)
+```
+### No harvest
+```{r sdm 4_01 nth}
+pgg_4_01 <- preds_gg_agg$predmaps[[2]][[c(1,11,21,31,41,51)]]
+
+names(pgg_4_01) <- sprintf("sdm_20%s9", 1:6)
+
+lp(pgg_4_01)
+```
+
+
+
+
+# PVAs
+
+## All stages
+
+### Business as usual
+```{r pop all stages 1_01 bau}
+psr(simset_gg$pva_pops[[1]])
+```
+
+### No harvest after 30 years
+```{r pop all stages 8_01 h30}
+psr(simset_gg$pva_pops[[2]])
+```
+
+### No harvest
+```{r pop all stages 4_01 nth}
+psr(simset_gg$pva_pops[[3]])
+```
+
+## Total population
+
+### Business as usual
+```{r pop total 1_01 bau}
+psr(simset_gg$pva_pops[[1]], stages = 0)
+```
+
+### No harvest after 30 years
+```{r pop total 8_01 h30}
+psr(simset_gg$pva_pops[[2]], stages = 0)
+```
+
+### No harvest
+```{r pop total 4_01 nth}
+psr(simset_gg$pva_pops[[3]], stages = 0)
+```
+
+## Spatial population
+
+### Business as usual
+```{r spat pop adult 1_01 bau}
+psr_raster(simset_gg$pva_sims[[1]], timesteps = c(1,10,20,30,40,50))
+```
+
+### No harvest after 30 years
+```{r spat pop adult 8_01 h30}
+psr_raster(simset_gg$pva_sims[[2]], timesteps = c(1,10,20,30,40,50))
+```
+
+### No harvest
+```{r spat pop adult 4_01 nth}
+psr_raster(simset_gg$pva_sims[[3]], timesteps = c(1,10,20,30,40,50))
+```
+
+##
+
+
+
+##############################################
+
+### Business as usual
+```{r 1_01 bau}
+
+```
+
+### No harvest after 30 years
+```{r 8_01 h30}
+
+```
+
+### No harvest
+```{r 4_01 nth}
+
+```
