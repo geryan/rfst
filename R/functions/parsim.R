@@ -28,6 +28,7 @@ parsim <- function(
     FUN = simulation,
     landscape = landscape,
     population_dynamics = population_dynamics,
+    demo_stochasticity = "full",
     timesteps = timesteps,
     replicates = 1,
     verbose = FALSE

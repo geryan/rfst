@@ -11,7 +11,9 @@ library(sp)
 
 
 load(file = "output/RData/00_comp_controls.RData")
-load(file = "output/RData/11_pvas_lb.RData")
+load(file = "output/RData/11_pvas.RData")
+rm(simset_gg)
+
 load(file = "output/RData/11_pvas_gg.RData")
 
 source.functions("R/functions")
@@ -30,7 +32,8 @@ pops <- bind_rows(
   mutate(
     emp = emp(pva_pops),
     pr.ex = pr.ex(pva_pops),
-    all.emp = emp.all(pva_pops)
+    all.emp = emp.all(pva_pops),
+    mmp = mmp(pva_pops)
   ) %>%
   mutate(
     scenario = case_when(scenario == 1 ~ "BAU",

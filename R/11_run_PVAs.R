@@ -128,8 +128,8 @@ simset_lb <- set_lb %>%
 
 # GG -----------------------------------------------------------------------------------
 
-tm_gg <- matrix(c(0.00, 0.85 * 0.55, 0.85 *0.55,
-                  0.60,        0.00,       0.00,
+tm_gg <- matrix(c(0.00, 0.85 * 0.50, 0.85 *0.50,
+                  0.50,        0.00,       0.00,
                   0.00,        0.85,       0.85),
                 nrow = 3,
                 ncol = 3,
@@ -231,6 +231,6 @@ save(
   simset_lb,
   tm_gg,
   simset_gg,
-  file = "output/RData/11_pvas.RData"
+  file = "output/RData/11_pvas_2.RData"
 )
 

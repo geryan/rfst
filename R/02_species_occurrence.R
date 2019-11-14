@@ -203,7 +203,7 @@ pa_gg_09bb <- buff.sample.pa(
 
 st_write(
   obj = pa_gg_09bb,
-  dsn = "output/pa/pa_lb_09bg_ch.shp",
+  dsn = "output/pa/pa_lb_09bb_ch.shp",
   delete_dsn = TRUE
 )
 
@@ -212,7 +212,7 @@ save(
   pa_lb_09b,
   pa_lb_80b,
   pa_gg_09b,
-  ba_gg_09bb,
+  pa_gg_09bb,
   pa_gg_80b,
   pa_lb_09x,
   pa_lb_80x,
