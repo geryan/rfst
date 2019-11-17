@@ -21,8 +21,11 @@ Here we illustrate three potential landscape scenarios:
 
 Each of these scenarios is modelled under the current planned burning regime, and following the climate pathway RCP 4.5, using the Access 1.0 model. It is important to note that it is vital to consdier other climate pathways in this modelling as this can have large effects on the forecasts of suitable habitat.
 
-For each of the three scenarios we have 10 LANDIS simulations, which each will result in different p
+For each of the three scenarios we have run 10 LANDIS simulations, which each will result in different simulated landscapes.
 
+Here we generally illustrate results for a single LANDIS simulation in each scenario.
+
+For each of these 30 LANDIS simulations we complete a population viability analysis for each species. Each of these PVAs consists of 100 simulated populations.
 
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(include = FALSE)
@@ -84,7 +87,9 @@ source.functions("R/functions")
 # Input variables
 
 ## Maximum age
-Maximum age of any tree in 1 ha cell.
+Maximum age in years of any tree in 1 ha cell - direct output from LANDIS.
+
+Large image is 2019, multi-plots are 10 year time-slices.
 
 ### Business as usual
 ```{r max_age 1_01 bau}
@@ -93,8 +98,7 @@ max_age_1_01 <- lxtract(
   y = "max_age",
   layernames = sprintf("max_age_20%s9", 1:6)
 )
-```
-```{r}
+
 lp(max_age_1_01[[1]])
 ```
 
@@ -140,7 +144,10 @@ lp(max_age_4_01[[1]])
 lp(max_age_4_01)
 ```
 
-## Average biomass of old-growth forest in 1km radius
+## Old growth eucalypt biomass
+Average biomass of old-growth eucalypt forest - trees >150 years of age - in 1km radius.
+
+Single plot is 2019, multi-plots are 10 year time-slices.
 
 ### Business as usual
 ```{r biom_oge_1k 1_01 bau}
@@ -193,189 +200,8 @@ lp(biom_oge_1k_4_01[[1]])
 lp(biom_oge_1k_4_01)
 ```
 
-
-# Climate
-
-## Precipitation
-
-### January, RCP 4.5
-```{r precipJan4.5}
-precipJan4.5 <- lxtract(
-  x = vgg1_4_01[c(1,11,21,31,41,51)],
-  y = "prec01",
-  layernames = sprintf("PrJan_20%s9", 1:6)
-)
-
-lp(precipJan4.5[[1]])
-```
-
-```{r}
-lp(precipJan4.5)
-```
-
-### July, RCP 4.5
-```{r precipJul4.5}
-precipJul4.5 <- lxtract(
-  x = vgg1_4_01[c(1,11,21,31,41,51)],
-  y = "prec07",
-  layernames = sprintf("PrJul_20%s9", 1:6)
-)
-
-lp(precipJul4.5[[1]])
-```
-
-```{r}
-lp(precipJul4.5)
-```
-
-
-## Temperature
-
-### January, maximum temperature, RCP 4.5
-```{r tmaxJan4.5}
-tmaxJan4.5 <- lxtract(
-  x = vgg1_4_01[c(1,11,21,31,41,51)],
-  y = "tmax01",
-  layernames = sprintf("tmaxJan_20%s9", 1:6)
-)
-
-lp(tmaxJan4.5[[1]])
-```
-
-```{r}
-lp(tmaxJan4.5)
-```
-
-### July, maximum temperature, RCP 4.5
-```{r tminJul4.5}
-tminJul4.5 <- lxtract(
-  x = vgg1_4_01[c(1,11,21,31,41,51)],
-  y = "tmin07",
-  layernames = sprintf("tminJul_20%s9", 1:6)
-)
-
-lp(tminJul4.5[[1]])
-```
-
-
-```{r}
-lp(tminJul4.5)
-```
-
-# Disturbances
-
-## Fires
-
-### Business as usual
-```{r fire_1_01 bau}
-lp(adv_1_01$fire[[1]])
-```
-
-```{r}
-lp(adv_1_01$fire)
-```
-
-And the additional run of this scenario
-```{r fire_1_10 bau}
-lp(adv_1_10$fire[[1]])
-```
-
-```{r}
-lp(adv_1_10$fire)
-```
-
-### No harvest after 30 years
-```{r fire_8_01 h30}
-lp(adv_8_01$fire[[1]])
-```
-
-```{r}
-lp(adv_8_01$fire)
-```
-
-### No harvest
-```{r fire_4_01 nth}
-lp(adv_4_01$fire[[1]])
-```
-
-```{r}
-lp(adv_4_01$fire)
-```
-
-
-
-## Timber harvest
-
-### Business as usual
-```{r harvest_1_01 bau}
-lp(adv_1_01$harvest[[1]])
-```
-
-```{r}
-lp(adv_1_01$harvest)
-```
-
-
-```{r harvest_1_10 bau}
-lp(adv_1_10$harvest[[1]])
-```
-
-```{r}
-lp(adv_1_10$harvest)
-```
-
-### No harvest after 30 years
-```{r harvest_8_01 h30}
-lp(adv_8_01$harvest[[1]])
-```
-
-```{r}
-lp(adv_8_01$harvest)
-```
-
-### No harvest
-```{r harvest_4_01 nth}
-lp(adv_4_01$harvest[[1]])
-```
-
-```{r}
-lp(adv_4_01$harvest)
-```
-
-
-## Planned burning
-
-### Business as usual
-```{r pb_1_01 bau}
-lp(adv_1_01$PB[[1]])
-```
-
-```{r}
-lp(adv_1_01$PB)
-```
-
-### No harvest after 30 years
-```{r pb_8_01 h30}
-lp(adv_8_01$PB[[1]])
-```
-
-```{r}
-lp(adv_8_01$PB)
-```
-
-### No harvest
-```{r pb_4_01 nth}
-lp(adv_4_01$PB[[1]])
-```
-
-```{r}
-lp(adv_4_01$PB)
-```
-
-
-# Derived variables
-
 ## Acacia and midstorey biomass
+Biomass of midstorey species and acacias
 
 ### Business as usual
 ```{r lbm_biom 1_01 bau}
@@ -424,12 +250,260 @@ lp(lbm_biom_4_01)
 ```
 
 
+# Climate
 
-# Leadbeater's Possum
 
-## Species distribution model
+## Precipitation
+
+### January, RCP 4.5
+Rainfall in January, large image is 2019, multi-plot shows 10 year time-slices.
+
+```{r precipJan4.5}
+precipJan4.5 <- lxtract(
+  x = vgg1_4_01[c(1,11,21,31,41,51)],
+  y = "prec01",
+  layernames = sprintf("PrJan_20%s9", 1:6)
+)
+
+lp(precipJan4.5[[1]])
+```
+
+```{r}
+lp(precipJan4.5)
+```
+
+### July, RCP 4.5
+Rainfall in July, large image is 2019, multi-plot shows 10 year time-slices.
+```{r precipJul4.5}
+precipJul4.5 <- lxtract(
+  x = vgg1_4_01[c(1,11,21,31,41,51)],
+  y = "prec07",
+  layernames = sprintf("PrJul_20%s9", 1:6)
+)
+
+lp(precipJul4.5[[1]])
+```
+
+```{r}
+lp(precipJul4.5)
+```
+
+
+## Temperature
+
+### January, maximum temperature, RCP 4.5
+Large image is 2019, multi-plot shows 10 year time-slices.
+```{r tmaxJan4.5}
+tmaxJan4.5 <- lxtract(
+  x = vgg1_4_01[c(1,11,21,31,41,51)],
+  y = "tmax01",
+  layernames = sprintf("tmaxJan_20%s9", 1:6)
+)
+
+lp(tmaxJan4.5[[1]])
+```
+
+```{r}
+lp(tmaxJan4.5)
+```
+
+### July, maximum temperature, RCP 4.5
+Large image is 2019, multi-plot shows 10 year time-slices.
+```{r tminJul4.5}
+tminJul4.5 <- lxtract(
+  x = vgg1_4_01[c(1,11,21,31,41,51)],
+  y = "tmin07",
+  layernames = sprintf("tminJul_20%s9", 1:6)
+)
+
+lp(tminJul4.5[[1]])
+```
+
+
+```{r}
+lp(tminJul4.5)
+```
+
+# Disturbances
+
+## Fires
+Cells where fires occured over 10 year period, with large map showing 2019-2028, and multi-plot showing all following periods of 10 years.
 
 ### Business as usual
+```{r fire_1_01 bau}
+lp(adv_1_01$fire[[1]], twocol = TRUE)
+```
+
+```{r}
+lp(adv_1_01$fire, twocol = TRUE)
+```
+
+#### And additional run of this scenario
+```{r fire_1_10 bau}
+lp(adv_1_10$fire[[1]], twocol = TRUE)
+```
+
+```{r}
+lp(adv_1_10$fire, twocol = TRUE)
+```
+
+### No harvest after 30 years
+```{r fire_8_01 h30}
+lp(adv_8_01$fire[[1]], twocol = TRUE)
+```
+
+```{r}
+lp(adv_8_01$fire, twocol = TRUE)
+```
+
+### No harvest
+```{r fire_4_01 nth}
+lp(adv_4_01$fire[[1]], twocol = TRUE)
+```
+
+```{r}
+lp(adv_4_01$fire, twocol = TRUE)
+```
+### Fires in time 50 in each LANDIS run
+Fires in all 10 runs of each of the three scenarios - illustratiing variation in fire occurrence in a single simulated timestep.
+```{r}
+fire_example <- expand.grid(
+  scenario = scn_list,
+  rep = rep_list
+) %>%
+  as_tibble %>%
+  mutate(
+    scn_id = paste0(scenario, "_", rep),
+    dvid = paste0("dv_", scn_id)
+  ) %>%
+  rowwise %>%
+  mutate(
+    dv = map(
+      .x = dvid,
+      .f = get
+    )
+  ) %>%
+  ungroup %>%
+  mutate(
+    fi = map(
+      .x = dv,
+      .f = function(x){
+        y <- lapply(X = x, function(z){z[["fi"]]})
+        
+        y <- stack(y)
+        
+        return(y)
+      }
+    )
+  ) %>%
+  mutate(
+    fi.50 = map(
+      .x = fi,
+      .f = ~.x[[50]]
+    )
+  )
+
+firestack <- stack(fire_example$fi.50)
+```
+
+```{r}
+lp(firestack[[1:6]], twocol = TRUE)
+```
+
+```{r}
+lp(firestack[[7:12]], twocol = TRUE)
+```
+
+```{r}
+lp(firestack[[13:18]], twocol = TRUE)
+```
+
+```{r}
+lp(firestack[[19:24]], twocol = TRUE)
+```
+
+```{r}
+lp(firestack[[23:30]], twocol = TRUE)
+```
+
+## Timber harvest
+Areas harvested in a 10 year period. Large image is 2019-2028, multi-plot is over all 10 year periods.
+
+### Business as usual
+```{r harvest_1_01 bau}
+lp(adv_1_01$harvest[[1]], twocol = TRUE)
+```
+
+```{r}
+lp(adv_1_01$harvest, twocol = TRUE)
+```
+
+
+```{r harvest_1_10 bau}
+lp(adv_1_10$harvest[[1]], twocol = TRUE)
+```
+
+```{r}
+lp(adv_1_10$harvest, twocol = TRUE)
+```
+
+### No harvest after 30 years
+```{r harvest_8_01 h30}
+lp(adv_8_01$harvest[[1]], twocol = TRUE)
+```
+
+```{r}
+lp(adv_8_01$harvest, twocol = TRUE)
+```
+
+### No harvest
+```{r harvest_4_01 nth}
+lp(adv_4_01$harvest[[1]], twocol = TRUE)
+```
+
+```{r}
+lp(adv_4_01$harvest, twocol = TRUE)
+```
+
+
+## Planned burning
+Arease burnt through planned burning in a 10 year period. Large image is 2019-2028, multi-plot is over all 10 year periods.
+
+### Business as usual
+```{r pb_1_01 bau}
+lp(adv_1_01$PB[[1]], twocol = TRUE)
+```
+
+```{r}
+lp(adv_1_01$PB, twocol = TRUE)
+```
+
+### No harvest after 30 years
+```{r pb_8_01 h30}
+lp(adv_8_01$PB[[1]], twocol = TRUE)
+```
+
+```{r}
+lp(adv_8_01$PB, twocol = TRUE)
+```
+
+### No harvest
+```{r pb_4_01 nth}
+lp(adv_4_01$PB[[1]], twocol = TRUE)
+```
+
+```{r}
+lp(adv_4_01$PB, twocol = TRUE)
+```
+
+
+
+
+
+# Leadbeater's Possum results
+
+## Species distribution model
+Base initial SDM. Multi-plots following are projections over 10 year time-slices.
 ```{r sdm 1_01 bau}
 plb_1_01 <- preds_lb_agg$predmaps[[1]][[c(1,11,21,31,41,51)]]
 
@@ -438,6 +512,7 @@ names(plb_1_01) <- sprintf("sdm_20%s9", 1:6)
 lp(plb_1_01[[1]])
 ```
 
+### Business as usual
 ```{r}
 lp(plb_1_01)
 ```
@@ -460,9 +535,12 @@ lp(plb_4_01)
 ```
 
 
-## PVAs
+## Populaition viability analysis
 
-## All stages
+## All life stages
+Population for each life history stage over 100 simulations for a single LANDIS simulation of each management scenario.
+
+Coloured lines are mean, grey lines are population over a single simulation. Panels are newborn (left), juvenile (middle), and adult (right) populations.
 
 ### Business as usual
 ```{r pop all stages 1_01 bau}
@@ -481,6 +559,10 @@ psr(simset_lb$pva_pops[[2]])
 
 ## Total population
 
+Total population for each of 100 PVA simulations for a single LANDIS simulation of each management scenario.
+
+Dark grey line is mean, grey ribbon is 95% bound of simulated population size, and light grey lines are population over a single PVA simulation. Dotted line below is the expected minimum population size, which is red when it equals zero.
+
 ### Business as usual
 ```{r pop total 1_01 bau}
 psr(simset_lb$pva_pops[[1]], stages = 0)
@@ -497,6 +579,7 @@ psr(simset_lb$pva_pops[[2]], stages = 0)
 ```
 
 ## Spatial population
+Population as distributed in space. First multi-plot is the initial population in each life-history stage, and second multi-plot is the simulated total population at 10-year time-slices.
 
 ### Business as usual
 ```{r}
@@ -637,37 +720,29 @@ psr_raster(simset_gg$pva_sims[[2]], timesteps = c(1,10,20,30,40,50))
 
 # Overall results
 
-
-
-
-
 ## Expected minimum population by scenario
+Expected minimum population for each simulated LANDIS landscpe for each scenario by species.
 ```{r}
 ggplot(pops, aes(x = scenario, y = emp)) +
   geom_boxplot() +
-  geom_point(aes(colour = rep), position = position_jitter(width = 0.1, height = 0)) +
-  facet_grid(species~., scales = "free")
-  
-```
-
-```{r}
-ggplot(pops, aes(x = scenario, y = emp)) +
-  geom_boxplot() +
-  geom_point(aes(colour = rep), position = position_dodge()) +
+  geom_point(aes(colour = rep), position = position_dodge(width = 0.05)) +
   facet_grid(species~., scales = "free")
   
 ```
 
 
 ## Expected minimum population within scenario
+Minimum population for each PVA simulation for each LANDIS simulation for each scenario, by species. Colours signify different LANDIS simulations within each scenario, but represent different simulations among scenarios.
 ```{r}
-ggplot(pops.all, aes(x = rep, y = min.pop)) +
-  geom_boxplot(aes(col = scenario)) +
-  facet_grid(species~., scales = "free")
+ggplot(pops.all, aes(x = scenario, y = min.pop)) +
+  geom_boxplot(aes(col = rep)) +
+  facet_grid(species~., scales = "free") +
+  guides(col = FALSE)
 
 ```
 
 ## Expected probability of extinction by scenario
+Proportion of populations that went extinct in each LANDIS simulation.
 ```{r}
 ggplot(pops, aes(x = scenario, y = pr.ex)) +
   geom_boxplot() +
@@ -676,11 +751,12 @@ ggplot(pops, aes(x = scenario, y = pr.ex)) +
 ```
 
 ## Mean minimum population
+Mean minimum population among PVA simulations within each LANDIS simulation.
 ```{r}
-# ggplot(pops, aes(x = scenario, y = mmp)) +
-#   geom_boxplot() +
-#   geom_point(aes(colour = rep), position = position_jitter(width = 0.1, height = 0)) +
-#   facet_grid(species~., scales = "free")
+ggplot(pops, aes(x = scenario, y = mmp)) +
+ geom_boxplot() +
+ geom_point(aes(colour = rep), position = position_jitter(width = 0.1, height = 0)) +
+ facet_grid(species~., scales = "free")
 ```
 
 
