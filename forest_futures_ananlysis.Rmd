@@ -50,12 +50,11 @@ load(file = "output/RData/05_geophys_vars.RData")
 load(file = "output/RData/06_climate_variables.RData")
 load(file = "output/RData/07_combined_variables.RData")
 load(file = "output/RData/08_distribution_model_data.RData")
-load(file = "output/RData/09_fit_distribution_models.RData")
-load(file = "output/RData/10_predict_SDMs.RData")
+#load(file = "output/RData/09_fit_distribution_models.RData")
+#load(file = "output/RData/10_predict_SDMs.RData")
 load(file = "output/RData/10.1_preds_agg.RData")
-#load(file = "output/RData/11_pvas_gg.RData")
-load(file = "output/RData/11_pvas_lb.RData")
-#load(file = "output/RData/")
+load(file = "output/RData/11_pvas.RData")
+load(file = "output/RData/12_pva_pops.RData")
 ```
 
 
@@ -377,14 +376,27 @@ ggplot(pops.all, aes(x = rep, y = min.pop)) +
 
 ```
 
+```{r}
+ggplot(pops, aes(x = scenario, y = pr.ex)) +
+  geom_boxplot() +
+  geom_point(aes(colour = rep), position = position_jitter(width = 0.1, height = 0)) +
+  facet_grid(species~., scales = "free")
+```
 
+
+```{r}
+ggplot(pops, aes(x = scenario, y = mmp)) +
+  geom_boxplot() +
+  geom_point(aes(colour = rep), position = position_jitter(width = 0.1, height = 0)) +
+  facet_grid(species~., scales = "free")
+```
 
 
 ```{r}
 zz <- simulation(
-  landscape = simset_lb$lsc[[1]],
-  population_dynamics = simset_lb$pd[[1]],
-  timesteps = 10,
+  landscape = set_gg$lsc[[1]],
+  population_dynamics = set_gg$pd[[1]],
+  timesteps = 50,
   replicates = 10
 )
 ```
@@ -418,32 +430,48 @@ sims_table <- expand.grid(
   mutate(
     fi = map(
       .f = lapply,
-      .x = sims_table$dv,
+      .x = dv,
       FUN = function(x){x[["fi"]]}
     ),
     fi  = map(
       
       .f = stack,
       .x = fi
-    ),
+     )
+  ) %>%
+  mutate(
     fi.sum = map(
       .f = function(x){
         sum(getValues(x), na.rm = TRUE)
       },
       .x = fi
-    ),
-    fi.sum = unlist(fi.sum)
+    )
+  ) %>%
+  mutate(
+    fi.sum = unnest(fi.sum)
   )
 
 sims_table
 ```
 ```{r}
-sims_table %>%
+aa <- sims_table %>%
   mutate(
-    fi.sim = unlist(fi.sum)
+    fi.sum = map(
+      .f = function(x){
+        sum(getValues(x), na.rm = TRUE)
+      },
+      .x = fi
+    )#,
+    #fi.sum = unlist(fi.sum)
   )
-  
 ```
+
+```{r}
+ggplot(sims_table, aes(x = scenario, y = fi.sum)) +
+ geom_boxplot() +
+  geom_point(aes(colour = rep), position = position_jitter(width = 0.1, height = 0))  
+```
+
 
 ```{r}
 tibble(price = c(
@@ -478,3 +506,51 @@ plot(pa_gg_09b, add = TRUE)
 plot(brt_gg$init.pred[[11]], zlim = c(0,1))
 plot(pa_gg_09bb, add = TRUE)
 ```
+
+
+```{r}
+ls()[grep("^dv_", ls())]
+```
+
+```{r}
+fire_example <- expand.grid(
+  scenario = scn_list,
+  rep = rep_list
+) %>%
+  as_tibble %>%
+  mutate(
+    scn_id = paste0(scenario, "_", rep),
+    dvid = paste0("dv_", scn_id)
+  ) %>%
+  rowwise %>%
+  mutate(
+    dv = map(
+      .x = dvid,
+      .f = get
+    )
+  ) %>%
+  ungroup %>%
+  mutate(
+    fi = map(
+      .x = dv,
+      .f = function(x){
+        y <- lapply(X = x, function(z){z[["fi"]]})
+        
+        y <- stack(y)
+        
+        return(y)
+      }
+    )
+  ) %>%
+  mutate(
+    fi.50 = map(
+      .x = fi,
+      .f = ~.x[[50]]
+    )
+  )
+
+fire_example
+
+firestack <- stack(fire_example$fi.50)
+```
+

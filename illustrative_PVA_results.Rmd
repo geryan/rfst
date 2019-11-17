@@ -9,6 +9,21 @@ output:
 author: GE Ryan - University of Melbourne
 ---
 
+Illustrative example of results products from STEPS PVA modelling for Leadbeater's Possum *Gymnobelideus leadbeateri* and Greater Glider *Petauroides volans* in the Central Highlands Regional Forestry Agreement zone.
+
+Results are illustrative of the types of output information available from the process, and should not be considered definitive results of any given scenario or outcome.
+
+Here we illustrate three potential landscape scenarios:
+
+- Business as usual (ongoing harvest),
+- Ceasing harvest after 30 years, and 
+- No timber harvesting.
+
+Each of these scenarios is modelled under the current planned burning regime, and following the climate pathway RCP 4.5, using the Access 1.0 model. It is important to note that it is vital to consdier other climate pathways in this modelling as this can have large effects on the forecasts of suitable habitat.
+
+For each of the three scenarios we have 10 LANDIS simulations, which each will result in different p
+
+
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set(include = FALSE)
 ```
@@ -55,7 +70,7 @@ load(file = "output/RData/08_distribution_model_data.RData")
 load(file = "output/RData/09_fit_distribution_models.RData")
 load(file = "output/RData/10_predict_SDMs.RData")
 load(file = "output/RData/10.1_preds_agg.RData")
-load(file = "output/RData/11_pvas.RData")
+load(file = "output/RData/11_pvas_2.RData")
 load(file = "output/RData/12_pva_pops.RData")
 ```
 
@@ -69,6 +84,7 @@ source.functions("R/functions")
 # Input variables
 
 ## Maximum age
+Maximum age of any tree in 1 ha cell.
 
 ### Business as usual
 ```{r max_age 1_01 bau}
@@ -79,7 +95,7 @@ max_age_1_01 <- lxtract(
 )
 ```
 ```{r}
-lp(max_age_1_01)[[1]]
+lp(max_age_1_01[[1]])
 ```
 
 ```{r}
@@ -116,7 +132,7 @@ max_age_4_01 <- lxtract(
 ```
 
 ```{r}
-lp(max_age_4_01)[[1]]
+lp(max_age_4_01[[1]])
 ```
 
 
@@ -136,7 +152,7 @@ biom_oge_1k_1_01 <- lxtract(
 ```
 
 ```{r}
-lp(biom_oge_1k_1_01)[[1]]
+lp(biom_oge_1k_1_01[[1]])
 ```
 
 ```{r}
@@ -153,7 +169,7 @@ biom_oge_1k_8_01 <- lxtract(
 ```
 
 ```{r}
-lp(biom_oge_1k_8_01)[[1]]
+lp(biom_oge_1k_8_01[[1]])
 ```
 
 ```{r}
@@ -170,7 +186,7 @@ biom_oge_1k_4_01 <- lxtract(
 ```
 
 ```{r}
-lp(biom_oge_1k_4_01)[[1]]
+lp(biom_oge_1k_4_01[[1]])
 ```
 
 ```{r}
@@ -190,7 +206,7 @@ precipJan4.5 <- lxtract(
   layernames = sprintf("PrJan_20%s9", 1:6)
 )
 
-lp(precipJan4.5)[[1]]
+lp(precipJan4.5[[1]])
 ```
 
 ```{r}
@@ -205,7 +221,7 @@ precipJul4.5 <- lxtract(
   layernames = sprintf("PrJul_20%s9", 1:6)
 )
 
-lp(precipJul4.5)[[1]]
+lp(precipJul4.5[[1]])
 ```
 
 ```{r}
@@ -223,7 +239,7 @@ tmaxJan4.5 <- lxtract(
   layernames = sprintf("tmaxJan_20%s9", 1:6)
 )
 
-lp(tmaxJan4.5)[[1]]
+lp(tmaxJan4.5[[1]])
 ```
 
 ```{r}
@@ -238,7 +254,7 @@ tminJul4.5 <- lxtract(
   layernames = sprintf("tminJul_20%s9", 1:6)
 )
 
-lp(tminJul4.5)[[1]]
+lp(tminJul4.5[[1]])
 ```
 
 
@@ -252,7 +268,7 @@ lp(tminJul4.5)
 
 ### Business as usual
 ```{r fire_1_01 bau}
-lp(adv_1_01$fire)[[1]]
+lp(adv_1_01$fire[[1]])
 ```
 
 ```{r}
@@ -261,7 +277,7 @@ lp(adv_1_01$fire)
 
 And the additional run of this scenario
 ```{r fire_1_10 bau}
-lp(adv_1_10$fire)[[1]]
+lp(adv_1_10$fire[[1]])
 ```
 
 ```{r}
@@ -270,7 +286,7 @@ lp(adv_1_10$fire)
 
 ### No harvest after 30 years
 ```{r fire_8_01 h30}
-lp(adv_8_01$fire)[[1]]
+lp(adv_8_01$fire[[1]])
 ```
 
 ```{r}
@@ -279,31 +295,50 @@ lp(adv_8_01$fire)
 
 ### No harvest
 ```{r fire_4_01 nth}
-lp(adv_4_01$fire)[[1]]
+lp(adv_4_01$fire[[1]])
 ```
 
 ```{r}
 lp(adv_4_01$fire)
 ```
 
+
+
 ## Timber harvest
 
 ### Business as usual
 ```{r harvest_1_01 bau}
+lp(adv_1_01$harvest[[1]])
+```
+
+```{r}
 lp(adv_1_01$harvest)
 ```
 
+
 ```{r harvest_1_10 bau}
+lp(adv_1_10$harvest[[1]])
+```
+
+```{r}
 lp(adv_1_10$harvest)
 ```
 
 ### No harvest after 30 years
 ```{r harvest_8_01 h30}
+lp(adv_8_01$harvest[[1]])
+```
+
+```{r}
 lp(adv_8_01$harvest)
 ```
 
 ### No harvest
 ```{r harvest_4_01 nth}
+lp(adv_4_01$harvest[[1]])
+```
+
+```{r}
 lp(adv_4_01$harvest)
 ```
 
@@ -312,18 +347,31 @@ lp(adv_4_01$harvest)
 
 ### Business as usual
 ```{r pb_1_01 bau}
+lp(adv_1_01$PB[[1]])
+```
+
+```{r}
 lp(adv_1_01$PB)
 ```
 
 ### No harvest after 30 years
 ```{r pb_8_01 h30}
+lp(adv_8_01$PB[[1]])
+```
+
+```{r}
 lp(adv_8_01$PB)
 ```
 
 ### No harvest
 ```{r pb_4_01 nth}
+lp(adv_4_01$PB[[1]])
+```
+
+```{r}
 lp(adv_4_01$PB)
 ```
+
 
 # Derived variables
 
@@ -337,6 +385,10 @@ lbm_biom_1_01 <- lxtract(
   layernames = sprintf("lbm_biom_20%s9", 1:6)
 )
 
+lp(lbm_biom_1_01[[1]])
+```
+
+```{r}
 lp(lbm_biom_1_01)
 ```
 
@@ -348,6 +400,10 @@ lbm_biom_8_01 <- lxtract(
   layernames = sprintf("lbm_biom_20%s9", 1:6)
 )
 
+lp(lbm_biom_8_01[[1]])
+```
+
+```{r}
 lp(lbm_biom_8_01)
 ```
 
@@ -360,6 +416,10 @@ lbm_biom_4_01 <- lxtract(
   layernames = sprintf("lbm_biom_20%s9", 1:6)
 )
 
+lp(lbm_biom_4_01[[1]])
+```
+
+```{r}
 lp(lbm_biom_4_01)
 ```
 
@@ -375,6 +435,10 @@ plb_1_01 <- preds_lb_agg$predmaps[[1]][[c(1,11,21,31,41,51)]]
 
 names(plb_1_01) <- sprintf("sdm_20%s9", 1:6)
 
+lp(plb_1_01[[1]])
+```
+
+```{r}
 lp(plb_1_01)
 ```
 
@@ -396,8 +460,6 @@ lp(plb_4_01)
 ```
 
 
-
-
 ## PVAs
 
 ## All stages
@@ -409,12 +471,12 @@ psr(simset_lb$pva_pops[[1]])
 
 ### No harvest after 30 years
 ```{r pop all stages 8_01 h30}
-psr(simset_lb$pva_pops[[2]])
+psr(simset_lb$pva_pops[[3]])
 ```
 
 ### No harvest
 ```{r pop all stages 4_01 nth}
-psr(simset_lb$pva_pops[[3]])
+psr(simset_lb$pva_pops[[2]])
 ```
 
 ## Total population
@@ -426,27 +488,40 @@ psr(simset_lb$pva_pops[[1]], stages = 0)
 
 ### No harvest after 30 years
 ```{r pop total 8_01 h30}
-psr(simset_lb$pva_pops[[2]], stages = 0)
+psr(simset_lb$pva_pops[[3]], stages = 0)
 ```
 
 ### No harvest
 ```{r pop total 4_01 nth}
-psr(simset_lb$pva_pops[[3]], stages = 0)
+psr(simset_lb$pva_pops[[2]], stages = 0)
 ```
 
 ## Spatial population
 
 ### Business as usual
+```{r}
+lp(simset_lb$init_pop[[1]])
+```
+
 ```{r spat pop adult 1_01 bau}
 psr_raster(simset_lb$pva_sims[[1]], timesteps = c(1,10,20,30,40,50))
 ```
 
 ### No harvest after 30 years
+```{r}
+lp(simset_lb$init_pop[[2]])
+```
+
+
 ```{r 8_01 h30}
 psr_raster(simset_lb$pva_sims[[2]], timesteps = c(1,10,20,30,40,50))
 ```
 
 ### No harvest
+```{r}
+lp(simset_lb$init_pop[[3]])
+```
+
 ```{r 4_01 nth}
 psr_raster(simset_lb$pva_sims[[3]], timesteps = c(1,10,20,30,40,50))
 ```
@@ -462,6 +537,10 @@ pgg_1_01 <- preds_gg_agg$predmaps[[1]][[c(1,11,21,31,41,51)]]
 
 names(pgg_1_01) <- sprintf("sdm_20%s9", 1:6)
 
+lp(pgg_1_01[[1]])
+```
+
+```{r}
 lp(pgg_1_01)
 ```
 
@@ -471,19 +550,25 @@ pgg_8_01 <- preds_gg_agg$predmaps[[3]][[c(1,11,21,31,41,51)]]
 
 names(pgg_8_01) <- sprintf("sdm_20%s9", 1:6)
 
+lp(pgg_8_01[[1]])
+```
+
+```{r}
 lp(pgg_8_01)
 ```
+
 ### No harvest
 ```{r sdm 4_01 nth}
 pgg_4_01 <- preds_gg_agg$predmaps[[2]][[c(1,11,21,31,41,51)]]
 
 names(pgg_4_01) <- sprintf("sdm_20%s9", 1:6)
 
-lp(pgg_4_01)
+lp(pgg_4_01[[1]])
 ```
 
-
-
+```{r}
+lp(pgg_4_01)
+```
 
 # PVAs
 
@@ -496,12 +581,12 @@ psr(simset_gg$pva_pops[[1]])
 
 ### No harvest after 30 years
 ```{r pop all stages 8_01 h30}
-psr(simset_gg$pva_pops[[2]])
+psr(simset_gg$pva_pops[[3]])
 ```
 
 ### No harvest
 ```{r pop all stages 4_01 nth}
-psr(simset_gg$pva_pops[[3]])
+psr(simset_gg$pva_pops[[2]])
 ```
 
 ## Total population
@@ -513,29 +598,41 @@ psr(simset_gg$pva_pops[[1]], stages = 0)
 
 ### No harvest after 30 years
 ```{r pop total 8_01 h30}
-psr(simset_gg$pva_pops[[2]], stages = 0)
+psr(simset_gg$pva_pops[[3]], stages = 0)
 ```
 
 ### No harvest
 ```{r pop total 4_01 nth}
-psr(simset_gg$pva_pops[[3]], stages = 0)
+psr(simset_gg$pva_pops[[2]], stages = 0)
 ```
 
 ## Spatial population
 
 ### Business as usual
+```{r}
+lp(simset_gg$init_pop[[1]])
+```
+
 ```{r spat pop adult 1_01 bau}
 psr_raster(simset_gg$pva_sims[[1]], timesteps = c(1,10,20,30,40,50))
 ```
 
 ### No harvest after 30 years
+```{r}
+lp(simset_gg$init_pop[[3]])
+```
+
 ```{r spat pop adult 8_01 h30}
-psr_raster(simset_gg$pva_sims[[2]], timesteps = c(1,10,20,30,40,50))
+psr_raster(simset_gg$pva_sims[[3]], timesteps = c(1,10,20,30,40,50))
 ```
 
 ### No harvest
+```{r}
+lp(simset_gg$init_pop[[2]])
+```
+
 ```{r spat pop adult 4_01 nth}
-psr_raster(simset_gg$pva_sims[[3]], timesteps = c(1,10,20,30,40,50))
+psr_raster(simset_gg$pva_sims[[2]], timesteps = c(1,10,20,30,40,50))
 ```
 
 # Overall results
@@ -552,6 +649,15 @@ ggplot(pops, aes(x = scenario, y = emp)) +
   facet_grid(species~., scales = "free")
   
 ```
+
+```{r}
+ggplot(pops, aes(x = scenario, y = emp)) +
+  geom_boxplot() +
+  geom_point(aes(colour = rep), position = position_dodge()) +
+  facet_grid(species~., scales = "free")
+  
+```
+
 
 ## Expected minimum population within scenario
 ```{r}
@@ -630,11 +736,46 @@ sims_table <- unnest(sims_table, cols = fi.sum) %>%
                          scenario == 4 ~ "No harvest",
                          scenario == 8 ~ "Cease harvest Y30")
   )
+
+
+sims_table <- sims_table %>%
+  mutate(
+    lo = map(
+      .f = lapply,
+      .x = dv,
+      FUN = function(x){x[["lo"]]}
+    ),
+    lo  = map(
+      
+      .f = stack,
+      .x = lo
+     )
+  )
+
+
+sims_table <- sims_table %>%
+  mutate(
+    lo.sum = map(
+      .f = function(x){
+        sum(getValues(x), na.rm = TRUE)
+      },
+      .x = lo
+    )
+  )
+
+sims_table <- unnest(sims_table, cols = lo.sum)
 ```
 
+Total area burnt in each scenario run
 ```{r}
 ggplot(sims_table, aes(x = scenario, y = fi.sum)) +
   geom_boxplot() +
   geom_point(aes(colour = rep), position = position_jitter(width = 0.1, height = 0)) 
 ```
 
+Total area harvested in each scenario run
+```{r}
+ggplot(sims_table, aes(x = scenario, y = lo.sum)) +
+  geom_boxplot() +
+  geom_point(aes(colour = rep), position = position_jitter(width = 0.1, height = 0)) 
+```
