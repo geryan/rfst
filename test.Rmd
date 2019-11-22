@@ -1,0 +1,214 @@
+---
+title: Illustrative Results of STEPS Population Viability Analysis for Leadbeater's
+  Possum and Greater Glider
+author: "GE Ryan - University of Melbourne"
+output:
+  pdf_document:
+    fig_height: 6
+    fig_width: 7
+    fig_caption: true
+    toc: yes
+    toc_depth: 3
+    includes:  
+      in_header: header.tex
+  word_document:
+    toc: yes
+    toc_depth: '3'
+---
+
+# Introduction
+
+Illustrative example of results products from STEPS PVA modelling for Leadbeater's Possum *Gymnobelideus leadbeateri* and Greater Glider *Petauroides volans* in the Central Highlands Regional Forestry Agreement zone.
+
+**These results are intended as examples of the types of output information available from the process, and should not be considered definitive results of any given scenario or outcome**
+
+Here we explore three potential landscape management scenarios:
+
+- Business as usual (ongoing harvest),
+- Ceasing harvest after 30 years, and 
+- No timber harvesting.
+
+Each of these scenarios is modelled under the current planned burning regime, and following the mid-range severity climate pathway RCP 4.5, using the Access 1.0 model. It is important to note that it is vital to consdier other climate pathways in this modelling as this can have large effects on the forecasts of suitable habitat.
+
+For each of the three scenarios we have run 10 LANDIS simulations, for a total of 30 LANDIS simulations, each of will result in different simulated landscapes. This is because LANDIS is a stochastic model where growth, scenescence, harvesting, bushfire, and planned burning will vary with each run of the model. We intend to increase the number of landscape simulations in order to better capture variation among landscape management scenarios, as well as the stochastic noise.
+
+For each of these 30 LANDIS simulations we complete a population viability analysis (PVA) for each species, which is itself a stochastic model. Each of these PVAs consists of 100 simulated populations.
+
+Here we generally illustrate results for a single LANDIS simulation in each scenario.
+
+
+```{r setup, echo = FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+```{r packages, results = 'hide', warning = FALSE, include = FALSE}
+library(magrittr)
+library(dplyr)
+library(tibble)
+library(sf)
+library(lwgeom)
+library(rgdal)
+library(readr)
+library(readxl)
+library(ggplot2)
+library(lubridate)
+library(foreach)
+library(doMC)
+library(future)
+library(future.apply)
+library(tidyr)
+library(dismo)
+library(gbm)
+library(steps)
+library(raster)
+library(rasterVis)
+library(rlang)
+library(viridis)
+library(purrr)
+library(rerddap)
+library(knitr)
+```
+
+```{r load everything}
+load(file = "output/RData/07_combined_variables.RData")
+```
+
+```{r source all functions}
+source(file = "R/functions/source.functions.R")
+source.functions("R/functions")
+```
+
+
+# LANDIS results
+
+## Maximum age
+Maximum age in years of any tree in 1 ha cell - direct output from LANDIS.
+
+Large image is 2019, multi-plots are 10 year time-slices.
+
+### Business as usual
+```{r max_age 1_01 bau, fig.cap = "Maximum age, business as usual scenario, 2019"}
+max_age_1_01 <- lxtract(
+  x = vgg1_1_01[c(1,11,21,31,41,51)],
+  y = "max_age",
+  layernames = sprintf("max_age_20%s9", 1:6)
+)
+
+lp(max_age_1_01[[1]])
+```
+
+```{r, fig.cap = "Maximum age, business as usual scenario, 2069"}
+lp(max_age_1_01[[6]])
+```
+
+```{r, fig.cap = "Maximum age, business as usual scenario, 2019, 2029, 2039, 2049, 2059, 2069"}
+lp(max_age_1_01)
+```
+
+
+### No harvest after 30 years
+```{r max_age 8_01 h30}
+max_age_8_01 <- lxtract(
+  x = vgg1_8_01[c(1,11,21,31,41,51)],
+  y = "max_age",
+  layernames = sprintf("max_age_20%s9", 1:6)
+)
+```
+
+```{r fig.cap = "Maximum age, no harvest after 30 years scenario, 2019"}
+lp(max_age_8_01[[1]])
+```
+
+```{r, fig.cap = "Maximum age, no harvest after 30 years scenario, 2069"}
+lp(max_age_8_01[[6]])
+```
+
+```{r, fig.cap = "Maximum age, no harvest after 30 years scenario, 2019, 2029, 2039, 2049, 2059, 2069"}
+lp(max_age_8_01)
+```
+
+
+### No harvest
+```{r max_age 4_01 nth}
+max_age_4_01 <- lxtract(
+  x = vgg1_4_01[c(1,11,21,31,41,51)],
+  y = "max_age",
+  layernames = sprintf("max_age_20%s9", 1:6)
+)
+```
+
+```{r, fig.cap = "Maximum age, no harvest scenario, 2019"}
+lp(max_age_4_01[[1]])
+```
+
+```{r, fig.cap = "Maximum age, no harvest scenario, 2069"}
+lp(max_age_4_01[[6]])
+```
+
+```{r, fig.cap = "Maximum age, no harvest scenario, 2019, 2029, 2039, 2049, 2059, 2069"}
+lp(max_age_4_01)
+```
+
+## Old growth eucalypt biomass
+Average biomass of old-growth eucalypt forest - trees >150 years of age - in 1km radius.
+
+Single plot is 2019, multi-plots are 10 year time-slices.
+
+### Business as usual
+```{r biom_oge_1k 1_01 bau}
+biom_oge_1k_1_01 <- lxtract(
+  x = vgg1_1_01[c(1,11,21,31,41,51)],
+  y = "biom_oge_1k",
+  layernames = sprintf("OGbiom_20%s9", 1:6)
+)
+```
+
+```{r, fig.cap = "Average biomass of old growth eucalypts in 1 km radius, business as usual scenario, 2019"}
+lp(biom_oge_1k_1_01[[1]])
+```
+```{r, fig.cap = "Average biomass of old growth eucalypts in 1 km radius, business as usual scenario, 2069"}
+lp(biom_oge_1k_1_01[[6]])
+```
+
+```{r, fig.cap = "Average biomass of old growth eucalypts in 1 km radius, business as usual scenario, 2019, 2029, 2039, 2049, 2059, 2069"}
+lp(biom_oge_1k_1_01)
+```
+
+### No harvest after 30 years
+```{r biom_oge_1k 8_01 h30}
+biom_oge_1k_8_01 <- lxtract(
+  x = vgg1_8_01[c(1,11,21,31,41,51)],
+  y = "biom_oge_1k",
+  layernames = sprintf("OGbiom_20%s9", 1:6)
+)
+```
+
+```{r, fig.cap = "Average biomass of old growth eucalypts in 1 km radius, no harvest after 30 years scenario, 2019"}
+lp(biom_oge_1k_8_01[[1]])
+```
+
+```{r, fig.cap = "Average biomass of old growth eucalypts in 1 km radius, no harvest after 30 years scenario, 2069"}
+lp(biom_oge_1k_8_01[[6]])
+```
+
+
+```{r fig.cap = "Average biomass of old growth eucalypts in 1 km radius, no harvest after 30 years scenario, 2019, 2029, 2039, 2049, 2059, 2069"}
+lp(biom_oge_1k_8_01)
+```
+
+### No harvest
+```{r biom_oge_1k 4_01 nth}
+biom_oge_1k_4_01 <- lxtract(
+  x = vgg1_4_01[c(1,11,21,31,41,51)],
+  y = "biom_oge_1k",
+  layernames = sprintf("OGbiom_20%s9", 1:6)
+)
+```
+
+```{r}
+lp(biom_oge_1k_4_01[[1]])
+```
+
+```{r}
+lp(biom_oge_1k_4_01)
+```
