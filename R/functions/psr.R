@@ -6,6 +6,7 @@ psr <- function(
   extx = TRUE,
   p0 = NULL,
   tm,
+  ylim = NULL,
   ...
 ){
   
@@ -55,13 +56,19 @@ psr <- function(
     
     for (i in seq_len(total_stages)) {
       
+      if(is.null(ylim)){
+        yl <- range(pretty(pop))
+      } else{
+        yl <- ylim
+      }
+      
       graphics::plot(pop.mn[, i],
                      type = 'l',
                      ylab = paste("Total Population: ", stage_names[i]),
                      xlab = "Timesteps",
                      #lwd = 3,
                      col = graph.pal[i],
-                     ylim = range(pretty(pop)),
+                     ylim = yl,
                      xaxt = 'n',
                      ...)
       axis(side = 1, at = unique(c(c(1, seq(0, length(pop.mn[, i]), by = round(ifelse(length(pop.mn[, i]) < 10, 10, length(pop.mn[, i])) / 10))[-1]), length(pop.mn[, i]))))
@@ -77,9 +84,16 @@ psr <- function(
                       col = graph.pal[i])
       
       if(extx){
+        
+        if(is.null(ylim)){
+          ty <- range(pretty(pop))[2]/2
+        } else{
+          ty <- ylim[2]/2
+        }
+        
         text(
           x = dim(popmat)[1]/2,
-          y = range(pretty(pop))[2]/2,
+          y = ty,
           labels = "ILLUSTRATIVE ONLY",
           col = "red"
         )
@@ -102,13 +116,19 @@ psr <- function(
     
     xaxs <- seq_len(nrow(pop[ , , 1]))
     
+    if(is.null(ylim)){
+      yl <- range(pretty(quants))
+    } else{
+      yl <- ylim
+    }
+    
     graphics::plot(quants[, 2], #rowSums(pop[ , , 1]),
                    type = 'l',
                    ylab = "Total Population (all stages)",
                    xlab = "Timesteps",
                    #lwd = 3,
                    col = 'black',
-                   ylim=range(pretty(quants)),
+                   ylim = yl,
                    xaxt = 'n',
                    ...)
     axis(side = 1, at = unique(c(c(1, seq(0, length(quants[, 2]), by = round(length(quants[, 2]) / 10))[-1]), length(quants[, 2]))))
@@ -145,9 +165,15 @@ psr <- function(
     }
    
     if(extx){
+      if(is.null(ylim)){
+        ty <- range(pretty(quants))[2]/2
+      } else{
+        ty <- ylim[2]/2
+      }
+      
       text(
         x = dim(popmat)[1]/2,
-        y = range(pretty(quants))[2]/2,
+        y = ty,
         labels = "ILLUSTRATIVE ONLY",
         col = "red"
       )
@@ -161,13 +187,19 @@ psr <- function(
     
     for (i in stages){
       
+      if(is.null(ylim)){
+        yl <- range(pretty(pop))
+      } else{
+        yl <- ylim
+      }
+      
       graphics::plot(pop.mn[, i],
                      type = 'l',
                      ylab = paste("Total Population: ", stage_names[i]),
                      xlab = "Timesteps",
                      #lwd = 3,
                      col = graph.pal[i],
-                     ylim = range(pretty(pop)),
+                     ylim = yl,
                      xaxt = 'n',
                      ...)
       axis(side = 1, at = unique(c(c(1, seq(0, length(pop.mn[, i]), by = round(ifelse(length(pop.mn[, i]) < 10, 10, length(pop.mn[, i])) / 10))[-1]), length(pop.mn[, i]))))
@@ -183,9 +215,16 @@ psr <- function(
                       col = graph.pal[i])
       
       if(extx){
+        
+        if(is.null(ylim)){
+          ty <- range(pretty(pop))[2]/2
+        } else{
+          ty <- ylim[2]/2
+        }
+        
         text(
           x = dim(popmat)[1]/2,
-          y = range(pretty(pop))[2]/2,
+          y = ty,
           labels = "ILLUSTRATIVE ONLY",
           col = "red"
         )
