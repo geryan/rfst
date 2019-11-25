@@ -12,6 +12,12 @@ date: 20190827
 ## Controls and software
 
 ### Packages
+
+Includes packages from github (development version or packages not on CRAN):
+
+-  `steps`. Install with `remotes::install_github("steps-dev/steps")`
+-  `metacapa`. Install with `remotes::install_github("mstrimas/metacapa")`
+
 ```{r packages}
 library(magrittr)
 library(dplyr)
@@ -37,6 +43,7 @@ library(rlang)
 library(viridis)
 library(purrr)
 library(rerddap)
+library(metacapa)
 ```
 
 ```{r load everything}
