@@ -112,7 +112,7 @@ max_age_1_01 <- lxtract(
 lp(max_age_1_01, mm = 1)
 ```
 
-```{r, fig.cap = "Maximum age, business as usual scenario, 2019"}
+```{r, fig.cap = "Maximum age, business as usual scenario, 2069"}
 lp(max_age_1_01, mm = 6)
 ```
 
