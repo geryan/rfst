@@ -18,7 +18,8 @@ rst.op <- function(
     "harvest",
     "fire",
     "div10",
-    "mort"),
+    "mort",
+    "threshold"),
   proj_mask,
   filename,
   layernames,
@@ -240,6 +241,9 @@ rst.op <- function(
         v <- ifelse(v1 == 1, 1, v2/6)
         
         v <- 1 - v
+      } else if(op == "threshold"){
+       
+        v <- ifelse(v < threshold, 0, threshold) 
       }
       
       out <- writeValues(out, v, bs$row[i])
