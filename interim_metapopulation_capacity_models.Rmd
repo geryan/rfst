@@ -1,0 +1,142 @@
+---
+title: Interim metapopulation capacity models
+author: "GE Ryan - University of Melbourne"
+output:
+  pdf_document:
+    fig_height: 6
+    fig_width: 7
+    fig_caption: true
+    toc: yes
+    toc_depth: 3
+    includes:  
+      in_header: header.tex
+  word_document:
+    toc: yes
+    toc_depth: '3'
+---
+
+# Introduction
+
+Interim, proof-of-concept metapopulation capacity models for Leadbeater's Possum *Gymnobelideus leadbeateri* and Greater Glider *Petauroides volans* in the Central Highlands Regional Forestry Agreement zone.
+
+**These results are intended as proof-of-concept only, and should not be considered definitive results of any given scenario or outcome**
+
+Here we explore three potential landscape management scenarios:
+
+- Business as usual (ongoing harvest),
+- Ceasing harvest after 30 years, and 
+- No timber harvesting.
+
+Each of these scenarios is modelled under the current planned burning regime, and following the mid-range severity climate pathway RCP 4.5, using the Access 1.0 model. It is important to note that it is vital to consdier other climate pathways in this modelling as this can have large effects on the forecasts of suitable habitat.
+
+For each of the three scenarios we have run 10 LANDIS simulations, for a total of 30 LANDIS simulations, each of will result in different simulated landscapes. This is because LANDIS is a stochastic model where growth, scenescence, harvesting, bushfire, and planned burning will vary with each run of the model. We intend to increase the number of landscape simulations in order to better capture variation among landscape management scenarios, as well as the stochastic noise.
+
+For each of these 30 LANDIS simulations we complete a population metapopulation capacity model for each species.
+
+Metapopulation capacity models are a relative measure of the capacity of a given landscape to sustain a metapopulation. The absolute value of metapopulation capacity is meaningless, however it has value as a relative measure against other landscapes.
+
+
+```{r setup, echo = FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+```{r packages, results = 'hide', warning = FALSE, include = FALSE}
+library(magrittr)
+library(dplyr)
+library(tibble)
+library(sf)
+library(lwgeom)
+library(ggplot2)
+library(lubridate)
+library(tidyr)
+library(raster)
+library(rasterVis)
+library(rlang)
+library(viridis)
+library(knitr)
+```
+
+```{r load everything}
+load(file = "output/RData/00_comp_controls.RData")
+#load(file = "output/RData/12_pva_pops.RData")
+load(file = "output/RData/13_metapopulation_capacity.RData")
+```
+
+
+```{r source all functions}
+source(file = "R/functions/source.functions.R")
+source.functions("R/functions")
+```
+
+
+```{r}
+mpclb <- metapc_long_lb %>%
+  group_by(scenario, year) %>%
+  summarise(
+    maxcap = max(metapopulation_capacity),
+    mincap = min(metapopulation_capacity)
+  )
+
+mpcgg <- metapc_long_gg %>%
+  group_by(scenario, year) %>%
+  summarise(
+    maxcap = max(metapopulation_capacity),
+    mincap = min(metapopulation_capacity)
+  )
+
+```
+
+# Metapopulation capacity models
+
+## Leadbeater's possum
+```{r lb lines, fig.cap = "Metapopulation capapcity for greater glider, by landscape management scenario scenario, where each line represents a different simulated landscape (rep)"}
+ggplot(metapc_long_lb) +
+  geom_line(aes(
+    x = year,
+    y = metapopulation_capacity,
+    colour = scenario,
+    linetype = rep
+  )) +
+  facet_grid(.~ scenario)
+  
+```
+
+```{r lb ribbon, fig.cap = "Metapopulation capapcity for Leadbeater's possum, where each coloured ribbon represents the range of metapopulation capacity values for simulated landscapes within each landscape management scenario"}
+ggplot(mpclb) +
+  geom_ribbon(
+    aes(
+      x = year,
+      ymin = mincap,
+      ymax = maxcap,
+      fill = scenario
+    ),
+    alpha = 0.5
+  )
+```
+
+## Greater Glider
+
+```{r gg lines, fig.cap = "Metapopulation capapcity for greater glider, by landscape management scenario scenario, where each line represents a different simulated landscape (rep)"}
+ggplot(metapc_long_gg) +
+  geom_line(aes(
+    x = year,
+    y = metapopulation_capacity,
+    colour = scenario,
+    linetype = rep
+  )) +
+  facet_grid(.~ scenario)
+  
+```
+
+```{r gg ribbon, fig.cap = "Metapopulation capapcity for greater glider, where each coloured ribbon represents the range of metapopulation capacity values for simulated landscapes within each landscape management scenario"}
+ggplot(mpcgg) +
+  geom_ribbon(
+    aes(
+      x = year,
+      ymin = mincap,
+      ymax = maxcap,
+      fill = scenario
+    ),
+    alpha = 0.5
+  )
+```

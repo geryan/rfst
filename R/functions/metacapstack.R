@@ -1,4 +1,4 @@
-metacapstack <- function(x, f){
+metacapstack <- function(x, f, year0 = NULL){
   
   library(raster)
   library(metacapa)
@@ -13,12 +13,23 @@ metacapstack <- function(x, f){
     
   }
   
-  result <- sapply(
+  metapopulation_capacity <- sapply(
     X = reslist,
     FUN = meta_capacity,
     f = f
   )
   
-  return(result)
+  if(is.null(year0)){
+    years <- 0:(length(metapopulation_capacity) - 1)
+  } else {
+    years <- year0:(year0 + (length(metapopulation_capacity) - 1))
+  }
+  
+  res <- tibble(
+    metapopulation_capacity = metapopulation_capacity,
+    year = years
+  )
+  
+  return(res)
   
 }
