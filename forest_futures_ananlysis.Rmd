@@ -60,8 +60,10 @@ load(file = "output/RData/08_distribution_model_data.RData")
 #load(file = "output/RData/09_fit_distribution_models.RData")
 #load(file = "output/RData/10_predict_SDMs.RData")
 load(file = "output/RData/10.1_preds_agg.RData")
-#load(file = "output/RData/11_pvas.RData")
-#load(file = "output/RData/12_pva_pops.RData")
+load(file = "output/RData/11_pvas.RData")
+load(file = "output/RData/12_pva_pops.RData")
+
+load(file = "output/RData/a_landis_output.RData")
 ```
 
 
@@ -559,5 +561,22 @@ fire_example <- expand.grid(
 fire_example
 
 firestack <- stack(fire_example$fi.50)
+```
+
+
+```{r}
+pm <- preds_lb_agg$predmaps[[1]]
+
+
+pm <- patmat(
+  x = pm,
+  threshold = threshold_lb,
+  out_path = "output/patch_matrix/",
+  scn_id = "1_01",
+  varset = "",
+  species = "lb"
+)
+
+pm
 ```
 

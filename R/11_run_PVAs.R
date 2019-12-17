@@ -18,7 +18,6 @@ library(sp)
 load(file = "output/RData/00_comp_controls.RData")
 load(file = "output/RData/01_landscape_variables.RData")
 load(file = "output/RData/04_disturbance_variables.RData")
-load(file = "output/RData/10_predict_SDMs.RData")
 load(file = "output/RData/10.1_preds_agg.RData")
 
 source.functions("R/functions")
@@ -27,9 +26,9 @@ plan(strategy = multisession, workers = ncores)
 
 # -----------------
 
-tm_lb <- matrix(c(0.00, 0.70 * 0.75, 0.80 *0.75,
+tm_lb <- matrix(c(0.00, 0.50 * 0.75, 0.80 *0.75,
                   0.50,        0.00,       0.00,
-                  0.00,        0.70,       0.80),
+                  0.00,        0.50,       0.80),
                 nrow = 3,
                 ncol = 3,
                 byrow = TRUE,
@@ -42,7 +41,6 @@ ss_lb <- get.stable.states(tm_lb)
 #nreplicates <- 100
 
 npvas <- dim(preds_lb_agg)[1]
-#npvas <- 2
 
 tml <- vector("list", npvas)
 
@@ -112,7 +110,8 @@ simset_lb <- set_lb %>%
     save.sims = TRUE,
     ss.path = "output/pva_objects",
     save.pops = TRUE,
-    sp.path = "output/pva_pops"
+    sp.path = "output/pva_pops",
+    pll.level = "m"
   ) %>%
   mutate(
     pva_sims = map(
@@ -128,15 +127,16 @@ simset_lb <- set_lb %>%
 
 # GG -----------------------------------------------------------------------------------
 
-tm_gg <- matrix(c(0.00, 0.85 * 0.50, 0.85 *0.50,
+tm_gg <- matrix(c(0.00, 0.6 * 0.50, 0.85 *0.50,
                   0.50,        0.00,       0.00,
-                  0.00,        0.85,       0.85),
+                  0.00,        0.6,       0.85),
                 nrow = 3,
                 ncol = 3,
                 byrow = TRUE,
                 dimnames = list(c('Newborn','Juvenile','Adult'),
                                 c('Newborn','Juvenile','Adult')))
 
+rmax(tm_gg)
 
 ss_gg <- get.stable.states(tm_gg)
 
@@ -211,7 +211,8 @@ simset_gg <- set_gg %>%
     save.sims = TRUE,
     ss.path = "output/pva_objects",
     save.pops = TRUE,
-    sp.path = "output/pva_pops"
+    sp.path = "output/pva_pops",
+    pll.level = "m"
   ) %>%
   mutate(
     pva_sims = map(
@@ -231,6 +232,6 @@ save(
   simset_lb,
   tm_gg,
   simset_gg,
-  file = "output/RData/11_pvas_2.RData"
+  file = "output/RData/11_pvas.RData"
 )
 

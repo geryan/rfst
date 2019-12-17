@@ -26,7 +26,7 @@ plan(strategy = multisession, workers = ncores)
 
 # -----------------
 
-tm_lb <- matrix(c(0.00, 0.50 * 0.75, 0.80 *0.75,
+tm_lb_1 <- matrix(c(0.00, 0.50 * 0.75, 0.80 *0.75,
                   0.50,        0.00,       0.00,
                   0.00,        0.50,       0.80),
                 nrow = 3,
@@ -36,23 +36,43 @@ tm_lb <- matrix(c(0.00, 0.50 * 0.75, 0.80 *0.75,
                                 c('Newborn','Juvenile','Adult')))
 
 
-ss_lb <- get.stable.states(tm_lb)
 
-#nreplicates <- 100
+ss_lb_1 <- get.stable.states(tm_lb_1)
 
-npvas <- dim(preds_lb_agg)[1]
+tm_lb_2 <- matrix(c(0.00, 0.65 * 0.75, 0.80 *0.75,
+                    0.65,        0.00,       0.00,
+                    0.00,        0.65,       0.80),
+                  nrow = 3,
+                  ncol = 3,
+                  byrow = TRUE,
+                  dimnames = list(c('Newborn','Juvenile','Adult'),
+                                  c('Newborn','Juvenile','Adult')))
 
-tml <- vector("list", npvas)
 
-for (i in 1:npvas){
-  tml[[i]] <- tm_lb
+
+ss_lb_2 <- get.stable.states(tm_lb_2)
+
+
+
+
+nreplicates <- 50
+
+
+tml <- vector("list", 18)
+
+for (i in 1:9){
+  tml[[i]] <- tm_lb_1
+}
+
+for (i in 10:18){
+  tml[[i]] <- tm_lb_2
 }
 
 myenv <- environment()
 
 # set ---------------------
 
-set_lb <- preds_lb_agg %>%
+set_lb <- preds_lb_agg[rep(1:3,6),] %>%
   # mutate(
   #   dv_id = sprintf("dv_%s_%s", scenario, rep)
   # ) %>%
@@ -84,8 +104,17 @@ set_lb <- preds_lb_agg %>%
   # dplyr::select(-v_id, -variables, -dv_id, -dvs)%>%
   mutate(
     tm = tml,
-    popsize = 3000,
-    varset = "",
+    tmn = c(rep(1, 9),
+            rep(2, 9)),
+    popsize = rep(
+      x = c(
+        rep(1500, times = 3),
+        rep(3000, times = 3),
+        rep(6000, times = 3)
+      ),
+      times = 2
+    ),
+    varset = paste0("s_",tmn, "_", popsize),
     species = "lb"
   ) %>%
   mply.initpop(
@@ -127,33 +156,47 @@ simset_lb <- set_lb %>%
 
 # GG -----------------------------------------------------------------------------------
 
-tm_gg <- matrix(c(0.00, 0.6 * 0.50, 0.85 *0.50,
+tm_gg_1 <- matrix(c(0.00, 0.5 * 0.50, 0.85 *0.50,
                   0.50,        0.00,       0.00,
-                  0.00,        0.6,       0.85),
+                  0.00,        0.50,       0.85),
                 nrow = 3,
                 ncol = 3,
                 byrow = TRUE,
                 dimnames = list(c('Newborn','Juvenile','Adult'),
                                 c('Newborn','Juvenile','Adult')))
 
-rmax(tm_gg)
-
-ss_gg <- get.stable.states(tm_gg)
 
 
-npvas <- dim(preds_gg_agg)[1]
+tm_gg_2 <- matrix(c(0.00, 0.85 * 0.50, 0.85 *0.50,
+                    0.50,        0.00,       0.00,
+                    0.00,        0.85,       0.85),
+                  nrow = 3,
+                  ncol = 3,
+                  byrow = TRUE,
+                  dimnames = list(c('Newborn','Juvenile','Adult'),
+                                  c('Newborn','Juvenile','Adult')))
 
-tml <- vector("list", npvas)
 
-for (i in 1:npvas){
-  tml[[i]] <- tm_gg
+
+
+
+nreplicates <- 50
+
+
+tml <- vector("list", 18)
+
+for (i in 1:9){
+  tml[[i]] <- tm_gg_1
 }
 
+for (i in 10:18){
+  tml[[i]] <- tm_gg_2
+}
 myenv <- environment()
 
 # set ---------------------
 
-set_gg <- preds_gg_agg %>%
+set_gg <- preds_gg_agg[rep(1:3,6),] %>%
   # mutate(
   #   dv_id = sprintf("dv_%s_%s", scenario, rep)
   # ) %>%
@@ -185,8 +228,17 @@ ungroup %>%
   # dplyr::select(-v_id, -variables, -dv_id, -dvs)%>%
   mutate(
     tm = tml,
-    popsize = 5000,
-    varset = "",
+    tmn = c(rep(1, 9),
+            rep(2, 9)),
+    popsize = rep(
+      x = c(
+        rep(2500, times = 3),
+        rep(5000, times = 3),
+        rep(10000, times = 3)
+      ),
+      times = 2
+    ),
+    varset = paste0("s_",tmn, "_", popsize),
     species = "gg"
   ) %>%
   mply.initpop(
@@ -201,7 +253,7 @@ ungroup %>%
 
 # simset ----
 
-simset_gg <- set_gg %>%
+simset_gg_supp <- set_gg %>%
   mply.simulation(
     ntimesteps = ntimesteps,
     nreplicates = nreplicates,
@@ -228,10 +280,7 @@ simset_gg <- set_gg %>%
 
 
 save(
-  tm_lb,
-  simset_lb,
-  tm_gg,
-  simset_gg,
-  file = "output/RData/11_pvas_2.RData"
+  simset_gg_supp,
+  file = "output/RData/11.1_pvas_gg.RData"
 )
 

@@ -18,18 +18,17 @@ library(sp)
 load(file = "output/RData/00_comp_controls.RData")
 load(file = "output/RData/01_landscape_variables.RData")
 load(file = "output/RData/04_disturbance_variables.RData")
-load(file = "output/RData/10_predict_SDMs.RData")
 load(file = "output/RData/10.1_preds_agg.RData")
 
 source.functions("R/functions")
 
 plan(strategy = multisession, workers = ncores)
 
-# -----------------
+# GG -----------------------------------------------------------------------------------
 
-tm_lb <- matrix(c(0.00, 0.70 * 0.75, 0.80 *0.75,
+tm_gg_1 <- matrix(c(0.00, 0.5 * 0.50, 0.85 *0.50,
                   0.50,        0.00,       0.00,
-                  0.00,        0.70,       0.80),
+                  0.00,        0.50,       0.85),
                 nrow = 3,
                 ncol = 3,
                 byrow = TRUE,
@@ -37,24 +36,37 @@ tm_lb <- matrix(c(0.00, 0.70 * 0.75, 0.80 *0.75,
                                 c('Newborn','Juvenile','Adult')))
 
 
-ss_lb <- get.stable.states(tm_lb)
 
-#nreplicates <- 100
+tm_gg_2 <- matrix(c(0.00, 0.85 * 0.50, 0.85 *0.50,
+                    0.50,        0.00,       0.00,
+                    0.00,        0.85,       0.85),
+                  nrow = 3,
+                  ncol = 3,
+                  byrow = TRUE,
+                  dimnames = list(c('Newborn','Juvenile','Adult'),
+                                  c('Newborn','Juvenile','Adult')))
 
-npvas <- dim(preds_lb_agg)[1]
-#npvas <- 2
 
-tml <- vector("list", npvas)
 
-for (i in 1:npvas){
-  tml[[i]] <- tm_lb
+
+
+nreplicates <- 50
+
+
+tml <- vector("list", 18)
+
+for (i in 1:9){
+  tml[[i]] <- tm_gg_1
 }
 
+for (i in 10:18){
+  tml[[i]] <- tm_gg_2
+}
 myenv <- environment()
 
 # set ---------------------
 
-set_lb <- preds_lb_agg %>%
+set_gg <- preds_gg_agg[rep(1:3,6),] %>%
   # mutate(
   #   dv_id = sprintf("dv_%s_%s", scenario, rep)
   # ) %>%
@@ -66,12 +78,12 @@ set_lb <- preds_lb_agg %>%
   #     envir = myenv
   #   )
   # ) %>%
-  ungroup %>%
+ungroup %>%
   mutate(
-  #   mort = map(
-  #     .x = dvs,
-  #     .f = function(y){lapply(y, FUN = function(x){x[["mort"]]})}
-  #   ),
+    #   mort = map(
+    #     .x = dvs,
+    #     .f = function(y){lapply(y, FUN = function(x){x[["mort"]]})}
+    #   ),
     hs = map(
       .x = predmaps,
       .f =  function(x){x[["sdm_0"]]}
@@ -86,23 +98,32 @@ set_lb <- preds_lb_agg %>%
   # dplyr::select(-v_id, -variables, -dv_id, -dvs)%>%
   mutate(
     tm = tml,
-    popsize = 3000,
-    varset = "",
-    species = "lb"
+    tmn = c(rep(1, 9),
+            rep(2, 9)),
+    popsize = rep(
+      x = c(
+        rep(2500, times = 3),
+        rep(5000, times = 3),
+        rep(10000, times = 3)
+      ),
+      times = 2
+    ),
+    varset = paste0("s_",tmn, "_", popsize),
+    species = "gg"
   ) %>%
   mply.initpop(
-    cc = 245,
+    cc = 60,
     proj_mask = ch_mask_agg,
     out_path = "output/pva_vars"
   ) %>%
   mply.landscape(
-    ccfun = cc_245
+    ccfun = cc_60
   ) %>%
   mply.population_dynamics(stoch = 0.1)
 
 # simset ----
 
-simset_lb <- set_lb %>%
+simset_gg_supp <- set_gg %>%
   mply.simulation(
     ntimesteps = ntimesteps,
     nreplicates = nreplicates,
@@ -112,7 +133,8 @@ simset_lb <- set_lb %>%
     save.sims = TRUE,
     ss.path = "output/pva_objects",
     save.pops = TRUE,
-    sp.path = "output/pva_pops"
+    sp.path = "output/pva_pops",
+    pll.level = "m"
   ) %>%
   mutate(
     pva_sims = map(
@@ -127,10 +149,8 @@ simset_lb <- set_lb %>%
   dplyr::select(-pva_res)
 
 
-
 save(
-  tm_lb,
-  simset_lb,
-  file = "output/RData/11_pvas_lb.RData"
+  simset_gg_supp,
+  file = "output/RData/11.1_pvas_gg.RData"
 )
 
