@@ -12,3 +12,6 @@ wc0.5
 *.gif
 illustrative_PVA_results_cache
 illustrative_PVA_results_files
+*.gri
+*.grd
+*.png
