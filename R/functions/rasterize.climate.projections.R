@@ -1,4 +1,10 @@
-rascc <- function(dat, new.proj.layer, filename, input.projection = "+proj=longlat +datum=WGS84"){
+rasterize.climate.projections <- function(
+  dat,
+  new.proj.layer,
+  filename,
+  input.projection = "+proj=longlat +datum=WGS84",
+  method = "bilinear"
+){
   
   library(tidyr)
   library(dplyr)
@@ -19,7 +25,7 @@ rascc <- function(dat, new.proj.layer, filename, input.projection = "+proj=longl
     
     result <- projectRaster(from = result,
                             to = new.proj.layer,
-                            method = "bilinear"
+                            method = method
                             )
     
     

@@ -1,0 +1,264 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+
+erddap_url <- "http://nrm-erddap.nci.org.au/erddap/"
+
+climate_model <- c(
+  "ACCESS1-0",  # in landis growth model as consensus model with those inputs
+  "CanESM2",    # climate futures tool 'best case' (high consensus)
+  "GFDL-ESM2M", # climate futures tool 'worst case' (very low consensus)
+  "NorESM1-M"   # climate futures tool 'maximum consensus' (high consensus)
+)
+
+climate_variable <- c(
+  "pr_djf",     # precipitation december, january, february
+  "pr_jja",     # precipitation june, july, august
+  "tasmax_djf", # max air temperature at surface december, january, february,
+  "tasmin_jja"  # minimum air temperature at surface june, july, august
+)
+
+rcp <- c(
+  "rcp45", # relative concentration pathway 4.5
+  "rcp85"  # relative concentration pathway 8.5
+)
+
+```
+
+#
+     pr_djf_AUS_ACCESS1-0_rcp45_r0i0p0_CSIRO-SSM_v20140516_mon
+     pr_djf_AUS_ACCESS1-0_rcp85_r0i0p0_CSIRO-SSM_v20140516_mon
+     pr_jja_AUS_ACCESS1-0_rcp45_r0i0p0_CSIRO-SSM_v20140516_mon
+     pr_jja_AUS_ACCESS1-0_rcp85_r0i0p0_CSIRO-SSM_v20140516_mon
+ tasmax_djf_AUS_ACCESS1-0_rcp45_r0i0p0_CSIRO-SSM_v20140516_mon
+ tasmax_djf_AUS_ACCESS1-0_rcp85_r0i0p0_CSIRO-SSM_v20140516_mon
+ tasmin_jja_AUS_ACCESS1-0_rcp45_r0i0p0_CSIRO-SSM_v20140516_mon
+ tasmin_jja_AUS_ACCESS1-0_rcp85_r0i0p0_CSIRO-SSM_v20140516_mon
+       pr_djf_AUS_CanESM2_rcp45_r0i0p0_CSIRO-SSM_v20140516_mon
+       pr_djf_AUS_CanESM2_rcp85_r0i0p0_CSIRO-SSM_v20140516_mon
+       pr_jja_AUS_CanESM2_rcp45_r0i0p0_CSIRO-SSM_v20140516_mon
+       pr_jja_AUS_CanESM2_rcp85_r0i0p0_CSIRO-SSM_v20140516_mon
+   tasmax_djf_AUS_CanESM2_rcp45_r0i0p0_CSIRO-SSM_v20140516_mon
+   tasmax_djf_AUS_CanESM2_rcp85_r0i0p0_CSIRO-SSM_v20140516_mon
+   tasmin_jja_AUS_CanESM2_rcp45_r0i0p0_CSIRO-SSM_v20140516_mon
+   tasmin_jja_AUS_CanESM2_rcp85_r0i0p0_CSIRO-SSM_v20140516_mon
+    pr_djf_AUS_GFDL-ESM2M_rcp45_r0i0p0_CSIRO-SSM_v20140516_mon
+    pr_djf_AUS_GFDL-ESM2M_rcp85_r0i0p0_CSIRO-SSM_v20140516_mon
+    pr_jja_AUS_GFDL-ESM2M_rcp45_r0i0p0_CSIRO-SSM_v20140516_mon
+    pr_jja_AUS_GFDL-ESM2M_rcp85_r0i0p0_CSIRO-SSM_v20140516_mon
+tasmax_djf_AUS_GFDL-ESM2M_rcp45_r0i0p0_CSIRO-SSM_v20140516_mon
+tasmax_djf_AUS_GFDL-ESM2M_rcp85_r0i0p0_CSIRO-SSM_v20140516_mon
+tasmin_jja_AUS_GFDL-ESM2M_rcp45_r0i0p0_CSIRO-SSM_v20140516_mon
+tasmin_jja_AUS_GFDL-ESM2M_rcp85_r0i0p0_CSIRO-SSM_v20140516_mon
+     pr_djf_AUS_NorESM1-M_rcp45_r0i0p0_CSIRO-SSM_v20140516_mon
+     pr_djf_AUS_NorESM1-M_rcp85_r0i0p0_CSIRO-SSM_v20140516_mon
+     pr_jja_AUS_NorESM1-M_rcp45_r0i0p0_CSIRO-SSM_v20140516_mon
+     pr_jja_AUS_NorESM1-M_rcp85_r0i0p0_CSIRO-SSM_v20140516_mon
+ tasmax_djf_AUS_NorESM1-M_rcp45_r0i0p0_CSIRO-SSM_v20140516_mon
+ tasmax_djf_AUS_NorESM1-M_rcp85_r0i0p0_CSIRO-SSM_v20140516_mon
+ tasmin_jja_AUS_NorESM1-M_rcp45_r0i0p0_CSIRO-SSM_v20140516_mon
+ tasmin_jja_AUS_NorESM1-M_rcp85_r0i0p0_CSIRO-SSM_v20140516_mon
+
+pr_Amon_ACCESS1-0_rcp45_r1i1p1_perc-change-wrt-seassum-clim_native
+```{r}
+raw_climate_data <- expand_grid(
+  climate_model,
+  rcp,
+  climate_variable
+) %>%
+  mutate(
+    clim_var_class = sub(
+      pattern = "_.*",
+      replacement = "",
+      x = climate_variable
+    ),
+    data_string = paste0(
+      clim_var_class,
+      "_Amon_",
+      climate_model,
+      "_",
+      rcp,
+      "_r1i1p1_",
+      ifelse(
+        clim_var_class == "pr",
+        "perc-change-wrt-seassum-clim_native",
+        "abs-change-wrt-seasavg-clim_native"
+      )
+    ),
+    filename = sprintf(
+      "output/clim_vars/%s_%s_%s.grd",
+      climate_model,
+      rcp,
+      climate_variable
+    )
+  ) %>%
+  rowwise %>%
+  mutate(
+    raw_data = pmap(
+      .l = list(
+        x = data_string,
+        fields = climate_variable
+      ),
+      .f = griddap,
+      url = erddap_url
+    )
+  ) %>%
+  ungroup
+
+raw_climate_data
+```
+
+```{r}
+rrcd <- expand_grid(
+  climate_model,
+  rcp,
+  climate_variable
+) %>%
+  mutate(
+    clim_var_class = sub(
+      pattern = "_.*",
+      replacement = "",
+      x = climate_variable
+    ),
+    data_string = paste0(
+      clim_var_class,
+      "_Amon_",
+      climate_model,
+      "_",
+      rcp,
+      "_r1i1p1_",
+      ifelse(
+        clim_var_class == "pr",
+        "perc-change-wrt-seassum-clim_native",
+        "abs-change-wrt-seasavg-clim_native"
+      )
+    ),
+    filename = sprintf(
+      "output/clim_vars/%s_%s_%s.grd",
+      climate_model,
+      rcp,
+      climate_variable
+    )
+  ) %>%
+  rowwise %>%
+  mutate(
+    raw_data = pmap(
+      .l = list(
+        x = data_string,
+        fields = climate_variable
+      ),
+      .f = griddap,
+      url = erddap_url,
+      latitude = c(-40.10297775, -32.64199448),
+      longitude = c(140.625, 150)
+    )
+  ) %>%
+  ungroup
+```
+
+
+```{r}
+
+plan(multisession, workers = 10)
+
+raw_climate_data_rasters <- rrcd %$%
+  future_mapply(
+  FUN = rasterize.climate.projections,
+  dat = raw_data,
+  filename = filename,
+  MoreArgs = list(
+    new.proj.layer = ch_mask
+  )
+)
+
+
+
+
+rcd <- raw_climate_data %>%
+  rowwise %>%
+  mutate(
+    proj_climate_data = pmap(
+      .l = list(
+        dat = raw_data,
+        filename = filename
+      ),
+      .f = rasterize.climate.projections,
+      new.proj.layer = ch_mask
+    )
+  )
+
+rcd
+```
+
+
+
+
+
+```{r}
+
+cdlist <- vector("list", 32)
+
+  #dat <- raw_climate_data$raw_data[[19]]
+dat <- rrcd$raw_data[[17]]
+  new.proj.layer <- ch_mask
+  filename <- "test.grd"
+  input.projection = "+proj=longlat +datum=WGS84"
+  method = "bilinear"
+
+  var <- colnames(dat$data)[[4]]
+  var <- enquo(var)
+  
+  result <- dat$data %>%
+    mutate(year = sub("-.*", "", time)) %>%
+    dplyr::select(lon, lat, everything(), -time) %>%
+    spread(year, !!var) %>%
+    rasterFromXYZ(crs = input.projection)
+  
+  if(!missing(new.proj.layer)){
+    
+    result <- projectRaster(from = result,
+                            to = new.proj.layer,
+                            method = method
+                            )
+    
+    
+    if(missing(filename)){
+      result <- mask(x = result,
+                     mask = new.proj.layer)
+    } else {
+      result <- mask(x = result,
+                     mask = new.proj.layer,
+                     filename = filename,
+                     overwrite = TRUE)
+    }
+    
+  }
+```
+
+
+```{r}
+#Years data available
+n_prec01_4.5 <- as.numeric(sub("-.*", "", unique(raw_prec01_4.5_pc$data$time)))
+n_prec01_8.5 <- as.numeric(sub("-.*", "", unique(raw_prec01_4.5_pc$data$time)))
+n_prec07_4.5 <- as.numeric(sub("-.*", "", unique(raw_prec07_4.5_pc$data$time)))
+n_prec07_8.5 <- as.numeric(sub("-.*", "", unique(raw_prec07_4.5_pc$data$time)))
+
+#Reprojected layers
+prec01_4.5_pc <- rasterize.climate.projections(raw_prec01_4.5_pc, new.proj.layer = ch_mask, filename = "output/clim_vars/prec01_4.5_pc.grd")
+prec01_8.5_pc <- rasterize.climate.projections(raw_prec01_8.5_pc, new.proj.layer = ch_mask, filename = "output/clim_vars/prec01_8.5_pc.grd")
+prec07_4.5_pc <- rasterize.climate.projections(raw_prec07_4.5_pc, new.proj.layer = ch_mask, filename = "output/clim_vars/prec07_4.5_pc.grd")
+prec07_8.5_pc <- rasterize.climate.projections(raw_prec07_8.5_pc, new.proj.layer = ch_mask, filename = "output/clim_vars/prec07_8.5_pc.grd")
+
+
+tmax01_4.5 <- rst.op(input1 = tmax01,
+                     input2 = tmax01_4.5_ac,
+                     proj_mask = ch_mask,
+                     op = "addabs",
+                     filename = "output/clim_vars/tmax01_4.5",
+                     layernames = n_tmax01_4.5)
+
+```
+

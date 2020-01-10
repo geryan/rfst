@@ -55,6 +55,28 @@ names(prec07) <- "prec07"
 # -------------------------------------------------------------
 # Absolute change in temperature
 
+
+erddap.url <- "http://nrm-erddap.nci.org.au/erddap/"
+
+climate.models <- c(
+  "ACCESS1-0",  # in landis growth model as consensus model with those inputs
+  "CanESM2",    # climate futures tool 'best case' (high consensus)
+  "GFDL-ESM2M", # climate futures tool 'worst case' (very low consensus)
+  "NorESM1-M"   # climate futures tool 'maximum consensus' (high consensus)
+)
+
+climate.variables <- c(
+  "pr_djf",     # precipitation december, january, february
+  "pr_jja",     # precipitation june, july, august
+  "tasmax_djf", # max air temperature at surface december, january, february,
+  "taxmin_jja"  # minimum air temperature at surface june, july, august
+)
+
+rcps <- c(
+  "rcp45", # relative concentration pathway 4.5
+  "rcp85"  # relative concentration pathway 8.5
+)
+
 raw_tmax01_4.5_ac <- griddap(
   x = "tasmax_Amon_ACCESS1-0_rcp45_r1i1p1_abs-change-wrt-seasavg-clim_native",
   latitude = c(-40.10297775, -32.64199448),
