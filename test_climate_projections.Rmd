@@ -112,7 +112,7 @@ raw_climate_data
 ```
 
 ```{r}
-rrcd <- expand_grid(
+raw_climate_data <- expand_grid(
   climate_model,
   rcp,
   climate_variable
@@ -157,6 +157,39 @@ rrcd <- expand_grid(
     )
   ) %>%
   ungroup
+
+
+unique.lats <- unique(raw_climate_data$raw_data[[9]]$data$lat)
+
+
+adjusted.lats <- seq(
+  from = unique.lats[1],
+  to = tail(unique.lats, n = 1),
+  length.out = length(unique.lats)
+)
+
+names(adjusted.lats) <- unique.lats
+
+CanESM2_dat <- raw_climate_data %>%
+  filter(climate_model == "CanESM2")
+
+
+CanESM2_lats <- CanESM2_dat$raw_data[[1]]$data$lat %>%
+  recode(
+    !!!adjusted.lats
+  )
+
+for(i in 1:dim(CanESM2_dat)){
+  CanESM2_dat$raw_data[[i]]$data$lat <- CanESM2_lats
+}
+
+
+raw_climate_data <- raw_climate_data %>%
+  filter(climate_model != "CanESM2") %>%
+  bind_rows(CanESM2_dat)
+
+
+raw_climate_data
 ```
 
 
@@ -164,7 +197,7 @@ rrcd <- expand_grid(
 
 plan(multisession, workers = 10)
 
-raw_climate_data_rasters <- rrcd %$%
+raw_climate_data_rasters <- raw_climate_data %$%
   future_mapply(
   FUN = rasterize.climate.projections,
   dat = raw_data,
@@ -174,26 +207,57 @@ raw_climate_data_rasters <- rrcd %$%
   )
 )
 
+plan(sequential)
 
-
-
-rcd <- raw_climate_data %>%
-  rowwise %>%
-  mutate(
-    proj_climate_data = pmap(
-      .l = list(
-        dat = raw_data,
-        filename = filename
-      ),
-      .f = rasterize.climate.projections,
-      new.proj.layer = ch_mask
-    )
-  )
-
-rcd
+raw_climate_data_rasters
 ```
 
+```{r}
 
+#cdlist <- vector("list", 32)
+
+#for (i in 17:32){
+ 
+
+i <- 16
+  #dat <- raw_climate_data$raw_data[[19]]
+#dat <- rrcd$raw_data[[i]]
+dat <- CanESM2_dat$raw_data[[1]]
+  new.proj.layer <- ch_mask
+  #filename <- sprintf("test_%02d.grd", i)
+  filename <- "test.grd"
+  input.projection = "+proj=longlat +datum=WGS84"
+  method = "bilinear"
+
+  var <- colnames(dat$data)[[4]]
+  var <- enquo(var)
+  
+  #cdlist[[i]] <- dat$data %>%
+  result <- dat$data %>%
+    mutate(year = sub("-.*", "", time)) %>%
+    dplyr::select(lon, lat, everything(), -time) %>%
+    spread(year, !!var) %>%
+    rasterFromXYZ(crs = input.projection)
+#}
+
+
+```
+
+```{r}
+diffun <- function(x, all.equal = FALSE){
+  z <- x[2:length(x)] - x[1:(length(x)-1)]
+  
+  if(all.equal){
+    y <- range(z)/mean(z)
+    
+    result <- all.equal(y[1], y[2])
+    
+    return(result)
+  }
+  
+  return(z)
+}
+```
 
 
 

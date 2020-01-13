@@ -56,26 +56,34 @@ names(prec07) <- "prec07"
 # Absolute change in temperature
 
 
-erddap.url <- "http://nrm-erddap.nci.org.au/erddap/"
+erddap_url <- "http://nrm-erddap.nci.org.au/erddap/"
 
-climate.models <- c(
+climate_model <- c(
   "ACCESS1-0",  # in landis growth model as consensus model with those inputs
   "CanESM2",    # climate futures tool 'best case' (high consensus)
   "GFDL-ESM2M", # climate futures tool 'worst case' (very low consensus)
   "NorESM1-M"   # climate futures tool 'maximum consensus' (high consensus)
 )
 
-climate.variables <- c(
+climate_variable <- c(
   "pr_djf",     # precipitation december, january, february
   "pr_jja",     # precipitation june, july, august
   "tasmax_djf", # max air temperature at surface december, january, february,
   "taxmin_jja"  # minimum air temperature at surface june, july, august
 )
 
-rcps <- c(
+rcp <- c(
   "rcp45", # relative concentration pathway 4.5
   "rcp85"  # relative concentration pathway 8.5
 )
+
+
+raw_climate_data <- expand_grid(
+  climate_model,
+  climate_variable,
+  rcp
+)
+
 
 raw_tmax01_4.5_ac <- griddap(
   x = "tasmax_Amon_ACCESS1-0_rcp45_r1i1p1_abs-change-wrt-seasavg-clim_native",
@@ -116,10 +124,10 @@ n_tmin07_4.5 <- as.numeric(sub("-.*", "", unique(raw_tmin07_4.5_ac$data$time)))
 n_tmin07_8.5 <- as.numeric(sub("-.*", "", unique(raw_tmin07_8.5_ac$data$time)))
 
 # Reporojected layers
-tmax01_4.5_ac <- rascc(raw_tmax01_4.5_ac, new.proj.layer = ch_mask, filename = "output/clim_vars/tmax01_4.5_ac.grd")
-tmax01_8.5_ac <- rascc(raw_tmax01_8.5_ac, new.proj.layer = ch_mask, filename = "output/clim_vars/tmax01_8.5_ac.grd")
-tmin07_4.5_ac <- rascc(raw_tmin07_4.5_ac, new.proj.layer = ch_mask, filename = "output/clim_vars/tmin07_4.5_ac.grd")
-tmin07_8.5_ac <- rascc(raw_tmin07_8.5_ac, new.proj.layer = ch_mask, filename = "output/clim_vars/tmin07_8.5_ac.grd")
+tmax01_4.5_ac <- rasterize.climate.projections(raw_tmax01_4.5_ac, new.proj.layer = ch_mask, filename = "output/clim_vars/tmax01_4.5_ac.grd")
+tmax01_8.5_ac <- rasterize.climate.projections(raw_tmax01_8.5_ac, new.proj.layer = ch_mask, filename = "output/clim_vars/tmax01_8.5_ac.grd")
+tmin07_4.5_ac <- rasterize.climate.projections(raw_tmin07_4.5_ac, new.proj.layer = ch_mask, filename = "output/clim_vars/tmin07_4.5_ac.grd")
+tmin07_8.5_ac <- rasterize.climate.projections(raw_tmin07_8.5_ac, new.proj.layer = ch_mask, filename = "output/clim_vars/tmin07_8.5_ac.grd")
 
 ##### Percentage change in precipitation
 raw_prec01_4.5_pc <- griddap(
@@ -164,10 +172,10 @@ n_prec07_4.5 <- as.numeric(sub("-.*", "", unique(raw_prec07_4.5_pc$data$time)))
 n_prec07_8.5 <- as.numeric(sub("-.*", "", unique(raw_prec07_4.5_pc$data$time)))
 
 #Reprojected layers
-prec01_4.5_pc <- rascc(raw_prec01_4.5_pc, new.proj.layer = ch_mask, filename = "output/clim_vars/prec01_4.5_pc.grd")
-prec01_8.5_pc <- rascc(raw_prec01_8.5_pc, new.proj.layer = ch_mask, filename = "output/clim_vars/prec01_8.5_pc.grd")
-prec07_4.5_pc <- rascc(raw_prec07_4.5_pc, new.proj.layer = ch_mask, filename = "output/clim_vars/prec07_4.5_pc.grd")
-prec07_8.5_pc <- rascc(raw_prec07_8.5_pc, new.proj.layer = ch_mask, filename = "output/clim_vars/prec07_8.5_pc.grd")
+prec01_4.5_pc <- rasterize.climate.projections(raw_prec01_4.5_pc, new.proj.layer = ch_mask, filename = "output/clim_vars/prec01_4.5_pc.grd")
+prec01_8.5_pc <- rasterize.climate.projections(raw_prec01_8.5_pc, new.proj.layer = ch_mask, filename = "output/clim_vars/prec01_8.5_pc.grd")
+prec07_4.5_pc <- rasterize.climate.projections(raw_prec07_4.5_pc, new.proj.layer = ch_mask, filename = "output/clim_vars/prec07_4.5_pc.grd")
+prec07_8.5_pc <- rasterize.climate.projections(raw_prec07_8.5_pc, new.proj.layer = ch_mask, filename = "output/clim_vars/prec07_8.5_pc.grd")
 
 
 
