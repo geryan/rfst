@@ -3,6 +3,9 @@
 library(raster)
 library(magrittr)
 library(rerddap)
+library(rlang)
+library(dplyr)
+library(tidyr)
 
 load(file = "output/RData/00_comp_controls.RData")
 load(file = "output/RData/01_landscape_variables.RData")
@@ -12,64 +15,156 @@ source.functions("R/functions")
 # Current climate
 # -----------------------------------------
 
-raw_tmax01 <- getData(name = "worldclim", var = "tmax", path = paste0(proj_path, "/output/wc_30sec/tmax/"), res = 0.5, lat = -60, lon = 120)[[1]] %>%
-  projectRaster(to = ch_mask) %>%
-  mask(mask = ch_mask, filename = "output/clim_vars/raw_tmax01.grd", overwrite = TRUE)
-
-names(raw_tmax01) <- "raw_tmax01"
-
-tmax01 <- rst.op(input1 = raw_tmax01,
-                 op = "div10",
-                 proj_mask = ch_mask,
-                 filename = "output/clim_vars/tmax01.grd",
-                 layernames = "tmax01")
+bioclim_vars <- c(
+  "tmax",
+  "tmin",
+  "prec"
+)
 
 
-raw_tmin07 <- getData(name = "worldclim", var = "tmin", path = paste0(proj_path, "/output/wc_30sec/tmin/"), res = 0.5, lat = -60, lon = 120)[[7]] %>%
-  projectRaster(to = ch_mask) %>%
-  mask(mask = ch_mask, filename = "output/clim_vars/raw_tmin07.grd", overwrite = TRUE)
+raw_bioclim <- expand_grid(
+  bioclim_vars) %>%
+  rowwise %>%
+  mutate(
+    raw_data = pmap(
+      .f = getData,
+      .l = list(
+        var = bioclim_vars
+      ),
+      name = "worldclim",
+      path = paste0(
+        proj_path,
+        "/output/wc_30sec/tmax"
+      ),
+      res = 0.5,
+      lat = -60,
+      lon = 120
+    )
+  )
 
-names(raw_tmin07) <- "raw_tmin07"
 
-tmin07 <- rst.op(input1 = raw_tmin07,
-                 op = "div10",
-                 proj_mask = ch_mask,
-                 filename = "output/clim_vars/tmin07.grd",
-                 layernames = "tmin07")
+raw_djf <- raw_bioclim %$%
+  lapply(
+    X = raw_data,
+    FUN = function(x){
+      result <- x[[c(12, 1, 2)]]
+      return(result)
+    }
+  ) %>%
+  lapply(
+    FUN = mean
+  ) %>%
+  mapply(
+    FUN = function(x, var){
+      if(var == "prec"){
+        return(x)
+      } else{
+        z <- round(x)/10
+        return(z)
+      }
+    },
+    var = raw_bioclim$bioclim_vars
+  )
 
 
-prec01 <- getData(name = "worldclim", var = "prec", path = paste0(proj_path, "/output/wc_30sec/prec/"), res = 0.5, lat = -60, lon = 120)[[1]] %>%
-  projectRaster(to = ch_mask) %>%
-  mask(mask = ch_mask, filename = "output/clim_vars/prec01.grd", overwrite = TRUE)
+raw_jja <- raw_bioclim %$%
+  lapply(
+    X = raw_data,
+    FUN = function(x){
+      result <- x[[c(6, 7, 8)]]
+      return(result)
+    }
+  ) %>%
+  lapply(
+    FUN = mean
+  ) %>%
+  mapply(
+    FUN = function(x, var){
+      if(var == "prec"){
+        return(x)
+      } else{
+        z <- round(x)/10
+        return(z)
+      }
+    },
+    var = raw_bioclim$bioclim_vars
+  )
 
-names(prec01) <- "prec01"
 
+raw_season <- bind_cols(
+  raw_bioclim,
+  tibble(djf = raw_djf),
+  tibble(jja = raw_jja)
+) %>%
+  dplyr::select(-raw_data) %>%
+  pivot_longer(
+    -bioclim_vars,
+    names_to = "season",
+    values_to = "data"
+  ) %>%
+  filter(!(bioclim_vars == "tmax" & season == "jja")) %>%
+  filter(!(bioclim_vars == "tmin" & season == "djf")) %>%
+  mutate(
+    layername = sprintf(
+      "%s_%s",
+      bioclim_vars,
+      season
+    ),
+    filename = sprintf(
+      "output/clim_vars/base_%s_%s.grd",
+      bioclim_vars,
+      season
+    )
+  )
 
-prec07 <- getData(name = "worldclim", var = "prec", path = paste0(proj_path, "/output/wc_30sec/prec/"), res = 0.5, lat = -60, lon = 120)[[7]] %>%
-  projectRaster(to = ch_mask) %>%
-  mask(mask = ch_mask, filename = "output/clim_vars/prec07.grd", overwrite = TRUE)
+base_clim_vars <- raw_season %$%
+  mapply(
+    FUN = function(
+      x,
+      proj_mask,
+      filename,
+      layername
+    ){
+      result <- x %>%
+        projectRaster(
+          to = proj_mask
+        ) %>%
+        rst.op(
+          op = "writeonly",
+          proj_mask = proj_mask,
+          filename = filename,
+          layernames = layername
+        )
+      
+      return(result)
+    },
+    x = data,
+    layername = layername,
+    filename = filename,
+    MoreArgs = list(
+      proj_mask = ch_mask
+    )
+  )
 
-names(prec07) <- "prec07"
 
 # Future climate
 # -------------------------------------------------------------
 # Absolute change in temperature
-
-
 erddap_url <- "http://nrm-erddap.nci.org.au/erddap/"
 
 climate_model <- c(
   "ACCESS1-0",  # in landis growth model as consensus model with those inputs
-  "CanESM2",    # climate futures tool 'best case' (high consensus)
+  "NorESM1-M",  # climate futures tool 'maximum consensus' (high consensus)
   "GFDL-ESM2M", # climate futures tool 'worst case' (very low consensus)
-  "NorESM1-M"   # climate futures tool 'maximum consensus' (high consensus)
+  "CanESM2"     # climate futures tool 'best case' (high consensus)
+  
 )
 
 climate_variable <- c(
   "pr_djf",     # precipitation december, january, february
   "pr_jja",     # precipitation june, july, august
   "tasmax_djf", # max air temperature at surface december, january, february,
-  "taxmin_jja"  # minimum air temperature at surface june, july, august
+  "tasmin_jja"  # minimum air temperature at surface june, july, august
 )
 
 rcp <- c(
@@ -77,106 +172,105 @@ rcp <- c(
   "rcp85"  # relative concentration pathway 8.5
 )
 
-
+## Download data from climate change in australia ERDDAP
 raw_climate_data <- expand_grid(
   climate_model,
-  climate_variable,
-  rcp
+  rcp,
+  climate_variable
+) %>%
+  mutate(
+    clim_var_class = sub(
+      pattern = "_.*",
+      replacement = "",
+      x = climate_variable
+    ),
+    data_string = paste0(
+      clim_var_class,
+      "_Amon_",
+      climate_model,
+      "_",
+      rcp,
+      "_r1i1p1_",
+      ifelse(
+        clim_var_class == "pr",
+        "perc-change-wrt-seassum-clim_native",
+        "abs-change-wrt-seasavg-clim_native"
+      )
+    ),
+    filename = sprintf(
+      "output/clim_vars/%s_%s_%s.grd",
+      climate_model,
+      rcp,
+      climate_variable
+    )
+  ) %>%
+  rowwise %>%
+  mutate(
+    raw_data = pmap(
+      .l = list(
+        x = data_string,
+        fields = climate_variable
+      ),
+      .f = griddap,
+      url = erddap_url,
+      latitude = c(-40.10297775, -32.64199448), # clips download of data to small area around CH target area
+      longitude = c(140.625, 150)
+    )
+  ) %>%
+  ungroup
+###
+# Because the tile sizes for data for the CanESM2 model aren't perfectly square
+# some adjustment is necessary to replace the latitudes with evenly spaced latitudes
+# shifts middle two latitudes by < 1e-5 degree, so likely to be < 10 m
+
+CanESM2_dat <- raw_climate_data %>%
+  filter(climate_model == "CanESM2")
+
+unique.lats <- unique(CanESM2_dat$raw_data[[1]]$data$lat)
+
+adjusted.lats <- seq(
+  from = unique.lats[1],
+  to = tail(unique.lats, n = 1),
+  length.out = length(unique.lats)
 )
 
+names(adjusted.lats) <- unique.lats
 
-raw_tmax01_4.5_ac <- griddap(
-  x = "tasmax_Amon_ACCESS1-0_rcp45_r1i1p1_abs-change-wrt-seasavg-clim_native",
-  latitude = c(-40.10297775, -32.64199448),
-  longitude = c(140.625, 150),
-  time = c("2025-01-01T12:00:00", "2090-01-01T12:00:00"),
-  fields = "tasmax_january",
-  url = "http://nrm-erddap.nci.org.au/erddap/")
+CanESM2_lats <- CanESM2_dat$raw_data[[1]]$data$lat %>%
+  recode(
+    !!!adjusted.lats # https://rlang.r-lib.org/reference/nse-force.html
+  )
 
-raw_tmax01_8.5_ac <- griddap(
-  x = "tasmax_Amon_ACCESS1-0_rcp85_r1i1p1_abs-change-wrt-seasavg-clim_native",
-  latitude = c(-40.10297775, -32.64199448),
-  longitude = c(140.625, 150),
-  time = c("2025-01-01T12:00:00", "2090-01-01T12:00:00"),
-  fields = "tasmax_january",
-  url = "http://nrm-erddap.nci.org.au/erddap/")
+for(i in 1:dim(CanESM2_dat)){
+  CanESM2_dat$raw_data[[i]]$data$lat <- CanESM2_lats
+}
 
-raw_tmin07_4.5_ac <- griddap(
-  x = "tasmin_Amon_ACCESS1-0_rcp45_r1i1p1_abs-change-wrt-seasavg-clim_native",
-  latitude = c(-40.10297775, -32.64199448),
-  longitude = c(140.625, 150),
-  time = c("2025-01-01T12:00:00", "2090-01-01T12:00:00"),
-  fields = "tasmin_july",
-  url = "http://nrm-erddap.nci.org.au/erddap/")
 
-raw_tmin07_8.5_ac <- griddap(
-  x = "tasmin_Amon_ACCESS1-0_rcp85_r1i1p1_abs-change-wrt-seasavg-clim_native",
-  latitude = c(-40.10297775, -32.64199448),
-  longitude = c(140.625, 150),
-  time = c("2025-01-01T12:00:00", "2090-01-01T12:00:00"),
-  fields = "tasmin_july",
-  url = "http://nrm-erddap.nci.org.au/erddap/")
+raw_climate_data <- raw_climate_data %>%
+  filter(climate_model != "CanESM2") %>%
+  bind_rows(CanESM2_dat)
 
-# Years data available
-n_tmax01_4.5 <- as.numeric(sub("-.*", "", unique(raw_tmax01_4.5_ac$data$time)))
-n_tmax01_8.5 <- as.numeric(sub("-.*", "", unique(raw_tmax01_8.5_ac$data$time)))
-n_tmin07_4.5 <- as.numeric(sub("-.*", "", unique(raw_tmin07_4.5_ac$data$time)))
-n_tmin07_8.5 <- as.numeric(sub("-.*", "", unique(raw_tmin07_8.5_ac$data$time)))
 
 # Reporojected layers
-tmax01_4.5_ac <- rasterize.climate.projections(raw_tmax01_4.5_ac, new.proj.layer = ch_mask, filename = "output/clim_vars/tmax01_4.5_ac.grd")
-tmax01_8.5_ac <- rasterize.climate.projections(raw_tmax01_8.5_ac, new.proj.layer = ch_mask, filename = "output/clim_vars/tmax01_8.5_ac.grd")
-tmin07_4.5_ac <- rasterize.climate.projections(raw_tmin07_4.5_ac, new.proj.layer = ch_mask, filename = "output/clim_vars/tmin07_4.5_ac.grd")
-tmin07_8.5_ac <- rasterize.climate.projections(raw_tmin07_8.5_ac, new.proj.layer = ch_mask, filename = "output/clim_vars/tmin07_8.5_ac.grd")
+plan(multisession, workers = ncores)
 
-##### Percentage change in precipitation
-raw_prec01_4.5_pc <- griddap(
-  x = "pr_Amon_ACCESS1-0_rcp45_r1i1p1_perc-change-wrt-seassum-clim_native",
-  latitude = c(-40.10297775, -32.64199448),
-  longitude = c(140.625, 150),
-  time = c("2025-01-01T12:00:00", "2090-01-01T12:00:00"),
-  fields = "pr_january",
-  url = "http://nrm-erddap.nci.org.au/erddap/")
+raw_climate_data_rasters <- raw_climate_data %$%
+  future_mapply(
+    FUN = rasterize.climate.projections,
+    dat = raw_data,
+    filename = filename,
+    MoreArgs = list(
+      new.proj.layer = ch_mask
+    )
+  )
 
-raw_prec01_8.5_pc <- griddap(
-  x = "pr_Amon_ACCESS1-0_rcp85_r1i1p1_perc-change-wrt-seassum-clim_native",
-  latitude = c(-40.10297775, -32.64199448),
-  longitude = c(140.625, 150),
-  time = c("2025-01-01T12:00:00", "2090-01-01T12:00:00"),
-  fields = "pr_january",
-  url = "http://nrm-erddap.nci.org.au/erddap/")
-
-raw_prec07_4.5_pc <- griddap(
-  x = "pr_Amon_ACCESS1-0_rcp45_r1i1p1_perc-change-wrt-seassum-clim_native",
-  latitude = c(-40.10297775, -32.64199448),
-  longitude = c(140.625, 150),
-  time = c("2025-01-01T12:00:00", "2090-01-01T12:00:00"),
-  fields = "pr_july",
-  url = "http://nrm-erddap.nci.org.au/erddap/")
-
-raw_prec07_8.5_pc <- griddap(
-  x = "pr_Amon_ACCESS1-0_rcp85_r1i1p1_perc-change-wrt-seassum-clim_native",
-  latitude = c(-40.10297775, -32.64199448),
-  longitude = c(140.625, 150),
-  time = c("2025-01-01T12:00:00", "2090-01-01T12:00:00"),
-  fields = "pr_july",
-  url = "http://nrm-erddap.nci.org.au/erddap/")
-
-
-# NEED TO FIX PROCESSING BECAUSE RAW DATA FRAMES NOW ggriddap_nc class
+plan(sequential)
 
 #Years data available
 n_prec01_4.5 <- as.numeric(sub("-.*", "", unique(raw_prec01_4.5_pc$data$time)))
 n_prec01_8.5 <- as.numeric(sub("-.*", "", unique(raw_prec01_4.5_pc$data$time)))
 n_prec07_4.5 <- as.numeric(sub("-.*", "", unique(raw_prec07_4.5_pc$data$time)))
 n_prec07_8.5 <- as.numeric(sub("-.*", "", unique(raw_prec07_4.5_pc$data$time)))
-
-#Reprojected layers
-prec01_4.5_pc <- rasterize.climate.projections(raw_prec01_4.5_pc, new.proj.layer = ch_mask, filename = "output/clim_vars/prec01_4.5_pc.grd")
-prec01_8.5_pc <- rasterize.climate.projections(raw_prec01_8.5_pc, new.proj.layer = ch_mask, filename = "output/clim_vars/prec01_8.5_pc.grd")
-prec07_4.5_pc <- rasterize.climate.projections(raw_prec07_4.5_pc, new.proj.layer = ch_mask, filename = "output/clim_vars/prec07_4.5_pc.grd")
-prec07_8.5_pc <- rasterize.climate.projections(raw_prec07_8.5_pc, new.proj.layer = ch_mask, filename = "output/clim_vars/prec07_8.5_pc.grd")
-
 
 
 ####  Absolute predicted values
