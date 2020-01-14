@@ -309,14 +309,17 @@ raw_climate_projections <- raw_climate_projection_data_adj %>%
     climate_variable = clim_var_class,
     season,
     raw_climate_projection_rasters
+  ) %>%
+  mutate(
+    climate_variable = recode(
+      
+    )
   )
 
 
 #Years data available
-n_prec01_4.5 <- as.numeric(sub("-.*", "", unique(raw_prec01_4.5_pc$data$time)))
-n_prec01_8.5 <- as.numeric(sub("-.*", "", unique(raw_prec01_4.5_pc$data$time)))
-n_prec07_4.5 <- as.numeric(sub("-.*", "", unique(raw_prec07_4.5_pc$data$time)))
-n_prec07_8.5 <- as.numeric(sub("-.*", "", unique(raw_prec07_4.5_pc$data$time)))
+projection_years <- as.numeric(sub("X", "", names(raw_climate_projections$raw_climate_projection_rasters[[1]])))
+
 
 
 ####  Absolute predicted values

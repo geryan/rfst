@@ -48,34 +48,60 @@ rst.op <- function(
       
       nl <- nlayers(input2)
       
-      out <- stack(replicate(nl, ch_mask))
-
-      for (j in 1:nl){
+      out <- brick(replicate(nl, proj_mask))
+      
+      bs <- blockSize(out)
+      
+      out <- writeStart(
+        x = out,
+        filename = filename,
+        overwrite = TRUE
+      )
+      
+      for(i in 1:bs$n){
         
-        out[[j]] <- writeStart(x = out[[j]], filename = sprintf("%s_%s.grd", filename, layernames[j]), overwrite = TRUE)
+        v1 <- getValuesBlock(
+          x = input1,
+          row = bs$row[i],
+          nrows = bs$nrows[i]
+        )
         
-        for (i in 1:bs$n){
+        v2 <- getValuesBlock(
+          x = input2,
+          row = bs$row[i],
+          nrows = bs$nrows[i]
+        )
+        
+        if(op == "addabs") {
           
-          v1 <- getValues(input1, row = bs$row[i], nrows = bs$nrows[i])
-          v2 <- getValues(input2[[j]], row = bs$row[i], nrows = bs$nrows[i])
+          v <- v1 + v2
           
-          if(op == "addabs") {
-            
-            v <- v1 + v2
-            out[[j]] <- writeValues(out[[j]], v, bs$row[i])
-            
-          } else if (op == "addper"){
-            
-            v <- v1 * (1 + v2/100)
-            out[[j]] <- writeValues(out[[j]], v, bs$row[i])
-          }
+          
+        } else if (op == "addper"){
+          
+          v <- v1 * (1 + v2/100)
+          
+          out <- writeValues(
+            x = out,
+            v = v,
+            start = bs$row[i]
+          )
+          
         }
         
-        out[[j]] <- writeStop(out[[j]])
-        names(out[[j]]) <- names(input2[[j]])
-        out[[j]] <- mask(x = out[[j]], mask = proj_mask, filename = sprintf("%s_%s.grd", filename, layernames[j]), overwrite = TRUE)
-        
       }
+      
+      out <- writeStop(out)
+      
+      names(out) <- names(input2)
+      
+      out <- mask(
+        x = out,
+        mask = proj_mask,
+        filename = filename,
+        overwrite = TRUE
+      )
+      
       
       return(out)
       
@@ -242,7 +268,7 @@ rst.op <- function(
         
         v <- 1 - v
       } else if(op == "threshold"){
-       
+        
         v <- ifelse(v < threshold, 0, threshold) 
       }
       
@@ -250,18 +276,18 @@ rst.op <- function(
       
     }
   }
-    
-    
+  
+  
   out <- writeStop(out)
-    
+  
   if(!missing(window)){
     
     out <- focal(out, window, fun = mean, na.rm = TRUE, filename = filename, overwrite = TRUE)
   }
-    
+  
   names(out) <- layernames
   out <- mask(x = out, mask = proj_mask, filename = filename, overwrite = TRUE)
-    
+  
   
   return(out)
   
