@@ -6,6 +6,9 @@ library(rerddap)
 library(rlang)
 library(dplyr)
 library(tidyr)
+library(purrr)
+library(future)
+library(future.apply)
 
 load(file = "output/RData/00_comp_controls.RData")
 load(file = "output/RData/01_landscape_variables.RData")
@@ -100,7 +103,7 @@ raw_season <- bind_cols(
   pivot_longer(
     -bioclim_vars,
     names_to = "season",
-    values_to = "data"
+    values_to = "raw_seasonal_data"
   ) %>%
   filter(!(bioclim_vars == "tmax" & season == "jja")) %>%
   filter(!(bioclim_vars == "tmin" & season == "djf")) %>%
@@ -117,7 +120,7 @@ raw_season <- bind_cols(
     )
   )
 
-base_clim_vars <- raw_season %$%
+base_climate_raster <- raw_season %$%
   mapply(
     FUN = function(
       x,
@@ -138,13 +141,24 @@ base_clim_vars <- raw_season %$%
       
       return(result)
     },
-    x = data,
+    x = raw_seasonal_data,
     layername = layername,
     filename = filename,
     MoreArgs = list(
       proj_mask = ch_mask
     )
   )
+
+
+base_climate_variables <- tibble(base_climate_raster) %>%
+  bind_cols(raw_season) %>%
+  dplyr::select(
+    climate_variable = bioclim_vars,
+    season,
+    base_climate_raster
+  )
+
+
 
 
 # Future climate
@@ -173,7 +187,7 @@ rcp <- c(
 )
 
 ## Download data from climate change in australia ERDDAP
-raw_climate_data <- expand_grid(
+raw_climate_projection_data <- expand_grid(
   climate_model,
   rcp,
   climate_variable
@@ -223,7 +237,7 @@ raw_climate_data <- expand_grid(
 # some adjustment is necessary to replace the latitudes with evenly spaced latitudes
 # shifts middle two latitudes by < 1e-5 degree, so likely to be < 10 m
 
-CanESM2_dat <- raw_climate_data %>%
+CanESM2_dat <- raw_climate_projection_data %>%
   filter(climate_model == "CanESM2")
 
 unique.lats <- unique(CanESM2_dat$raw_data[[1]]$data$lat)
@@ -241,20 +255,33 @@ CanESM2_lats <- CanESM2_dat$raw_data[[1]]$data$lat %>%
     !!!adjusted.lats # https://rlang.r-lib.org/reference/nse-force.html
   )
 
-for(i in 1:dim(CanESM2_dat)){
-  CanESM2_dat$raw_data[[i]]$data$lat <- CanESM2_lats
-}
+CanESM2_adj_raw_data <- lapply(
+    X = CanESM2_dat$raw_data,
+    FUN = function(x, y){
+      x$data$lat <- y
+      
+      return(x)
+    },
+    y = CanESM2_lats
+  )
 
+CanESM2_adj <- CanESM2_dat %>%
+  dplyr::select(-raw_data) %>%
+  bind_cols(
+    tibble(
+      raw_data = CanESM2_adj_raw_data
+    )
+  )
 
-raw_climate_data <- raw_climate_data %>%
+raw_climate_projection_data_adj <- raw_climate_projection_data %>%
   filter(climate_model != "CanESM2") %>%
-  bind_rows(CanESM2_dat)
+  bind_rows(CanESM2_adj)
 
 
 # Reporojected layers
 plan(multisession, workers = ncores)
 
-raw_climate_data_rasters <- raw_climate_data %$%
+raw_climate_projection_rasters <- raw_climate_projection_data_adj %$%
   future_mapply(
     FUN = rasterize.climate.projections,
     dat = raw_data,
@@ -265,6 +292,25 @@ raw_climate_data_rasters <- raw_climate_data %$%
   )
 
 plan(sequential)
+
+
+raw_climate_projections <- raw_climate_projection_data_adj %>%
+  bind_cols(tibble(raw_climate_projection_rasters)) %>%
+  mutate(
+    season = sub(
+      pattern = ".*_",
+      replacement = "",
+      x = climate_variable
+    )
+  ) %>%
+  dplyr::select(
+    climate_model,
+    rcp,
+    climate_variable = clim_var_class,
+    season,
+    raw_climate_projection_rasters
+  )
+
 
 #Years data available
 n_prec01_4.5 <- as.numeric(sub("-.*", "", unique(raw_prec01_4.5_pc$data$time)))
