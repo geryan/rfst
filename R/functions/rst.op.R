@@ -19,7 +19,8 @@ rst.op <- function(
     "fire",
     "div10",
     "mort",
-    "threshold"),
+    "threshold",
+    "writeBrick"),
   proj_mask,
   filename,
   layernames,
@@ -60,13 +61,13 @@ rst.op <- function(
       
       for(i in 1:bs$n){
         
-        v1 <- getValuesBlock(
+        v1 <- getValues(
           x = input1,
           row = bs$row[i],
           nrows = bs$nrows[i]
         )
         
-        v2 <- getValuesBlock(
+        v2 <- getValues(
           x = input2,
           row = bs$row[i],
           nrows = bs$nrows[i]
@@ -81,13 +82,13 @@ rst.op <- function(
           
           v <- v1 * (1 + v2/100)
           
-          out <- writeValues(
-            x = out,
-            v = v,
-            start = bs$row[i]
-          )
-          
         }
+        
+        out <- writeValues(
+          x = out,
+          v = v,
+          start = bs$row[i]
+        )
         
       }
       
@@ -151,6 +152,10 @@ rst.op <- function(
           v1 <- rowSums(v1)
           
         }
+        
+        v <- v1
+        
+      } else if (op == "writeBrick"){
         
         v <- v1
         

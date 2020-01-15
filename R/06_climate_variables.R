@@ -212,7 +212,7 @@ raw_climate_projection_data <- expand_grid(
       )
     ),
     filename = sprintf(
-      "output/clim_vars/%s_%s_%s.grd",
+      "output/clim_vars/raw_%s_%s_%s.grd",
       climate_model,
       rcp,
       climate_variable
@@ -312,7 +312,10 @@ raw_climate_projections <- raw_climate_projection_data_adj %>%
   ) %>%
   mutate(
     climate_variable = recode(
-      
+      climate_variable,
+      "tasmax" = "tmax",
+      "tasmin" = "tmin",
+      "pr" = "prec"
     )
   )
 
@@ -325,72 +328,64 @@ projection_years <- as.numeric(sub("X", "", names(raw_climate_projections$raw_cl
 ####  Absolute predicted values
 # --------------------------------------------------------------
 
-###### Temperature
+plan(multisession, workers = ncores)
 
-###### Jan max temperature RCP 4.5
-tmax01_4.5 <- rst.op(input1 = tmax01,
-                     input2 = tmax01_4.5_ac,
-                     proj_mask = ch_mask,
-                     op = "addabs",
-                     filename = "output/clim_vars/tmax01_4.5",
-                     layernames = n_tmax01_4.5)
+climate_projection_rasters <- raw_climate_projections %$%
+  future_mapply(
+    FUN = function(
+      base,
+      change,
+      proj_mask,
+      cm,
+      rc,
+      cv,
+      se
+    ){
+      
+      filename <- sprintf(
+        "output/clim_vars/projected_%s_%s_%s_%s.grd",
+        cm,
+        rc,
+        cv,
+        se
+      )
+      
+      op <- ifelse(
+        cv == "prec",
+        "addper",
+        "addabs"
+      )
+      
+      base_layer <- base %>%
+        filter(climate_variable == cv) %>%
+        filter(season == se) %>%
+        dplyr::select(base_climate_raster) %>%
+        unlist %>%
+        magrittr::extract2(1)
+      
+      result <- rst.op(
+        input1 = base_layer,
+        input2 = change,
+        proj_mask = proj_mask,
+        op = op,
+        filename = filename
+      )
+      
+      return(result)
+    },
+    change = raw_climate_projection_rasters,
+    cm = climate_model,
+    rc = rcp,
+    cv = climate_variable,
+    se = season,
+    MoreArgs = list(
+      base = base_climate_variables,
+      proj_mask = ch_mask
+    )
+  )
 
-###### Jan max temperature RCP 8.5
-tmax01_8.5 <- rst.op(input1 = tmax01,
-                     input2 = tmax01_8.5_ac,
-                     proj_mask = ch_mask,
-                     op = "addabs",
-                     filename = "output/clim_vars/tmax01_8.5",
-                     layernames = n_tmax01_8.5)
+plan(sequential)
 
-###### July min temperature RCP 4.5
-tmin07_4.5 <- rst.op(input1 = tmin07,
-                     input2 = tmin07_4.5_ac,
-                     proj_mask = ch_mask,
-                     op = "addabs",
-                     filename = "output/clim_vars/tmin07_4.5",
-                     layernames = n_tmin07_4.5)
-
-###### July min temperature RCP 8.5
-tmin07_8.5 <- rst.op(input1 = tmin07,
-                     input2 = tmin07_8.5_ac,
-                     proj_mask = ch_mask,
-                     op = "addabs",
-                     filename = "output/clim_vars/tmin07_8.5",
-                     layernames = n_tmin07_8.5)
-
-##### Precipitation
-
-##### January precipitation RCP 4.5
-prec01_4.5 <- rst.op(input1 = prec01,
-                     input2 = prec01_4.5_pc,
-                     proj_mask = ch_mask,
-                     op = "addper",
-                     filename = "output/clim_vars/prec01_4.5",
-                     layernames = n_prec01_4.5)
-
-##### January precipitation RCP 8.5
-prec01_8.5 <- rst.op(input1 = prec01,
-                     input2 = prec01_8.5_pc,
-                     proj_mask = ch_mask,
-                     op = "addper",
-                     filename = "output/clim_vars/prec01_8.5",
-                     layernames = n_prec01_8.5)
-##### July precipitation RCP 4.5
-prec07_4.5 <- rst.op(input1 = prec07,
-                     input2 = prec07_4.5_pc,
-                     proj_mask = ch_mask,
-                     op = "addper",
-                     filename = "output/clim_vars/prec07_4.5",
-                     layernames = n_prec07_4.5)
-
-##### July precipitation RCP 8.5
-prec07_8.5 <- rst.op(input1 = prec07,
-                     input2 = prec07_8.5_pc,
-                     proj_mask = ch_mask,
-                     op = "addper",
-                     filename = "output/clim_vars/prec07_8.5",
-                     layernames = n_prec07_8.5)
 
 
 #### Interploate prediction data

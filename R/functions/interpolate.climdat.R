@@ -1,4 +1,18 @@
-interpolate.climdat <- function(initras, futras, ntimesteps, data_years, year0, varname, proj_mask, filename){
+interpolate.climdat <- function(
+  initras,
+  futras,
+  ntimesteps,
+  data_years,
+  year0,
+  varname,
+  proj_mask,
+  filename
+){
+  
+  if(ntimesteps > (max(data_years) - year0)){
+    stop("")
+  }
+  
   
   ns <- c(year0, data_years)
   
@@ -6,7 +20,7 @@ interpolate.climdat <- function(initras, futras, ntimesteps, data_years, year0, 
   
   allras <- stack(initras, futras)
   
-  z <- vector("list", (ntimesteps + 1))
+  z <- rep(list(proj_mask), (ntimesteps + 1))
   
   for (i in 1:(ntimesteps + 1)){
     
@@ -19,27 +33,38 @@ interpolate.climdat <- function(initras, futras, ntimesteps, data_years, year0, 
     
     if(r == 0){
       
-      z[[i]] <- allras[[q]]
+      z[[i]][] <- getValues(allras[[q]])
       
     } else {
 
+      v2 <- getValues(allras[[qq]])
       
-      z[[i]] <- rst.op(input1 = allras[[q]],
-                       input2 = allras[[qq]], 
-                       op = "weightsum",
-                       proj_mask = proj_mask,
-                       filename = sprintf("%s_int_%s.grd", filename, zz[i]),
-                       layernames = sprintf("%s_%s", varname, zz[i]),
-                       weight1 = r,
-                       weight2 = rr)
+      v1 <- getValues(allras[[q]])
+      
+      w <- r + rr
+      
+      v <- v1*(w - r)/w + v2*(w - rr)/w
+      
+      
+      z[[i]][] <- v
       
     }
   }
-    
-  z <- lapply(z, function(x){
-    names(x) <- varname
-    x
-  })
   
-  return(z)
+  brickz <- brick(z)
+  
+  result <- rst.op(
+    input1 = brickz,
+    op = "writeBrick",
+    proj_mask = proj_mask,
+    filename = filename,
+    layernames = sprintf(
+      "%s_%s",
+      varname,
+      zz
+    )
+  )
+  
+  return(result)
+  
 }
