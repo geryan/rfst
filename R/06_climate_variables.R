@@ -319,12 +319,6 @@ raw_climate_projections <- raw_climate_projection_data_adj %>%
     )
   )
 
-
-#Years data available
-projection_years <- as.numeric(sub("X", "", names(raw_climate_projections$raw_climate_projection_rasters[[1]])))
-
-
-
 ####  Absolute predicted values
 # --------------------------------------------------------------
 
@@ -388,8 +382,66 @@ plan(sequential)
 
 
 
+initial_raster <- raw_climate_projections %$%
+  mapply(
+    FUN = function(
+      base,
+      cv,
+      se
+    ){
+      
+      base_layer <- base %>%
+        filter(climate_variable == cv) %>%
+        filter(season == se) %>%
+        dplyr::select(base_climate_raster) %>%
+        unlist %>%
+        magrittr::extract2(1)
+      
+      return(base_layer)
+    },
+    cv = climate_variable,
+    se = season,
+    MoreArgs = list(
+      base = base_climate_variables
+    )
+  )
+
+
+climate_projections <- raw_climate_projections %>%
+  bind_cols(
+    tibble(
+      climate_projection_rasters,
+      initial_raster
+    )
+  )
+
 #### Interploate prediction data
 # -------------------------------------------
+
+
+plan(multisession, workers = ncores)
+
+interpolated_climate_projection_rasters <- climate_projections %$%
+  future_mapply(
+    FUN = interpolate.climdat,
+    initras = initial_raster,
+    futras = climate_projection_rasters,
+    climate_model = climate_model,
+    rcp = rcp,
+    climate_variable = climate_variable,
+    season = season,
+    MoreArgs = list(
+      ntimesteps = ntimesteps,
+      year0 = year0,
+      proj_mask = ch_mask,
+      out_path = "output/clim_vars"
+    )
+  )
+
+
+plan(sequential)
+
+
 
 tmax01_4.5_int <- interpolate.climdat(initras = tmax01,
                                       futras = tmax01_4.5,

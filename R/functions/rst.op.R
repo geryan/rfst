@@ -41,7 +41,53 @@ rst.op <- function(
     op <- "writeonly"
   }
   
-  bs <- blockSize(proj_mask)
+  
+  if(op == "writeBrick"){
+    nl <- nlayers(input1)
+    
+    out <- brick(replicate(nl, proj_mask))
+    
+    bs <- blockSize(out)
+    
+    out <- writeStart(
+      x = out,
+      filename = filename,
+      overwrite = TRUE
+    )
+    
+    bs <- blockSize(proj_mask)
+    
+    for(i in 1:bs$n){
+      
+      v <- getValues(
+        x = input1,
+        row = bs$row[i],
+        nrows = bs$nrows[i]
+      )
+      
+      out <- writeValues(
+        x = out,
+        v = v,
+        start = bs$row[i]
+      )
+      
+    }
+    
+    out <- writeStop(out)
+    
+    names(out) <- layernames
+    
+    # out <- mask(
+    #   x = out,
+    #   mask = proj_mask,
+    #   filename = filename,
+    #   overwrite = TRUE
+    # )
+    
+    return(out)
+    
+  }
+
   
   if(!missing(input2)){
     

@@ -2,19 +2,34 @@ interpolate.climdat <- function(
   initras,
   futras,
   ntimesteps,
-  data_years,
   year0,
-  varname,
   proj_mask,
-  filename
+  out_path,
+  climate_model,
+  rcp,
+  climate_variable,
+  season,
+  filename = NA
 ){
   
-  if(ntimesteps > (max(data_years) - year0)){
-    stop("")
+  
+  projection_years <- futras %>%
+    names %>%
+    sub(
+      pattern = "X",
+      replacement = "",
+      x = .
+    ) %>%
+    as.numeric
+  
+  
+  if(ntimesteps > (max(projection_years) - year0)){
+    stop("Projections go beyond ntimesteps")
   }
   
   
-  ns <- c(year0, data_years)
+  ns <- c(year0, projection_years)
+  
   
   zz <- c(year0:(year0 + ntimesteps))
   
@@ -24,26 +39,35 @@ interpolate.climdat <- function(
   
   for (i in 1:(ntimesteps + 1)){
     
-    q <- which.min(abs(zz[i] - ns))
-    qq <- which.min(abs(zz[i] - ns[-q]))
+    set1 <- zz[i] - ns
     
-    r <- min(abs(zz[i] - ns))
-    rr <- min(abs(zz[i] - ns[-q]))
+    index.nearest <- which.min(abs(set1))
+    
+    set2 <- zz[i] - ns[-index.nearest]
+    
+    index.set2 <- which.min(abs(set2))
+    
+    value.set2 <- set2[index.set2]
+    
+    index.2nd <- which(set1 == value.set2)
+    
+    dist.nearest <- min(abs(set1))
+    dist.2nd <- min(abs(set2))
     
     
     if(r == 0){
       
-      z[[i]][] <- getValues(allras[[q]])
+      z[[i]][] <- getValues(allras[[index.nearest]])
       
     } else {
+      
+      v1 <- getValues(allras[[index.nearest]])
 
-      v2 <- getValues(allras[[qq]])
+      v2 <- getValues(allras[[index.2nd]])
       
-      v1 <- getValues(allras[[q]])
+      w <- dist.nearest + dist.2nd
       
-      w <- r + rr
-      
-      v <- v1*(w - r)/w + v2*(w - rr)/w
+      v <- v1*(w - dist.nearest)/w + v2*(w - dist.2nd)/w
       
       
       z[[i]][] <- v
@@ -53,16 +77,31 @@ interpolate.climdat <- function(
   
   brickz <- brick(z)
   
+  if(is.na(filename)){
+    filename <- sprintf(
+      "%s/interpolated_%s_%s_%s_%s.grd",
+      out_path,
+      climate_model,
+      rcp,
+      climate_variable,
+      season
+    )
+  }
+  
+  
+  layernames <- sprintf(
+    "%s_%s_%s",
+    climate_variable,
+    season,
+    zz
+  )
+  
   result <- rst.op(
     input1 = brickz,
     op = "writeBrick",
     proj_mask = proj_mask,
     filename = filename,
-    layernames = sprintf(
-      "%s_%s",
-      varname,
-      zz
-    )
+    layernames = layernames
   )
   
   return(result)
