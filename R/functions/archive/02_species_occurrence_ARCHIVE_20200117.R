@@ -13,18 +13,18 @@ load(file = "output/RData/01_landscape_variables.RData")
 
 source.functions("R/functions")
 
-
-# All VBA data --------------------------------------------------------------
-
-li
-
-
-
-
 ## LBP raw ---- 
 
-raw_lb <- proc.vba("data/tabular/vba_lb_all_20190826.csv", project.crs = ch_proj, cutoff.date = "2009-03-01") %>%
+lb_80 <- proc.vba("data/tabular/vba_lb_all_20190826.csv", project.crs = ch_proj, cutoff.date = "1980-01-01") %>%
   arrange(date)
+
+
+lb_80 <- lb_80[ch_rfa, ]
+
+lb_80 <- lb_80[!duplicated(lb_80),]
+
+lb_09 <- lb_80 %>%
+  filter(date > ymd("2009-03-01"))
 
 
 ## GG raw ----

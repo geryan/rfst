@@ -159,6 +159,8 @@ rst.op <- function(
   
   out <- writeStart(x = out, filename = filename, overwrite = TRUE)
   
+  bs <- blockSize(out)
+  
   if(op == "pop"){
     
     v1 <- getValues(input1)

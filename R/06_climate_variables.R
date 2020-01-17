@@ -415,8 +415,7 @@ climate_projections <- raw_climate_projections %>%
     )
   )
 
-#### Interploate prediction data
-# -------------------------------------------
+# Interploate prediction data -------------------------------------------
 
 
 plan(multisession, workers = ncores)
@@ -443,94 +442,65 @@ plan(sequential)
 
 
 
-tmax01_4.5_int <- interpolate.climdat(initras = tmax01,
-                                      futras = tmax01_4.5,
-                                      ntimesteps = ntimesteps,
-                                      data_years = n_tmax01_4.5,
-                                      year0 =  year0,
-                                      varname = "tmax01",
-                                      proj_mask = ch_mask,
-                                      filename = "output/clim_vars/tmax01_4.5")
+climproj <- climate_projections %>%
+  bind_cols(
+    tibble(
+      interpolated_climate_projection_rasters
+    )
+  ) %>%
+  mutate(
+    clim_var = sprintf(
+      "%s_%s",
+      climate_variable,
+      season
+    )
+  ) %>%
+  dplyr::select(
+    climate_model,
+    rcp,
+    clim_var,
+    climate_projection = interpolated_climate_projection_rasters
+  ) %>%
+  pivot_wider(
+    names_from = clim_var,
+    values_from = climate_projection
+  )
 
-tmax01_8.5_int <- interpolate.climdat(initras = tmax01,
-                                      futras = tmax01_8.5,
-                                      ntimesteps = ntimesteps,
-                                      data_years = n_tmax01_8.5,
-                                      year0 =  year0,
-                                      varname = "tmax01",
-                                      proj_mask = ch_mask,
-                                      filename = "output/clim_vars/tmax01_8.5")
 
-tmin07_4.5_int <- interpolate.climdat(initras = tmin07,
-                                      futras = tmin07_4.5,
-                                      ntimesteps = ntimesteps,
-                                      data_years = n_tmin07_4.5,
-                                      year0 =  year0,
-                                      varname = "tmin07",
-                                      proj_mask = ch_mask,
-                                      filename = "output/clim_vars/tmin07_4.5")
+### Climate variable sets for SDM  ------------------------------------------
 
-tmin07_8.5_int <- interpolate.climdat(initras = tmin07,
-                                      futras = tmin07_8.5,
-                                      ntimesteps = ntimesteps,
-                                      data_years = n_tmin07_8.5,
-                                      year0 =  year0,
-                                      varname = "tmin07",
-                                      proj_mask = ch_mask,
-                                      filename = "output/clim_vars/tmin07_8.5")
 
-prec01_4.5_int <- interpolate.climdat(initras = prec01,
-                                      futras = prec01_4.5,
-                                      ntimesteps = ntimesteps,
-                                      data_years = n_prec01_4.5,
-                                      year0 =  year0,
-                                      varname = "prec01",
-                                      proj_mask = ch_mask,
-                                      filename = "output/clim_vars/prec01_4.5")
+climset <- climproj %$%
+  mapply(
+    FUN = stack.climate,
+    prec_djf = prec_djf,
+    prec_jja = prec_jja,
+    tmax_djf = tmax_djf,
+    tmin_jja = tmin_jja,
+    MoreArgs = list(
+      ntimesteps = ntimesteps
+    ),
+    SIMPLIFY = FALSE
+  )
 
-prec01_8.5_int <- interpolate.climdat(initras = prec01,
-                                      futras = prec01_8.5,
-                                      ntimesteps = ntimesteps,
-                                      data_years = n_prec01_8.5,
-                                      year0 =  year0,
-                                      varname = "prec01",
-                                      proj_mask = ch_mask,
-                                      filename = "output/clim_vars/prec01_8.5")
 
-prec07_4.5_int <- interpolate.climdat(initras = prec07,
-                                      futras = prec07_4.5,
-                                      ntimesteps = ntimesteps,
-                                      data_years = n_prec07_4.5,
-                                      year0 =  year0,
-                                      varname = "prec07",
-                                      proj_mask = ch_mask,
-                                      filename = "output/clim_vars/prec07_4.5")
-
-prec07_8.5_int <- interpolate.climdat(initras = prec07,
-                                      futras = prec07_8.5,
-                                      ntimesteps = ntimesteps,
-                                      data_years = n_prec07_8.5,
-                                      year0 =  year0,
-                                      varname = "prec07",
-                                      proj_mask = ch_mask,
-                                      filename = "output/clim_vars/prec07_8.5")
-
-### Climate variable sets ------------------------------------------
-clim_vars_cc0 <- vector("list", ntimesteps + 1)
-
-for(i in 1:(ntimesteps + 1)){
-  clim_vars_cc0[[i]] <- stack(prec01, prec07, tmax01, tmin07)
-}
-
-clim_vars_4.5 <- mapply(prec01_4.5_int, prec07_4.5_int, tmax01_4.5_int, tmin07_4.5_int, FUN = stack)
-clim_vars_8.5 <- mapply(prec01_8.5_int, prec07_8.5_int, tmax01_8.5_int, tmin07_8.5_int, FUN = stack)
+clim_vars <- climproj %>%
+  bind_cols(
+    tibble(
+      climate_projections = climset
+    )
+  ) %>%
+  dplyr::select(
+    climate_model,
+    rcp,
+    climate_projections
+  )
 
 
 # Save outputs ---------------------
 
 save(
-  clim_vars_cc0,
-  clim_vars_4.5,
-  clim_vars_8.5,
+  clim_vars,
+  climproj,
   file = "output/RData/06_climate_variables.RData"
 )

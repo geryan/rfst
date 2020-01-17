@@ -1,6 +1,7 @@
 read.vba <- function(x){
   
   library(dplyr)
+  library(readr)
   
   gm <- length(readLines(x))
   
