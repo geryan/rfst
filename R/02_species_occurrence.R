@@ -16,9 +16,25 @@ source.functions("R/functions")
 
 # All VBA data --------------------------------------------------------------
 
-li
+vba.files <- list.files(
+  path = "data/tabular/",
+  pattern = "vba",
+  recursive = FALSE
+)
 
-
+vba.dat <- lapply(
+  X = paste0(
+    "data/tabular/",
+    vba.files
+  ),
+  FUN = proc.vba,
+  project.crs = ch_proj,
+  cutoff.date = "2009-03-01"
+) %>%
+  do.call(
+    what = rbind,
+    args = .
+  )
 
 
 ## LBP raw ---- 

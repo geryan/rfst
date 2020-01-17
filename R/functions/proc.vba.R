@@ -1,20 +1,51 @@
-proc.vba <- function(x, project.crs, vba.crs = 4283, cutoff.date = "2009-03-01", sm = FALSE, pattern = "spotlight"){
+proc.vba <- function(
+  x,
+  project.crs,
+  vba.crs = 4283,
+  cutoff.date = "2009-03-01",
+  sm = FALSE,
+  pattern = "spotlight"
+){
   
   library(dplyr)
   library(lubridate)
   
   z <- read.vba(x) %>%
-    dplyr::rename("date" = `Survey Start Date`,
-                  "lon" = `Longitude GDA94`,
-                  "lat" = `Latitude GDA94`,
-                  "count" = `Total Count`,
-                  "sm" = `Survey method`) %>%
-    dplyr::select(sm, date, lon, lat, count) %>%
+    dplyr::rename(
+      "species" = `Scientific Name`,
+      "date" = `Survey Start Date`,
+      "lon" = `Longitude GDA94`,
+      "lat" = `Latitude GDA94`,
+      "count" = `Total Count`,
+      "survey_method" = `Survey method`
+    ) %>%
+    dplyr::select(
+      species,
+      date,
+      lon,
+      lat,
+      count,
+      survey_method
+    ) %>%
     mutate(date = dmy(date)) %>%
     filter(date > ymd(cutoff.date)) %>%
     mutate(PA = ifelse(count != 0 | is.na(count), 1, 0)) %>%
-    dplyr::select(lon, lat, PA, date, sm) %>%
-    dplyr::arrange(date, PA, lon, lat) %>%
+    dplyr::select(
+      species,
+      lon,
+      lat,
+      PA,
+      date,
+      survey_method
+    ) %>%
+    dplyr::arrange(
+      species,
+      date,
+      PA,
+      lon,
+      lat,
+      survey_method
+    ) %>%
     st_as_sf(coords = c("lon", "lat"), crs = vba.crs) %>%
     st_transform(crs = project.crs)
   
@@ -22,18 +53,30 @@ proc.vba <- function(x, project.crs, vba.crs = 4283, cutoff.date = "2009-03-01",
   if(sm){
     
     z <- z[grep(pattern = pattern,
-                x = z$sm,
+                x = z$survey_method,
                 ignore.case = TRUE),] %>%
       mutate(PA = 0) %>%
-      dplyr::select(PA, date, geometry)
+      dplyr::select(
+        species,
+        PA,
+        date,
+        survey_method,
+        geometry
+      )
     
   } else{
     
     z <- z %>%
-      dplyr::select(PA, date, geometry)
+      dplyr::select(
+        species,
+        PA,
+        date,
+        survey_method,
+        geometry
+      )
     
   }
 
-  
   return(z)
+  
 }
