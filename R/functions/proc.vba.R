@@ -17,15 +17,8 @@ proc.vba <- function(
       "lon" = `Longitude GDA94`,
       "lat" = `Latitude GDA94`,
       "count" = `Total Count`,
+      "proj_id" = `Project ID`,
       "survey_method" = `Survey method`
-    ) %>%
-    dplyr::select(
-      species,
-      date,
-      lon,
-      lat,
-      count,
-      survey_method
     ) %>%
     mutate(date = dmy(date)) %>%
     filter(date > ymd(cutoff.date)) %>%
@@ -36,6 +29,7 @@ proc.vba <- function(
       lat,
       PA,
       date,
+      proj_id,
       survey_method
     ) %>%
     dplyr::arrange(
@@ -44,6 +38,7 @@ proc.vba <- function(
       PA,
       lon,
       lat,
+      proj_id,
       survey_method
     ) %>%
     st_as_sf(coords = c("lon", "lat"), crs = vba.crs) %>%
@@ -60,6 +55,7 @@ proc.vba <- function(
         species,
         PA,
         date,
+        proj_id,
         survey_method,
         geometry
       )
@@ -71,6 +67,7 @@ proc.vba <- function(
         species,
         PA,
         date,
+        proj_id,
         survey_method,
         geometry
       )

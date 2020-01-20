@@ -7,6 +7,8 @@ library(sf)
 library(readr)
 library(readxl)
 library(tidyr)
+library(dplyr)
+
 
 load(file = "output/RData/00_comp_controls.RData")
 load(file = "output/RData/01_landscape_variables.RData")
@@ -34,43 +36,83 @@ vba.dat <- lapply(
   do.call(
     what = rbind,
     args = .
+  ) %>%
+  distinct(
+    species,
+    PA,
+    date,
+    proj_id,
+    survey_method,
+    geometry
+  ) %>%
+  mutate(
+    genus = sub(
+      pattern = " .*",
+      replacement = "",
+      x = species
+    )
+  ) %>%
+  dplyr::select(
+    species,
+    genus,
+    everything()
   )
 
 
+vba.dat.ch <- vba.dat[ch_rfa,] 
+
+#table(vba.dat.ch$species, vba.dat.ch$PA)
+
 ## LBP raw ---- 
 
-raw_lb <- proc.vba("data/tabular/vba_lb_all_20190826.csv", project.crs = ch_proj, cutoff.date = "2009-03-01") %>%
-  arrange(date)
-
+raw_pa_lb_ch <- vba.dat.ch %>%
+  filter(species == "Gymnobelideus leadbeateri")
 
 ## GG raw ----
 
-gg0_ari <- read_excel(path = "data/tabular/BoA_SB_Combined_VBA_upload_v4.xls") %>%
+gg_vba_ch <- vba.dat.ch %>%
+  filter(species == "Petauroides volans")
+
+
+gg0_ari_ch <- read_excel(path = "data/tabular/BoA_SB_Combined_VBA_upload_v4.xls") %>%
   dplyr::select(-starts_with("leave")) %>%
-  rename("lon" = `X-coordinate (easting or longitude)`, "lat" = `Y-coordinate (northing or latitude)`, date = `Start date`) %>%
+  rename(
+    proj_id = `VBA Project ID`,
+    lon = `X-coordinate (easting or longitude)`,
+    lat = `Y-coordinate (northing or latitude)`,
+    date = `Start date`
+  ) %>%
   fill(lon, lat, .direction = "down") %>%
   fill(date, .direction = "down") %>%
+  fill(proj_id, .direction = "down") %>%
   filter(`Taxon Name` == "Misc Target taxa not found") %>%
-  dplyr::select(date, lon, lat) %>%
-  mutate(date = as.Date(date),
-         PA = 0) %>%
+  mutate(
+    date = as.Date(date),
+    PA = 0,
+    survey_method = NA,
+    species = "Petauroides volans",
+    genus = "Petauroides"
+  ) %>%
   st_as_sf(coords = c("lon", "lat"), crs = st_crs(28355)) %>%
   st_transform(crs = st_crs(ch_mask)) %>%
-  dplyr::select(PA, date, geometry)
+  dplyr::select(
+    species,
+    genus
+    PA,
+    date,
+    proj_id,
+    survey_method,
+    geometry
+  )
 
-gg_vba_80 <- proc.vba("data/tabular/vba_gg_all_20190826.csv", project.crs = ch_proj, cutoff.date = "1980-01-01") %>%
-  arrange(date)
 
-gg_80 <- gg_vba_80 %>%
-  rbind(gg0_ari) %>%
+raw_pa_gg_ch <- gg_vba_ch %>%
+  rbind(gg0_ari_ch) %>%
   dplyr::arrange(date)
 
-gg_80 <- gg_80[ch_rfa, ]
 
-gg_80 <- gg_80[!duplicated(gg_80),]
 
-gg_09 <- gg_80 %>%
-  filter(date > ymd("2009-03-01"))
+# Target background data
 
 ## Arboreal mammal supp data ----
 
