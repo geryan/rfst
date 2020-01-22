@@ -1,8 +1,21 @@
-add.buffered <- function(x, y, buff.dist = 500){ # x is target species, y is background species
+add.buffered <- function(
+  x, # target species
+  y = NA, # background species
+  buff.dist = 500,
+  species = NA
+){
   
   library(dplyr)
   
-  z <- outside.buffer(x, y, buff.dist)
+  z <- outside.buffer(x, y, buff.dist, species)
+  
+  spcs <- species
+  
+  if(!is.na(spcs)){
+    x <- x %>%
+      filter(species == spcs)
+  }
+  
   
   result <- rbind(x, z) %>%
     dplyr::arrange(date)
@@ -10,3 +23,4 @@ add.buffered <- function(x, y, buff.dist = 500){ # x is target species, y is bac
   return(result)
   
 }
+

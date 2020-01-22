@@ -1,9 +1,17 @@
-buff.sample.pa <- function(x, y, rfa, cellsize = 500, buff.dist = 500){
+buff.sample.pa <- function(
+  x,
+  y = NA,
+  rfa,
+  cellsize = 500,
+  buff.dist = 500,
+  species = NA
+){
   
   z <- add.buffered(
     x = x,
     y = y,
-    buff.dist = buff.dist
+    buff.dist = buff.dist,
+    species = species
   )
   
   result <- sample.pa(
