@@ -4,14 +4,16 @@ buff.sample.pa <- function(
   rfa,
   cellsize = 500,
   buff.dist = 500,
-  species = NA
+  species = NA,
+  survey_method = NA
 ){
   
   z <- add.buffered(
     x = x,
     y = y,
     buff.dist = buff.dist,
-    species = species
+    species = species,
+    survey_method
   )
   
   result <- sample.pa(

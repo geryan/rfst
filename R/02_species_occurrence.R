@@ -1,6 +1,5 @@
 # 02 Species occurrence
 
-library(dplyr)
 library(magrittr)
 library(raster)
 library(sf)
@@ -18,16 +17,16 @@ source.functions("R/functions")
 
 # All VBA data --------------------------------------------------------------
 
-vba.files <- list.files(
+vba_files <- list.files(
   path = "data/tabular/",
   pattern = "vba",
   recursive = FALSE
 )
 
-vba.dat <- lapply(
+vba_dat <- lapply(
   X = paste0(
     "data/tabular/",
-    vba.files
+    vba_files
   ),
   FUN = proc.vba,
   project.crs = ch_proj,
@@ -44,34 +43,19 @@ vba.dat <- lapply(
     proj_id,
     survey_method,
     geometry
-  ) %>%
-  mutate(
-    genus = sub(
-      pattern = " .*",
-      replacement = "",
-      x = species
-    )
-  ) %>%
-  dplyr::select(
-    species,
-    genus,
-    everything()
-  )
-
-
-vba.dat.ch <- vba.dat[ch_rfa,] 
-
-#table(vba.dat.ch$species, vba.dat.ch$PA)
-
-## LBP raw ---- 
-
-raw_pa_lb_ch <- vba.dat.ch %>%
-  filter(species == "Gymnobelideus leadbeateri")
-
-## GG raw ----
-
-gg_vba_ch <- vba.dat.ch %>%
-  filter(species == "Petauroides volans")
+  ) #%>%
+  # mutate(
+  #   genus = sub(
+  #     pattern = " .*",
+  #     replacement = "",
+  #     x = species
+  #   )
+  # ) %>%
+  # dplyr::select(
+  #   species,
+  #   genus,
+  #   everything()
+  # )
 
 
 gg0_ari_ch <- read_excel(path = "data/tabular/BoA_SB_Combined_VBA_upload_v4.xls") %>%
@@ -97,7 +81,7 @@ gg0_ari_ch <- read_excel(path = "data/tabular/BoA_SB_Combined_VBA_upload_v4.xls"
   st_transform(crs = st_crs(ch_mask)) %>%
   dplyr::select(
     species,
-    genus
+    # genus,
     PA,
     date,
     proj_id,
@@ -106,10 +90,8 @@ gg0_ari_ch <- read_excel(path = "data/tabular/BoA_SB_Combined_VBA_upload_v4.xls"
   )
 
 
-raw_pa_gg_ch <- gg_vba_ch %>%
-  rbind(gg0_ari_ch) %>%
-  dplyr::arrange(date)
-
+vba_dat_ch <- vba_dat_ch %>%
+  rbind(gg0_ari_ch)
 
 
 # Target background data

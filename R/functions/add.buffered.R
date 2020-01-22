@@ -2,12 +2,13 @@ add.buffered <- function(
   x, # target species
   y = NA, # background species
   buff.dist = 500,
-  species = NA
+  species = NA,
+  survey_method = NA
 ){
   
   library(dplyr)
   
-  z <- outside.buffer(x, y, buff.dist, species)
+  z <- outside.buffer(x, y, buff.dist, species, survey_method)
   
   spcs <- species
   

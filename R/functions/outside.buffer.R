@@ -2,17 +2,20 @@ outside.buffer <- function(
   x, # target species or all species data
   y = NA, # background data set. If NA will filter by species
   buff.dist = 500,
-  species = NA
+  species = NA,
+  survey_method = NA
 ){ 
   
   library(sf)
   library(dplyr)
   
   spcs <- species
+  nay <- is.na(y)
+  
   
   if(!is.na(spcs)){
     
-    if(is.na(y)){
+    if(nay){
       y <- x %>%
         filter(species != spcs)
     }
@@ -20,12 +23,44 @@ outside.buffer <- function(
     x <- x %>%
       filter(species == spcs)
     
-    xprojids <- unique(x$proj_id)
     
-    y <- y %>%
-      filter(proj_id != 1) %>% # this project id is just general observations and doesn't actually collate a project
-      filter(proj_id %in% xprojids) 
-    
+    if(nay){
+      xps <- x %>%
+        mutate(
+          ps = paste0(
+            proj_id,
+            survey_method
+          )
+        ) %$%
+        unique(.$ps)
+      
+      y1 <- y %>%
+        filter(proj_id != 1) %>% # this project id and doesn't actually collate a project
+        mutate(
+          ps = paste0(
+            proj_id,
+            survey_method
+          )
+        ) %>%
+        filter(ps %in% xps) %>%
+        dplyr::select(-ps)
+      
+      sm <- survey_method
+      
+      if(!is.na(sm[1])){
+        
+        y2 <- y %>%
+          filter(survey_method %in% sm)
+       
+        y <- rbind(
+          y1,
+          y2
+        )
+         
+      } else{
+        y <- y1
+      }
+    }
   }
   
   
