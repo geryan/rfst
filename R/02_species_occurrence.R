@@ -58,6 +58,8 @@ vba_dat <- lapply(
   # )
 
 
+# ARI Greater Glider Absences for Central Highlands -------------------------
+
 gg0_ari_ch <- read_excel(path = "data/tabular/BoA_SB_Combined_VBA_upload_v4.xls") %>%
   dplyr::select(-starts_with("leave")) %>%
   rename(
@@ -73,7 +75,7 @@ gg0_ari_ch <- read_excel(path = "data/tabular/BoA_SB_Combined_VBA_upload_v4.xls"
   mutate(
     date = as.Date(date),
     PA = 0,
-    survey_method = NA,
+    survey_method = "Spotlighting",
     species = "Petauroides volans",
     genus = "Petauroides"
   ) %>%
@@ -89,149 +91,185 @@ gg0_ari_ch <- read_excel(path = "data/tabular/BoA_SB_Combined_VBA_upload_v4.xls"
     geometry
   )
 
+# Combine and subset to Central Highlands
 
-vba_dat_ch <- vba_dat_ch %>%
+vba_dat <- vba_dat %>%
   rbind(gg0_ari_ch)
 
+vba_dat_ch <- vba_dat[ch_rfa,]
 
-# Target background data
+# Presence-absence-pseudo-absence
 
-## Arboreal mammal supp data ----
-
-vba_petaurus      <- proc.vba(x = "data/tabular/vba_petaurus_all_20190703.csv",               project.crs = ch_proj, sm = TRUE, pattern = "spotlight|camera")
-vba_pseudocheirus <- proc.vba(x = "data/tabular/vba_pseudocheirus_all_20190703.csv",          project.crs = ch_proj, sm = TRUE, pattern = "spotlight|camera")
-vba_tcunninghami  <- proc.vba(x = "data/tabular/vba_trichosuruscunninghami_all_20190703.csv", project.crs = ch_proj, sm = TRUE, pattern = "spotlight|camera")
-vba_tvulpecula    <- proc.vba(x = "data/tabular/vba_trichosurusvulpecula_all_20190703.csv",   project.crs = ch_proj, sm = TRUE, pattern = "spotlight|camera")
-
-am <- rbind(vba_petaurus, vba_pseudocheirus, vba_tcunninghami, vba_tvulpecula)
-
-am <- am[!duplicated(am),]
-
-am <- am[ch_rfa,]
-
-## Buffer and sample PA data
-
-# LBP from 1980 without background
-
-pa_lb_80x <- sample.pa(
-  lb_80,
-  ch_rfa,
-  cellsize = 500
-)
-
-st_write(
-  obj = pa_lb_80x,
-  dsn = "output/pa/pa_lb_80x_ch.shp",
-  delete_dsn = TRUE
-)
-
-# LBP from 1980 with background
-
-pa_lb_80b <- buff.sample.pa(
-  x = lb_80,
-  y = am,
-  rfa = ch_rfa,
-  cellsize = 500,
-  buff.dist = 500
-)
-
-st_write(
-  obj = pa_lb_80b,
-  dsn = "output/pa/pa_lb_80b_ch.shp",
-  delete_dsn = TRUE
-)
-
-# LBP from 2009 without background
-
-pa_lb_09x <- sample.pa(
-  lb_09,
-  ch_rfa,
-  cellsize = 500
-)
-
-st_write(
-  obj = pa_lb_09x,
-  dsn = "output/pa/pa_lb_09x_ch.shp",
-  delete_dsn = TRUE
-)
-
-# LBP from 2009 with background
-
-pa_lb_09b <- buff.sample.pa(
-  x = lb_09,
-  y = am,
-  rfa = ch_rfa,
-  cellsize = 500,
-  buff.dist = 500
-)
-
-st_write(
-  obj = pa_lb_09b,
-  dsn = "output/pa/pa_lb_09b_ch.shp",
-  delete_dsn = TRUE
+species_list <- c(
+  "Gymnobelideus leadbeateri",
+  "Petauroides volans",
+  "Petaurus australis",
+  #"Potorous longipes",
+  "Sminthopsis leucopus",
+  "Tyto tenebricosa",
+  "Varanus varius"
 )
 
 
+# Leadbeater's possum - Gymnobelideus leadbeateri -------------------
 
-# GG from 1980 without background
+vba_dat_ch %>%
+  filter(species == species_list[1]) %$%
+  table(survey_method, PA)
 
-pa_gg_80x <- sample.pa(
-  gg_80,
-  ch_rfa,
-  cellsize = 500
+vba_dat_ch %>%
+  filter(species == species_list[1]) %$%
+  unique(survey_method)
+
+
+sm_gyle <- c(
+  "Camera - Surveillance/Remote",
+  "Camera - Thermal imaging",
+  "Nest box",
+  "Owl census",
+  "Spotlighting on foot",
+  "Spotlighting",
+  "Stag watching"
 )
 
-st_write(
-  obj = pa_gg_80x,
-  dsn = "output/pa/pa_gg_80x_ch.shp",
-  delete_dsn = TRUE
+# Greater Glider - Petauroides volans ------------------
+  
+  vba_dat_ch %>%
+    filter(species == species_list[2]) %$%
+    table(survey_method, PA)
+  
+  vba_dat_ch %>%
+    filter(species == species_list[2]) %$%
+    unique(survey_method)
+
+sm_pevo <- c(
+  "Camera - Surveillance/Remote",
+  "Camera - Thermal imaging",
+  "Nest box",
+  "Owl census",
+  "Spotlighting on foot",
+  "Spotlighting",
+  "Stag watching"
 )
 
-# GG from 1980 with background
+# Yellow-bellied Glider - Petaurus Australis ------------------
 
-pa_gg_80b <- buff.sample.pa(
-  x = gg_80,
-  y = am,
-  rfa = ch_rfa,
-  cellsize = 500,
-  buff.dist = 500
+vba_dat_ch %>%
+  filter(species == species_list[3]) %$%
+  table(survey_method, PA)
+
+vba_dat_ch %>%
+  filter(species == species_list[3]) %$%
+  unique(survey_method)
+
+sm_peau <- c(
+  "Camera - Surveillance/Remote",
+  "Camera - Thermal imaging",
+  "Nest box",
+  "Owl census",
+  "Spotlighting on foot",
+  "Spotlighting",
+  "Stag watching"
 )
 
-st_write(
-  obj = pa_gg_80b,
-  dsn = "output/pa/pa_gg_80b_ch.shp",
-  delete_dsn = TRUE
+
+# Long-footed Potoroo - Potorous longipes ------------------
+
+# vba_dat_ch %>%
+#   filter(species == species_list[4]) %$%
+#   table(survey_method, PA)
+# 
+# vba_dat_ch %>%
+#   filter(species == species_list[4]) %$%
+#   unique(survey_method)
+# 
+# sm_pevo <- c(
+#   "Camera - Surveillance/Remote"
+# )
+
+# White-footed dunnart - Sminthopsus leucopus ------------------
+
+vba_dat_ch %>%
+  filter(species == species_list[4]) %$%
+  table(survey_method, PA)
+
+vba_dat_ch %>%
+  filter(species == species_list[4]) %$%
+  unique(survey_method)
+
+sm_smle <- c(
+  "Camera - Surveillance/Remote",
+  "Camera - Thermal imaging",
+  "Nest box",
+  "Owl census",
+  "Spotlighting on foot",
+  "Spotlighting",
+  "Stag watching"
 )
 
-# GG from 2009 without background
 
-pa_gg_09x <- sample.pa(
-  gg_09,
-  ch_rfa,
-  cellsize = 500
+# Sooty Owl - Tyto tenebricosa ------------------
+
+vba_dat_ch %>%
+  filter(species == species_list[5]) %$%
+  table(survey_method, PA)
+
+vba_dat_ch %>%
+  filter(species == species_list[5]) %$%
+  unique(survey_method)
+
+sm_tyte <- c(
+  "Bird count",
+  "Bird transect",
+  "Birds Australia 2ha search",
+  "Birds Australia 500m area search",
+  "Owl census",
+  "Spotlighting on foot",
+  "Spotlighting"
 )
 
-st_write(
-  obj = pa_gg_09x,
-  dsn = "output/pa/pa_gg_09x_ch.shp",
-  delete_dsn = TRUE
+# Lace Monitor - Varanus varius ------------------
+
+vba_dat_ch %>%
+  filter(species == species_list[6]) %$%
+  table(survey_method, PA)
+
+vba_dat_ch %>%
+  filter(species == species_list[6]) %$%
+  unique(survey_method)
+
+sm_vave <- c(
+  "Camera - Surveillance/Remote"
 )
 
-# GG from 2009 with background
+# Aggregate and get data --------------
 
-pa_gg_09b <- buff.sample.pa(
-  x = gg_09,
-  y = am,
-  rfa = ch_rfa,
-  cellsize = 500,
-  buff.dist = 500
+
+pa_data <- tibble(
+  species = species_list,
+  survey_methods = list(
+    sm_gyle,
+    sm_pevo,
+    sm_peau,
+    sm_smle,
+    sm_tyte,
+    sm_vave
+  )
 )
 
-st_write(
-  obj = pa_gg_09b,
-  dsn = "output/pa/pa_gg_09b_ch.shp",
-  delete_dsn = TRUE
-)
+
+pad <- pa_data %$%
+  mapply(
+    FUN = buff.sample.pa,
+    species = species,
+    survey_method = survey_methods,
+    MoreArgs = list(
+      x = vba_dat_ch,
+      rfa = ch_rfa,
+      cellsize = 10000
+    ),
+    SIMPLIFY = FALSE
+  )
 
 pa_gg_09bb <- buff.sample.pa(
   x = gg_09,
