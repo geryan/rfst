@@ -36,7 +36,8 @@ sample.pa <- function(
     group_by(gridcell, PA) %>%
     arrange(gridcell, PA, desc(date)) %>%
     filter(row_number() == 1) %>%
-    ungroup
+    ungroup %>%
+    dplyr::select(-gridcell)
   
   
   # old code randomly sampled 1 P and 1 A per cell

@@ -7,6 +7,8 @@ library(readr)
 library(readxl)
 library(tidyr)
 library(dplyr)
+library(future)
+library(future.apply)
 
 
 load(file = "output/RData/00_comp_controls.RData")
@@ -199,12 +201,7 @@ vba_dat_ch %>%
 
 sm_smle <- c(
   "Camera - Surveillance/Remote",
-  "Camera - Thermal imaging",
-  "Nest box",
-  "Owl census",
-  "Spotlighting on foot",
-  "Spotlighting",
-  "Stag watching"
+  "Elliott trap"
 )
 
 
@@ -245,7 +242,7 @@ sm_vave <- c(
 # Aggregate and get data --------------
 
 
-pa_data <- tibble(
+pa_list <- tibble(
   species = species_list,
   survey_methods = list(
     sm_gyle,
@@ -255,47 +252,112 @@ pa_data <- tibble(
     sm_tyte,
     sm_vave
   )
-)
+) %>%
+  mutate(
+    gen = sub(
+      pattern = " .*",
+      replacement = "",
+      x = species
+    ) %>%
+      tolower %>%
+      substr(
+        start = 1,
+        stop = 2
+      ),
+    spe = sub(
+      pattern = ".* ",
+      replacement = "",
+      x = species
+    ) %>%
+      substr(
+        start = 1,
+        stop = 2
+      ),
+    sp = paste0(
+      gen,
+      spe
+    )
+  ) %>%
+  dplyr::select(
+    species,
+    sp,
+    survey_methods
+  )
 
 
-pad <- pa_data %$%
-  mapply(
+plan(multisession, workers = 8)
+
+pad <- pa_list %$%
+  future_mapply(
     FUN = buff.sample.pa,
     species = species,
     survey_method = survey_methods,
     MoreArgs = list(
       x = vba_dat_ch,
       rfa = ch_rfa,
-      cellsize = 10000
+      cellsize = 200
     ),
     SIMPLIFY = FALSE
   )
 
-pa_gg_09bb <- buff.sample.pa(
-  x = gg_09,
-  y = am,
-  rfa = ch_rfa,
-  cellsize = 2000,
-  buff.dist = 2000
+plan(sequential)
+
+
+pa_data <- pa_list %>%
+  bind_cols(
+    tibble(
+      pa_dat = pad
+    )
+  )
+
+#pa_data
+
+
+# Number of presences and absences for each species
+lapply(
+  X = pa_data$pa_dat,
+  FUN = function(x){
+    table(x$PA)
+  }
 )
 
-st_write(
-  obj = pa_gg_09bb,
-  dsn = "output/pa/pa_lb_09bb_ch.shp",
-  delete_dsn = TRUE
-)
+
+
+# Write and save data --------------------------
+
+pa_data %$%
+  mapply(
+    FUN = function(
+      x,
+      y
+    ){
+      st_write(
+        obj = x,
+        dsn = sprintf(
+          "output/pa/pa_%s.shp",
+          y
+        ),
+        delete_dsn = TRUE
+      )
+      
+      st_write(
+        obj = x,
+        dsn = sprintf(
+          "output/pa/pa_%s.csv",
+          y
+        ),
+        layer_options = "GEOMETRY=AS_XY",
+        delete_dsn = TRUE
+      )
+    },
+    x = pa_dat,
+    y = sp
+  )
+
 
 
 save(
-  pa_lb_09b,
-  pa_lb_80b,
-  pa_gg_09b,
-  pa_gg_09bb,
-  pa_gg_80b,
-  pa_lb_09x,
-  pa_lb_80x,
-  pa_gg_09x,
-  pa_gg_80x,
+  pa_data,
   file = "output/RData/02_species_occurrences.RData"
 )
 
