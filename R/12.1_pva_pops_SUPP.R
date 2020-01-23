@@ -10,7 +10,7 @@ library(raster)
 library(sp)
 
 
-load(file = "output/RData/00_comp_controls.RData")
+load(file = "output/RData/00_controls.RData")
 load(file = "output/RData/11.1_pvas_lb.RData")
 load(file = "output/RData/11.1_pvas_gg.RData")
 

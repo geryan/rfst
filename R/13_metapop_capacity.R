@@ -12,7 +12,7 @@ library(metacapa)
 library(future)
 library(future.apply)
 
-load(file = "output/RData/00_comp_controls.RData")
+load(file = "output/RData/00_controls.RData")
 load(file = "output/RData/02_species_occurrences.RData")
 load(file = "output/RData/10.1_preds_agg.RData")
 

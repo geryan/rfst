@@ -10,7 +10,7 @@ library(raster)
 library(sp)
 
 
-load(file = "output/RData/00_comp_controls.RData")
+load(file = "output/RData/00_controls.RData")
 load(file = "output/RData/11_pvas_2.RData")
 
 source.functions("R/functions")

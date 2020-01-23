@@ -3,7 +3,7 @@
 library(raster)
 library(magrittr)
 
-load(file = "output/RData/00_comp_controls.RData")
+load(file = "output/RData/00_controls.RData")
 load(file = "output/RData/01_landscape_variables.RData")
 
 source.functions("R/functions")

@@ -14,7 +14,7 @@ library(gbm)
 library(dismo)
 
 
-load(file = "output/RData/00_comp_controls.RData")
+load(file = "output/RData/00_controls.RData")
 load(file = "output/RData/01_landscape_variables.RData")
 load(file = "output/RData/07_combined_variables.RData")
 load(file = "output/RData/09_fit_distribution_models.RData")

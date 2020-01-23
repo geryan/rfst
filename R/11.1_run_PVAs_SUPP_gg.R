@@ -15,7 +15,7 @@ library(raster)
 library(sp)
 
 
-load(file = "output/RData/00_comp_controls.RData")
+load(file = "output/RData/comp_controls.RData")
 load(file = "output/RData/01_landscape_variables.RData")
 load(file = "output/RData/04_disturbance_variables.RData")
 load(file = "output/RData/10.1_preds_agg.RData")

@@ -6,7 +6,7 @@ library(dplyr)
 library(sf)
 library(lwgeom)
 
-load(file = "output/RData/00_comp_controls.RData")
+load(file = "output/RData/00_controls.RData")
 
 source.functions("R/functions")
 
