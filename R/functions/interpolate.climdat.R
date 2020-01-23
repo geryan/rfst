@@ -55,7 +55,7 @@ interpolate.climdat <- function(
     dist.2nd <- min(abs(set2))
     
     
-    if(r == 0){
+    if(dist.nearest == 0){
       
       z[[i]][] <- getValues(allras[[index.nearest]])
       

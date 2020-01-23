@@ -40,6 +40,7 @@ gv_i <- stack(lvdaw, lvdma, lvdmi, lvdsw, ahr, tho)
 
 names(gv_i) <- c("lvdaw", "lvdma", "lvdmi", "lvdsw", "ahr", "tho")
 
+geo_vars <- gv_i
 
 gv <- vector("list", ntimesteps + 1)
 
@@ -55,5 +56,6 @@ save(
   lvdsw,
   tho,
   gv,
+  geo_vars,
   file = "output/RData/05_geophys_vars.RData"
 )

@@ -3,7 +3,7 @@
 library(dplyr)
 library(raster)
 
-load(file = "output/RData/00_comp_controls.RData")
+load(file = "output/RData/00_controls.RData")
 load(file = "output/RData/01_landscape_variables.RData")
 load(file = "output/RData/03_LANDIS_variables.RData")
 load(file = "output/RData/04_disturbance_variables.RData")

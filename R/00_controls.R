@@ -41,3 +41,81 @@ ntimesteps <- 50
 ncores <- 20
 
 nreplicates <- 100
+
+
+scn_list <- c("1", "4", "8")
+rep_list <- sprintf("%02d", 1:10)
+
+
+scn_table <- expand_grid(
+  scenario = scn_list,
+  scenario_replicate = rep_list
+) %>%
+  mutate(
+    scn_id = sprintf(
+      "%s_%s",
+      scenario,
+      scenario_replicate
+    )
+  ) %>%
+  filter(scenario_replicate == "01")
+
+species_table <- tibble(
+  species = c(
+    "Gymnobelideus leadbeateri",
+    "Petauroides volans",
+    "Petaurus australis",
+    #"Potorous longipes",
+    "Sminthopsis leucopus",
+    "Tyto tenebricosa",
+    "Varanus varius"
+  )
+) %>%
+  mutate(
+    gen = sub(
+      pattern = " .*",
+      replacement = "",
+      x = species
+    ) %>%
+      tolower %>%
+      substr(
+        start = 1,
+        stop = 2
+      ),
+    spe = sub(
+      pattern = ".* ",
+      replacement = "",
+      x = species
+    ) %>%
+      substr(
+        start = 1,
+        stop = 2
+      ),
+    sp = paste0(
+      gen,
+      spe
+    )
+  ) %>%
+  dplyr::select(
+    species,
+    sp
+  ) %>% 
+  mutate(
+    pva = TRUE,
+    mpc = TRUE
+  )
+
+
+save(
+  proj_path,
+  year0,
+  ntimesteps,
+  ncores,
+  nreplicates,
+  scn_list,
+  rep_list,
+  source.functions,
+  scn_table,
+  species_table,
+  file = "output/RData/00_controls.RData"
+)

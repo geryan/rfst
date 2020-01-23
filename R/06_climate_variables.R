@@ -15,6 +15,9 @@ load(file = "output/RData/01_landscape_variables.RData")
 
 source.functions("R/functions")
 
+
+plan(multisession, workers = ncores)
+
 # Current climate
 # -----------------------------------------
 
@@ -121,7 +124,7 @@ raw_season <- bind_cols(
   )
 
 base_climate_raster <- raw_season %$%
-  mapply(
+  future_mapply(
     FUN = function(
       x,
       proj_mask,
@@ -279,7 +282,7 @@ raw_climate_projection_data_adj <- raw_climate_projection_data %>%
 
 
 # Reporojected layers
-plan(multisession, workers = ncores)
+# plan(multisession, workers = ncores)
 
 raw_climate_projection_rasters <- raw_climate_projection_data_adj %$%
   future_mapply(
@@ -291,7 +294,7 @@ raw_climate_projection_rasters <- raw_climate_projection_data_adj %$%
     )
   )
 
-plan(sequential)
+# plan(sequential)
 
 
 raw_climate_projections <- raw_climate_projection_data_adj %>%
@@ -322,7 +325,7 @@ raw_climate_projections <- raw_climate_projection_data_adj %>%
 ####  Absolute predicted values
 # --------------------------------------------------------------
 
-plan(multisession, workers = ncores)
+# plan(multisession, workers = ncores)
 
 climate_projection_rasters <- raw_climate_projections %$%
   future_mapply(
@@ -378,12 +381,12 @@ climate_projection_rasters <- raw_climate_projections %$%
     )
   )
 
-plan(sequential)
+# plan(sequential)
 
 
 
 initial_raster <- raw_climate_projections %$%
-  mapply(
+  future_mapply(
     FUN = function(
       base,
       cv,
@@ -418,7 +421,7 @@ climate_projections <- raw_climate_projections %>%
 # Interploate prediction data -------------------------------------------
 
 
-plan(multisession, workers = ncores)
+# plan(multisession, workers = ncores)
 
 interpolated_climate_projection_rasters <- climate_projections %$%
   future_mapply(
@@ -438,7 +441,7 @@ interpolated_climate_projection_rasters <- climate_projections %$%
   )
 
 
-plan(sequential)
+# plan(sequential)
 
 
 
@@ -471,7 +474,7 @@ climproj <- climate_projections %>%
 
 
 climset <- climproj %$%
-  mapply(
+  future_mapply(
     FUN = stack.climate,
     prec_djf = prec_djf,
     prec_jja = prec_jja,
@@ -496,6 +499,7 @@ clim_vars <- climproj %>%
     climate_projections
   )
 
+plan(sequential)
 
 # Save outputs ---------------------
 
