@@ -12,6 +12,7 @@ get.landis.vars <- function(
   library(doMC)
   library(raster)
   library(dplyr)
+  library(foreach)
   
   source(file = "R/functions/rst.op.R")
   
@@ -502,8 +503,8 @@ get.landis.vars <- function(
                                        biomass_eucapaul,
                                        biomass_eucaacer,
                                        biomass_leptgran,
-                                       biomass_leptlani,
-                                       biomass_melasqua,
+                                       #biomass_leptlani,
+                                       #biomass_melasqua,
                                        biomass_nothcunn),
                         input2 = biomass_TotalBiomass,
                         op = "prop",
@@ -523,8 +524,8 @@ get.landis.vars <- function(
                                        biomass_eucapaul,
                                        biomass_eucaacer,
                                        biomass_leptgran,
-                                       biomass_leptlani,
-                                       biomass_melasqua,
+                                       #biomass_leptlani,
+                                       #biomass_melasqua,
                                        biomass_nothcunn),
                         op = "writeonly",
                         proj_mask = proj_mask,

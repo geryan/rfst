@@ -1,5 +1,10 @@
 # 03 LANDIS variables
 
+library(dplyr)
+library(magrittr)
+library(tibble)
+
+
 load(file = "output/RData/00_controls.RData")
 load(file = "output/RData/01_landscape_variables.RData")
 
@@ -7,33 +12,81 @@ source.functions("R/functions")
 
 # -------------------------------------------------
 
-for (i in 1:length(scn_list)){
-  for (j in 1:length(rep_list)){
-    
-    
-    tx <- get.landis.vars(
-      scn_path = sprintf("~/s%s_%s/", scn_list[i], rep_list[j]),
+landis_vars <- scn_table %$%
+  mapply(
+    FUN = function(
+      scnid,
+      proj_path,
+      proj_mask,
+      ntimesteps,
+      ncores
+    ){
+      
+      result <- get.landis.vars(
+        scn_path = sprintf(
+          "~/s%s",
+          scnid
+        ),
+        proj_path = proj_path,
+        out_path = "output/habitat_vars",
+        scn_id = scnid,
+        proj_mask = ch_mask,
+        timesteps = ntimesteps,
+        cores = ncores
+      )
+      
+      return(result)
+    },
+    scnid = scn_id,
+    MoreArgs = list(
       proj_path = proj_path,
-      out_path = "output/habitat_vars",
-      scn_id = sprintf("%s_%s", scn_list[i], rep_list[j]),
       proj_mask = ch_mask,
-      timesteps = ntimesteps,
-      cores = ncores
-    )
-    
-    assign(
-      x = sprintf("lv_%s_%s", scn_list[i], rep_list[j]),
-      value = tx
-    )
-    
-    
-  }
-}
+      ntimesteps = ntimesteps,
+      ncores = ncores
+    ),
+    SIMPLIFY = FALSE
+  )
 
+
+landis_variables <- scn_table %>%
+  bind_cols(
+    tibble(
+      landis_vars = landis_vars
+    )
+  )
 
 save(
-  list = ls()[grep("lv_", ls())],
+  landis_vars,
+  landis_variables,
   file = "output/RData/03_LANDIS_variables.RData"
-)
-
+ )
+ 
+# for (i in 1:length(scn_list)){
+#   for (j in 1:length(rep_list)){
+#     
+#     
+#     tx <- get.landis.vars(
+#       scn_path = sprintf("~/s%s_%s/", scn_list[i], rep_list[j]),
+#       proj_path = proj_path,
+#       out_path = "output/habitat_vars",
+#       scn_id = sprintf("%s_%s", scn_list[i], rep_list[j]),
+#       proj_mask = ch_mask,
+#       timesteps = ntimesteps,
+#       cores = ncores
+#     )
+#     
+#     assign(
+#       x = sprintf("lv_%s_%s", scn_list[i], rep_list[j]),
+#       value = tx
+#     )
+#     
+#     
+#   }
+# }
+# 
+# 
+# save(
+#   list = ls()[grep("lv_", ls())],
+#   file = "output/RData/03_LANDIS_variables.RData"
+# )
 
