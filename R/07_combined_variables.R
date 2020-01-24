@@ -2,6 +2,9 @@
 
 library(dplyr)
 library(raster)
+library(tibble)
+library(magrittr)
+library(tidyr)
 
 load(file = "output/RData/00_controls.RData")
 load(file = "output/RData/01_landscape_variables.RData")
@@ -13,11 +16,31 @@ load(file = "output/RData/06_climate_variables.RData")
 source.functions("R/functions")
 
 
+varset <- expand_grid(
+  disturbance_variables,
+  clim_vars %>% rename(rcp1 = rcp),
+  tibble(
+    geo_vars = list(gv)
+  )
+) %>%
+  filter(rcp == rcp1) %>%
+  dplyr::select(
+    scenario,
+    scenario_replicate,
+    rcp,
+    climate_model,
+    everything(),
+    -rcp1
+  ) %>%
+  mapply(
+    
+  )
+
+
 vn_lb_1 <- c("lbm_prop", "lbm_biom", "prop_old_150", "prop_oge_3h", "biom_oge_3h", "prec01", "prec07", "tmax01", "tmin07", "lvdaw", "lvdma", "lvdmi", "lvdsw", "ahr", "tho", "max_age")
 
 vn_lb_2 <- c("prec01", "prec07", "tmax01", "tmin07", "lvdaw", "lvdma", "lvdmi", "lvdsw", "ahr", "tho", "max_age")
 
-# AIM HERE IS TO USE THE BIOM_OGE PLAYERS WHEN PROCESSED
 
 vn_gg_1 <- c( "ggf_prop", "ggf_biom", "ggd_prop_og", "ggd_biom_og","prop_old_150", "prop_oge_1k", "biom_oge_1k", "prec01", "prec07", "tmax01", "tmin07", "lvdaw", "lvdma", "lvdmi", "lvdsw", "ahr", "tho", "max_age")
 

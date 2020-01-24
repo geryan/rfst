@@ -58,7 +58,10 @@ scn_table <- expand_grid(
       scenario_replicate
     )
   ) %>%
-  filter(scenario_replicate == "01")
+  mutate(
+    rcp = "rcp45"
+  ) %>% # EDIT  ###############################   EDIT    #################
+  filter(scenario_replicate == "01") # EDIT ###   EDIT    #################
 
 species_table <- tibble(
   species = c(

@@ -27,6 +27,7 @@ plan(multisession, workers = ncores)
 
 dvs <- landis_variables %$%
   future_mapply(
+  #mapply(
     FUN = function(
       x,
       fire_history,
@@ -91,8 +92,8 @@ disturbance_variables <- landis_variables %>%
 
 
 save(
-  list = disturbance_variables,
-  file = "output/RData/04_disturbance_variables_NEW.RData"
+  disturbance_variables,
+  file = "output/RData/04_disturbance_variables.RData"
 )  
 
 # 
