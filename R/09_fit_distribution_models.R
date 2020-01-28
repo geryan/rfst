@@ -18,114 +18,109 @@ load(file = "output/RData/07_combined_variables.RData")
 
 source.functions("R/functions")
 
+#plan(multisession, workers = 20)
 
-plan(multisession, workers = 20)
+
+varlist <- c(
+  "date",         # 01
+  "PA",           # 02
+  "lbm_prop",     # 03
+  "lbm_biom",     # 04
+  "ac_prop",      # 05
+  "ac_biom",      # 06
+  "ggf_prop",     # 07
+  "ggf_biom",     # 08
+  "ggd_prop",     # 09
+  "ggd_prop_og",  # 10
+  "ggd_biom",     # 11
+  "ggd_biom_og",  # 12
+  "prop_bio_regn",# 13
+  "prop_bio_targ",# 14
+  "prop_old_150", # 15
+  "prop_old_200", # 16
+  "prop_oge",     # 17
+  "prop_oge_3h",  # 18
+  "prop_oge_1k",  # 19
+  "biom_oge",     # 20
+  "biom_oge_3h",  # 21
+  "biom_oge_1k",  # 22
+  "harvest",      # 23
+  "firesev",      # 24
+  "max_age",      # 25
+  "pb",           # 26
+  "fi",           # 27
+  "lo",           # 28
+  "fihi",         # 29
+  "lohi",         # 30
+  "tsf",          # 31
+  "tsl",          # 32
+  "mort",         # 33
+  "prec_djf_2019",# 34
+  "prec_jja_2019",# 35
+  "tmax_djf_2019",# 36
+  "tmin_jja_2019",# 37
+  "lvdaw",        # 38
+  "lvdma",        # 39
+  "lvdmi",        # 40
+  "lvdsw",        # 41
+  "ahr",          # 42
+  "tho"           # 43
+)
+
+
+if(!all(colnames(distribution_model_data$dist_mod_dat[[1]]) == varlist)){
+  stop("Varlist definition and variable layers are different")
+}
+
+sp_sdm_vars <- tribble(
+  ~sp, ~ sdm_vars,
+  "gyle", varlist[c(3:8, 10, 12, 17:22, 34:43)],
+  "pevo", varlist[c(3:8, 10, 12, 17:22, 34:43)],
+  "peau", varlist[c(3:8, 10, 12, 17:22, 34:43)],
+  "smle", varlist[c(3:8, 10, 12, 17:22, 34:43)],
+  "tyte", varlist[c(3:8, 10, 12, 17:22, 34:43)],
+  "vava", varlist[c(3:8, 10, 12, 17:22, 34:43)]
+)
+
+sdm_data <- full_join(
+  x = distribution_model_data,
+  y = sp_sdm_vars,
+  by = "sp"
+)
 
 # LBP -----------------
 
-brt_lb <- tibble(year.from = c("80", "09"),
-                 bg = c(TRUE, FALSE),
-                 varset = list(vn_lb_1, vn_lb_2),
-                 lr = c("0.005", "0.010"),
-                 bf = c("0.50", "0.75")) %>%
-  expand(year.from, bg, varset, lr, bf) %>%
-  mutate(lrbf = paste0(lr, bf)) %>%
-  rowwise %>%
-  mutate(pa.data = list(get(sprintf("pa_lb_%s%s", year.from, ifelse(bg, "b", "x"))))) %>%
-  ungroup %>%
-  mutate(model.data = future_map(.x = pa.data,
-                          .f = get.model.data,
-                          y = vars_1_01,
-                          na.omit = FALSE),
-         model.data = future_map2(.x = model.data,
-                           .y = varset,
-                           .f = clean.model.data)) %>%
-  mutate(brt.fit = future_map2(.x = model.data,
-                               .y = lrbf,
-                               .f = gbmstep_lrbf)) %>%
-  mutate(auc = future_map(.x = brt.fit,
-                   .f = brt_auc)) %>%
-  unnest(auc) %>%
-  mutate(trees = map(.x = brt.fit, .f = ~ .$gbm.call$best.trees)) %>%
-  unnest(trees) %>%
-  mutate(vs = map(.x = varset,
-                  .f = length)) %>%
-  unnest(vs) %>%
-  mutate(varsetn = sprintf("%s%s_%s_%s%s",
-                           year.from,
-                           ifelse(bg, "b", "x"),
-                           ifelse(vs == 16, 1, 2),
-                           lr,
-                           bf))
-  
 
-ip_lb <- future_mapply(
-  FUN = brtpredict,
-  model = brt_lb$brt.fit,
-  varset = brt_lb$varsetn,
-  MoreArgs = list(variables = vlb1_1_01,
-                  scn_id = "s1_01",
-                  species = "lb"),
-  future.packages = c("gbm", "raster", "dismo"))
-
-
-
-brt_lb <- brt_lb %>%
-  mutate(init.pred = ip_lb)
-  
-  
-
-# GG ------------------
-
-brt_gg <- tibble(year.from = c("80", "09"),
-                 bg = c(TRUE, FALSE),
-                 varset = list(vn_gg_1, vn_gg_2),
-                 lr = c("0.005", "0.010"),
-                 bf = c("0.50", "0.75")) %>%
-  expand(year.from, bg, varset, lr, bf) %>%
-  mutate(lrbf = paste0(lr, bf)) %>%
-  rowwise %>%
-  mutate(pa.data = list(get(sprintf("pa_gg_%s%s", year.from, ifelse(bg, "b", "x"))))) %>%
-  ungroup %>%
-  mutate(model.data = future_map(.x = pa.data,
-                                 .f = get.model.data,
-                                 y = vars_1_01,
-                                 na.omit = FALSE),
-         model.data = future_map2(.x = model.data,
-                                  .y = varset,
-                                  .f = clean.model.data)) %>%
-  mutate(brt.fit = future_map2(.x = model.data,
-                               .y = lrbf,
-                               .f = gbmstep_lrbf)) %>%
+sdm_gyle <- sdm_data %>%
+  filter(sp == "gyle") %>%
+  mutate(
+    model_data = map2(
+      .x = dist_mod_dat,
+      .y = sdm_vars,
+      .f = clean.model.data,
+      na.omit = TRUE
+    )
+  ) %>%
+  mutate(
+    brt.fit = map(
+      .x = model_data,
+      .f = gbmstep,
+      tree.complexity = 5,
+      learning.rate = 0.005,
+      step.size = 1,
+      bag.fraction = 0.5,
+      prev.stratify = FALSE,
+      verbose = TRUE,
+      max.trees = 2000
+    )
+  ) %>%
   mutate(auc = future_map(.x = brt.fit,
                           .f = brt_auc)) %>%
   unnest(auc) %>%
   mutate(trees = map(.x = brt.fit, .f = ~ .$gbm.call$best.trees)) %>%
-  unnest(trees) %>%
-  mutate(vs = map(.x = varset,
-                  .f = length)) %>%
-  unnest(vs) %>%
-  mutate(varsetn = sprintf("%s%s_%s_%s%s",
-                           year.from,
-                           ifelse(bg, "b", "x"),
-                           ifelse(vs == 16, 1, 2),
-                           lr,
-                           bf))
+  unnest(trees)
 
 
-ip_gg <- future_mapply(
-  FUN = brtpredict,
-  model = brt_gg$brt.fit,
-  varset = brt_gg$varsetn,
-  MoreArgs = list(variables = vgg1_1_01,
-                  scn_id = "s1_01",
-                  species = "gg"),
-  future.packages = c("gbm", "raster", "dismo"))
-
-
-
-brt_gg <- brt_gg %>%
-  mutate(init.pred = ip_gg)
 
   
 # -----------

@@ -16,7 +16,19 @@ get.model.data <- function(
     raster::extract(y = st_coordinates(x)) %>%
     cbind("PA" = x$PA, .) %>%
     as.data.frame %>%
-    cbind("date" = x$date, .)
+    cbind("date" = x$date, .) %>%
+    as_tibble
+  
+  lonlat <- do.call(
+    rbind, st_geometry(x)
+  ) %>%
+    as_tibble %>%
+    setNames(c("lon","lat"))
+  
+  result <- bind_cols(
+    result,
+    lonlat
+  )
   
   if(na.omit){
     

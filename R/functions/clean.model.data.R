@@ -1,4 +1,8 @@
-clean.model.data <- function(x, y){
+clean.model.data <- function(
+  x,
+  y = NA,
+  na.omit = FALSE
+){
   
   library(dplyr)
   library(lubridate)
@@ -14,8 +18,18 @@ clean.model.data <- function(x, y){
                                max_age < 0 ~ NA_real_,
                                TRUE ~ max_age)) %>%
     mutate(tsf = ifelse(tsf >= 0, tsf, NA),
-           tsl = ifelse(tsl >= 0, tsl, NA)) %>%
-    dplyr::select("PA", y)
+           tsl = ifelse(tsl >= 0, tsl, NA))
+  
+  if(!is.na(varset)){
+    result <- result %>%
+      dplyr::select("PA", y)
+  }
+  
+  
+  if(na.omit){
+    result <- result %>%
+      na.omit
+  }
   
   return(result)
   

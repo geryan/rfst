@@ -41,21 +41,6 @@ distribution_model_data <- pa_data %>%
     )
   )
 
-# ----------------------------
-
-# md_lb_09b <- get.model.data(pa_lb_09b, vars_1_01, na.omit = FALSE) %>%
-#   mutate(nd = as.numeric(ymd("2019-01-01") - date)/365,
-#          nd = ifelse(nd > 0, nd, 0)) %>%
-#   mutate(tsf = tsf - nd,
-#          tsl = tsl - nd,
-#          max_age = max_age - nd) %>%
-#   mutate(max_age = case_when(tsf < 0 ~ NA_real_,
-#                              tsl < 0 ~ NA_real_,
-#                              max_age < 0 ~ NA_real_,
-#                              TRUE ~ max_age)) %>%
-#   mutate(tsf = ifelse(tsf >= 0, tsf, NA),
-#          tsl = ifelse(tsl >= 0, tsl, NA))
-
 save(
   distribution_model_data,
   file = "output/RData/08_distribution_model_data.RData"
