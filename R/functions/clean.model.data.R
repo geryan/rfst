@@ -20,7 +20,7 @@ clean.model.data <- function(
     mutate(tsf = ifelse(tsf >= 0, tsf, NA),
            tsl = ifelse(tsl >= 0, tsl, NA))
   
-  if(!is.na(varset)){
+  if(!is.na(y[1])){
     result <- result %>%
       dplyr::select("PA", y)
   }
