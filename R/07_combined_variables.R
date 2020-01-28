@@ -31,114 +31,60 @@ varset <- expand_grid(
     climate_model,
     everything(),
     -rcp1
-  ) %>%
+  )
+
+all_vars <- varset %$%
   mapply(
-    
+    FUN = function(
+      lv,
+      dv,
+      cp,
+      gv
+    ){
+      
+      result <- mapply(
+        FUN = function(
+          lv,
+          dv,
+          cp,
+          gv
+        ){
+          
+          stack(
+            lv,
+            dv,
+            cp,
+            gv
+          )
+          
+        },
+        lv = lv,
+        dv = dv,
+        cp = cp,
+        gv = gv,
+        SIMPLIFY = FALSE
+      )
+      
+      return(result)
+      
+    },
+    lv = landis_vars,
+    dv = dist_vars,
+    cp = climate_projections,
+    gv = geo_vars,
+    SIMPLIFY = FALSE
   )
 
 
-vn_lb_1 <- c("lbm_prop", "lbm_biom", "prop_old_150", "prop_oge_3h", "biom_oge_3h", "prec01", "prec07", "tmax01", "tmin07", "lvdaw", "lvdma", "lvdmi", "lvdsw", "ahr", "tho", "max_age")
-
-vn_lb_2 <- c("prec01", "prec07", "tmax01", "tmin07", "lvdaw", "lvdma", "lvdmi", "lvdsw", "ahr", "tho", "max_age")
-
-
-vn_gg_1 <- c( "ggf_prop", "ggf_biom", "ggd_prop_og", "ggd_biom_og","prop_old_150", "prop_oge_1k", "biom_oge_1k", "prec01", "prec07", "tmax01", "tmin07", "lvdaw", "lvdma", "lvdmi", "lvdsw", "ahr", "tho", "max_age")
-
-vn_gg_2 <- c("prec01", "prec07", "tmax01", "tmin07", "lvdaw", "lvdma", "lvdmi", "lvdsw", "ahr", "tho", "max_age")
-
-
-
-for (i in 1:length(scn_list)){
-  for (j in 1:length(rep_list)){
-    
-    
-    tx <- mapply(
-      FUN = stack,
-      get(
-        sprintf(
-          "lv_%s_%s",
-          scn_list[i],
-          rep_list[j])),
-      get(
-        sprintf(
-          "dv_%s_%s",
-          scn_list[i],
-          rep_list[j])),
-      gv,
-      clim_vars_4.5
+varset %<>%
+  bind_cols(
+    tibble(
+      all_vars = all_vars
     )
-    
+  )
 
-    assign(
-      x = sprintf("vars_%s_%s", scn_list[i], rep_list[j]),
-      value = tx
-    )
-    
-    lb1 <- mapply(
-      FUN = raster::subset,
-      tx,
-      MoreArgs = list(
-        subset = vn_lb_1
-      )
-    )
-
-    assign(
-      x = sprintf("vlb1_%s_%s", scn_list[i], rep_list[j]),
-      value = lb1
-    )
-
-    lb2 <- mapply(
-      FUN = raster::subset,
-      tx,
-      MoreArgs = list(
-        subset = vn_lb_2
-      )
-    )
-
-    assign(
-      x = sprintf("vlb2_%s_%s", scn_list[i], rep_list[j]),
-      value = lb2
-    )
-
-    gg1 <- mapply(
-      FUN = raster::subset,
-      tx,
-      MoreArgs = list(
-        subset = vn_gg_1
-      )
-    )
-
-    assign(
-      x = sprintf("vgg1_%s_%s", scn_list[i], rep_list[j]),
-      value = gg1
-    )
-
-    gg2 <- mapply(
-      FUN = raster::subset,
-      tx,
-      MoreArgs = list(
-        subset = vn_gg_2
-      )
-    )
-
-    assign(
-      x = sprintf("vgg2_%s_%s", scn_list[i], rep_list[j]),
-      value = gg2
-    )
-
-    
-  }
-}
 
 save(
-  vn_lb_1,
-  vn_lb_2,
-  vn_gg_1,
-  vn_gg_2,
-  list = c(
-    ls()[grep("vars_", ls())],
-    ls()[grep("vgg", ls())],
-    ls()[grep("vlb", ls())]
-           ),
+  varset,
   file = "output/RData/07_combined_variables.RData"
 )

@@ -107,5 +107,3 @@ save(
   rfa,
   file = "output/RData/01_landscape_variables.RData"
 )
-
-print("~fin~")
