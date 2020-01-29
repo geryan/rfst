@@ -19,7 +19,7 @@ source.functions("R/functions")
 # ----------------------------
 
 md_set <- expand_grid(
-  varset[1,],
+  var_set[1,],
   pa_data
 )
 
