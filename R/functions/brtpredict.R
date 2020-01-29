@@ -13,9 +13,33 @@ brtpredict <- function(
   library(raster)
   library(dismo)
   
+  vnames <- model$var.names
+  
+  vn1 <- names(variables[[1]])
+  
+  vars <- lapply(
+    X = variables,
+    FUN = function(x, vn1){
+      result <- x
+      
+      names(result) <- vn1
+      
+      return(result)
+    },
+    vn1 = vn1
+  )
+  
+  predvars <- lapply(
+    X = vars,
+    FUN = function(x, vnames){
+      x[[vnames]]
+    },
+    vnames = vnames
+  )
+  
   if(initial){
     
-    result <- raster::predict(object = variables[[1]],
+    result <- raster::predict(object = predvars[[1]],
                               model = model,
                               type = "response",
                               n.trees = model$gbm.call$best.trees,
@@ -34,9 +58,9 @@ brtpredict <- function(
     library(foreach)
   
     
-    result <- foreach(i = seq_len(length(variables)), .packages = c("gbm", "raster", "dismo")) %dopar% {
+    result <- foreach(i = seq_len(length(predvars)), .packages = c("gbm", "raster", "dismo")) %dopar% {
       
-      raster::predict(object = variables[[i]],
+      raster::predict(object = predvars[[i]],
                       model = model,
                       type = "response",
                       n.trees = model$gbm.call$best.trees,
