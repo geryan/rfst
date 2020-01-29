@@ -25,23 +25,13 @@ get.model.data <- function(
     rename(
       "lon" = X,
       "lat" = Y
-    )
+    ) %>%
+    as.data.frame
   
-  # lonlat <- do.call(
-  #   rbind, st_geometry(x)
-  # ) %>%
-  #   as_tibble %>%
-  #   setNames(c("lon","lat"))
-  
-  # result <- bind_cols(
-  #   result,
-  #   lonlat
-  # )
   
   if(na.omit){
-    
-    result <- result %>% na.omit
-    
+    result <- result %>%
+      na.omit
   }
   
   return(result)

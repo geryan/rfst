@@ -1,11 +1,13 @@
-brtpredict <- function(variables,
-                       model,
-                       out_path = "output/habitat_pred",
-                       scn_id,
-                       varset,
-                       species,
-                       initial = TRUE,
-                       ncores){
+brtpredict <- function(
+  variables,
+  model,
+  out_path = "output/habitat_pred",
+  scn_id,
+  varset,
+  species,
+  initial = TRUE,
+  ncores = 1
+){
   
   library(gbm)
   library(raster)
