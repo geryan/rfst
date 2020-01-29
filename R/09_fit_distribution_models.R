@@ -10,11 +10,14 @@ library(future)
 library(furrr)
 library(tidyr)
 library(future.apply)
+library(dismo)
+library(gbm)
 
 load(file = "output/RData/00_controls.RData")
 load(file = "output/RData/01_landscape_variables.RData")
 load(file = "output/RData/02_species_occurrences.RData")
 load(file = "output/RData/07_combined_variables.RData")
+load(file = "output/RData/08_distribution_model_data.RData")
 
 source.functions("R/functions")
 
@@ -64,7 +67,9 @@ varlist <- c(
   "lvdmi",        # 40
   "lvdsw",        # 41
   "ahr",          # 42
-  "tho"           # 43
+  "tho",          # 43
+  "lon",          # 44
+  "lat"           # 45
 )
 
 
@@ -74,12 +79,12 @@ if(!all(colnames(distribution_model_data$dist_mod_dat[[1]]) == varlist)){
 
 sp_sdm_vars <- tribble(
   ~sp, ~ sdm_vars,
-  "gyle", varlist[c(3:8, 10, 12, 17:22, 34:43)],
-  "pevo", varlist[c(3:8, 10, 12, 17:22, 34:43)],
-  "peau", varlist[c(3:8, 10, 12, 17:22, 34:43)],
-  "smle", varlist[c(3:8, 10, 12, 17:22, 34:43)],
-  "tyte", varlist[c(3:8, 10, 12, 17:22, 34:43)],
-  "vava", varlist[c(3:8, 10, 12, 17:22, 34:43)]
+  "gyle", varlist[c(3:8, 10, 12, 17:22, 25, 34:45)],
+  "pevo", varlist[c(3:8, 10, 12, 17:22, 25, 34:45)],
+  "peau", varlist[c(3:8, 10, 12, 17:22, 25, 34:45)],
+  "smle", varlist[c(3:8, 10, 12, 17:22, 25, 34:45)],
+  "tyte", varlist[c(3:8, 10, 12, 17:22, 25, 34:45)],
+  "vava", varlist[c(3:8, 10, 12, 17:22, 25, 34:45)]
 )
 
 sdm_data <- full_join(
@@ -106,12 +111,12 @@ sdm_gyle <- sdm_data %>%
       .x = model_data,
       .f = gbmstep,
       tree.complexity = 5,
-      learning.rate = 0.005,
-      step.size = 1,
+      learning.rate = 0.01,
+      #step.size = 1,
       bag.fraction = 0.5,
       prev.stratify = FALSE,
-      verbose = TRUE,
-      max.trees = 2000
+      verbose = FALSE,
+      max.trees = 5000
     )
   ) %>%
   mutate(auc = future_map(.x = brt.fit,
@@ -120,13 +125,169 @@ sdm_gyle <- sdm_data %>%
   mutate(trees = map(.x = brt.fit, .f = ~ .$gbm.call$best.trees)) %>%
   unnest(trees)
 
+# GG  -----------------
+sdm_pevo <- sdm_data %>%
+  filter(sp == "pevo") %>%
+  mutate(
+    model_data = map2(
+      .x = dist_mod_dat,
+      .y = sdm_vars,
+      .f = clean.model.data,
+      na.omit = TRUE
+    )
+  ) %>%
+  mutate(
+    brt.fit = map(
+      .x = model_data,
+      .f = gbmstep,
+      tree.complexity = 5,
+      learning.rate = 0.01,
+      #step.size = 1,
+      bag.fraction = 0.5,
+      prev.stratify = FALSE,
+      verbose = FALSE,
+      max.trees = 5000
+    )
+  ) %>%
+  mutate(auc = future_map(.x = brt.fit,
+                          .f = brt_auc)) %>%
+  unnest(auc) %>%
+  mutate(trees = map(.x = brt.fit, .f = ~ .$gbm.call$best.trees)) %>%
+  unnest(trees)
 
+# YBG -----------------
+sdm_peau <- sdm_data %>%
+  filter(sp == "peau") %>%
+  mutate(
+    model_data = map2(
+      .x = dist_mod_dat,
+      .y = sdm_vars,
+      .f = clean.model.data,
+      na.omit = TRUE
+    )
+  ) %>%
+  mutate(
+    brt.fit = map(
+      .x = model_data,
+      .f = gbmstep,
+      tree.complexity = 5,
+      learning.rate = 0.01,
+      #step.size = 1,
+      bag.fraction = 0.5,
+      prev.stratify = FALSE,
+      verbose = FALSE,
+      max.trees = 5000
+    )
+  ) %>%
+  mutate(auc = future_map(.x = brt.fit,
+                          .f = brt_auc)) %>%
+  unnest(auc) %>%
+  mutate(trees = map(.x = brt.fit, .f = ~ .$gbm.call$best.trees)) %>%
+  unnest(trees)
 
-  
+# WFD -----------------
+sdm_smle <- sdm_data %>%
+  filter(sp == "smle") %>%
+  mutate(
+    model_data = map2(
+      .x = dist_mod_dat,
+      .y = sdm_vars,
+      .f = clean.model.data,
+      na.omit = TRUE
+    )
+  ) %>%
+  mutate(
+    brt.fit = map(
+      .x = model_data,
+      .f = gbmstep,
+      tree.complexity = 5,
+      learning.rate = 0.01,
+      #step.size = 1,
+      bag.fraction = 0.5,
+      prev.stratify = FALSE,
+      verbose = FALSE,
+      max.trees = 5000
+    )
+  ) %>%
+  mutate(auc = future_map(.x = brt.fit,
+                          .f = brt_auc)) %>%
+  unnest(auc) %>%
+  mutate(trees = map(.x = brt.fit, .f = ~ .$gbm.call$best.trees)) %>%
+  unnest(trees)
+
+# SO  -----------------
+sdm_tyte <- sdm_data %>%
+  filter(sp == "tyte") %>%
+  mutate(
+    model_data = map2(
+      .x = dist_mod_dat,
+      .y = sdm_vars,
+      .f = clean.model.data,
+      na.omit = TRUE
+    )
+  ) %>%
+  mutate(
+    brt.fit = map(
+      .x = model_data,
+      .f = gbmstep,
+      tree.complexity = 5,
+      learning.rate = 0.01,
+      #step.size = 1,
+      bag.fraction = 0.5,
+      prev.stratify = FALSE,
+      verbose = FALSE,
+      max.trees = 5000
+    )
+  ) %>%
+  mutate(auc = future_map(.x = brt.fit,
+                          .f = brt_auc)) %>%
+  unnest(auc) %>%
+  mutate(trees = map(.x = brt.fit, .f = ~ .$gbm.call$best.trees)) %>%
+  unnest(trees)
+
+# LM  -----------------
+sdm_vava <- sdm_data %>%
+  filter(sp == "vava") %>%
+  mutate(
+    model_data = map2(
+      .x = dist_mod_dat,
+      .y = sdm_vars,
+      .f = clean.model.data,
+      na.omit = TRUE
+    )
+  ) %>%
+  mutate(
+    brt.fit = map(
+      .x = model_data,
+      .f = gbmstep,
+      tree.complexity = 5,
+      learning.rate = 0.01,
+      #step.size = 1,
+      bag.fraction = 0.5,
+      prev.stratify = FALSE,
+      verbose = FALSE,
+      max.trees = 5000
+    )
+  ) %>%
+  mutate(auc = future_map(.x = brt.fit,
+                          .f = brt_auc)) %>%
+  unnest(auc) %>%
+  mutate(trees = map(.x = brt.fit, .f = ~ .$gbm.call$best.trees)) %>%
+  unnest(trees)
+
 # -----------
 
+sdm_results <- bind_rows(
+  sdm_gyle,
+  sdm_pevo,
+  sdm_peau,
+  sdm_smle,
+  sdm_tyte,
+  sdm_vava
+)
+
+# -----------
 save(
-  brt_lb,
-  brt_gg,
+  sdm_results,
   file = "output/RData/09_fit_distribution_models.RData"
 )

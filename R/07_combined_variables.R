@@ -70,6 +70,7 @@ ll <- vector(
     lat = ll_lat
   )
 
+
 varset <- expand_grid(
   disturbance_variables,
   clim_vars %>% rename(rcp1 = rcp),
@@ -145,6 +146,6 @@ var_set <- varset %>%
 
 
 save(
-  vars_et,
+  var_set,
   file = "output/RData/07_combined_variables.RData"
 )
