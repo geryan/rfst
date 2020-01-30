@@ -6,6 +6,7 @@ brtpredict <- function(
   varset,
   species,
   initial = TRUE,
+  pll = FALSE,
   ncores = 1
 ){
   
@@ -43,39 +44,75 @@ brtpredict <- function(
                               model = model,
                               type = "response",
                               n.trees = model$gbm.call$best.trees,
-                              filename = sprintf("%s/brtpred_%s_%s_%s_000.grd",
+                              filename = sprintf("%s/brt_initial_pred_%s_%s_%s.grd",
                                                  out_path,
                                                  scn_id,
                                                  varset,
                                                  species),
                               overwrite = TRUE)
     
-    names(result) <- "sdm_0"
+    names(result) <- "sdm_00"
     
     
   } else {
     
-    library(foreach)
-  
     
-    result <- foreach(i = seq_len(length(predvars)), .packages = c("gbm", "raster", "dismo")) %dopar% {
+    if(pll){
       
-      raster::predict(object = predvars[[i]],
-                      model = model,
-                      type = "response",
-                      n.trees = model$gbm.call$best.trees,
-                      filename = sprintf("%s/brtpred_%s_%s_%s_%03d.grd",
-                                         out_path,
-                                         scn_id,
-                                         varset,
-                                         species,
-                                         i-1),
-                      overwrite = TRUE)
+      library(foreach)
+      library(doMC)
+      
+      registerDoMC(cores = ncores)
+      
+      result <- foreach(i = seq_len(length(predvars)), .packages = c("gbm", "raster", "dismo")) %dopar% {
+        
+        raster::predict(object = predvars[[i]],
+                        model = model,
+                        type = "response",
+                        n.trees = model$gbm.call$best.trees)
+      }
+      
+    } else{
+      
+      result <- foreach(i = seq_len(length(predvars)), .packages = c("gbm", "raster", "dismo")) %do% {
+        
+        raster::predict(object = predvars[[i]],
+                        model = model,
+                        type = "response",
+                        n.trees = model$gbm.call$best.trees)
+      }
+      
     }
     
-   result <- stack(result)
+    
+    result <- mapply(
+      FUN = function(x,  y){
+        
+        names(x) <- y
+        
+        return(x)
+        
+      },
+      x = result,
+      y = sprintf(
+        "sdm_%02d",
+        0:(length(predvars) - 1)
+      )
+    )
+    
+    
+   result <- brick(
+     result %>% stack,
+     filename = sprintf(
+       "%s/brtpred_%s_%s_%s.grd",
+       out_path,
+       scn_id,
+       varset,
+       species
+     ),
+     overwrite = TRUE
+   )
      
-   names(result) <- sprintf("sdm_%s", 0:(length(variables) - 1))
   }
  
   return(result)
