@@ -20,7 +20,7 @@ library(tidyr)
 library(ggplot2)
 library(lubridate)
 
-load(file = "output/RData/00_comp_controls.RData")
+load(file = "output/RData/00_controls.RData")
 load(file = "output/RData/01_landscape_variables.RData")
 
 source.functions("R/functions")
@@ -46,9 +46,10 @@ Candidates:
 
 ### VBA data available
 ```{r br_all}
-br_all <- proc.vba(x = "data/tabular/vba_br_all_20190913.csv", project.crs = ch_proj, cutoff.date = "1700-01-01") %>%
+br_all <- proc.vba(x = "data/tabular/vba_Phebalium-squamulosum_20200130.csv", project.crs = ch_proj, cutoff.date = "1700-01-01") %>%
   mutate(year = year(date),
-         decade = year - (year %% 10))
+         decade = year - (year %% 10)) %>%
+  filter(species == "Phebalium squamulosum subsp. squamulosum")
 
 br_all
 ```
@@ -115,230 +116,6 @@ ggplot() +
 ggplot() +
   geom_sf(data = eg_rfa) +
   geom_sf(data = br_eg, aes(col = as.factor(decade), fill = as.factor(decade))) +
-  scale_colour_viridis_d() +
-  scale_fill_viridis_d() +
-  guides(col = guide_legend(title = "Decade"), fill = guide_legend(title = "Decade"))
-```
-
-# Long-footed potoroo
-
-### VBA data available
-```{r lf_all}
-lf_all <- proc.vba(x = "data/tabular/vba_lf_all_20190913.csv", project.crs = ch_proj, cutoff.date = "1700-01-01") %>%
-  mutate(year = year(date),
-         decade = year - (year %% 10))
-
-lf_all
-```
-
-### Table of presences and absences
-```{r lf presence-absence}
-table(lf_all$PA)
-```
-### PAs by decade
-```{r lf pa-decade}
-table(lf_all$decade, lf_all$PA)
-```
-### Map of PAs with reference to RFA regions
-
-```{r lf map all rfa}
-ggplot() +
-  geom_sf(data = rfa) +
-  geom_sf(data = lf_all, aes(col = as.factor(decade), fill = as.factor(decade))) +
-  scale_colour_viridis_d() +   scale_fill_viridis_d() +   guides(col = guide_legend(title = "Decade"), fill = guide_legend(title = "Decade"))
-```
-
-### And in the RFA regions of interest
-```{r lf rfa}
-lf_ch <- lf_all[ch_rfa, ]
-lf_eg <- lf_all[eg_rfa, ]
-```
-
-### PA records in the Central Highlands
-```{r pa lf_ch}
-table(lf_ch$PA)
-```
-### And East Gippsland
-```{r ba lf_eg}
-table(lf_eg$PA)
-```
-
-### And by decade...
-
-### In the Central Highlands
-```{r pa lf_ch decade}
-table(lf_ch$decade, lf_ch$PA)
-```
-### And East Gippsland
-```{r pa lf_eg decade}
-table(lf_eg$decade, lf_eg$PA)
-```
-
-### Map of PAs in Central Highlands
-
-```{r lf map ch_rfa}
-ggplot() +
-  geom_sf(data = ch_rfa) +
-  geom_sf(data = lf_ch, aes(col = as.factor(decade), fill = as.factor(decade))) +
-  scale_colour_viridis_d() +
-  scale_fill_viridis_d() +
-  guides(col = guide_legend(title = "Decade"), fill = guide_legend(title = "Decade"))
-```
-
-### And East Gippsland
-
-```{r lf map eg_rfa}
-ggplot() +
-  geom_sf(data = eg_rfa) +
-  geom_sf(data = lf_eg, aes(col = as.factor(decade), fill = as.factor(decade))) +
-  scale_colour_viridis_d() +
-  scale_fill_viridis_d() +
-  guides(col = guide_legend(title = "Decade"), fill = guide_legend(title = "Decade"))
-```
-
-# Sooty Owl
-
-### VBA data available
-```{r so_all}
-so_all <- proc.vba(x = "data/tabular/vba_so_all_20190913.csv", project.crs = ch_proj, cutoff.date = "1700-01-01") %>%
-  mutate(year = year(date),
-         decade = year - (year %% 10))
-
-so_all
-```
-
-### Table of so presences and absences
-```{r so presence-absence}
-table(so_all$PA)
-```
-### PAs by decade
-```{r so pa-decade}
-table(so_all$decade, so_all$PA)
-```
-### Map of PAs with reference to RFA regions
-
-```{r so map all rfa}
-ggplot() +
-  geom_sf(data = rfa) +
-  geom_sf(data = so_all, aes(col = as.factor(PA))) +
-  guides(col = guide_legend(title = "Presence or\nabsence"))
-```
-### And in the RFA regions of interest
-```{r so rfa}
-so_ch <- so_all[ch_rfa, ]
-so_eg <- so_all[eg_rfa, ]
-```
-
-### PA records in the Central Highlands
-```{r pa so_ch}
-table(so_ch$PA)
-```
-### And East Gippsland
-```{r ba so_eg}
-table(so_eg$PA)
-```
-
-### And by decade...
-
-### In the Central Highlands
-```{r pa so_ch decade}
-table(so_ch$decade, so_ch$PA)
-```
-### And East Gippsland
-```{r pa so_eg decade}
-table(so_eg$decade, so_eg$PA)
-```
-
-### Map of PAs in Central Highlands
-
-```{r so map ch_rfa}
-ggplot() +
-  geom_sf(data = ch_rfa) +
-  geom_sf(data = so_ch, aes(col = as.factor(PA))) +
-  guides(col = guide_legend(title = "Presence or\nabsence"))
-```
-
-### And East Gippsland
-
-```{r so map eg_rfa}
-ggplot() +
-  geom_sf(data = eg_rfa) +
-  geom_sf(data = so_eg, aes(col = as.factor(PA))) +
-  guides(col = guide_legend(title = "Presence or\nabsence"))
-```
-
-# Baw Baw frog
-
-### VBA data available
-```{r bb_all}
-bb_all <- proc.vba(x = "data/tabular/vba_bb_all_20190913.csv", project.crs = ch_proj, cutoff.date = "1700-01-01") %>%
-  mutate(year = year(date),
-         decade = year - (year %% 10))
-
-bb_all
-```
-
-### Table of presences and absences
-```{r bb presence-absence}
-table(bb_all$PA)
-```
-### PAs by decade
-```{r bb pa-decade}
-table(bb_all$decade, bb_all$PA)
-```
-### Map of PAs with reference to RFA regions
-
-```{r bb map all rfa}
-ggplot() +
-  geom_sf(data = rfa) +
-  geom_sf(data = bb_all, aes(col = as.factor(decade), fill = as.factor(decade))) +
-  scale_colour_viridis_d() +
-  scale_fill_viridis_d() +
-  guides(col = guide_legend(title = "Decade"), fill = guide_legend(title = "Decade"))
-```
-### And in the RFA regions of interest
-```{r bb rfa}
-bb_ch <- bb_all[ch_rfa, ]
-bb_eg <- bb_all[eg_rfa, ]
-```
-
-### PA records in the Central Highlands
-```{r pa bb_ch}
-table(bb_ch$PA)
-```
-### And East Gippsland
-```{r ba bb_eg}
-table(bb_eg$PA)
-```
-
-### And by decade...
-
-### In the Central Highlands
-```{r pa bb_ch decade}
-table(bb_ch$decade, bb_ch$PA)
-```
-### And East Gippsland
-```{r pa bb_eg decade}
-table(bb_eg$decade, bb_eg$PA)
-```
-
-### Map of PAs in Central Highlands
-
-```{r bb map ch_rfa}
-ggplot() +
-  geom_sf(data = ch_rfa) +
-  geom_sf(data = bb_ch, aes(col = as.factor(decade), fill = as.factor(decade))) +
-  scale_colour_viridis_d() +
-  scale_fill_viridis_d() +
-  guides(col = guide_legend(title = "Decade"), fill = guide_legend(title = "Decade"))
-```
-
-### And East Gippsland
-
-```{r bb map eg_rfa}
-ggplot() +
-  geom_sf(data = eg_rfa) +
-  geom_sf(data = bb_eg, aes(col = as.factor(decade), fill = as.factor(decade))) +
   scale_colour_viridis_d() +
   scale_fill_viridis_d() +
   guides(col = guide_legend(title = "Decade"), fill = guide_legend(title = "Decade"))
