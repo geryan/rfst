@@ -111,15 +111,15 @@ sdm_gyle <- sdm_data %>%
       .x = model_data,
       .f = gbmstep,
       tree.complexity = 5,
-      learning.rate = 0.01,
+      learning.rate = 0.03,
       #step.size = 1,
       bag.fraction = 0.5,
-      prev.stratify = FALSE,
+      prev.stratify = TRUE,
       verbose = FALSE,
       max.trees = 5000
     )
   ) %>%
-  mutate(auc = future_map(.x = brt.fit,
+  mutate(auc = map(.x = brt.fit,
                           .f = brt_auc)) %>%
   unnest(auc) %>%
   mutate(trees = map(.x = brt.fit, .f = ~ .$gbm.call$best.trees)) %>%
@@ -140,16 +140,16 @@ sdm_pevo <- sdm_data %>%
     brt.fit = map(
       .x = model_data,
       .f = gbmstep,
-      tree.complexity = 5,
-      learning.rate = 0.01,
+      tree.complexity = 7,
+      learning.rate = 0.03,
       #step.size = 1,
       bag.fraction = 0.5,
-      prev.stratify = FALSE,
+      prev.stratify = TRUE,
       verbose = FALSE,
       max.trees = 5000
     )
   ) %>%
-  mutate(auc = future_map(.x = brt.fit,
+  mutate(auc = map(.x = brt.fit,
                           .f = brt_auc)) %>%
   unnest(auc) %>%
   mutate(trees = map(.x = brt.fit, .f = ~ .$gbm.call$best.trees)) %>%
@@ -171,15 +171,15 @@ sdm_peau <- sdm_data %>%
       .x = model_data,
       .f = gbmstep,
       tree.complexity = 5,
-      learning.rate = 0.01,
+      learning.rate = 0.02,
       #step.size = 1,
       bag.fraction = 0.5,
-      prev.stratify = FALSE,
+      prev.stratify = TRUE,
       verbose = FALSE,
       max.trees = 5000
     )
   ) %>%
-  mutate(auc = future_map(.x = brt.fit,
+  mutate(auc = map(.x = brt.fit,
                           .f = brt_auc)) %>%
   unnest(auc) %>%
   mutate(trees = map(.x = brt.fit, .f = ~ .$gbm.call$best.trees)) %>%
@@ -200,16 +200,16 @@ sdm_smle <- sdm_data %>%
     brt.fit = map(
       .x = model_data,
       .f = gbmstep,
-      tree.complexity = 5,
-      learning.rate = 0.01,
+      tree.complexity = 7,
+      learning.rate = 0.002,
       #step.size = 1,
       bag.fraction = 0.5,
-      prev.stratify = FALSE,
+      prev.stratify = TRUE,
       verbose = FALSE,
       max.trees = 5000
     )
   ) %>%
-  mutate(auc = future_map(.x = brt.fit,
+  mutate(auc = map(.x = brt.fit,
                           .f = brt_auc)) %>%
   unnest(auc) %>%
   mutate(trees = map(.x = brt.fit, .f = ~ .$gbm.call$best.trees)) %>%
@@ -230,16 +230,16 @@ sdm_tyte <- sdm_data %>%
     brt.fit = map(
       .x = model_data,
       .f = gbmstep,
-      tree.complexity = 5,
-      learning.rate = 0.01,
+      tree.complexity = 7,
+      learning.rate = 0.005,
       #step.size = 1,
       bag.fraction = 0.5,
-      prev.stratify = FALSE,
+      prev.stratify = TRUE,
       verbose = FALSE,
       max.trees = 5000
     )
   ) %>%
-  mutate(auc = future_map(.x = brt.fit,
+  mutate(auc = map(.x = brt.fit,
                           .f = brt_auc)) %>%
   unnest(auc) %>%
   mutate(trees = map(.x = brt.fit, .f = ~ .$gbm.call$best.trees)) %>%
@@ -260,16 +260,16 @@ sdm_vava <- sdm_data %>%
     brt.fit = map(
       .x = model_data,
       .f = gbmstep,
-      tree.complexity = 5,
-      learning.rate = 0.01,
+      tree.complexity = 7,
+      learning.rate = 0.003,
       #step.size = 1,
       bag.fraction = 0.5,
-      prev.stratify = FALSE,
+      prev.stratify = TRUE,
       verbose = FALSE,
       max.trees = 5000
     )
   ) %>%
-  mutate(auc = future_map(.x = brt.fit,
+  mutate(auc = map(.x = brt.fit,
                           .f = brt_auc)) %>%
   unnest(auc) %>%
   mutate(trees = map(.x = brt.fit, .f = ~ .$gbm.call$best.trees)) %>%
