@@ -46,10 +46,10 @@ Candidates:
 
 ### VBA data available
 ```{r br_all}
-br_all <- proc.vba(x = "data/tabular/vba_Phebalium-squamulosum_20200130.csv", project.crs = ch_proj, cutoff.date = "1700-01-01") %>%
+br_all <- proc.vba(x = "data/tabular/vba_Myotis-macropus_20200131.csv", project.crs = ch_proj, cutoff.date = "1700-01-01") %>%
   mutate(year = year(date),
-         decade = year - (year %% 10)) %>%
-  filter(species == "Phebalium squamulosum subsp. squamulosum")
+         decade = year - (year %% 10))# %>%
+  #filter(species == "Phebalium squamulosum subsp. squamulosum")
 
 br_all
 ```
