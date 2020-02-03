@@ -33,7 +33,24 @@ make.landis <- function(
     path = new.dir
   )
   
-  biomass_harvest_files <- 
+  biomass_harvest_files <- list.files(
+    path = master.dir,
+    pattern = "Biomass_Harvest",
+    full.names = TRUE
+  )
+  
+  dynamic_input_files <- list.files(
+    path = master.dir,
+    pattern = "Dynamic_Input",
+    full.names = TRUE
+  )
+  
+  fire_weather_files <- list.files(
+    path = master.dir,
+    pattern = "Fire_Weather",
+    full.names = TRUE
+  )
+  
   
   
 }
