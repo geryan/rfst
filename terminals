@@ -1,0 +1,8 @@
+terminal  scn_id              time start
+t1        TH00_rcp45_PB_01    
+t2        TH00_rcp45_NB_01
+t3        TH00_rcp85_PB_01
+t4        TH19_rcp45_PB_01
+t5        TH19_rcp85_PB_01
+t6        TH30_rcp45_PB_01
+t7        TH30_rcp85_PB_01

@@ -1,0 +1,7 @@
+OLD
+
+dotnet /opt/Core-Model-v7-LINUX/build/Release/Landis.Console.dll <scenario_file.txt>
+
+NOW
+
+dotnet /opt/Landis_7/build/Release/Landis.Console.dll  <scenario_file.txt>
