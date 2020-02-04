@@ -63,6 +63,42 @@ scn_table <- expand_grid(
   ) %>% # EDIT  ###############################   EDIT    #################
   filter(scenario_replicate == "01") # EDIT ###   EDIT    #################
 
+
+
+# harvest_scenario <- c("TH00", "TH19", "TH30")
+# 
+# rcp <- c("rcp45", "rcp85")
+# 
+# pb <- c("PB", "NB")
+
+# scn_table <- expand_grid(
+#   harvest_scenario,
+#   rcp,
+#   pb,
+#   scenario_replicate = rep_list
+# ) %>%
+#   mutate(
+#     scenario = sprintf(
+#       "%s_%s_%s",
+#       harvest_scenario,
+#       rcp,
+#       pb
+#     ),
+#     scn_id = sprintf(
+#       "%s_%s_%s_%s",
+#       harvest_scenario,
+#       rcp,
+#       pb,
+#       scenario_replicate
+#     )
+#   ) %>%
+#   filter(
+#     pb == "PB" |
+#       (harvest_scenario == "TH00" & rcp == "rcp45")
+#   )
+
+
+
 species_table <- tibble(
   species = c(
     "Gymnobelideus leadbeateri",
