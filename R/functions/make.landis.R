@@ -1,7 +1,3 @@
-master.dir <- "D:/landis_runs/landis_master_scenario/"
-new.dir <- "D:/landis_runs/test"
-
-
 make.landis <- function(
   master.dir,
   new.dir,
@@ -15,8 +11,12 @@ make.landis <- function(
     "45",
     "85"
   ),
-  rep
+  rep,
+  overwrite = TRUE
 ){
+  
+  
+  # read in files
   
   all.files <- list.files(
     path = master.dir,
@@ -25,13 +25,17 @@ make.landis <- function(
     include.dirs = TRUE
   )
   
-  if(dir.exists(new.dir)){
-    stop("new.dir already exists.\nThis function will not overwrite it.\nPlease delete directory and begin again")
+  if(!overwrite & dir.exists(new.dir)){
+    stop("Directory at path `new.dir` already exists.\nSet `overwrite = TRUE` or delete directory and begin again.")
   }
+  
+  # create target directory
   
   dir.create(
     path = new.dir
   )
+  
+  # get list of specific files to choose from
   
   biomass_harvest_files <- list.files(
     path = master.dir,
@@ -51,6 +55,156 @@ make.landis <- function(
     full.names = TRUE
   )
   
+  files_to_copy <- all.files[
+    !all.files %in% biomass_harvest_files &
+      !all.files %in% dynamic_input_files &
+      !all.files %in% fire_weather_files
+  ]
+  
+  file.copy(
+    from = files_to_copy,
+    to = new.dir,
+    overwrite = TRUE,
+    recursive = TRUE
+  )
   
   
+  # copy appropriate biomass harvest file and edit scenario file to point to that file
+  
+  scenario <- readLines(
+    con = paste0(
+      new.dir,
+      "/scenario.txt"
+    )
+  )
+  
+  
+  if(pb){
+    scenario[21] <- sprintf(
+      "\"Biomass Harvest\"\t            ./Biomass_Harvest_TH%s_PB.txt",
+      th
+    )
+    
+    file.copy(
+      from = biomass_harvest_files[
+        grep(
+          pattern = sprintf(
+            "TH%s_PB",
+            th
+          ),
+          x = biomass_harvest_files
+        )
+      ],
+      to = new.dir,
+      overwrite = TRUE,
+      recursive = TRUE
+    )
+    
+    
+  } else{
+    scenario[21] <- ">>\"Biomass Harvest\"\t            ./Biomass_Harvest.txt"
+  }
+  
+  writeLines(
+    text = scenario,
+    con = paste0(
+      new.dir,
+      "/scenario.txt"
+    ),
+    sep = "\n"
+  )
+  
+  # copy appropriate dynamic input file and edit biomass succession to point to that
+  
+  file.copy(
+    from = dynamic_input_files[
+      grep(
+        pattern = sprintf(
+          "%s_R%s",
+          rcp,
+          rep
+        ),
+        x = dynamic_input_files
+      )
+      ],
+    to = new.dir,
+    overwrite = TRUE,
+    recursive = TRUE
+  )
+  
+  biomass_succession <- readLines(
+    con = paste0(
+      new.dir,
+      "/Succession_Biomass_CHR.txt"
+    )
+  )
+  
+  biomass_succession[168] <- sprintf(
+    "DynamicInputFile \t\t\t ./Dynamic_Input_%s_R%s.txt" ,
+    rcp,
+    rep
+  )
+  
+  writeLines(
+    text = biomass_succession,
+    con  = paste0(
+      new.dir,
+      "/Succession_Biomass_CHR.txt"
+    ),
+    sep = "\n"
+  )
+  
+  # copy appropriate fire weather and edit dynamic fire to point to it
+  
+  file.copy(
+    from = fire_weather_files[
+      grep(
+        pattern = rcp,
+        x = fire_weather_files
+      )
+    ],
+    to = new.dir,
+    overwrite = TRUE,
+    recursive = TRUE
+  )
+  
+ dynamic_fire <- readLines(
+   con = paste0(
+     new.dir,
+     "/fire-DFFS.txt"
+   )
+ )
+  
+ dynamic_fire[50] <- sprintf(
+   "InitialWeatherDatabase   ./Fire_Weather_T0_%s.csv",
+   rcp
+ )
+ 
+ dynamic_fire[54] <- sprintf(
+   "10\t ./Fire_Weather_T10_%s.csv",
+   rcp
+ )
+ 
+ dynamic_fire[55] <- sprintf(
+   "40\t ./Fire_Weather_T40_%s.csv",
+   rcp
+ )
+ 
+ dynamic_fire[56] <- sprintf(
+   "70\t ./Fire_Weather_T70_%s.csv",
+   rcp
+ )
+ 
+ 
+ writeLines(
+   text = dynamic_fire,
+   con = paste0(
+     new.dir,
+     "/fire-DFFS.txt"
+   ),
+   sep = "\n"
+ )
+ 
+ print("Done")
+ 
 }
