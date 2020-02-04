@@ -55,6 +55,8 @@ make.landis <- function(
     full.names = TRUE
   )
   
+  # copy files going to all scenarios
+  
   files_to_copy <- all.files[
     !all.files %in% biomass_harvest_files &
       !all.files %in% dynamic_input_files &
