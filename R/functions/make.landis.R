@@ -16,7 +16,7 @@ make.landis <- function(
 ){
   
   
-  # read in files
+  # read in files from master
   
   all.files <- list.files(
     path = master.dir,
