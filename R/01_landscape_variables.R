@@ -78,6 +78,54 @@ ch_fire_history <- read_sf("data/shapefiles/DELWP_2019_interim_fire/FIRE_HISTOY_
   mask(mask = ch_mask, filename = "output/landscape_vars/fire_history.grd", overwrite = TRUE)
 
 
+firech <- read_sf("data/shapefiles/DELWP_2019_interim_fire/FIRE_HISTOY_VICGRID_updated.shp") %>%
+  st_transform(crs = ch_proj) %>%
+  st_make_valid %>%
+  st_crop(y = st_bbox(ch_mask))
+
+fire_seasons <- unique(firech$season)[order(unique(firech$season))]
+
+firelist <- lapply(
+  X = seasons,
+  FUN = function(seasons, data, mask){
+    result <-  data %>% 
+      filter(
+        season == seasons
+      ) %>%
+      rasterize(
+        y = mask,
+        field = "season",
+        fun = max,
+        background = NA
+      )
+    
+    return(result)
+  },
+  data = firech,
+  mask = ch_mask
+)
+
+filist <- lapply(
+  X = firelist,
+  FUN = function(x){
+    x[!is.na(x)] <- 1
+    return(x)
+  }
+) %>%
+  stack
+
+names(filist) <- seasons
+
+ch_fire_history_brick <- brick(
+  x = filist
+) %>%
+  mask(
+    mask = ch_mask,
+    filename = "output/landscape_vars/ch_fire_history_brick.grd",
+    overwrite = TRUE
+  )
+
+
 ch_logging_history <- read_sf("data/shapefiles/viclogging/lastlog25.shp") %>%
   st_transform(crs = ch_proj) %>%
   st_make_valid %>%
