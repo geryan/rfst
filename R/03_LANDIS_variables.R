@@ -19,12 +19,15 @@ landis_vars <- scn_table %$%
       proj_path,
       proj_mask,
       ntimesteps,
-      ncores
+      ncores,
+      ht
     ){
+      
+      print(scnid)
       
       result <- get.landis.vars(
         scn_path = sprintf(
-          "~/s%s",
+          "~/%s",
           scnid
         ),
         proj_path = proj_path,
@@ -32,12 +35,14 @@ landis_vars <- scn_table %$%
         scn_id = scnid,
         proj_mask = ch_mask,
         timesteps = ntimesteps,
-        cores = ncores
+        cores = ncores,
+        harvest_timber = ht
       )
       
       return(result)
     },
     scnid = scn_id,
+    ht = harvest_timber,
     MoreArgs = list(
       proj_path = proj_path,
       proj_mask = ch_mask,

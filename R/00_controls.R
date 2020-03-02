@@ -43,59 +43,89 @@ ncores <- 20
 nreplicates <- 100
 
 
-scn_list <- c("1", "4", "8")
-rep_list <- sprintf("%02d", 1:10)
-
-
-scn_table <- expand_grid(
-  scenario = scn_list,
-  scenario_replicate = rep_list
-) %>%
-  mutate(
-    scn_id = sprintf(
-      "%s_%s",
-      scenario,
-      scenario_replicate
-    )
-  ) %>%
-  mutate(
-    rcp = "rcp45"
-  ) %>% # EDIT  ###############################   EDIT    #################
-  filter(scenario_replicate == "01") # EDIT ###   EDIT    #################
-
-
-
-# harvest_scenario <- c("TH00", "TH19", "TH30")
+# scn_list <- c("1", "4", "8")
+# rep_list <- sprintf("%02d", 1:10)
 # 
-# rcp <- c("rcp45", "rcp85")
 # 
-# pb <- c("PB", "NB")
-
 # scn_table <- expand_grid(
-#   harvest_scenario,
-#   rcp,
-#   pb,
+#   scenario = scn_list,
 #   scenario_replicate = rep_list
 # ) %>%
 #   mutate(
-#     scenario = sprintf(
-#       "%s_%s_%s",
-#       harvest_scenario,
-#       rcp,
-#       pb
-#     ),
 #     scn_id = sprintf(
-#       "%s_%s_%s_%s",
-#       harvest_scenario,
-#       rcp,
-#       pb,
+#       "%s_%s",
+#       scenario,
 #       scenario_replicate
 #     )
 #   ) %>%
-#   filter(
-#     pb == "PB" |
-#       (harvest_scenario == "TH00" & rcp == "rcp45")
-#   )
+#   mutate(
+#     rcp = "rcp45"
+#   ) %>% # EDIT  ###############################   EDIT    #################
+#   filter(scenario_replicate == "01") # EDIT ###   EDIT    #################
+
+
+
+rep_list <- sprintf("%02d", 1:10)
+
+harvest_scenario <- c("TH00", "TH19", "TH30")
+
+rcp <- c("rcp45", "rcp85")
+
+plan_burn <- c("PB", "NB")
+
+
+scn_table <- expand_grid(
+  harvest_scenario,
+  rcp,
+  plan_burn,
+  scenario_replicate = rep_list
+) %>%
+  mutate(
+    scenario = sprintf(
+      "%s_%s_%s",
+      harvest_scenario,
+      rcp,
+      plan_burn
+    ),
+    scn_id = sprintf(
+      "%s_%s_%s_%s",
+      harvest_scenario,
+      rcp,
+      plan_burn,
+      scenario_replicate
+    ),
+    dir = paste0(
+      "~/",
+      scn_id
+    ),
+    th = sub(
+      pattern = "TH",
+      replacement = "",
+      x = harvest_scenario
+    ),
+    rc = sub(
+      pattern = "rcp",
+      replacement = "",
+      x = rcp
+    ),
+    pb = ifelse(
+      plan_burn == "PB",
+      TRUE,
+      FALSE
+    )
+  ) %>%
+  filter(
+    plan_burn == "PB" |
+      (harvest_scenario == "TH00" & rcp == "rcp45")
+  ) %>%
+  mutate(
+    harvest_timber = ifelse(
+      test = th == "00" & plan_burn == "NB",
+      yes = FALSE,
+      no = TRUE
+    )
+  ) %>%
+  filter(scenario_replicate == "01")
 
 
 
@@ -151,8 +181,8 @@ save(
   ntimesteps,
   ncores,
   nreplicates,
-  scn_list,
-  rep_list,
+  #scn_list,
+  #rep_list,
   source.functions,
   scn_table,
   species_table,

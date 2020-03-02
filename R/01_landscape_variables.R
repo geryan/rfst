@@ -86,7 +86,7 @@ firech <- read_sf("data/shapefiles/DELWP_2019_interim_fire/FIRE_HISTOY_VICGRID_u
 fire_seasons <- unique(firech$season)[order(unique(firech$season))]
 
 firelist <- lapply(
-  X = seasons,
+  X = fire_seasons,
   FUN = function(seasons, data, mask){
     result <-  data %>% 
       filter(
@@ -114,7 +114,7 @@ filist <- lapply(
 ) %>%
   stack
 
-names(filist) <- seasons
+names(filist) <- fire_seasons
 
 ch_fire_history_brick <- brick(
   x = filist
@@ -134,6 +134,8 @@ ch_logging_history <- read_sf("data/shapefiles/viclogging/lastlog25.shp") %>%
   rasterize(y = ch_mask, field = "season", fun = max, background = NA) %>%
   mask(mask = ch_mask, filename = "output/landscape_vars/logging_history.grd", overwrite = TRUE)
 
+## consider making logging history brick as per fire history?
+
 # Save outputs ----
 
 save(
@@ -151,6 +153,7 @@ save(
   ch_res,
   ch_rfa,
   ch_fire_history,
+  ch_fire_history_brick,
   ch_logging_history,
   rfa,
   file = "output/RData/01_landscape_variables.RData"

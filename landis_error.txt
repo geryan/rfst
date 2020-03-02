@@ -27,3 +27,22 @@ https://github.com/LANDIS-II-Foundation/Library-Site-Harvest/blob/69fda1f8430f72
 
 
 Is this library missing from the build?
+
+
+
+
+   WARNING: Prescription PlanBurn not found in the Biomass Succession Harvest Effects Table
+   WARNING: Prescription PlanBurn not found in the Biomass Succession Harvest Effects Table
+   WARNING: Prescription PlanBurn not found in the Biomass Succession Harvest Effects Table
+   WARNING: Prescription PlanBurn not found in the Biomass Succession Harvest Effects Table
+   WARNING: Prescription PlanBurn not found in the Biomass Succession Harvest Effects Table
+   WARNING: Prescription PlanBurn not found in the Biomass Succession Harvest Effects Table
+   WARNING: Prescription PlanBurn not found in the Biomass Succession Harvest Effects Table
+   WARNING: Prescription PlanBurn not found in the Biomass Succession Harvest Effects Table
+   WARNING: Prescription PlanBurn not found in the Biomass Succession Harvest Effects Table
+   WARNING: Prescription PlanBurn not found in the Biomass Succession Harvest Effects Table
+   WARNING: Prescription PlanBurn not found in the Biomass Succession Harvest Effects Table
+   WARNING: Prescription PlanBurn not found in the Biomass Succession Harvest Effects Table
+   WARNING: Prescription PlanBurn not found in the Biomass Succession Harvest Effects Table
+   WARNING: Prescription PlanBurn not found in the Biomass Succession Harvest Effects Table
+   WARNING: Prescription PlanBurn not found in the Biomass Succession Harvest Effects Table

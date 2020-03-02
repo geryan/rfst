@@ -1,8 +1,15 @@
-terminal  scn_id              time start
-t1        TH00_rcp45_PB_01    
-t1        TH00_rcp45_NB_01    2020/02/06 11:50:00
-t3        TH00_rcp85_PB_01
-t4        TH19_rcp45_PB_01
-t5        TH19_rcp85_PB_01
-t6        TH30_rcp45_PB_01
-t7        TH30_rcp85_PB_01
+## COMPLETED
+terminal  scn_id              time start        time end
+t1        TH00_rcp45_PB_01    2020/02/27 1454  2020/02/28 1330
+t2        TH00_rcp45_NB_01    2020/02/27 1455  2020/02/28 1452
+t3        TH00_rcp85_PB_01    2020/02/27 1458  2020/02/28 1404
+t4        TH19_rcp45_PB_01    2020/02/27 1459  2020/02/28 1509
+t5        TH19_rcp85_PB_01    2020/02/27 1500  2020/02/28 1330
+t6        TH30_rcp45_PB_01    2020/02/27 1501  2020/02/28 1509
+t7        TH30_rcp85_PB_01    2020/02/27 1503  2020/02/28 1452
+
+
+
+
+## LIVE ##################################################
+terminal  scn_id              time start        time end
