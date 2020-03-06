@@ -1,4 +1,4 @@
-library(dyplr)
+library(dplyr)
 library(tidyr)
 library(magrittr)
 
@@ -54,8 +54,8 @@ scn_table <- expand_grid(
   filter(
     plan_burn == "PB" |
       (harvest_scenario == "TH00" & rcp == "rcp45")
-  ) %>%
-  filter(scenario_replicate == "01")
+  ) #%>%
+  #filter(scenario_replicate == "01")
 
 scn_table %$%
   mapply(
