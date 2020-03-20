@@ -1,10 +1,10 @@
 #!/bin/bash
 
-#SBATCH -p "physical,snowy" # must run on these not on cloud or fails 
+#SBATCH -p "physical,snowy" # must run on these partitions. Can not run on cloud or fails 
 
 #SBATCH --ntasks=1
 
-#SBATCH --time 1-00
+#SBATCH --time 2-00
 
 #SBATCH --mail-user="ryange@unimelb.edu.au"
 #SBATCH --mail-type=ALL

@@ -30,8 +30,13 @@ library(viridis)
 source(file = "R/functions/source.functions.R")
 source.functions("R/functions")
 
+proj_path <- "/home/ryange/rfst/"
 
-proj_path <- "/home/unimelb.edu.au/ryange/rfst"
+landis_path <- "/scratch/punim0995/"
+
+data_path <- "/scratch/punim0995/data/"
+
+#proj_path <- "/home/unimelb.edu.au/ryange/rfst"
 # proj_path <- "D:/Users/ryan/Dropbox/Work/RFA_STEPS/rfst/"
 
 year0 <- 2019
@@ -177,6 +182,8 @@ species_table <- tibble(
 
 save(
   proj_path,
+  landis_path,
+  data_path,
   year0,
   ntimesteps,
   ncores,
