@@ -54,8 +54,24 @@ scn_table <- expand_grid(
   filter(
     plan_burn == "PB" |
       (harvest_scenario == "TH00" & rcp == "rcp45")
-  ) #%>%
-  #filter(scenario_replicate == "01")
+  ) %>%
+  filter(
+    rcp == "rcp45" |
+      harvest_scenario == "TH00" |
+      harvest_scenario == "TH30"
+  ) %>%
+  mutate(
+    scn_no = case_when(
+      th == "19" ~ 1,
+      th == "30" & rc == "45" ~ 2,
+      th == "30" & rc == "85" ~ 3,
+      th == "00" & rc == "45" & pb ~ 4,
+      th == "00" & rc == "85" & pb ~ 5,
+      th == "00" & rc == "45" & !pb ~ 6
+    )
+  ) %>%
+  arrange(scn_no) %>%
+  filter(scenario_replicate == "01")
 
 scn_table %$%
   mapply(
