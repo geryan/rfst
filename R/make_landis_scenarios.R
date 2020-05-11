@@ -2,6 +2,8 @@ library(dplyr)
 library(tidyr)
 library(magrittr)
 
+source("R/functions/make.landis.R")
+
 rep_list <- sprintf("%02d", 1:10)
 
 harvest_scenario <- c("TH00", "TH19", "TH30")
@@ -11,12 +13,13 @@ rcp <- c("rcp45", "rcp85")
 plan_burn <- c("PB", "NB")
 
 
-scn_table <- expand_grid(
-  harvest_scenario,
-  rcp,
-  plan_burn,
+scn_table <- expand.grid(
+  harvest_scenario = harvest_scenario,
+  rcp = rcp,
+  plan_burn = plan_burn,
   scenario_replicate = rep_list
 ) %>%
+  as_tibble %>%
   mutate(
     scenario = sprintf(
       "%s_%s_%s",
@@ -32,7 +35,7 @@ scn_table <- expand_grid(
       scenario_replicate
     ),
     dir = paste0(
-      "~/",
+      "/scratch/punim0995/",
       scn_id
     ),
     th = sub(
@@ -70,8 +73,8 @@ scn_table <- expand_grid(
       th == "00" & rc == "45" & !pb ~ 6
     )
   ) %>%
-  arrange(scn_no) %>%
-  filter(scenario_replicate == "01")
+  arrange(scn_no) #%>%
+  #filter(scenario_replicate == "01")
 
 scn_table %$%
   mapply(
@@ -82,6 +85,6 @@ scn_table %$%
     rcp = rc,
     rep = scenario_replicate,
     MoreArgs = list(
-      master.dir = "~/landis_master_scenario"
+      master.dir = "/home/ryange/landis_master_scenario"
     )
   )
