@@ -1,0 +1,37 @@
+Misc linux commands:
+
+check_home_usage
+	checks data use in /home/ryange
+	
+check_project_usage
+	checks data use in /data/cefphs/punim0995
+
+sinteractive --time=<dd-hh:mm:ss> --partition=<partition>
+  specify partition name
+
+scancel --jobid=<job number>
+	cancel job
+
+du -h --max-depth=<N>
+  disk usage in human readable form to some max folder depth N
+
+module spider <something>
+  get list of modules with something in name e.g. R, LANDIS
+
+
+
+To install some libraries need following modules
+
+module load
+
+
+module load UDUNITS/2.2.26-GCC-6.2.0
+
+module load GEOS/3.6.2-spartan_gcc-6.2.0-Python-3.7.3
+
+module load OpenSSL/1.1.0-GCC-6.2.0
+
+module load netCDF/4.5.0-GCC-6.2.0 # needs to be older version or doesn't work for some reason
+
+module load R/3.6.1-GCC-6.2.0
+
