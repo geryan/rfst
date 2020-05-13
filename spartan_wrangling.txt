@@ -9,6 +9,9 @@ check_project_usage
 sinteractive --time=<dd-hh:mm:ss> --partition=<partition>
   specify partition name
 
+squeue --user=<username> --job=<jobid>
+  check jobs running under username or jobid
+
 scancel --jobid=<job number>
 	cancel job
 
