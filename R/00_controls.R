@@ -1,5 +1,7 @@
 # 00 project controls
 
+.libPaths("/home/ryange/R/gr_lib") # spartan only
+
 library(dismo)
 library(doMC)
 library(dplyr)
@@ -30,11 +32,11 @@ library(viridis)
 source(file = "R/functions/source.functions.R")
 source.functions("R/functions")
 
-proj_path <- "/home/ryange/rfst/"
+proj_path <- "/data/cephfs/punim0995/rfst"
 
 landis_path <- "/scratch/punim0995/"
 
-data_path <- "/scratch/punim0995/data/"
+data_path <- "/data/cephfs/punim0995/rfst/data"
 
 #proj_path <- "/home/unimelb.edu.au/ryange/rfst"
 # proj_path <- "D:/Users/ryan/Dropbox/Work/RFA_STEPS/rfst/"
