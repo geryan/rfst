@@ -30,9 +30,10 @@ sample.pa <- function(
       gridcell = st_within(
         x = .,
         y = sg
-      )
+      ) %>%
+        as.numeric
     ) %>%
-    unnest(gridcell) %>%
+    #unnest(gridcell) %>%
     group_by(gridcell, PA) %>%
     arrange(gridcell, PA, desc(date)) %>%
     filter(row_number() == 1) %>%

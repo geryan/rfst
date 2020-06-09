@@ -9,6 +9,7 @@ library(tidyr)
 library(dplyr)
 library(future)
 library(future.apply)
+library(lubridate)
 
 
 load(file = "output/RData/00_controls.RData")
@@ -285,10 +286,11 @@ pa_list <- tibble(
   )
 
 
-plan(multisession, workers = 8)
+plan(multisession)
 
 pad <- pa_list %$%
   future_mapply(
+  #mapply(
     FUN = buff.sample.pa,
     species = species,
     survey_method = survey_methods,

@@ -16,6 +16,7 @@ landis_vars <- scn_table %$%
   mapply(
     FUN = function(
       scnid,
+      landis_path,
       proj_path,
       proj_mask,
       ntimesteps,
@@ -27,7 +28,8 @@ landis_vars <- scn_table %$%
       
       result <- get.landis.vars(
         scn_path = sprintf(
-          "~/%s",
+          "%s/%s",
+          landis_path,
           scnid
         ),
         proj_path = proj_path,
