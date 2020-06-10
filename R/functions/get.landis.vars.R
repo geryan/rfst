@@ -35,9 +35,10 @@ get.landis.vars <- function(
   win3h <- matrix(rep(1, 9), nrow = 3)
   
   
-  registerDoMC(cores = cores)
+  #registerDoMC(cores = cores)
   
-  result <- foreach(j = 0:timesteps) %dopar% {
+  #result <- foreach(j = 0:timesteps) %dopar% {
+  result <- foreach(j = 0:timesteps) %do% {
     
     #### BIOMASS
     
