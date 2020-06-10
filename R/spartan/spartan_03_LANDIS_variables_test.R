@@ -37,29 +37,22 @@ print(scn_id)
 
 print(scn_path)
 
-ht <- !grepl(
-  pattern = "TH00",
-  scn_id
+
+bmpath <- paste0(scn_path, "/output/biomass/")
+
+zz <- raster(
+  sprintf("%s/bio-eucacama-37.img",
+          bmpath)
 )
 
 
-result <- get.landis.vars(
-  scn_path = scn_path,
-  proj_path = proj_path,
-  out_path = "output/habitat_vars",
-  scn_id = scn_id,
-  proj_mask = ch_mask,
-  timesteps = ntimesteps,
-  cores = ncores,
-  harvest_timber = ht
-)
+getValues(zz)
 
-saveRDS(
-  object = result,
+save(
+  zz,
   file = sprintf(
-    "output/landscape_vars/landis_RDS/landis_vars_%s.Rds"
+    "output/RData/03_LANDIS_variables_%s.RData",
+    scn_id
   )
-)
-
-
+ )
  
