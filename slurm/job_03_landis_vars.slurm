@@ -9,6 +9,8 @@
 #SBATCH --mail-user="ryange@unimelb.edu.au"
 #SBATCH --mail-type=ALL
 
+i=$1
+
 module load UDUNITS/2.2.26-GCC-6.2.0
 
 module load GEOS/3.6.2-spartan_gcc-6.2.0-Python-3.7.3
@@ -21,4 +23,4 @@ module load R/3.6.1-GCC-6.2.0
 
 cd /data/cephfs/punim0995/rfst
 
-Rscript --vanilla R/spartan/spartan_03_LANDIS_variables.R $dir_path
+Rscript --vanilla R/spartan/spartan_03_LANDIS_variables.R $i

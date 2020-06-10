@@ -15,7 +15,18 @@ source.functions("R/functions")
 
 command_args <- commandArgs(trailingOnly = TRUE)
 
-scn_path <- command_args[1]
+i <- as.numeric(command_args[1])
+
+print(i)
+
+landis_paths <- list.dirs(
+  path = "/scratch/punim0995",
+  recursive = FALSE
+)
+
+
+scn_path <- landis_paths[i]
+
 
 scn_id <- strsplit(
   x = scn_path,
@@ -30,7 +41,8 @@ print(scn_path)
 bmpath <- paste0(scn_path, "/output/biomass/")
 
 zz <- raster(
-  sprintf("%s/bio-eucacama-37.img")
+  sprintf("%s/bio-eucacama-37.img",
+          bmpath)
 )
 
 
