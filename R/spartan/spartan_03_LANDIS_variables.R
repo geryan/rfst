@@ -57,7 +57,8 @@ result <- get.landis.vars(
 saveRDS(
   object = result,
   file = sprintf(
-    "output/landscape_vars/landis_RDS/landis_vars_%s.Rds"
+    "output/landscape_vars/landis_RDS/landis_vars_%s.Rds",
+    scn_id
   )
 )
 
