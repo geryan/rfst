@@ -1,6 +1,6 @@
 # 00 project controls
 
-.libPaths("/home/ryange/R/gr_lib") # spartan only
+source("R/spartan/spartan_settings.R")
 
 library(dismo)
 library(doMC)
@@ -81,12 +81,13 @@ rcp <- c("rcp45", "rcp85")
 plan_burn <- c("PB", "NB")
 
 
-scn_table <- expand_grid(
-  harvest_scenario,
-  rcp,
-  plan_burn,
+scn_table <- expand.grid(
+  harvest_scenario = harvest_scenario,
+  rcp = rcp,
+  plan_burn = plan_burn,
   scenario_replicate = rep_list
 ) %>%
+  as_tibble %>%
   mutate(
     scenario = sprintf(
       "%s_%s_%s",
@@ -102,7 +103,7 @@ scn_table <- expand_grid(
       scenario_replicate
     ),
     dir = paste0(
-      "~/",
+      "/scratch/punim0995/",
       scn_id
     ),
     th = sub(
@@ -125,14 +126,24 @@ scn_table <- expand_grid(
     plan_burn == "PB" |
       (harvest_scenario == "TH00" & rcp == "rcp45")
   ) %>%
+  filter(
+    rcp == "rcp45" |
+      harvest_scenario == "TH00" |
+      harvest_scenario == "TH30"
+  ) %>%
   mutate(
-    harvest_timber = ifelse(
-      test = th == "00" & plan_burn == "NB",
-      yes = FALSE,
-      no = TRUE
+    scn_no = case_when(
+      th == "19" ~ 1,
+      th == "30" & rc == "45" ~ 2,
+      th == "30" & rc == "85" ~ 3,
+      th == "00" & rc == "45" & pb ~ 4,
+      th == "00" & rc == "85" & pb ~ 5,
+      th == "00" & rc == "45" & !pb ~ 6
     )
   ) %>%
-  filter(scenario_replicate == "01")
+  arrange(scn_no) #%>%
+#filter(scenario_replicate == "01")
+
 
 
 
