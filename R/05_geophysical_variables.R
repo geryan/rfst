@@ -1,5 +1,7 @@
 # 05 Geophysical variables
 
+source(file = "R/spartan/spartan_settings.R")
+
 library(raster)
 library(magrittr)
 

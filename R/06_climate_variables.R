@@ -1,5 +1,7 @@
 # 06 Climate variables
 
+source("R/spartan/spartan_settings.R")
+
 library(raster)
 library(magrittr)
 library(rerddap)
@@ -16,7 +18,9 @@ load(file = "output/RData/01_landscape_variables.RData")
 source.functions("R/functions")
 
 
-plan(multisession, workers = ncores)
+#plan(multisession, workers = ncores)
+
+plan(multisession)
 
 # Current climate
 # -----------------------------------------
