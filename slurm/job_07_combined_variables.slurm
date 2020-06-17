@@ -1,25 +1,15 @@
 #!/bin/bash
 
-#SBATCH -p "physical"
+#SBATCH -p "physical,snowy,cloud"
 
 #SBATCH --ntasks=1
 
-#SBATCH --cpus-per-task=2
-
-#SBATCH --mem-per-cpu=100000
-
-#SBATCH --time 12:00:00
+#SBATCH --time 1:00:00
 
 #SBATCH --mail-user="ryange@unimelb.edu.au"
 
 #SBATCH --mail-type=ALL
 
-
-export http_proxy=http://wwwproxy.unimelb.edu.au:8000
-
-export https_proxy=$http_proxy
-
-export ftp_proxy=$http_proxy
 
 module load UDUNITS/2.2.26-GCC-6.2.0
 
@@ -31,9 +21,6 @@ module load netCDF/4.5.0-GCC-6.2.0 # needs to be older version or doesn't work f
 
 module load R/3.6.1-GCC-6.2.0
 
-
-
-
 cd /data/cephfs/punim0995/rfst
 
-Rscript --vanilla R/06_climate_variables.R
+Rscript --vanilla R/07_combined_variables.R

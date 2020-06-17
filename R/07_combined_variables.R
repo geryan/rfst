@@ -1,5 +1,7 @@
 # 07 combine variables
 
+source("R/spartan/spartan_settings.R")
+
 library(dplyr)
 library(raster)
 library(tibble)

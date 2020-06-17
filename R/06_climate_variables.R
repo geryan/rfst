@@ -128,7 +128,8 @@ raw_season <- bind_cols(
   )
 
 base_climate_raster <- raw_season %$%
-  future_mapply(
+  #future_mapply(
+  mapply(
     FUN = function(
       x,
       proj_mask,
@@ -266,7 +267,7 @@ CanESM2_adj_raw_data <- lapply(
     X = CanESM2_dat$raw_data,
     FUN = function(x, y){
       x$data$lat <- y
-      
+
       return(x)
     },
     y = CanESM2_lats
@@ -289,6 +290,7 @@ raw_climate_projection_data_adj <- raw_climate_projection_data %>%
 # plan(multisession, workers = ncores)
 
 raw_climate_projection_rasters <- raw_climate_projection_data_adj %$%
+#raw_climate_projection_rasters <- raw_climate_projection_data %$%
   future_mapply(
     FUN = rasterize.climate.projections,
     dat = raw_data,
@@ -302,6 +304,7 @@ raw_climate_projection_rasters <- raw_climate_projection_data_adj %$%
 
 
 raw_climate_projections <- raw_climate_projection_data_adj %>%
+#raw_climate_projections <- raw_climate_projection_data %>%
   bind_cols(tibble(raw_climate_projection_rasters)) %>%
   mutate(
     season = sub(

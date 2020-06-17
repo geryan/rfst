@@ -1,6 +1,8 @@
 # 08 Distribution model data
 
 
+source("R/spartan/spartan_settings.R")
+
 library(raster)
 library(dplyr)
 library(sf)
