@@ -20,7 +20,7 @@ source.functions("R/functions")
 
 # ----------------------------
 
-md_set <- expand_grid(
+md_set <- bind_cols(
   var_set[1,],
   pa_data
 )

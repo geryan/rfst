@@ -38,7 +38,7 @@ ll_lon <- raster(
 
 ll_lat <- init(
   x = ch_mask,
-  fun = "x"
+  fun = "y"
 )
 
 names(ll_lat) <- "lat"
