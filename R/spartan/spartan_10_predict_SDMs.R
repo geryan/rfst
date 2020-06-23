@@ -26,7 +26,7 @@ command_args <- commandArgs(trailingOnly = TRUE)
 
 i <- as.numeric(command_args[1])
 
-j <- as.numeric(command_args[1])
+j <- as.numeric(command_args[2])
 
 pred_out_path <- "/scratch/punim0995/habitat_pred/"
 

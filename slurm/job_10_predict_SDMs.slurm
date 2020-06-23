@@ -4,7 +4,7 @@
 
 #SBATCH --ntasks=1
 
-#SBATCH --time 1:00:00
+#SBATCH --time 1:30:00
 
 #SBATCH --cpus-per-task=1
 
