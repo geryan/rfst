@@ -71,7 +71,7 @@ ll <- vector(
     lon = ll_lon,
     lat = ll_lat
   )
-
+## This raster-derived lon and lat is unnecessary as we can get exact lon and lat from each point directly.
 
 varset <- expand_grid(
   disturbance_variables,

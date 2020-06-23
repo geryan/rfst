@@ -38,3 +38,5 @@ module load netCDF/4.5.0-GCC-6.2.0 # needs to be older version or doesn't work f
 
 module load R/3.6.1-GCC-6.2.0
 
+cd /data/cephfs/punim0995/rfst
+

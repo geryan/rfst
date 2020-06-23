@@ -1,5 +1,7 @@
 # 09 fit distribution models
 
+source("R/spartan/spartan_settings.R")
+
 library(raster)
 library(dplyr)
 library(sf)
@@ -7,7 +9,7 @@ library(lubridate)
 library(purrr)
 library(tibble)
 library(future)
-library(furrr)
+#library(furrr)
 library(tidyr)
 library(future.apply)
 library(dismo)
@@ -21,7 +23,7 @@ load(file = "output/RData/08_distribution_model_data.RData")
 
 source.functions("R/functions")
 
-#plan(multisession, workers = 20)
+#plan(multisession)
 
 
 varlist <- c(
@@ -71,6 +73,8 @@ varlist <- c(
   "lon",          # 44
   "lat"           # 45
 )
+
+
 
 
 if(!all(colnames(distribution_model_data$dist_mod_dat[[1]]) == varlist)){

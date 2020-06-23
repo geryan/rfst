@@ -1,0 +1,17 @@
+#!/bin/bash
+
+for i in {1..240}
+do
+
+	for j in {1..6}
+	do
+	
+		JOB_NAME="job_10_predict_SDMs_${i}_${j}"
+		
+		OUT_NAME="/data/cephfs/punim0995/rfst/slurm/slurm_output/slurm_out_10_${i}_${j}.out"
+				
+		sbatch --job-name=$JOB_NAME --output=$OUT_NAME /data/cephfs/punim0995/rfst/slurm/job_10_predict_SDMs.slurm $i $j
+	
+	done
+
+done

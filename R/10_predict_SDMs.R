@@ -2,6 +2,33 @@
 
 
 
+
+
+
+
+
+
+#########################
+#########################
+## DEPRECATED
+#########################
+#########################
+
+
+
+
+
+
+
+
+
+
+
+
+
+source("R/spartan/spartan_settings.R")
+
+
 library(dplyr)
 library(purrr)
 library(tibble)

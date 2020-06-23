@@ -1,7 +1,7 @@
 maggregate <- function(
   x,
   fact,
-  out_path = "/output/habitat_pred_aggregated/",
+  out_path = "output/habitat_pred_aggregated/",
   aggname = "aggpred",
   scn_id,
   varset,
