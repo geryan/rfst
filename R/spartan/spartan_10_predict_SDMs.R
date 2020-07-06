@@ -39,7 +39,7 @@ pred <- brtpredict(
   variables = var_set$all_vars[[i]],
   model = sdm_results$brt.fit[[j]],
   out_path = pred_out_path,
-  scn_id = var_set$scn_id[[i]],
+  scn_id = var_set$cscnid[[i]], # NB needs cscnid not scn_id if multiple climate scenarios with each scenario
   varset = "",
   species = sdm_results$sp[[j]],
   initial = FALSE,
@@ -52,7 +52,7 @@ saveRDS(
   file = sprintf(
     "%s/pred_%s_%s.Rds",
     "/data/cephfs/punim0995/rfst/output/spartan_RData/habitat_pred",
-    var_set$scn_id[[i]],
+    var_set$cscnid[[i]], # NB needs cscnid not scn_id if multiple climate scenarios with each scenario
     sdm_results$sp[[j]]
   )
 )
@@ -62,7 +62,7 @@ agg <- maggregate(
   fact = 10,
   out_path = agg_out_path,
   aggname = "aggpred",
-  scn_id = var_set$scn_id[[i]],
+  scn_id = var_set$cscnid[[i]], # NB needs cscnid not scn_id if multiple climate scenarios with each scenario
   varset = "",
   species = sdm_results$sp[[j]]
 )
@@ -72,7 +72,8 @@ saveRDS(
   file = sprintf(
     "%s/agg_%s_%s.Rds",
     "/data/cephfs/punim0995/rfst/output/spartan_RData/habitat_pred_aggregated",
-    var_set$scn_id[[i]],
+    var_set$cscnid[[i]], # NB needs cscnid not scn_id if multiple climate scenarios with each scenario
     sdm_results$sp[[j]]
   )
 )
+

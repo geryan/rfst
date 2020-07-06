@@ -146,6 +146,7 @@ var_set <- varset %>%
     )
   )
 
+var_set$cscnid <- sprintf("%s_%s", var_set$scn_id, var_set$climate_model)
 
 save(
   var_set,
