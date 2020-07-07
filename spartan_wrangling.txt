@@ -12,8 +12,9 @@ sinteractive --time=<dd-hh:mm:ss> --partition=<partition>
 squeue --user=<username> --job=<jobid>
   check jobs running under username or jobid
 
-scancel --jobid=<job number>
-	cancel job
+scancel --name=<job name>
+	cancel job by job name
+	#possibly scancel --job=<jobid>
 
 du -h --max-depth=<N>
   disk usage in human readable form to some max folder depth N
