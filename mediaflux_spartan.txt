@@ -35,5 +35,20 @@ Is the project directory in mediaflux and target subdirectory ("subcollection"),
 /home/ryange/abc
 Is the directory for upload
 
+
+FOR LARGE UPLOADS DON'T INCLUDE --csum-check and check separately later using unimelb-mf-check - seems to be much much faster this way
+
+
+
 To DOWNLOAD 
 unimelb-mf-download --mf.config ~/.Arcitecta/download/mflux.cfg --out /home/ryange/abc projects/proj-6300_rfa_data-1128.4.228/TEST
+
+TO CHECK
+unimelb-mf-check --mf.config ~/.Arcitecta/download/mflux.cfg --direction up --output /home/ryange/mfluxcheck.csv /home/ryange/abc projects/proj-6300_rfa_data-1128.4.228/TEST
+
+
+~~~~~~~~~~~
+unimelb-mf-upload --mf.config ~/.Arcitecta/upload/mflux.cfg --nb-workers 4  --namespace /projects/proj-6300_rfa_data-1128.4.228/habitat_pred /ceph/scratch/punim0995/habitat_pred
+
+
+unimelb-mf-check --mf.config ~/.Arcitecta/download/mflux.cfg --direction up --output /home/ryange/mfluxcheck.csv /ceph/scratch/punim0995/habitat_pred /projects/proj-6300_rfa_data-1128.4.228/habitat_pred/habitat_pred
