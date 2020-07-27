@@ -1,0 +1,84 @@
+---
+title: "East Gippsland fire ecoregions"
+output: html_notebook
+---
+
+
+```{r}
+library(sf)
+library(dplyr)
+library(tibble)
+library(magrittr)
+library(lwgeom)
+
+load(file = "output/RData/00_controls.RData")
+```
+
+
+```{r}
+rfa <- read_sf("data/shapefiles/RFA/") %>%
+  st_transform(28355)
+
+rfa
+```
+```{r}
+plot(rfa["RFA"])
+```
+
+
+```{r}
+egipp <- rfa[rfa$NAME == "EAST GIPPSLAND",]
+```
+
+
+```{r}
+fire_history <- read_sf("data/shapefiles/DELWP_2019_interim_fire") %>%
+  filter(season > 1969) %>%
+  filter(firetype == "BUSHFIRE") %>%
+  st_transform(28355)
+  
+
+fire_history
+```
+
+```{r}
+ecoregions <- read_sf("data/shapefiles/EGipps_regions/EGipps_regions.shp") %>%
+  st_transform(28355) #GDA94 geocentric datum
+
+ecoregions
+```
+
+```{r}
+glimpse(fire_history)
+```
+
+ALL HAIL SPARSE = FALSE
+```{r}
+st_intersects(egipp, fff, sparse = FALSE)
+```
+
+
+```{r}
+fire_years <- unique(fire_history$season)
+
+fire_years <- fire_years[order(fire_years)]
+fire_years
+```
+
+
+```{r}
+fi_hi <- fire_history %>%
+  filter(season > 1969)
+
+fi_hi
+```
+
+```{r}
+glimpse(fi_hi)
+```
+
+
+```{r}
+area_m2 <- st_area(fi_hi)
+```
+
