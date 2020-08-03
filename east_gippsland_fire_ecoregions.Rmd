@@ -16,18 +16,60 @@ load(file = "output/RData/00_controls.RData")
 
 
 ```{r}
-rfa <- read_sf("data/shapefiles/RFA/") %>%
+rfa <- read_sf("data/shapefiles/RFA") %>%
   st_transform(28355)
 
 rfa
 ```
+
 ```{r}
-plot(rfa["RFA"])
+plot(rfa["NAME"])
 ```
 
 
 ```{r}
 egipp <- rfa[rfa$NAME == "EAST GIPPSLAND",]
+```
+
+
+
+
+```{r}
+ecoregions <- read_sf("data/shapefiles/EGipps_regions/EGipps_regions.shp") %>%
+  st_transform(28355) #GDA94 geocentric datum
+
+ecoregions
+```
+
+```{r}
+plot(ecoregions["Region"])
+```
+
+```{r}
+ggplot(ecoregions) +
+  geom_sf(aes(fill = Region %>% as.factor))
+```
+
+
+```{r}
+fh_2020 <- raster(x = "data/grids/FireSeverityFinal_20200414.tif", )
+```
+
+
+```{r}
+fh_2020_poly <- rasterToPolygons(
+  x = fh_2020,
+  fun = function(x){
+    ifelse(x == 0, FALSE, TRUE)
+  }
+)
+```
+
+
+
+```{r}
+tif <- system.file("/data/grids/FireSeverityFinal_20200414.tif", package = "stars")
+x <- read_stars(tif)
 ```
 
 
@@ -41,53 +83,67 @@ fire_history <- read_sf("data/shapefiles/DELWP_2019_interim_fire") %>%
 fire_history
 ```
 
-```{r}
-ecoregions <- read_sf("data/shapefiles/EGipps_regions/EGipps_regions.shp") %>%
-  st_transform(28355) #GDA94 geocentric datum
 
-ecoregions
-```
 
 ```{r}
 glimpse(fire_history)
 ```
 
+
 ## RFA level stats
 
 ```{r}
-st_intersects(egipp, , sparse = FALSE)
-```
+fire_eg <- fire_history %>%
+  mutate(
+    isegipp = st_intersects(x = geometry, y = egipp),
+    isegipp = map(
+      .x = isegipp,
+      .f = is_empty
+    ) %>%
+      unlist,
+    isegipp = !isegipp
+  ) %>%
+  filter(isegipp) %>%
+  select(-isegipp)
 
 
-```{r}
-fire_years <- unique(fire_history$season)
+area_m2_egipp <- st_area(fire_eg)
 
-fire_years <- fire_years[order(fire_years)]
-fire_years
-```
-
-
-
-```{r}
-big <- st_polygon(
-  list(
-    "zz" = rbind(c(0,0), c(10,0), c(10,10), c(0,10), c(0,0))
+fire_eg <- fire_eg %>%
+  mutate(
+    area_m2 = area_m2_egipp,
+    area_km2 = set_units(area_m2, "km^2")
   )
-)
+
+fire_eg
+```
 
 
-sml <- st_polygon(
-  list(
-    "aa" = rbind(c(0,0), c(2,0), c(2,2), c(0,2), c(0,0)),
-    "bb" = rbind(c(1,1), c(2,1), c(2,2), c(1,2), c(1,1)),
-    "cc" = rbind(c(10,0), c(10,10), c(20,10), c(20,0), c(10,0)),
-    "dd" = rbind(c(11,0), c(11,1), c(12,1), c(12,0), c(11,0))
+
+```{r}
+fire_eg_summary <- fire_eg %>%
+  as.data.frame %>%
+  group_by(season) %>%
+  dplyr::summarise(
+    nfires = n(),
+    tot_area_km2 = sum(area_km2)
   )
-)
+
+fire_eg_summary
 ```
 
 
 ```{r}
-st_within(big, sml, sparse = FALSE)
+ggplot(fire_eg) +
+  geom_density(
+    aes(
+      x = area_km2 %>% set_units(NULL) %>% log10
+    )
+  )
+```
+
+```{r}
+plot(egipp["NAME"], reset = FALSE)
+plot(fire_eg["season"] %>% filter(season == 2019), add = TRUE)
 ```
 
