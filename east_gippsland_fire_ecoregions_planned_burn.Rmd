@@ -1,197 +1,19 @@
 ---
-title: "East Gippsland fire ecoregions"
-output:
-  word_document: default
-  html_document:
-    df_print: paged
+title: "east_gippsland_fire_ecoregions_planned_burn.Rmd"
+output: html_document
 ---
 
-
 ```{r}
-library(sf)
-library(dplyr)
-library(tibble)
-library(magrittr)
-library(lwgeom)
-library(ggplot2)
-library(raster)
-library(purrr)
-library(units)
-library(tidyr)
 
-load(file = "output/RData/00_controls.RData")
-```
-
-
-```{r}
-rfa <- read_sf("data/shapefiles/RFA", crs = 4283) %>%
-  st_transform(3111)
-
-rfa
-```
-
-```{r}
-plot(rfa["NAME"])
-```
-
-
-```{r}
-egipp <- rfa[rfa$NAME == "EAST GIPPSLAND",]
-```
-
-
-```{r}
-ggplot() +
-  #geom_sf(data = fire_eg, fill = "red") +
-  #scale_fill_viridis_c()+
-  geom_sf(data = egipp, fill = NA)
-```
-
-```{r}
-egbox <- st_bbox(egipp)
 ```
 
 
 
-```{r}
-ecoregions <- read_sf("data/shapefiles/EGipps_regions/EGipps_regions.shp", crs = 4283) %>%
-  st_transform(3111) # VicGrid
-
-ecoregions
-```
-
-```{r}
-plot(ecoregions["Region"])
-```
-
-```{r}
-ggplot(ecoregions) +
-  geom_sf(aes(fill = Region %>% as.factor))
-```
-
-
-```{r}
-fh_2020 <- raster(x = "data/grids/FireSeverityFinal_20200414.tif")
-
-crs(fh_2020) <- CRS("+init=epsg:3111")
-
-fh_2020
-```
-
-
-```{r}
-fheg <- crop(
-  x = fh_2020,
-  y = extent(egipp)
-)
-```
-
-
-```{r}
-fheg[getValues(fheg) < 1] <- NA
-fheg[getValues(fheg) > 0] <- 1
-
-fheg
-```
-
-```{r}
-fheg <- aggregate(
-  x = fheg,
-  fact = 5,
-  fun = sum,
-  na.rm = TRUE
-)
-```
-
-```{r}
-fheg[getValues(fheg) < 13] <- NA
-fheg[!is.na(getValues(fheg))] <- 1
-```
-
-
-
-```{r}
-fh_2020_poly <- rasterToPolygons(
-  x = fheg,
-  fun = function(x){
-    ifelse(x == 0, FALSE, TRUE)
-  },
-  dissolve = TRUE
-)
-```
-
-
-```{r}
-fh20 <- st_as_sf(fh_2020_poly) %>%
-  st_transform(3111)
-
-
-fh20 <- tibble(
-    season = 2020,
-    geometry = fh20$geometry[1]
-  ) %>%
-  st_as_sf
-
-fh20
-```
-
-
-```{r}
-fire_history <- read_sf("data/shapefiles/DELWP_2019_interim_fire") %>%
-  st_transform(3111)
-  
-
-fire_history
-```
-
-```{r}
-bushfire <- fire_history %>%
-  filter(season > 1970) %>%
-  filter(firetype == "BUSHFIRE") %>%
-  dplyr::select(season) %>%
-  rbind(fh20)
-
-
-bushfire
-```
-
-```{r}
-burn <- fire_history %>%
-  filter(season > 2009) %>%
-  filter(firetype == "BURN") %>%
-  dplyr::select(season)
-
-burn
-```
-
-```{r}
-fire_eg <- st_intersection(
-  bushfire,
-  egipp
-) %>%
-  dplyr::select(season, geometry) %>%
-  arrange(season)
-
-fire_eg
-```
-
-
-```{r}
-burn_eg <- st_intersection(
-  burn,
-  egipp
-) %>%
-  dplyr::select(season, geometry) %>%
-  arrange(season)
-
-burn_eg
-```
-
-## Bushfires
+## Planned burns
 
 ### RFA level
 ```{r}
-eg_fire_annual <- fire_eg %>%
+eg_burn_annual <- burn_eg %>%
   full_join(
     y = tibble("season" = 1971:2020),
     by = "season"
@@ -216,14 +38,14 @@ eg_fire_annual <- fire_eg %>%
   dplyr::select(season, area_ha, area_ha_burnt, fire, geometry) %>%
   arrange(season)
 
-eg_fire_annual
+eg_burn_annual
 ```
 
 
 ```{r}
 br <- 10^(0:6)
 
-ggplot(eg_fire_annual) +
+ggplot(eg_burn_annual) +
   geom_boxplot(
     aes(
       y = area_ha_burnt
@@ -244,7 +66,7 @@ ggplot(eg_fire_annual) +
 
 
 ```{r}
-eg_fire_summary <- eg_fire_annual %>%
+eg_burn_summary <- eg_burn_annual %>%
   as.data.frame %>%
   summarise(
     mean_area_ha = mean(area_ha),
@@ -258,14 +80,6 @@ eg_fire_summary <- eg_fire_annual %>%
   as_tibble
 
 glimpse(eg_fire_summary)
-```
-
-```{r}
-write.csv(
-  x = eg_fire_summary,
-  file = "eg_fire_summary.csv",
-  row.names = FALSE
-)
 ```
 
 
@@ -349,36 +163,6 @@ eco_fire_summary[1:10,]
 eco_fire_summary[11:19,]
 ```
 
-```{r}
-write.table(
-  x = eco_fire_summary,
-  file = "eco_fire_summary.csv",
-  row.names = FALSE
-)
-```
-
-
-```{r}
-all_fire_summary <- rbind(
-  bind_cols(
-    tibble(region = "RFA"),
-    eg_fire_summary
-  ),
-  eco_fire_summary %>%
-  mutate(region = as.character(region))
-)
-
-all_fire_summary
-```
-
-```{r}
-write.csv(
-  x = all_fire_summary,
-  file = "eg_eco_fire_summary.csv",
-  row.names = FALSE
-)
-```
-
 
 
 ```{r}
@@ -392,3 +176,4 @@ ggplot(eco_fire_summary) +
   ylim(0, 1) +
   ylab("Proportion of years fire occurrs in ecoregion")
 ```
+
