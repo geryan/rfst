@@ -32,11 +32,11 @@ library(viridis)
 source(file = "R/functions/source.functions.R")
 source.functions("R/functions")
 
-proj_path <- "/data/cephfs/punim0995/rfst"
+proj_path <- "/data/gpfs/projects/punim0995/rfst"
 
-landis_path <- "/scratch/punim0995/"
+landis_path <- "/data/scratch/projects/punim0995/landis_raw/central_highlands"
 
-data_path <- "/data/cephfs/punim0995/rfst/data"
+data_path <- "/data/gpfs/projects/punim0995/rfst/data"
 
 #proj_path <- "/home/unimelb.edu.au/ryange/rfst"
 # proj_path <- "D:/Users/ryan/Dropbox/Work/RFA_STEPS/rfst/"
