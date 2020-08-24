@@ -103,7 +103,7 @@ scn_table <- expand.grid(
       scenario_replicate
     ),
     dir = paste0(
-      "/scratch/punim0995/",
+      landis_path,
       scn_id
     ),
     th = sub(

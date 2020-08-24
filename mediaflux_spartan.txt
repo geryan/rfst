@@ -41,7 +41,7 @@ FOR LARGE UPLOADS DON'T INCLUDE --csum-check and check separately later using un
 
 
 To DOWNLOAD 
-unimelb-mf-download --mf.config ~/.Arcitecta/download/mflux.cfg --nb-workers 4 --out /data/scratch/projects/punim0995 projects/proj-6300_rfa_data-1128.4.228/landis_raw/
+unimelb-mf-download --mf.config ~/.Arcitecta/download/mflux.cfg --nb-workers 4 --out /data/scratch/projects/punim0995/landis_raw projects/proj-6300_rfa_data-1128.4.228/landis_raw/
 
 TO CHECK
 unimelb-mf-check --mf.config ~/.Arcitecta/download/mflux.cfg --direction up --output /home/ryange/mfluxcheck.csv /home/ryange/abc projects/proj-6300_rfa_data-1128.4.228/TEST
