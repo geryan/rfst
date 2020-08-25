@@ -45,7 +45,8 @@ year0 <- 2019
 
 ntimesteps <- 50
 
-ncores <- 20
+#ncores <- 20
+ncores <- 1
 
 nreplicates <- 100
 

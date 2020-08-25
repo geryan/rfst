@@ -20,7 +20,7 @@ i <- as.numeric(command_args[1])
 print(i)
 
 landis_paths <- list.dirs(
-  path = "/scratch/punim0995",
+  path = "/data/scratch/projects/punim0995/landis_raw/central_highlands",
   recursive = FALSE
 )
 
