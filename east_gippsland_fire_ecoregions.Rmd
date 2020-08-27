@@ -80,10 +80,12 @@ fh_2020
 
 
 ```{r}
-fheg <- crop(
-  x = fh_2020,
-  y = extent(egipp)
-)
+# fheg <- crop(
+#   x = fh_2020,
+#   y = extent(egipp)
+# )
+
+fheg <- fh_2020
 ```
 
 
@@ -135,6 +137,192 @@ fh20 <- tibble(
 fh20
 ```
 
+```{r}
+fh20_poly <- st_cast(fh20, "POLYGON")
+
+fh20_int_eg <- st_intersects(
+  x = fh20_poly,
+  y = egipp,
+  sparse = FALSE
+) %>%
+  apply(
+    MARGIN = 1,
+    FUN = any
+  )
+
+
+fh20_eg <- cbind(
+ fh20_poly,
+  fh20_int_eg
+) %>%
+  filter(fh20_int_eg) %>%
+  dplyr::select(season, geometry) %>%
+  st_cast(to = "MULTIPOLYGON") %>%
+  mutate(
+    area_m2 = map(
+      .x = geometry,
+      .f = function(x){
+        result <- x %>%
+          st_area
+      }
+    )
+  ) %>%
+  unnest(area_m2)%>%
+  arrange(desc(area_m2))
+
+fh20_eg
+```
+
+
+```{r}
+ggplot() + 
+  geom_sf(
+    data = egipp,
+    colour = "black"
+  ) +
+  geom_sf(
+    data = fh20_eg,
+    aes(fill = log10(area_m2)),
+    alpha = 0.5
+  ) +
+  scale_fill_viridis_c()
+```
+
+
+```{r}
+ggplot() + 
+  geom_sf(
+    data = egipp,
+    colour = "black"
+  ) +
+  geom_sf(
+    data = fh20_eg[1,],
+    aes(fill = log10(area_m2)),
+    alpha = 0.5
+  ) +
+  scale_fill_viridis_c()
+```
+
+```{r}
+ggplot() + 
+  geom_sf(
+    data = egipp,
+    colour = "black"
+  ) +
+  geom_sf(
+    data = fh20_eg[2,],
+    aes(fill = log10(area_m2)),
+    alpha = 0.5
+  ) +
+  scale_fill_viridis_c()
+```
+
+```{r}
+ggplot() + 
+  geom_sf(
+    data = egipp,
+    colour = "black"
+  ) +
+  geom_sf(
+    data = fh20_eg[3,],
+    aes(fill = log10(area_m2)),
+    alpha = 0.5
+  ) +
+  scale_fill_viridis_c()
+```
+
+```{r}
+ggplot() + 
+  geom_sf(
+    data = egipp,
+    colour = "black"
+  ) +
+  geom_sf(
+    data = fh20_eg[4:113,],
+    aes(fill = log10(area_m2)),
+    alpha = 0.5
+  ) +
+  scale_fill_viridis_c()
+```
+
+Lines 2 & 2 are probably the same fire:
+```{r}
+st_distance(fh20_eg[2,], fh20_eg[3,])
+```
+
+```{r}
+ggplot() + 
+  geom_sf(
+    data = egipp,
+    colour = "black"
+  ) +
+  geom_sf(
+    data = fh20_eg[2:3,],
+    aes(fill = log10(area_m2)),
+    alpha = 0.5
+  ) +
+  scale_fill_viridis_c()
+```
+
+Lines 1 and 4:113 likely the same fire also:
+```{r}
+ggplot() + 
+  geom_sf(
+    data = egipp,
+    colour = "black"
+  ) +
+  geom_sf(
+    data = fh20_eg[c(1, 4:113),],
+    aes(fill = log10(area_m2)),
+    alpha = 0.5
+  ) +
+  scale_fill_viridis_c()
+```
+
+
+```{r}
+
+fh20 <- st_as_sf(fh_2020_poly) %>%
+  st_transform(3111)
+
+
+fh20 <- tibble(
+    season = 2020,
+    geometry = fh20$geometry[1]
+  ) %>%
+  st_as_sf
+
+fh20
+```
+
+
+```{r}
+f20_1 <- st_combine(fh20_eg[c(1, 4:113),])
+
+f20_2 <- st_combine(fh20[2:3,])
+```
+
+
+```{r}
+fh20_1 <- tibble(
+    season = 2020,
+    geometry = f20_1
+  ) %>%
+  st_as_sf
+
+fh20_1
+```
+
+```{r}
+fh20_2 <- tibble(
+    season = 2020,
+    geometry = f20_1
+  ) %>%
+  st_as_sf
+
+fh20_2
+```
+
 
 ```{r}
 fire_history <- read_sf("data/shapefiles/DELWP_2019_interim_fire") %>%
@@ -149,7 +337,10 @@ bushfire <- fire_history %>%
   filter(season > 1970) %>%
   filter(firetype == "BUSHFIRE") %>%
   dplyr::select(season) %>%
-  rbind(fh20)
+  rbind(
+    fh20_1,
+    fh20_2
+  )
 
 
 bushfire
@@ -177,6 +368,33 @@ fire_eg
 
 
 ```{r}
+fire_in_eg <- st_intersects(
+  x = bushfire,
+  y = egipp,
+  sparse = FALSE
+) %>%
+  apply(
+    MARGIN = 1,
+    FUN = any
+  )
+
+
+fs_eg <- cbind(
+  bushfire,
+  fire_in_eg
+) %>%
+  filter(fire_in_eg)%>%
+  dplyr::select(season, geometry) %>%
+  arrange(season) %>%
+  as_tibble %>%
+  st_as_sf
+
+fs_eg
+```
+
+
+
+```{r}
 burn_eg <- st_intersection(
   burn,
   egipp
@@ -187,7 +405,7 @@ burn_eg <- st_intersection(
 burn_eg
 ```
 
-## Bushfires
+## Bushfire area burnt
 
 ### RFA level
 ```{r}
@@ -251,6 +469,8 @@ eg_fire_summary <- eg_fire_annual %>%
     mean_area_ha_burnt = mean(area_ha_burnt, na.rm = TRUE),
     sd_area_ha = sd(area_ha),
     sd_area_ha_burnt = sd(area_ha_burnt, na.rm = TRUE),
+    min_area_ha_burnt = min(area_ha_burnt, na.rm = TRUE),
+    max_area_ha_burnt = max(area_ha_burnt, na.rm = TRUE),
     nyears = n(),
     nyears_fire = sum(fire == "Fire"),
     prop_years_fire = nyears_fire/nyears
@@ -339,6 +559,8 @@ eco_fire_summary <- eco_fire_annual %>%
     mean_area_ha_burnt = mean(area_ha_burnt, na.rm = TRUE),
     sd_area_ha = sd(area_ha),
     sd_area_ha_burnt = sd(area_ha_burnt, na.rm = TRUE),
+    min_area_ha_burnt = min(area_ha_burnt, na.rm = TRUE),
+    max_area_ha_burnt = max(area_ha_burnt, na.rm = TRUE),
     nyears = n(),
     nyears_fire = sum(fire == "Fire"),
     prop_years_fire = nyears_fire/nyears
@@ -392,3 +614,24 @@ ggplot(eco_fire_summary) +
   ylim(0, 1) +
   ylab("Proportion of years fire occurrs in ecoregion")
 ```
+
+
+## Bushfire fire size
+```{r}
+fire_size_eg <- fs_eg %>%
+  mutate(
+    area_m2 = map(
+      .x = geometry,
+      .f = function(x){
+        result <- x %>%
+          st_area
+      }
+    )
+  ) %>%
+  unnest(area_m2)%>%
+  arrange(desc(area_m2))
+
+
+fire_size_eg
+```
+
