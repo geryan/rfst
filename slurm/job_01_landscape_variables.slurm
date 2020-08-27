@@ -16,13 +16,11 @@
 #SBATCH --mem=51200
 
 # Always edit
-# job-name from batch script
-# output from batch script
+#SBATCH --job-name="job_01_landscape_variables"
+#SBATCH --output="/data/gpfs/projects/punim0995/rfst/slurm/slurm_output/job_01_landscape_variables.out"
 
 # days-hours:mins:sec
-#SBATCH --time=0-12:00:00
-
-i=$1
+#SBATCH --time=0-1:00:00
 
 # Location to run job from
 cd /data/gpfs/projects/punim0995/rfst/
@@ -39,4 +37,5 @@ module load gdal/3.0.2-python-3.7.4
 module load rgdal/1.4-4-r-3.6.0
 module load r/3.6.2
 
-Rscript --vanilla R/spartan/spartan_03_LANDIS_variables.R $i
+# Commands
+Rscript --vanilla R/01_landscape_variables.R

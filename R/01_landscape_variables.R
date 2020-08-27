@@ -1,5 +1,7 @@
 # 01 Landscape variables
 
+source("R/spartan/spartan_settings.R")
+
 library(raster)
 library(magrittr)
 library(dplyr)

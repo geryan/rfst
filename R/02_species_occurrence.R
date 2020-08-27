@@ -1,5 +1,7 @@
 # 02 Species occurrence
 
+source("R/spartan/spartan_settings.R")
+
 library(magrittr)
 library(raster)
 library(sf)
@@ -7,8 +9,8 @@ library(readr)
 library(readxl)
 library(tidyr)
 library(dplyr)
-library(future)
-library(future.apply)
+#library(future)
+#library(future.apply)
 library(lubridate)
 
 
@@ -237,7 +239,10 @@ vba_dat_ch %>%
   unique(survey_method)
 
 sm_vave <- c(
-  "Camera - Surveillance/Remote"
+  "Camera - Surveillance/Remote",
+  "Herp census - active",
+  "Herp spot count",
+  "Herp transect"
 )
 
 # Aggregate and get data --------------
@@ -286,11 +291,11 @@ pa_list <- tibble(
   )
 
 
-plan(multisession)
+#plan(multisession)
 
 pad <- pa_list %$%
-  future_mapply(
-  #mapply(
+  #future_mapply(
+  mapply(
     FUN = buff.sample.pa,
     species = species,
     survey_method = survey_methods,
@@ -302,7 +307,7 @@ pad <- pa_list %$%
     SIMPLIFY = FALSE
   )
 
-plan(sequential)
+#plan(sequential)
 
 
 pa_data <- pa_list %>%

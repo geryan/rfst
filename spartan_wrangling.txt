@@ -1,4 +1,15 @@
-Misc linux commands:
+######## Misc linux commands:
+
+To delete everything in a directory run
+rm /path/to/dir/*
+
+To remove all sub-directories and files
+rm -r /path/to/dir/*
+
+To move directory or file from dir1 to dir2
+mv dir1 dir2
+
+###### Spartan-specific commands
 
 check_home_usage
 	checks data use in /home/ryange
@@ -22,9 +33,11 @@ du -h --max-depth=<N>
 module spider <something>
   get list of modules with something in name e.g. R, LANDIS
 
+module list
 
+######### Modules
 
-To install some libraries need following modules
+module load web_proxy # still unsure about this one
 
 module load gcccore/8.3.0
 module load gcc/8.3.0
@@ -34,21 +47,16 @@ module load geos/3.7.2-python-3.7.4
 module load openssl/1.1.1f
 module load netcdf/4.7.1
 module load gdal/3.0.2-python-3.7.4
+module load rgdal/1.4-4-r-3.6.0
 module load r/3.6.2
 
 cd /data/gpfs/projects/punim0995/rfst
 
 
-OLD: 
-# module load UDUNITS/2.2.26-GCC-6.2.0
+####### Using R
 
-# module load GEOS/3.6.2-spartan_gcc-6.2.0-Python-3.7.3
+.libPaths("/home/ryange/R/gr_lib")
 
-# module load OpenSSL/1.1.0-GCC-6.2.0
+install.packages("rgdal", lib = .libPaths()[1], repos = "https://cran.ms.unimelb.edu.au/")
 
-# module load netCDF/4.5.0-GCC-6.2.0 # needs to be older version or doesn't work for some reason
-
-# module load R/3.6.1-GCC-6.2.0
-
-# cd /data/cephfs/punim0995/rfst
 
