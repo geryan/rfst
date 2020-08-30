@@ -13,14 +13,14 @@
 #SBATCH --cpus-per-task=1
 
 # megabytes per process
-#SBATCH --mem=51200
+
 
 # Always edit
 # job-name from batch script
 # output from batch script
 
 # days-hours:mins:sec
-#SBATCH --time=0-12:00:00
+#SBATCH --time=0-2:00:00
 
 i=$1
 
