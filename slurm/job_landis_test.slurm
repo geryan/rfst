@@ -20,13 +20,18 @@
 
 
 # days-hours:mins:sec
-#SBATCH --time=0-00:10:00
+#SBATCH --time=1-00::00
 
-module load gcccore/8.3.0
-module load dotnet-sdk/3.1.300-linux-x64
-module load landis-ii/7.0
+#module load gcccore/8.3.0
+#module load dotnet-sdk/3.1.300-linux-x64
+#module load landis-ii/7.0
 
-cd /data/gpfs/projects/punim1340/eg_fire_calibration/EG19_fc
+source /usr/local/module/spartan_old.sh
+module load  GDAL/2.2.3-GCC-6.2.0
+module load LANDIS-II/7.0-GCC-6.2.0
+
+
+cd /data/scratch/projects/punim0995/landis_raw/TH00_rcp45_NB_01
 
 ls # necessary to run landis otherwise fails with message about incorrect no raster bands
 

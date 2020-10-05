@@ -20,7 +20,7 @@
 # output name from batch
 
 # days-hours:mins:sec
-#SBATCH --time=1-00:00:00
+#SBATCH --time=3-00:00:00
 
 source /usr/local/module/spartan_old.sh
 module load  GDAL/2.2.3-GCC-6.2.0
