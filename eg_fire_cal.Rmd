@@ -96,6 +96,11 @@ glimpse(fire_size_new_eg_rfa_summary)
 ```
 
 
+```{r}
+
+```
+
+
 
 ```{r}
 ecoregions <- read_sf("data/shapefiles/EGipps_regions/EGipps_regions.shp", crs = 4283) %>%
@@ -145,7 +150,7 @@ fire_size_new_eg_eco
 ```
 
 ```{r}
-fire_size_new_eg_eco_summary <- fire_eco %>%
+fire_size_new_eg_eco_summary <- fire_size_new_eg_eco %>%
   group_by(region) %>%
   summarise(
     max_fire_ha = max(area_ha),
@@ -201,16 +206,104 @@ fire_size_new_eg_summary <- rbind(
 fire_size_new_eg_summary
 ```
 
+### Nfires
+
+#### RFA
+
+```{r}
+nfires_new_eg_rfa_summary <- fire_size_new_eg_rfa %>%
+  group_by(yr, rep) %>%
+  summarise(nfires = n()) %>%
+  ungroup %>%
+  full_join(
+    expand.grid(
+      yr = 1:32,
+      rep = unique(fire_size_new_eg_rfa$rep)
+    )
+  ) %>%
+  mutate(
+    nfires = ifelse(
+      is.na(nfires),
+      0,
+      nfires
+    )
+  ) %>%
+  as_tibble %>%
+  summarise(
+    max_nfires = max(nfires),
+    min_nfires = min(nfires),
+    mean_nfires = mean(nfires),
+    median_nfires = median(nfires),
+    sd_nfires = sd(nfires)
+  )
+
+nfires_new_eg_rfa_summary
+```
+
+#### Ecoregion
+```{r}
+nfires_new_eg_eco_summary <- fire_size_new_eg_eco %>%
+  group_by(region, yr, rep) %>%
+  summarise(
+    nfires = n()
+  ) %>%
+  ungroup %>%
+  full_join(
+    expand.grid(
+      region = 1:19 %>% as.character,
+      yr = 1:32,
+      rep = unique(fire_size_new_eg_eco$rep)
+    ),
+    by = c("region", "yr", "rep")
+  ) %>%
+  mutate(
+    nfires = ifelse(
+      is.na(nfires),
+      0,
+      nfires
+    )
+  ) %>%
+  as_tibble %>%
+  group_by(region) %>%
+  summarise(
+    max_nfires = max(nfires),
+    min_nfires = min(nfires),
+    mean_nfires = mean(nfires),
+    median_nfires = median(nfires),
+    sd_nfires = sd(nfires)
+  )
+
+nfires_new_eg_eco_summary
+```
+```{r}
+fire_new_eg_summary <- rbind(
+  bind_cols(
+    tibble(region = "RFA"),
+    fire_size_new_eg_rfa_summary,
+    nfires_new_eg_rfa_summary
+  ),
+  full_join(
+    x = fire_size_new_eg_eco_summary,
+    y = nfires_new_eg_eco_summary,
+    by = "region"
+  )
+)
+
+fire_new_eg_summary
+```
+
+
+
 ## Comparison with historical data
 
 ### Summary
 get nfires summary data for calibration
 ```{r}
-fire_size_eg_comparison <- rbind(
-  fire_size_new_eg_summary %>%
+fire_eg_comparison <- rbind(
+  fire_new_eg_summary %>%
     mutate(dataset = "calibration"),
-  fire_size_hist_eg_summary %>%
-    mutate(dataset = "calibration")
+  fire_hist_eg_summary %>%
+    mutate(dataset = "historical")
 ) %>%
   mutate(
     region = factor(
@@ -221,9 +314,22 @@ fire_size_eg_comparison <- rbind(
   dplyr::select(dataset, everything()) %>%
   arrange(region, dataset)
 
-fire_size_eg_comparison
+fire_eg_comparison
 ```
 
+```{r}
+saveRDS(
+  object = fire_eg_comparison,
+  file = "output/fire_eg_comparison.Rds"
+)
+
+write.csv(
+  x = fire_eg_comparison,
+  file = "fire_eg_comparison.csv",
+  quote = FALSE,
+  row.names = FALSE
+)
+```
 
 
 ### RFA
@@ -250,16 +356,27 @@ plot_fs_comp_rfa <- ggplot(data = fs_comp_rfa) +
   geom_boxplot(
     aes(
       x = set,
-      y = area_ha
+      y = area_ha,
+      fill = set
     )
   ) +
-  scale_y_continuous(
+ scale_y_continuous(
     trans = "log10",
     breaks = br,
     labels = br
   ) +
-  ylab("Area (ha)") +
-  xlab("Data set")
+  scale_fill_manual(
+    values = c(
+      "white",
+      "grey40"
+    )
+  ) +
+  labs(
+    x = "Data set",
+    y = "Fire size (ha)",
+    fill = "Data set",
+    title = "Sizes of fires (ha) in East Gippsland RFA"
+  )
 
 plot_fs_comp_rfa
 ```
@@ -290,16 +407,26 @@ plot_nf_comp_rfa <- ggplot(data = nfire_comp_rfa) +
   geom_boxplot(
     aes(
       x = set,
-      y = nfires
+      y = nfires,
+      fill = set
     )
   ) +
   scale_y_continuous(
-    trans = "log10",
-    breaks = br,
-    labels = br
+    trans = "log10"
   ) +
-  ylab("No. fires/yr") +
-  xlab("Data set")
+  scale_fill_manual(
+    values = c(
+      "white",
+      "grey40"
+    )
+  ) +
+  labs(
+    x = "Data Set",
+    y = "No. fires/year",
+    fill = "Data set",
+    title = "Number of fires per year in East Gippsland RFA",
+    subtitle = "NB: log scale used for conveninece on Y,but some years zero fires in historical data set"
+  )
 
 plot_nf_comp_rfa
 ```
@@ -324,21 +451,40 @@ fs_comp_eco
 ```{r}
 br <- 10^(0:6)
 
-plot_fs_comp_eco <- ggplot(data = fs_comp_eco) +
+plot_fs_comp_eco <- ggplot(
+  data = fs_comp_eco %>%
+    mutate(
+      region = factor(
+        x = region,
+        levels = c("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19")
+      )
+    )
+) +
   geom_boxplot(
     aes(
       x = region,
       y = area_ha,
-      col = set
-    )
+      fill = set
+    ),
+    col = "black"
   ) +
   scale_y_continuous(
     trans = "log10",
     breaks = br,
     labels = br
   ) +
-  ylab("Area (ha)") +
-  xlab("Ecoregion")
+  scale_fill_manual(
+    values = c(
+      "white",
+      "grey40"
+    )
+  ) +
+  labs(
+    x = "Ecoregion",
+    y = "Fire size (ha)",
+    fill = "Data set",
+    title = "Sizes of fires (ha) in each Ecoregion"
+  )
 
 plot_fs_comp_eco
 ```
@@ -365,20 +511,50 @@ nfire_comp_eco
 ```
 
 ```{r}
-plot_nf_comp_eco <- ggplot(data = nfire_comp_eco) +
+plot_nf_comp_eco <- ggplot(
+  data = nfire_comp_eco %>%
+    mutate(
+      region = factor(
+        x = region,
+        levels = c("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19")
+      )
+    )
+) +
   geom_boxplot(
     aes(
       x = region,
       y = nfires,
-      col = set
+      fill = set
     )
   ) +
   scale_y_continuous(
     trans = "log10"
   ) +
-  ylab("No. fires/yr") +
-  xlab("Ecoregion")
+  scale_fill_manual(
+    values = c(
+      "white",
+      "grey40"
+    )
+  ) +
+  labs(
+    x = "Ecoregion",
+    y = "No. fires/year",
+    fill = "Data set",
+    title = "Number of fires per year in each Ecoregion",
+    subtitle = "NB: log scale used for conveninece on Y, but most ecoregions\n had some years of zero fires in both data sets"
+  )
+  
 
 plot_nf_comp_eco
+```
+
+```{r}
+save(
+  fs_comp_rfa,
+  fs_comp_eco,
+  nfire_comp_rfa,
+  nfire_comp_eco,
+  file = "output/fire_cal_comparison.RData"
+)
 ```
 
