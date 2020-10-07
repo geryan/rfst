@@ -1,4 +1,4 @@
-most.pop <- function(x, ...){
+most.freq <- function(x, ...){
   
   ux <- unique(x)
   
