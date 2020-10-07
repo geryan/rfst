@@ -1,0 +1,96 @@
+---
+title: "LANDIS Reprojections"
+author: "GE Ryan"
+date: "06/10/2020"
+output: html_document
+---
+
+```{r}
+library(raster)
+library(rgdal)
+library(dplyr)
+```
+
+```{r}
+source("R/functions/source.functions.R")
+source.functions(x = "R/functions")
+```
+
+
+```{r}
+dirpath <- "C:/Users/ryange/OneDrive - The University of Melbourne/unimelb_work/RFA_STEPS"
+```
+
+
+```{r}
+ecoeg <- pr.eg(x = "EG19_fc/Ecoregion_EG.img") 
+
+ecoeg
+```
+
+
+```{r}
+l4_ec <- pr.eg(x = "EG2019_400/Ecoregion_EG.img")
+l4_ic19 <- pr.eg(x = "EG2019_400/IC_EG_2019.img")
+l4_ic20 <- pr.eg(x = "EG2019_400/IC_EG_2020.img")
+l4_ma <- pr.eg(x = "EG2019_400/Zones_EG.img")
+l4_st <- pr.eg(x = "EG2019_400/Stands_EG.img")
+l4_if <- pr.eg(x = "EG2019_400/FireEco.img")
+l4_sl <- pr.eg(x = "EG2019_400/Slope_EG.img")
+l4_as <- pr.eg(x = "EG2019_400/Aspect_EG.img")
+```
+
+
+```{r}
+l4_as
+```
+
+
+```{r}
+l4_ec_a <- raster::aggregate(l4_ec, fact = 2, fun = most.pop)
+l4_ic19_a <- raster::aggregate(l4_ic19, fact = 2, fun = most.pop)
+l4_ic20_a <- raster::aggregate(l4_ic20, fact = 2, fun = most.pop)
+l4_ma_a <- raster::aggregate(l4_ma, fact = 2, fun = most.pop)
+l4_st_a <- raster::aggregate(l4_st, fact = 2, fun = most.pop)
+l4_if_a <- raster::aggregate(l4_if, fact = 2, fun = most.pop)
+l4_sl_a <- raster::aggregate(l4_sl, fact = 2, fun = mean)
+l4_as_a <- raster::aggregate(l4_as, fact = 2)
+```
+
+```{r}
+asp.avg <- function(x){
+
+  opp <- sapply(
+    X = x,
+    FUN = function(y){
+      sin(y/360*2*pi)
+    }
+  )
+  
+  adj <- sapply(
+    X = x,
+    FUN = function(y){
+      cos(y/360*2*pi)
+    }
+  )
+  
+  theta <- atan(sum(opp, na.rm = TRUE)/sum(adj, na.rm = TRUE))
+  
+  theta.degree <- theta*360/(2*pi)
+  
+  result <- ifelse(
+    test = theta.degree > 0,
+    yes = theta.degree,
+    no = theta.degree + 360
+  )
+  
+  return(result)
+  
+}
+```
+
+```{r}
+x <- c(NA, NA, NA, NA)
+asp.avg(x)
+```
+
