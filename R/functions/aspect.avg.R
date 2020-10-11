@@ -1,6 +1,15 @@
 # This function calculates the average aspect on a circular scale from x > 0 to x = 360 degrees
-
-aspect.avg <- function(x, ...){
+aspect.avg <- function(x, na.rm = TRUE){
+  
+  if(na.rm == FALSE){
+    if(any(is.na(x))){
+      return(NA)
+    }
+  }
+  
+  if(all(is.na(x))){
+    return(NA)
+  }
   
   opp <- sapply(
     X = x,
@@ -16,15 +25,32 @@ aspect.avg <- function(x, ...){
     }
   )
   
-  theta <- atan(sum(opp, na.rm = TRUE)/sum(adj, na.rm = TRUE))
+  n <- length(which(!is.na(x)))
+  
+  oppmean <- sum(opp, na.rm = TRUE)/n
+  
+  adjmean <- sum(adj, na.rm = TRUE)/n
+  # NB: this should really work whether means are taken or not
+  # As in this case the hypotenuse is not relevant to angle calculation
+  
+  theta <- atan(oppmean/adjmean)
   
   theta.degree <- theta*360/(2*pi)
   
-  result <- ifelse(
-    test = theta.degree > 0,
-    yes = theta.degree,
-    no = theta.degree + 360
-  )
+  if (adjmean >= 0) {
+    if (oppmean > 0) {
+      theta.degree.mean <- theta.degree
+    } else {
+      theta.degree.mean <- theta.degree + 360
+    }
+  } else {
+    theta.degree.mean <- theta.degree + 180
+  }
+  
+  
+  result <- round(theta.degree.mean)
+  
+  result <- ifelse(result == 0, 360, result)
   
   return(result)
   

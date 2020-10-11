@@ -23,74 +23,85 @@ dirpath <- "C:/Users/ryange/OneDrive - The University of Melbourne/unimelb_work/
 
 
 ```{r}
-ecoeg <- pr.eg(x = "EG19_fc/Ecoregion_EG.img") 
+ecoeg <- proc.ras.eg(x = "EG19_fc/Ecoregion_EG.img") 
 
 ecoeg
 ```
 
+```{r}
+ec <- proc.ras.eg(x = "EG19_fc/Ecoregion_EG.img")
+ic19 <- proc.ras.eg(x = "EG19_fc/IC_EG_2019.img")
+ic20 <- proc.ras.eg(x = "EG19_fc/IC_EG_2020.img")
+ma <- proc.ras.eg(x = "EG19_fc/Zones_EG.img")
+st <- proc.ras.eg(x = "EG19_fc/Stands_EG.img")
+fe <- proc.ras.eg(x = "EG19_fc/FireEco.img")
+sl <- proc.ras.eg(x = "EG19_fc/Slope_EG.img")
+as <- proc.ras.eg(x = "EG19_fc/Aspect_EG.img")
+```
+
+
+## Rescale to 400m2
+```{r}
+l4_ec_a <- raster::aggregate(ec, fact = 2, fun = most.freq)
+l4_ic19_a <- raster::aggregate(ic19, fact = 2, fun = most.freq)
+l4_ic20_a <- raster::aggregate(ic20, fact = 2, fun = most.freq)
+l4_ma_a <- raster::aggregate(ma, fact = 2, fun = most.freq)
+l4_st_a <- raster::aggregate(st, fact = 2, fun = most.freq)
+l4_fe_a <- raster::aggregate(fe, fact = 2, fun = most.freq)
+l4_sl_a <- raster::aggregate(sl, fact = 2, fun = mean)
+l4_as_a <- raster::aggregate(as, fact = 2, aspect.avg)
+```
 
 ```{r}
-l4_ec <- pr.eg(x = "EG2019_400/Ecoregion_EG.img")
-l4_ic19 <- pr.eg(x = "EG2019_400/IC_EG_2019.img")
-l4_ic20 <- pr.eg(x = "EG2019_400/IC_EG_2020.img")
-l4_ma <- pr.eg(x = "EG2019_400/Zones_EG.img")
-l4_st <- pr.eg(x = "EG2019_400/Stands_EG.img")
-l4_if <- pr.eg(x = "EG2019_400/FireEco.img")
-l4_sl <- pr.eg(x = "EG2019_400/Slope_EG.img")
-l4_as <- pr.eg(x = "EG2019_400/Aspect_EG.img")
+l4_ec_a
+```
+
+```{r}
+plot(l4_ic19_a)
 ```
 
 
 ```{r}
-l4_as
+writeRaster(x = l4_ec_a, filename = paste0(dirpath, "/", "EG2019_400/Ecoregion_EG.img"), overwrite = TRUE)
+writeRaster(x = l4_ic19_a, filename = paste0(dirpath, "/", "EG2019_400/IC_EG_2019.img"), overwrite = TRUE)
+writeRaster(x = l4_ic20_a, filename = paste0(dirpath, "/", "EG2019_400/IC_EG_2020.img"), overwrite = TRUE)
+writeRaster(x = l4_ma_a, filename = paste0(dirpath, "/", "EG2019_400/Zones_EG.img"), overwrite = TRUE)
+writeRaster(x = l4_st_a, filename = paste0(dirpath, "/", "EG2019_400/Stands_EG.img"), overwrite = TRUE)
+writeRaster(x = l4_if_a, filename = paste0(dirpath, "/", "EG2019_400/FireEco.img"), overwrite = TRUE)
+writeRaster(x = l4_sl_a, filename = paste0(dirpath, "/", "EG2019_400/Slope_EG.img"), overwrite = TRUE)
+writeRaster(x = l4_as_a, filename = paste0(dirpath, "/", "EG2019_400/Aspect_EG.img"), overwrite = TRUE)
+```
+
+
+## rescale to 1 km2 
+```{r}
+l1k_ec_a <- raster::aggregate(ec, fact = 10, fun = most.freq)
+l1k_ic19_a <- raster::aggregate(ic19, fact = 10, fun = most.freq)
+l1k_ic20_a <- raster::aggregate(ic20, fact = 10, fun = most.freq)
+l1k_ma_a <- raster::aggregate(ma, fact = 10, fun = most.freq)
+l1k_st_a <- raster::aggregate(st, fact = 10, fun = most.freq)
+l1k_fe_a <- raster::aggregate(fe, fact = 10, fun = most.freq)
+l1k_sl_a <- raster::aggregate(sl, fact = 10, fun = mean)
+l1k_as_a <- raster::aggregate(as, fact = 10, aspect.avg)
+```
+
+```{r}
+l1k_ec_a
+```
+
+```{r}
+plot(l1k_ic19_a)
 ```
 
 
 ```{r}
-l4_ec_a <- raster::aggregate(l4_ec, fact = 2, fun = most.pop)
-l4_ic19_a <- raster::aggregate(l4_ic19, fact = 2, fun = most.pop)
-l4_ic20_a <- raster::aggregate(l4_ic20, fact = 2, fun = most.pop)
-l4_ma_a <- raster::aggregate(l4_ma, fact = 2, fun = most.pop)
-l4_st_a <- raster::aggregate(l4_st, fact = 2, fun = most.pop)
-l4_if_a <- raster::aggregate(l4_if, fact = 2, fun = most.pop)
-l4_sl_a <- raster::aggregate(l4_sl, fact = 2, fun = mean)
-l4_as_a <- raster::aggregate(l4_as, fact = 2)
-```
-
-```{r}
-asp.avg <- function(x){
-
-  opp <- sapply(
-    X = x,
-    FUN = function(y){
-      sin(y/360*2*pi)
-    }
-  )
-  
-  adj <- sapply(
-    X = x,
-    FUN = function(y){
-      cos(y/360*2*pi)
-    }
-  )
-  
-  theta <- atan(sum(opp, na.rm = TRUE)/sum(adj, na.rm = TRUE))
-  
-  theta.degree <- theta*360/(2*pi)
-  
-  result <- ifelse(
-    test = theta.degree > 0,
-    yes = theta.degree,
-    no = theta.degree + 360
-  )
-  
-  return(result)
-  
-}
-```
-
-```{r}
-x <- c(NA, NA, NA, NA)
-asp.avg(x)
+writeRaster(x = l1k_ec_a, filename = paste0(dirpath, "/", "EG2019_1km/Ecoregion_EG.img"), overwrite = TRUE)
+writeRaster(x = l1k_ic19_a, filename = paste0(dirpath, "/", "EG2019_1km/IC_EG_2019.img"), overwrite = TRUE)
+writeRaster(x = l1k_ic20_a, filename = paste0(dirpath, "/", "EG2019_1km/IC_EG_2020.img"), overwrite = TRUE)
+writeRaster(x = l1k_ma_a, filename = paste0(dirpath, "/", "EG2019_1km/Zones_EG.img"), overwrite = TRUE)
+writeRaster(x = l1k_st_a, filename = paste0(dirpath, "/", "EG2019_1km/Stands_EG.img"), overwrite = TRUE)
+writeRaster(x = l1k_if_a, filename = paste0(dirpath, "/", "EG2019_1km/FireEco.img"), overwrite = TRUE)
+writeRaster(x = l1k_sl_a, filename = paste0(dirpath, "/", "EG2019_1km/Slope_EG.img"), overwrite = TRUE)
+writeRaster(x = l1k_as_a, filename = paste0(dirpath, "/", "EG2019_1km/Aspect_EG.img"), overwrite = TRUE)
 ```
 

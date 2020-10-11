@@ -1,4 +1,14 @@
-most.freq <- function(x, ...){
+most.freq <- function(x, na.rm = TRUE){
+  
+  if(na.rm == FALSE){
+    if(any(is.na(x))){
+      return(NA)
+    }
+  }
+  
+  if(all(is.na(x))){
+    return(NA)
+  }
   
   ux <- unique(x)
   
@@ -17,7 +27,7 @@ most.freq <- function(x, ...){
   if(length(wx) == 1){
     return(nx[wx])
   } else {
-    return(sample(nx, size = 1))
+    return(base::sample(x = nx[wx], size = 1))
   }
   
 }
