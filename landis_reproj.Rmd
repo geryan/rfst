@@ -21,6 +21,10 @@ source.functions(x = "R/functions")
 dirpath <- "C:/Users/ryange/OneDrive - The University of Melbourne/unimelb_work/RFA_STEPS"
 ```
 
+```{r}
+rgdal::setCPLConfigOption("GDAL_PAM_ENABLED", "FALSE") # stops writeRaster writing xml files.
+```
+
 
 ```{r}
 ecoeg <- proc.ras.eg(x = "EG19_fc/Ecoregion_EG.img") 
@@ -48,7 +52,7 @@ l4_ic20_a <- raster::aggregate(ic20, fact = 2, fun = most.freq)
 l4_ma_a <- raster::aggregate(ma, fact = 2, fun = most.freq)
 l4_st_a <- raster::aggregate(st, fact = 2, fun = most.freq)
 l4_fe_a <- raster::aggregate(fe, fact = 2, fun = most.freq)
-l4_sl_a <- raster::aggregate(sl, fact = 2, fun = mean)
+l4_sl_a <- raster::aggregate(sl, fact = 2, fun = function(x, na.rm = TRUE){as.integer(mean(x, na.rm = na.rm))})
 l4_as_a <- raster::aggregate(as, fact = 2, aspect.avg)
 ```
 
@@ -61,15 +65,16 @@ plot(l4_ic19_a)
 ```
 
 
+
 ```{r}
-writeRaster(x = l4_ec_a, filename = paste0(dirpath, "/", "EG2019_400/Ecoregion_EG.img"), overwrite = TRUE)
-writeRaster(x = l4_ic19_a, filename = paste0(dirpath, "/", "EG2019_400/IC_EG_2019.img"), overwrite = TRUE)
-writeRaster(x = l4_ic20_a, filename = paste0(dirpath, "/", "EG2019_400/IC_EG_2020.img"), overwrite = TRUE)
-writeRaster(x = l4_ma_a, filename = paste0(dirpath, "/", "EG2019_400/Zones_EG.img"), overwrite = TRUE)
-writeRaster(x = l4_st_a, filename = paste0(dirpath, "/", "EG2019_400/Stands_EG.img"), overwrite = TRUE)
-writeRaster(x = l4_if_a, filename = paste0(dirpath, "/", "EG2019_400/FireEco.img"), overwrite = TRUE)
-writeRaster(x = l4_sl_a, filename = paste0(dirpath, "/", "EG2019_400/Slope_EG.img"), overwrite = TRUE)
-writeRaster(x = l4_as_a, filename = paste0(dirpath, "/", "EG2019_400/Aspect_EG.img"), overwrite = TRUE)
+writeRaster(x = l4_ec_a,   filename = paste0(dirpath, "/", "EG2019_400/Ecoregion_EG.img"), format = "HFA", datatype = "INT4S", overwrite = TRUE, NAflag = -Inf)
+writeRaster(x = l4_ic19_a, filename = paste0(dirpath, "/", "EG2019_400/IC_EG_2019.img"),   format = "HFA", datatype = "INT4S", overwrite = TRUE, NAflag = 0)
+writeRaster(x = l4_ic20_a, filename = paste0(dirpath, "/", "EG2019_400/IC_EG_2020.img"),   format = "HFA", datatype = "INT4S", overwrite = TRUE, NAflag = 0)
+writeRaster(x = l4_ma_a,   filename = paste0(dirpath, "/", "EG2019_400/Zones_EG.img"),     format = "HFA", datatype = "INT4S", overwrite = TRUE)
+writeRaster(x = l4_st_a,   filename = paste0(dirpath, "/", "EG2019_400/Stands_EG.img"),    format = "HFA", datatype = "INT4S", overwrite = TRUE)
+writeRaster(x = l4_fe_a,   filename = paste0(dirpath, "/", "EG2019_400/FireEco.img"),      format = "HFA", datatype = "INT4S", overwrite = TRUE, NAflag = 0)
+writeRaster(x = l4_sl_a,   filename = paste0(dirpath, "/", "EG2019_400/Slope_EG.img"),     format = "HFA", datatype = "INT2S", overwrite = TRUE, NAflag = 0)
+writeRaster(x = l4_as_a,   filename = paste0(dirpath, "/", "EG2019_400/Aspect_EG.img"),    format = "HFA", datatype = "INT2S", overwrite = TRUE, NAflag = 0)
 ```
 
 
@@ -81,7 +86,7 @@ l1k_ic20_a <- raster::aggregate(ic20, fact = 10, fun = most.freq)
 l1k_ma_a <- raster::aggregate(ma, fact = 10, fun = most.freq)
 l1k_st_a <- raster::aggregate(st, fact = 10, fun = most.freq)
 l1k_fe_a <- raster::aggregate(fe, fact = 10, fun = most.freq)
-l1k_sl_a <- raster::aggregate(sl, fact = 10, fun = mean)
+l1k_sl_a <- raster::aggregate(sl, fact = 10, fun = function(x, na.rm = TRUE){as.integer(mean(x, na.rm = na.rm))})
 l1k_as_a <- raster::aggregate(as, fact = 10, aspect.avg)
 ```
 
@@ -94,14 +99,25 @@ plot(l1k_ic19_a)
 ```
 
 
+
 ```{r}
-writeRaster(x = l1k_ec_a, filename = paste0(dirpath, "/", "EG2019_1km/Ecoregion_EG.img"), overwrite = TRUE)
-writeRaster(x = l1k_ic19_a, filename = paste0(dirpath, "/", "EG2019_1km/IC_EG_2019.img"), overwrite = TRUE)
-writeRaster(x = l1k_ic20_a, filename = paste0(dirpath, "/", "EG2019_1km/IC_EG_2020.img"), overwrite = TRUE)
-writeRaster(x = l1k_ma_a, filename = paste0(dirpath, "/", "EG2019_1km/Zones_EG.img"), overwrite = TRUE)
-writeRaster(x = l1k_st_a, filename = paste0(dirpath, "/", "EG2019_1km/Stands_EG.img"), overwrite = TRUE)
-writeRaster(x = l1k_if_a, filename = paste0(dirpath, "/", "EG2019_1km/FireEco.img"), overwrite = TRUE)
-writeRaster(x = l1k_sl_a, filename = paste0(dirpath, "/", "EG2019_1km/Slope_EG.img"), overwrite = TRUE)
-writeRaster(x = l1k_as_a, filename = paste0(dirpath, "/", "EG2019_1km/Aspect_EG.img"), overwrite = TRUE)
+writeRaster(x = l1k_ec_a,   filename = paste0(dirpath, "/", "EG2019_1km/Ecoregion_EG.img"), format = "HFA", datatype = "INT4S", overwrite = TRUE, NAflag = -Inf)
+writeRaster(x = l1k_ic19_a, filename = paste0(dirpath, "/", "EG2019_1km/IC_EG_2019.img"),   format = "HFA", datatype = "INT4S", overwrite = TRUE, NAflag = 0)
+writeRaster(x = l1k_ic20_a, filename = paste0(dirpath, "/", "EG2019_1km/IC_EG_2020.img"),   format = "HFA", datatype = "INT4S", overwrite = TRUE, NAflag = 0)
+writeRaster(x = l1k_ma_a,   filename = paste0(dirpath, "/", "EG2019_1km/Zones_EG.img"),     format = "HFA", datatype = "INT4S", overwrite = TRUE)
+writeRaster(x = l1k_st_a,   filename = paste0(dirpath, "/", "EG2019_1km/Stands_EG.img"),    format = "HFA", datatype = "INT4S", overwrite = TRUE)
+writeRaster(x = l1k_fe_a,   filename = paste0(dirpath, "/", "EG2019_1km/FireEco.img"),      format = "HFA", datatype = "INT4S", overwrite = TRUE)
+writeRaster(x = l1k_sl_a,   filename = paste0(dirpath, "/", "EG2019_1km/Slope_EG.img"),     format = "HFA", datatype = "INT2S", overwrite = TRUE, NAflag = 0) # note only 16 bit data type and NA flag that's within range of possible values
+writeRaster(x = l1k_as_a,   filename = paste0(dirpath, "/", "EG2019_1km/Aspect_EG.img"),    format = "HFA", datatype = "INT2S", overwrite = TRUE, NAflag = 0) # note only 16 bit data type and NA flag that's within range of possible values
+```
+
+
+
+```{r}
+#ect <- raster(x = "C:/Users/ryange/OneDrive - The University of Melbourne/unimelb_work/RFA_STEPS/EG19_fc/Ecoregion_EG.img")
+#ic <- raster(x = "C:/Users/ryange/OneDrive - The University of Melbourne/unimelb_work/RFA_STEPS/EG19_fc/IC_EG_2019.img")
+
+writeRaster(x = l1k_ec_a, filename = paste0(dirpath, "/", "EG2019_1km/Ecoregion_EG.asc"), format = "ascii", datatype = "INT4S", overwrite = TRUE)
+writeRaster(x = l1k_ic19_a, filename = paste0(dirpath, "/", "EG2019_1km/IC_EG_2019.asc"), format = "ascii", datatype = "INT4S", overwrite = TRUE)
 ```
 

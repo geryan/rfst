@@ -3,12 +3,12 @@ aspect.avg <- function(x, na.rm = TRUE){
   
   if(na.rm == FALSE){
     if(any(is.na(x))){
-      return(NA)
+      return(NA_integer_)
     }
   }
   
   if(all(is.na(x))){
-    return(NA)
+    return(NA_integer_)
   }
   
   opp <- sapply(
@@ -50,7 +50,7 @@ aspect.avg <- function(x, na.rm = TRUE){
   
   result <- round(theta.degree.mean)
   
-  result <- ifelse(result == 0, 360, result)
+  result <- as.integer(ifelse(result == 0, 360, result))
   
   return(result)
   

@@ -2,18 +2,18 @@ most.freq <- function(x, na.rm = TRUE){
   
   if(na.rm == FALSE){
     if(any(is.na(x))){
-      return(NA)
+      return(NA_integer_)
     }
   }
   
   if(all(is.na(x))){
-    return(NA)
+    return(NA_integer_)
   }
   
   ux <- unique(x)
   
   if(length(ux) == 1){
-    return(x[1])
+    return(as.integer(x[1]))
   }
   
   tx <- table(x)
@@ -25,9 +25,9 @@ most.freq <- function(x, na.rm = TRUE){
   nx <- as.numeric(dimnames(tx)[[1]])
   
   if(length(wx) == 1){
-    return(nx[wx])
+    return(as.integer(nx[wx]))
   } else {
-    return(base::sample(x = nx[wx], size = 1))
+    return(as.integer(base::sample(x = nx[wx], size = 1)))
   }
   
 }
