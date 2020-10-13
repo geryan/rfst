@@ -65,6 +65,9 @@ cd /data/gpfs/projects/punim0995/rfst
 
 cd /data/gpfs/projects/punim1340
 
+cd /data/scratch/projects/punim0995
+
+
 
 ## using old landis
 source /usr/local/module/spartan_old.sh

@@ -13,23 +13,27 @@
 
 # Always edit
 
-# megabytes per process
-#SBATCH --mem=25600
 
-# job name from batch
-# output name from batch
+# Always edit
+#SBATCH --job-name="jl_egr_100"
+#SBATCH --output="/data/gpfs/projects/punim0995/rfst/slurm/slurm_output/job_landis_egreproj_100.out"
+
 
 # days-hours:mins:sec
-#SBATCH --time=1-18:00:00
+#SBATCH --time=1-00:00:00
+
+#module load gcccore/8.3.0
+#module load dotnet-sdk/3.1.300-linux-x64
+#module load landis-ii/7.0
 
 source /usr/local/module/spartan_old.sh
 module load  GDAL/2.2.3-GCC-6.2.0
 module load LANDIS-II/7.0-GCC-6.2.0
 
-echo $directory_name
 
-cd $directory_name
+cd /data/gpfs/projects/punim1340/eg_reproj/EG2019_100
 
 ls # necessary to run landis otherwise fails with message about incorrect no raster bands
 
 landis-ii scenario.txt
+
