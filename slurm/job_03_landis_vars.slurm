@@ -27,7 +27,7 @@ i=$1
 # Location to run job from
 cd /data/gpfs/projects/punim0995/rfst/
 
-# Modules
+# Modules	
 module load gcccore/8.3.0
 module load gcc/8.3.0
 module load openmpi/3.1.4

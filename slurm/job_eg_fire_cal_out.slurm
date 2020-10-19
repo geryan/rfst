@@ -11,17 +11,20 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=1
 
-# Always edit
+# megabytes per process
+#SBATCH --mem=51200
 
-# job name from batch
-# output name from batch
+# Always edit
+#SBATCH --job-name="sp_eg_fc_out"
+#SBATCH --output="/data/gpfs/projects/punim0995/rfst/slurm/slurm_output/job_eg_fire_cal_out.out"
 
 # days-hours:mins:sec
-#SBATCH --time=0-02:00:00
+#SBATCH --time=0-2:00:00
 
+# Location to run job from
+cd /data/gpfs/projects/punim0995/rfst/
 
-i=$1
-
+# Modules
 module load gcccore/8.3.0
 module load gcc/8.3.0
 module load openmpi/3.1.4
@@ -33,6 +36,5 @@ module load gdal/3.0.2-python-3.7.4
 module load rgdal/1.4-4-r-3.6.0
 module load r/3.6.2
 
-cd /data/gpfs/projects/punim0995/rfst
-
-Rscript --vanilla R/spartan/spartan_04_disturbance_variables.R $i
+# Commands
+Rscript --vanilla R/spartan/spartan_eg_fire_cal_out.R

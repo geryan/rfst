@@ -13,18 +13,15 @@ source("R/functions/source.functions.R")
 source.functions("R/functions")
 
 
-ntimesteps <- 32
+ntimesteps <- 20
 
 proj_path <- "/data/gpfs/projects/punim1340/eg_fc_out/"
 
 ###
 
-ch_eco <- raster("data/grids/eco_v12.img") %>%
+
+eg_mask <- raster(x = "/data/gpfs/projects/punim1340/eg_fire_calibration/EG19_fc_2a_0/Ecoregion_EG.img") %>%
   round.extent
-
-
-
-eg_mask <- raster(x = "/data/gpfs/projects/punim1340/eg_fire_calibration/EG19_fc_0/Ecoregion_EG.img")
 
 #eg_mask <- raster(x = "junk/Ecoregion_EG.img")
 
@@ -73,12 +70,12 @@ saveRDS(
   )
 )
 
-fi <- readRDS(
-  file = sprintf(
-    "%s/fire_sevs.Rds",
-    proj_path
-  )
-)
+# fi <- readRDS(
+#   file = sprintf(
+#     "%s/fire_sevs.Rds",
+#     proj_path
+#   )
+# )
 
 
 fip <- lapply(
@@ -116,12 +113,12 @@ saveRDS(
   )
 )
 
-fip <- readRDS(
-  file = sprintf(
-    "%s/fire_polys.Rds",
-    proj_path
-  )
-)
+# fip <- readRDS(
+#   file = sprintf(
+#     "%s/fire_polys.Rds",
+#     proj_path
+#   )
+# )
 
 
 fia <- lapply(
@@ -149,12 +146,12 @@ saveRDS(
 )
 
 
-fia <- readRDS(
-  file = sprintf(
-    "%s/fire_area_list.Rds",
-    proj_path
-  )
-)
+# fia <- readRDS(
+#   file = sprintf(
+#     "%s/fire_area_list.Rds",
+#     proj_path
+#   )
+# )
 
 
 
@@ -201,9 +198,9 @@ saveRDS(
 )
 
 
-fire_area <- readRDS(
-  file = sprintf(
-    "%s/fire_area.Rds",
-    proj_path
-  )
-)
+# fire_area <- readRDS(
+#   file = sprintf(
+#     "%s/fire_area.Rds",
+#     proj_path
+#   )
+# )

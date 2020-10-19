@@ -13,8 +13,12 @@ rm /path/to/dir/*
 To remove all sub-directories and files
 rm -r /path/to/dir/*
 
-To move directory or file from dir1 to dir2
+To move directory or file from dir1 to dir2 (or to rename directory)
 mv dir1 dir2
+
+Copy directory and contents
+cp -r source_directory destination_directory
+
 
 ###### Spartan-specific commands
 
