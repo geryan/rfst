@@ -19,7 +19,7 @@
 
 
 # days-hours:mins:sec
-#SBATCH --time 1:00:00
+#SBATCH --time 0-00:30:00
 
 
 module load gcccore/8.3.0
