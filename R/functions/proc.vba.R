@@ -7,8 +7,10 @@ proc.vba <- function(
   pattern = "spotlight"
 ){
   
+  
   library(dplyr)
   library(lubridate)
+  
   
   z <- read.vba(x) %>%
     dplyr::rename(
