@@ -13,14 +13,14 @@ source("R/functions/source.functions.R")
 source.functions("R/functions")
 
 
-ntimesteps <- 20
+ntimesteps <- 12
 
 proj_path <- "/data/gpfs/projects/punim1340/eg_fc_out/"
 
 ###
 
 
-eg_mask <- raster(x = "/data/gpfs/projects/punim1340/eg_fire_calibration/EG19_fc_2a_0/Ecoregion_EG.img") %>%
+eg_mask <- raster(x = "/data/gpfs/projects/punim1340/eg_fire_calibration/EG19_fc_3a_0/Ecoregion_EG.img") %>%
   round.extent
 
 #eg_mask <- raster(x = "junk/Ecoregion_EG.img")

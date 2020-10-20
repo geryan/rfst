@@ -17,7 +17,7 @@
 # output name from batch
 
 # days-hours:mins:sec
-#SBATCH --time=0-02:00:00
+#SBATCH --time=0-00:30:00
 
 
 i=$1
