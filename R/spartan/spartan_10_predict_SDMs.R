@@ -28,9 +28,12 @@ i <- as.numeric(command_args[1])
 
 j <- as.numeric(command_args[2])
 
+
+# for some reason paths here and below need to be full otherwise script fails to find the directory.
+
 pred_out_path <- "/data/scratch/projects/punim0995/habitat_pred/"
 
-agg_out_path <- "/output/habitat_pred_aggregated/"
+agg_out_path <- "/data/gpfs/projects/punim0995/rfst/output/habitat_pred_aggregated/"
 
 ##############
 
