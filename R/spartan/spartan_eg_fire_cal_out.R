@@ -13,7 +13,7 @@ source("R/functions/source.functions.R")
 source.functions("R/functions")
 
 
-ntimesteps <- 12
+ntimesteps <- 14
 
 proj_path <- "/data/gpfs/projects/punim1340/eg_fc_out/"
 
