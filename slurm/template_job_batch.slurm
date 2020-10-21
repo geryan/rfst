@@ -9,20 +9,18 @@
 #SBATCH --partition="physical,snowy"
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=2
-#SBATCH --mem-per-cpu=102400
+#SBATCH --cpus-per-task=1
 
 # Always edit
-#SBATCH --job-name="job_06"
-#SBATCH --output="/data/gpfs/projects/punim0995/rfst/slurm/slurm_output/job_06.out"
+
+# job name from batch
+# output name from batch
 
 # days-hours:mins:sec
-#SBATCH --time=0-12:00:00
+#SBATCH --time=0-00:01:00
 
-# Location to run job from
-cd /data/gpfs/projects/punim0995/rfst/
+i=$1
 
-# Modules
 module load gcccore/8.3.0
 module load gcc/8.3.0
 module load openmpi/3.1.4
@@ -32,13 +30,9 @@ module load openssl/1.1.1f
 module load netcdf/4.7.1
 module load gdal/3.0.2-python-3.7.4
 module load rgdal/1.4-4-r-3.6.0
-module load r/3.6.2#!/bin/bash
+module load r/3.6.2
 
+cd /data/gpfs/projects/punim0995/rfst
 
-export http_proxy=http://wwwproxy.unimelb.edu.au:8000
+Rscript --vanilla R/spartan/spartan_XX.R $i
 
-export https_proxy=$http_proxy
-
-export ftp_proxy=$http_proxy
-
-Rscript --vanilla R/06_climate_variables.R

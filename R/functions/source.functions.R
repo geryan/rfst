@@ -1,4 +1,4 @@
-source.functions <- function(x){
+source.functions <- function(x = "R/functions"){
   
   lf <- list.files(path = x, pattern = "\\.R$")
   

@@ -1,0 +1,647 @@
+---
+title: "eg_fire_cal.Rmd"
+author: "GE Ryan"
+date: "24/09/2020"
+output: html_document
+---
+
+```{r}
+library(raster)
+library(dplyr)
+library(sf)
+library(tidyr)
+library(tibble)
+library(ggplot2)
+```
+
+
+
+```{r}
+fire_area_new <- readRDS("output/fire_area.Rds")
+fire_polys_new <- readRDS("output/fire_polys.Rds")
+```
+
+
+
+```{r}
+fip <- lapply(
+  X = fire_polys_new,
+  FUN = function(x){
+    rbind(x) %>%
+      t %>%
+      as_tibble %>%
+      mutate(
+        yr = 0:(length(x) - 1)
+      )
+  }
+) %>%
+  rbind %>%
+  t %>%
+  as_tibble %>%
+  mutate(
+    rep = names(fire_polys_new)
+  ) %>%
+  mutate(
+    rep = sub(
+      pattern = ".*/",
+      replacement = "",
+      x = rep
+    )
+  )
+
+names(fip) <- c("dat", "rep")
+```
+
+```{r}
+fpl <- fip %>%
+  unnest(dat) %>%
+  unnest(x) %>%
+  st_as_sf
+
+fpl
+```
+
+
+```{r}
+fire_polys_long <- fpl %>%
+  mutate(
+    rr = strsplit(
+      x = rep,
+      split = "_"
+    ),
+    rep = map(
+      .x = rr,
+      .f = function(x){
+        x[[4]]
+      }
+    ) %>% unlist,
+    scn = map(
+      .x = rr,
+      .f = function(x){
+        x[[3]]
+      }
+    ) %>% unlist
+  ) %>%
+  dplyr::select(yr, scn, rep)
+
+fire_polys_long
+```
+
+```{r}
+fire_area_long <- st_area(fire_polys_long)
+```
+
+
+```{r}
+fire_size_new_eg_rfa <- fire_polys_long %>%
+  mutate(
+    area_ha = as.numeric(fire_area_long)/10000
+  ) %>%
+  as.data.frame %>%
+  dplyr::select(yr, scn, rep, area_ha) %>%
+  as_tibble
+
+fire_size_new_eg_rfa
+```
+
+
+```{r}
+fire_size_new_eg_rfa_summary <- fire_size_new_eg_rfa  %>%
+  group_by(scn) %>%
+  summarise(
+    max_fire_ha = max(area_ha),
+    min_fire_ha = min(area_ha),
+    mean_fire_ha = mean(area_ha),
+    median_fire_ha = median(area_ha),
+    sd_fire_ha = sd(area_ha),
+    mean_n_fires_per_year = n()/(length(unique(fire_polys_long$yr))*length(unique(fire_polys_long$rep)))
+  ) 
+
+fire_size_new_eg_rfa_summary
+```
+
+
+```{r}
+glimpse(fire_size_new_eg_rfa_summary)
+```
+
+
+
+```{r}
+ecoregions <- read_sf("data/shapefiles/EGipps_regions/EGipps_regions.shp", crs = 4283) %>%
+  st_transform(crs = st_crs(fire_polys_long))
+
+ecoregions
+```
+
+```{r}
+fp_eco <- st_intersects(
+  x = fire_polys_long,
+  y = ecoregions,
+  sparse = FALSE
+)
+
+fp_eco
+```
+
+
+```{r}
+fire_size_new_eg_eco <- bind_cols(
+  fire_polys_long,
+  as_tibble(fp_eco)
+) %>%
+  mutate(
+    area_ha = as.numeric(fire_area_long)/10000
+  ) %>%
+  as.data.frame %>%
+  dplyr::select(-geometry) %>%
+  as_tibble %>%
+  pivot_longer(
+    cols = starts_with("V"),
+    names_to = "region",
+    values_to = "intersects"
+  ) %>%
+  filter(intersects) %>%
+  select(-intersects) %>%
+  mutate(
+    region = sub(
+      pattern = "V",
+      replacement = "",
+      x = region
+    )
+  )
+
+fire_size_new_eg_eco
+```
+
+```{r}
+fire_size_new_eg_eco_summary <- fire_size_new_eg_eco %>%
+  group_by(region, scn) %>%
+  summarise(
+    max_fire_ha = max(area_ha),
+    min_fire_ha = min(area_ha),
+    mean_fire_ha = mean(area_ha),
+    median_fire_ha = median(area_ha),
+    sd_fire_ha = sd(area_ha),
+    mean_n_fires_per_year = n()/(length(unique(fire_polys_long$yr))*length(unique(fire_polys_long$rep)))
+  ) 
+
+fire_size_new_eg_eco_summary
+```
+```{r}
+glimpse(fire_size_new_eg_eco_summary)
+```
+
+
+```{r}
+fire_size_hist <- read.csv(
+  file = "eg_eco_fire_size_summary.csv",
+  stringsAsFactors = FALSE
+) %>%
+  as_tibble
+
+fire_size_hist
+```
+
+```{r}
+fire_size_hist_eg_rfa <- readRDS(
+  file = "output/fire_size_hist_eg_rfa.Rds"
+)
+
+fire_size_hist_eg_eco <- readRDS(
+  file = "output/fire_size_hist_eg_eco.Rds"
+)
+
+
+fire_hist_eg_summary <- readRDS(
+  file = "output/fire_hist_eg_summary.Rds"
+)
+```
+
+
+```{r}
+fire_size_new_eg_summary <- bind_rows(
+  bind_cols(
+    tibble(region = c("RFA", "RFA")),
+    fire_size_new_eg_rfa_summary
+  ),
+  fire_size_new_eg_eco_summary
+)
+
+fire_size_new_eg_summary
+```
+
+### Nfires
+
+#### RFA
+
+```{r}
+nfires_new_eg_rfa_summary <- fire_size_new_eg_rfa %>%
+  group_by(yr, scn, rep) %>%
+  summarise(nfires = n()) %>%
+  ungroup %>%
+  full_join(
+    expand.grid(
+      yr = 1:20,
+      scn = unique(fire_size_new_eg_rfa$scn),
+      rep = unique(fire_size_new_eg_rfa$rep)
+    )
+  ) %>%
+  mutate(
+    nfires = ifelse(
+      is.na(nfires),
+      0,
+      nfires
+    )
+  ) %>%
+  as_tibble %>%
+  group_by(scn) %>%
+  summarise(
+    max_nfires = max(nfires),
+    min_nfires = min(nfires),
+    mean_nfires = mean(nfires),
+    median_nfires = median(nfires),
+    sd_nfires = sd(nfires)
+  )
+
+nfires_new_eg_rfa_summary
+```
+
+#### Ecoregion
+```{r}
+nfires_new_eg_eco_summary <- fire_size_new_eg_eco %>%
+  group_by(region, yr, scn, rep) %>%
+  summarise(
+    nfires = n()
+  ) %>%
+  ungroup %>%
+  full_join(
+    expand.grid(
+      region = 1:19 %>% as.character,
+      yr = 1:32,
+      scn = unique(fire_size_new_eg_eco$scn),
+      rep = unique(fire_size_new_eg_eco$rep)
+    ),
+    by = c("region", "yr", "rep", "scn")
+  ) %>%
+  mutate(
+    nfires = ifelse(
+      is.na(nfires),
+      0,
+      nfires
+    )
+  ) %>%
+  as_tibble %>%
+  group_by(region, scn) %>%
+  summarise(
+    max_nfires = max(nfires),
+    min_nfires = min(nfires),
+    mean_nfires = mean(nfires),
+    median_nfires = median(nfires),
+    sd_nfires = sd(nfires)
+  )
+
+nfires_new_eg_eco_summary
+```
+
+
+```{r}
+# fire_new_eg_summary <- bind_rows(
+#   bind_cols(
+#     tibble(region = c("RFA", "RFA")),
+#     fire_size_new_eg_rfa_summary,
+#     nfires_new_eg_rfa_summary
+#   ),
+#   full_join(
+#     x = fire_size_new_eg_eco_summary,
+#     y = nfires_new_eg_eco_summary,
+#     by = c("region", "scn")
+#   )
+# )
+# 
+# fire_new_eg_summary
+```
+
+```{r}
+fire_new_eg_summary <- bind_rows(
+  full_join(
+    x = fire_size_new_eg_rfa_summary,
+    y = nfires_new_eg_rfa_summary,
+    by = "scn"
+  ) %>%
+    mutate(region = "RFA") %>%
+    dplyr::select(region, scn, everything()),
+  full_join(
+    x = fire_size_new_eg_eco_summary,
+    y = nfires_new_eg_eco_summary,
+    by = c("region", "scn")
+  )
+)
+
+fire_new_eg_summary
+```
+
+
+## Comparison with historical data
+
+### Summary
+get nfires summary data for calibration
+```{r}
+fire_eg_comparison <- rbind(
+  fire_new_eg_summary %>%
+    mutate(dataset = "calibration"),
+  fire_hist_eg_summary %>%
+    mutate(dataset = "historical") %>%
+    mutate(scn = "hist") %>%
+    dplyr::select(region, scn, everything())
+) %>%
+  mutate(
+    region = factor(
+      x = region,
+      levels = c("RFA", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19")
+    )
+  ) %>%
+  dplyr::select(dataset, everything()) %>%
+  arrange(region, dataset, scn)
+
+fire_eg_comparison
+```
+
+```{r}
+saveRDS(
+  object = fire_eg_comparison,
+  file = "output/fire_eg_comparison.Rds"
+)
+
+write.csv(
+  x = fire_eg_comparison,
+  file = "fire_eg_comparison.csv",
+  quote = FALSE,
+  row.names = FALSE
+)
+```
+
+
+```{r}
+fire_eg_comparison %>%
+  mutate(mean_area_burnt = mean_fire_ha * mean_nfires) %>%
+  dplyr::select(dataset, region, scn, mean_fire_ha, mean_nfires, mean_area_burnt)
+```
+
+```{r}
+fire_eg_comparison %>%
+  mutate(
+    sigma = sigma.dffs(mean_fire_ha, sd_fire_ha),
+    mu = mu.dffs(mean_fire_ha, sigma),
+    mf = mean.fire.dffs(mu, sigma),
+    sf = sd.fire.dffs(mu, sigma)
+  ) %>%
+  select(dataset, region, scn, mu, sigma, mf, sf, mean_fire_ha, sd_fire_ha)
+```
+
+
+### RFA
+
+#### Fire size
+
+```{r}
+fs_comp_rfa <- bind_rows(
+  fire_size_hist_eg_rfa %>%
+    mutate(set = "historical")  %>%
+    mutate(scn = NA) %>%
+    dplyr::select(set, scn, area_ha),
+  fire_size_new_eg_rfa %>%
+    mutate(set = "calibration") %>%
+    dplyr::select(set, scn, area_ha)
+)
+
+fs_comp_rfa
+```
+
+
+
+```{r}
+br <- 10^(0:6)
+
+plot_fs_comp_rfa <- ggplot(data = fs_comp_rfa) +
+  geom_boxplot(
+    aes(
+      x = set,
+      y = area_ha,
+      colour = scn,
+      fill = set
+    )
+  ) +
+ scale_y_continuous(
+    trans = "log10",
+    breaks = br,
+    labels = br
+  ) +
+  scale_fill_manual(
+    values = c(
+      "white",
+      "grey40"
+    )
+  ) +
+  # scale_colour_manual(
+  #   values = c(
+  #     "black",
+  #     "grey30"
+  #   )
+  # ) +
+  labs(
+    x = "Data set",
+    y = "Fire size (ha)",
+    fill = "Data set",
+    col = "Calibration\nscenario",
+    title = "Sizes of fires (ha) in East Gippsland RFA"
+  )
+
+plot_fs_comp_rfa
+```
+
+#### Number of fires
+```{r}
+nfire_comp_rfa <- bind_rows(
+  fire_size_hist_eg_rfa %>%
+    group_by(season) %>%
+    summarise(nfires = n()) %>%
+    ungroup %>%
+    mutate(set = "historical") %>%
+    mutate(scn = NA) %>%
+    dplyr::select(set, scn, nfires),
+  fire_size_new_eg_rfa %>%
+    group_by(yr, scn, rep) %>%
+    summarise(nfires = n()) %>%
+    ungroup %>%
+    mutate(set = "calibration") %>%
+    dplyr::select(set, scn, nfires)
+)
+
+nfire_comp_rfa
+```
+
+```{r}
+plot_nf_comp_rfa <- ggplot(data = nfire_comp_rfa) +
+  geom_boxplot(
+    aes(
+      x = set,
+      y = nfires,
+      fill = set,
+      col = scn
+    )
+  ) +
+  scale_y_continuous(
+    trans = "log10"
+  ) +
+  scale_fill_manual(
+    values = c(
+      "white",
+      "grey40"
+    )
+  ) +
+  labs(
+    x = "Data Set",
+    y = "No. fires/year",
+    fill = "Data set",
+    col = "Calibration\nscenario",
+    title = "Number of fires per year in East Gippsland RFA",
+    subtitle = "NB: log scale used for conveninece on Y,but some years zero fires in historical data set"
+  )
+
+plot_nf_comp_rfa
+```
+
+### Ecoregion
+
+#### Fire size
+
+```{r}
+fs_comp_eco <- bind_rows(
+  fire_size_hist_eg_eco %>%
+    mutate(set = "historical") %>%
+    mutate(scn = NA) %>%
+    dplyr::select(set, scn, region, area_ha),
+  fire_size_new_eg_eco %>%
+    mutate(set = "calibration") %>%
+    dplyr::select(set, scn, region, area_ha)
+)
+
+fs_comp_eco
+```
+
+```{r}
+br <- 10^(0:6)
+
+plot_fs_comp_eco <- ggplot(
+  data = fs_comp_eco %>%
+    mutate(
+      region = factor(
+        x = region,
+        levels = c("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19")
+      )
+    )
+) +
+  geom_boxplot(
+    aes(
+      x = region,
+      y = area_ha,
+      fill = set,
+      col = scn
+    )#
+    #col = "black"
+  ) +
+  scale_y_continuous(
+    trans = "log10",
+    breaks = br,
+    labels = br
+  ) +
+  scale_fill_manual(
+    values = c(
+      "white",
+      "grey40"
+    )
+  ) +
+  labs(
+    x = "Ecoregion",
+    y = "Fire size (ha)",
+    fill = "Data set",
+    col = "Calibration\nscenario",
+    title = "Sizes of fires (ha) in each Ecoregion"
+  )
+
+plot_fs_comp_eco
+```
+
+#### Number of fires
+
+```{r}
+nfire_comp_eco <- bind_rows(
+  fire_size_hist_eg_eco %>%
+    group_by(season, region) %>%
+    summarise(nfires = n()) %>%
+    ungroup %>%
+    mutate(set = "historical") %>%
+    mutate(scn = NA) %>%
+    dplyr::select(set, scn, region, nfires),
+  fire_size_new_eg_eco %>%
+    group_by(yr, scn, rep, region) %>%
+    summarise(nfires = n()) %>%
+    ungroup %>%
+    mutate(set = "calibration") %>%
+    dplyr::select(set, scn, region, nfires)
+)
+
+nfire_comp_eco
+```
+
+```{r}
+plot_nf_comp_eco <- ggplot(
+  data = nfire_comp_eco %>%
+    mutate(
+      region = factor(
+        x = region,
+        levels = c("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19")
+      )
+    )
+) +
+  geom_boxplot(
+    aes(
+      x = region,
+      y = nfires,
+      fill = set,
+      col = scn
+    )
+  ) +
+  scale_y_continuous(
+    trans = "log10"
+  ) +
+  scale_fill_manual(
+    values = c(
+      "white",
+      "grey40"
+    )
+  ) +
+  labs(
+    x = "Ecoregion",
+    y = "No. fires/year",
+    fill = "Data set",
+    col = "Calibration\nscenario",
+    title = "Number of fires per year in each Ecoregion",
+    subtitle = "NB: log scale used for conveninece on Y, but most ecoregions\n had some years of zero fires in both data sets"
+  )
+  
+
+plot_nf_comp_eco
+```
+
+```{r}
+save(
+  fs_comp_rfa,
+  fs_comp_eco,
+  nfire_comp_rfa,
+  nfire_comp_eco,
+  file = "output/fire_cal_comparison.RData"
+)
+```
+

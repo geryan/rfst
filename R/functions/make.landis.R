@@ -1,6 +1,11 @@
 make.landis <- function(
   master.dir,
   new.dir,
+  lsc = c(
+    "CH19",
+    "EG19",
+    "EG20"
+  ),
   th = c(
     "19",
     "30",
@@ -11,8 +16,9 @@ make.landis <- function(
     "45",
     "85"
   ),
+  
   rep,
-  overwrite = TRUE
+  overwrite = FALSE
 ){
   
   

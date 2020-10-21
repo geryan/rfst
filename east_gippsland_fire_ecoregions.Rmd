@@ -638,6 +638,7 @@ fire_size_eg <- fs_eg %>%
 
 fire_size_eg
 ```
+
 ```{r}
 fire_size_eg_summary  <- fire_size_eg %>%
   as.data.frame %>%
@@ -848,6 +849,7 @@ fire_hist_eg_summary <- rbind(
     by = "region"
   )
 )
+
 
 fire_hist_eg_summary
 ```

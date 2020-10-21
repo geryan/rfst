@@ -1,0 +1,190 @@
+---
+title: "Fire calibration summary"
+author: "GE Ryan"
+date: "06/10/2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+
+```{r include=FALSE}
+library(ggplot2)
+library(dplyr)
+library(knitr)
+
+load("output/fire_cal_comparison.RData")
+
+fire_eg_comparison <- readRDS(file = "fire_eg_comparison.Rds")
+```
+
+
+## Summary data
+
+### Fire sizes (ha)
+
+```{r}
+kable(fire_eg_comparison[,1:7], format = "markdown")
+```
+
+### Number of fires (per year)
+
+```{r}
+kable(fire_eg_comparison[,c(1:2,9:13)])
+```
+
+
+## RFA
+
+### Fire size
+
+```{r}
+br <- 10^(0:6)
+
+plot_fs_comp_rfa <- ggplot(data = fs_comp_rfa) +
+  geom_boxplot(
+    aes(
+      x = set,
+      y = area_ha,
+      fill = set
+    )
+  ) +
+ scale_y_continuous(
+    trans = "log10",
+    breaks = br,
+    labels = br
+  ) +
+  scale_fill_manual(
+    values = c(
+      "white",
+      "grey40"
+    )
+  ) +
+  labs(
+    x = "Data set",
+    y = "Fire size (ha)",
+    fill = "Data set",
+    title = "Sizes of fires (ha) in East Gippsland RFA"
+  )
+
+plot_fs_comp_rfa
+```
+
+### Number of fires (per year)
+
+```{r}
+plot_nf_comp_rfa <- ggplot(data = nfire_comp_rfa) +
+  geom_boxplot(
+    aes(
+      x = set,
+      y = nfires,
+      fill = set
+    )
+  ) +
+  scale_y_continuous(
+    trans = "log10"
+  ) +
+  scale_fill_manual(
+    values = c(
+      "white",
+      "grey40"
+    )
+  ) +
+  labs(
+    x = "Data Set",
+    y = "No. fires/year",
+    fill = "Data set",
+    title = "Number of fires per year in East Gippsland RFA",
+    subtitle = "NB: log scale used for conveninece on Y,but some years zero fires in historical data set"
+  )
+
+plot_nf_comp_rfa
+```
+
+## Ecoregion
+
+### Fire size
+
+```{r}
+br <- 10^(0:6)
+
+plot_fs_comp_eco <- ggplot(
+  data = fs_comp_eco %>%
+    mutate(
+      region = factor(
+        x = region,
+        levels = c("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19")
+      )
+    )
+) +
+  geom_boxplot(
+    aes(
+      x = region,
+      y = area_ha,
+      fill = set
+    ),
+    col = "black"
+  ) +
+  scale_y_continuous(
+    trans = "log10",
+    breaks = br,
+    labels = br
+  ) +
+  scale_fill_manual(
+    values = c(
+      "white",
+      "grey40"
+    )
+  ) +
+  labs(
+    x = "Ecoregion",
+    y = "Fire size (ha)",
+    fill = "Data set",
+    title = "Sizes of fires (ha) in each Ecoregion"
+  )
+
+plot_fs_comp_eco
+```
+
+### Number of fires (per year)
+
+```{r}
+plot_nf_comp_eco <- ggplot(
+  data = nfire_comp_eco %>%
+    mutate(
+      region = factor(
+        x = region,
+        levels = c("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12", "13", "14", "15", "16", "17", "18", "19")
+      )
+    )
+) +
+  geom_boxplot(
+    aes(
+      x = region,
+      y = nfires,
+      fill = set
+    )
+  ) +
+  scale_y_continuous(
+    trans = "log10"
+  ) +
+  scale_fill_manual(
+    values = c(
+      "white",
+      "grey40"
+    )
+  ) +
+  labs(
+    x = "Ecoregion",
+    y = "No. fires/year",
+    fill = "Data set",
+    title = "Number of fires per year in each Ecoregion",
+    subtitle = "NB: log scale used for conveninece on Y, but most ecoregions\n had some years of zero fires in both data sets"
+  )
+  
+
+plot_nf_comp_eco
+```
+

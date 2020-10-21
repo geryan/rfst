@@ -1,0 +1,161 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+
+```{r}
+library(raster)
+library(dplyr)
+```
+
+```{r}
+rch <- raster(
+  x = "data/grids/IC_2019_V6.img"
+)
+
+rch
+```
+
+```{r}
+plot(rch)
+```
+
+```{r}
+reg <- raster(
+  x = "C:/Users/ryange/OneDrive - The University of Melbourne/unimelb_work/RFA_STEPS/EastGipp/IC_EG_2019.img"
+)
+
+reg
+```
+```{r}
+plot(reg)
+```
+
+
+```{r}
+ch_3111 <- projectRaster(
+  from = rch,
+  crs = CRS("+init=epsg:3111")
+)
+
+ch_3111
+```
+
+```{r}
+plot(ch_3111)
+```
+
+
+
+
+```{r}
+ch_4283 <- projectRaster(
+  from = rch,
+  crs = CRS("+init=epsg:4283")
+)
+
+ch_4283
+```
+
+```{r}
+plot(ch_4283)
+```
+
+
+
+```{r}
+ch_32755 <- projectRaster(
+  from = rch,
+  crs = CRS("+init=epsg:32755")
+)
+
+ch_32755
+```
+
+```{r}
+plot(ch_32755)
+```
+
+
+
+```{r}
+ch_28355 <- projectRaster(
+  from = rch,
+  crs = CRS("+init=epsg:28355")
+)
+
+ch_28355
+```
+
+```{r}
+plot(ch_28355)
+```
+
+
+
+
+```{r}
+eg_3111 <- projectRaster(
+  from = reg,
+  crs = CRS("+init=epsg:3111")
+)
+
+eg_3111
+```
+
+```{r}
+plot(eg_3111)
+```
+
+
+
+
+```{r}
+eg_4283 <- projectRaster(
+  from = reg,
+  crs = CRS("+init=epsg:4283")
+)
+
+eg_4283
+```
+
+```{r}
+plot(eg_4283)
+```
+
+
+
+```{r}
+eg_32755 <- projectRaster(
+  from = reg,
+  crs = CRS("+init=epsg:32755")
+)
+
+eg_32755
+```
+
+```{r}
+plot(eg_32755)
+```
+
+
+
+```{r}
+eg_28355 <- projectRaster(
+  from = reg,
+  crs = CRS("+init=epsg:28355")
+)
+
+eg_28355
+```
+
+```{r}
+plot(eg_28355)
+```
+
+
+```{r}
+
+```
+

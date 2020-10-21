@@ -27,11 +27,12 @@ landis_paths <- list.dirs(
 
 scn_path <- landis_paths[i]
 
-
-scn_id <- strsplit(
+split_path <- strsplit(
   x = scn_path,
   split = "/"
-)[[1]][4]
+)
+
+scn_id <- split_path[[1]][length(split_path[[1]])]
 
 print(scn_id)
 

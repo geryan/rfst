@@ -13,21 +13,21 @@
 #SBATCH --cpus-per-task=1
 
 # megabytes per process
-#SBATCH --mem=51200
+
 
 # Always edit
 # job-name from batch script
 # output from batch script
 
 # days-hours:mins:sec
-#SBATCH --time=0-12:00:00
+#SBATCH --time=0-2:00:00
 
 i=$1
 
 # Location to run job from
 cd /data/gpfs/projects/punim0995/rfst/
 
-# Modules
+# Modules	
 module load gcccore/8.3.0
 module load gcc/8.3.0
 module load openmpi/3.1.4

@@ -13,7 +13,7 @@
 #SBATCH --cpus-per-task=1
 
 # megabytes per process
-#SBATCH --mem=51200
+
 
 # Always edit
 #SBATCH --job-name="job_02_species_occurrence"

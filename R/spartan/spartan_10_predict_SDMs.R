@@ -28,9 +28,12 @@ i <- as.numeric(command_args[1])
 
 j <- as.numeric(command_args[2])
 
-pred_out_path <- "/scratch/punim0995/habitat_pred/"
 
-agg_out_path <- "/data/cephfs/punim0995/rfst/output/habitat_pred_aggregated/"
+# for some reason paths here and below need to be full otherwise script fails to find the directory.
+
+pred_out_path <- "/data/scratch/projects/punim0995/habitat_pred/"
+
+agg_out_path <- "/data/gpfs/projects/punim0995/rfst/output/habitat_pred_aggregated/"
 
 ##############
 
@@ -51,7 +54,7 @@ saveRDS(
   object = pred,
   file = sprintf(
     "%s/pred_%s_%s.Rds",
-    "/data/cephfs/punim0995/rfst/output/spartan_RData/habitat_pred",
+    "/data/gpfs/projects/punim0995/rfst/output/spartan_RData/habitat_pred",
     var_set$cscnid[[i]], # NB needs cscnid not scn_id if multiple climate scenarios with each scenario
     sdm_results$sp[[j]]
   )
@@ -71,7 +74,7 @@ saveRDS(
   object = agg,
   file = sprintf(
     "%s/agg_%s_%s.Rds",
-    "/data/cephfs/punim0995/rfst/output/spartan_RData/habitat_pred_aggregated",
+    "/data/gpfs/projects/punim0995/rfst/output/spartan_RData/habitat_pred_aggregated",
     var_set$cscnid[[i]], # NB needs cscnid not scn_id if multiple climate scenarios with each scenario
     sdm_results$sp[[j]]
   )

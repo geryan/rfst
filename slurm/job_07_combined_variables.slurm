@@ -1,26 +1,40 @@
 #!/bin/bash
 
-#SBATCH -p "physical,snowy,cloud"
-
-#SBATCH --ntasks=1
-
-#SBATCH --time 1:00:00
-
-#SBATCH --mail-user="ryange@unimelb.edu.au"
-
+# Never edit
+#SBATCH --account="punim0995"
+#SBATCH --mail-user=ryange@unimelb.edu.au
 #SBATCH --mail-type=ALL
 
+# Sometimes edit
+#SBATCH --partition="physical,snowy"
+#SBATCH --nodes=1
+#SBATCH --ntasks=1
+#SBATCH --cpus-per-task=1
 
-module load UDUNITS/2.2.26-GCC-6.2.0
+# megabytes per process
+#SBATCH --mem=25600
 
-module load GEOS/3.6.2-spartan_gcc-6.2.0-Python-3.7.3
+# Always edit
+#SBATCH --job-name="job_07"
+#SBATCH --output="/data/gpfs/projects/punim0995/rfst/slurm/slurm_output/job_07.out"
 
-module load OpenSSL/1.1.0-GCC-6.2.0
+# days-hours:mins:sec
+#SBATCH --time=0-1:00:00
 
-module load netCDF/4.5.0-GCC-6.2.0 # needs to be older version or doesn't work for some reason
+# Location to run job from
+cd /data/gpfs/projects/punim0995/rfst/
 
-module load R/3.6.1-GCC-6.2.0
+# Modules
+module load gcccore/8.3.0
+module load gcc/8.3.0
+module load openmpi/3.1.4
+module load udunits/2.2.26
+module load geos/3.7.2-python-3.7.4
+module load openssl/1.1.1f
+module load netcdf/4.7.1
+module load gdal/3.0.2-python-3.7.4
+module load rgdal/1.4-4-r-3.6.0
+module load r/3.6.2
 
-cd /data/cephfs/punim0995/rfst
-
+# Commands
 Rscript --vanilla R/07_combined_variables.R
