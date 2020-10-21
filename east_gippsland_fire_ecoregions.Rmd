@@ -316,7 +316,7 @@ fh20_1
 ```{r}
 fh20_2 <- tibble(
     season = 2020,
-    geometry = f20_1
+    geometry = f20_2
   ) %>%
   st_as_sf
 
@@ -629,9 +629,247 @@ fire_size_eg <- fs_eg %>%
     )
   ) %>%
   unnest(area_m2)%>%
-  arrange(desc(area_m2))
+  mutate(
+    area_ha = area_m2/10000,
+    ) %>%
+  dplyr::select(season, area_ha, geometry) %>%
+  arrange(s)
 
 
 fire_size_eg
 ```
+```{r}
+fire_size_eg_summary  <- fire_size_eg %>%
+  as.data.frame %>%
+  summarise(
+    max_fire_ha = max(area_ha),
+    min_fire_ha = min(area_ha),
+    mean_fire_ha = mean(area_ha),
+    median_fire_ha = median(area_ha),
+    sd_fire_ha = sd(area_ha),
+    mean_n_fires_per_year = n()/50
+  ) %>%
+  as_tibble
+
+glimpse(fire_size_eg_summary)
+```
+
+```{r}
+fs_log_rfa <- fire_size_eg %>%
+  as.data.frame %>%
+  mutate(
+    ln_area_ha = log(area_ha)
+  ) %>%
+  summarise(
+    meanlog_area_ha = mean(ln_area_ha),
+    sdlog_area_ha = sd(ln_area_ha)
+  ) %>%
+  as_tibble
+
+fs_log_rfa
+```
+
+
+
+```{r}
+nfires_hist_eg_rfa_summary <- fire_size_eg %>%
+  as.data.frame %>%
+  dplyr::select(season) %>%
+  group_by(season) %>%
+  summarise(
+    nfires = n()
+  ) %>%
+  ungroup %>%
+  full_join(expand.grid(season = 1971:2020)) %>%
+  mutate(
+    nfires = ifelse(
+      is.na(nfires),
+      0,
+      nfires
+    )
+  ) %>%
+  as_tibble %>%
+  summarise(
+    max_nfires = max(nfires),
+    min_nfires = min(nfires),
+    mean_nfires = mean(nfires),
+    median_nfires = median(nfires),
+    sd_nfires = sd(nfires)
+  )
+
+nfires_hist_eg_rfa_summary
+```
+
+```{r}
+glimpse(nfires_hist_eg_rfa_summary)
+```
+
+
+```{r}
+eco_fs_int <- st_intersects(
+  x = fire_size_eg,
+  y = ecoregions,
+  sparse = FALSE
+)
+```
+
+```{r}
+e_int <- cbind(
+  fire_size_eg %>%
+    as.data.frame %>%
+    dplyr::select(season, area_ha),
+  eco_fs_int %>%
+    as.data.frame
+) %>%
+  pivot_longer(
+    cols = starts_with("V"),
+    names_to = "region",
+    names_prefix = "V",
+    values_to = "intersects"
+  ) %>%
+  filter(intersects) %>%
+  dplyr::select(season, region, area_ha)
+    
+e_int
+```
+```{r}
+eco_fire_size_eg_summary <- e_int %>%
+  group_by(region) %>%
+  summarise(
+    max_fire_ha = max(area_ha),
+    min_fire_ha = min(area_ha),
+    mean_fire_ha = mean(area_ha),
+    median_fire_ha = median(area_ha),
+    sd_fire_ha = sd(area_ha),
+    mean_n_fires_per_year = n()/50
+  ) %>%
+  as_tibble
+
+eco_fire_size_eg_summary
+```
+
+```{r}
+fs_log_eco <- e_int %>%
+  mutate(
+    ln_area_ha = log(area_ha)
+  ) %>%
+  group_by(region) %>%
+  summarise(
+    meanlog_area_ha = mean(ln_area_ha),
+    sdlog_area_ha = sd(ln_area_ha)
+  ) %>% 
+  mutate(region = as.numeric(region)) %>%
+  arrange(region)
+
+fs_log_eco
+```
+
+```{r}
+nfires_hist_eg_eco_summary <- e_int %>%
+  group_by(region, season) %>%
+  summarise(
+    nfires = n()
+  ) %>%
+  ungroup %>%
+  full_join(
+    expand.grid(
+      season = 1971:2020,
+      region = 1:19 %>% as.character
+    )
+  ) %>%
+  mutate(
+    nfires = ifelse(
+      is.na(nfires),
+      0,
+      nfires
+    )
+  ) %>%
+  as_tibble %>%
+  group_by(region) %>%
+  summarise(
+    max_nfires = max(nfires),
+    min_nfires = min(nfires),
+    mean_nfires = mean(nfires),
+    median_nfires = median(nfires),
+    sd_nfires = sd(nfires)
+  )
+
+nfires_hist_eg_eco_summary
+```
+
+
+
+```{r}
+all_fire_size_summary <- rbind(
+  bind_cols(
+    tibble(region = "RFA"),
+    fire_size_eg_summary
+  ),
+  eco_fire_size_eg_summary
+)
+
+all_fire_size_summary
+```
+
+```{r}
+write.csv(
+  x = all_fire_size_summary,
+  file = "eg_eco_fire_size_summary.csv",
+  row.names = FALSE
+)
+```
+
+
+```{r}
+fire_size_hist_eg_rfa <- fire_size_eg %>%
+  as.data.frame %>%
+  dplyr::select(season, area_ha) %>%
+  as_tibble
+
+fire_size_hist_eg_rfa
+```
+
+```{r}
+fire_size_hist_eg_eco <- e_int
+
+fire_size_hist_eg_eco
+```
+
+```{r}
+fire_hist_eg_summary <- rbind(
+  bind_cols(
+    tibble(region = "RFA"),
+    fire_size_eg_summary,
+    nfires_hist_eg_rfa_summary
+  ),
+  full_join(
+    x = eco_fire_size_eg_summary,
+    y = nfires_hist_eg_eco_summary,
+    by = "region"
+  )
+)
+
+fire_hist_eg_summary
+```
+
+```{r}
+saveRDS(
+  object = fire_size_hist_eg_rfa,
+  file = "output/fire_size_hist_eg_rfa.Rds"
+)
+
+saveRDS(
+  object = fire_size_hist_eg_eco,
+  file = "output/fire_size_hist_eg_eco.Rds"
+)
+
+
+saveRDS(
+  object = fire_hist_eg_summary,
+  file = "output/fire_hist_eg_summary.Rds"
+)
+```
+
+
+
 
