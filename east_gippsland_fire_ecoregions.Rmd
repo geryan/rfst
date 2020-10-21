@@ -870,6 +870,8 @@ saveRDS(
   object = fire_hist_eg_summary,
   file = "output/fire_hist_eg_summary.Rds"
 )
+
+save.image(file = "output/eg_fire_hist_summaries.RData")
 ```
 
 
