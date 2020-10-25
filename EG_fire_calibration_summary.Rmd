@@ -17,7 +17,7 @@ library(knitr)
 
 load("output/fire_cal_comparison.RData")
 
-fire_eg_comparison <- readRDS(file = "fire_eg_comparison.Rds")
+fire_eg_comparison <- readRDS(file = "output/fire_eg_comparison.Rds")
 ```
 
 
@@ -26,13 +26,13 @@ fire_eg_comparison <- readRDS(file = "fire_eg_comparison.Rds")
 ### Fire sizes (ha)
 
 ```{r}
-kable(fire_eg_comparison[,1:7], format = "markdown")
+kable(fire_eg_comparison[,1:8], format = "markdown")
 ```
 
 ### Number of fires (per year)
 
 ```{r}
-kable(fire_eg_comparison[,c(1:2,9:13)])
+kable(fire_eg_comparison[,c(1:3,10:14)])
 ```
 
 
@@ -48,6 +48,7 @@ plot_fs_comp_rfa <- ggplot(data = fs_comp_rfa) +
     aes(
       x = set,
       y = area_ha,
+      colour = scn,
       fill = set
     )
   ) +
@@ -62,10 +63,17 @@ plot_fs_comp_rfa <- ggplot(data = fs_comp_rfa) +
       "grey40"
     )
   ) +
+  # scale_colour_manual(
+  #   values = c(
+  #     "black",
+  #     "grey30"
+  #   )
+  # ) +
   labs(
     x = "Data set",
     y = "Fire size (ha)",
     fill = "Data set",
+    col = "Calibration\nscenario",
     title = "Sizes of fires (ha) in East Gippsland RFA"
   )
 
@@ -80,7 +88,8 @@ plot_nf_comp_rfa <- ggplot(data = nfire_comp_rfa) +
     aes(
       x = set,
       y = nfires,
-      fill = set
+      fill = set,
+      col = scn
     )
   ) +
   scale_y_continuous(
@@ -96,6 +105,7 @@ plot_nf_comp_rfa <- ggplot(data = nfire_comp_rfa) +
     x = "Data Set",
     y = "No. fires/year",
     fill = "Data set",
+    col = "Calibration\nscenario",
     title = "Number of fires per year in East Gippsland RFA",
     subtitle = "NB: log scale used for conveninece on Y,but some years zero fires in historical data set"
   )
@@ -123,9 +133,10 @@ plot_fs_comp_eco <- ggplot(
     aes(
       x = region,
       y = area_ha,
-      fill = set
-    ),
-    col = "black"
+      fill = set,
+      col = scn
+    )#
+    #col = "black"
   ) +
   scale_y_continuous(
     trans = "log10",
@@ -142,6 +153,7 @@ plot_fs_comp_eco <- ggplot(
     x = "Ecoregion",
     y = "Fire size (ha)",
     fill = "Data set",
+    col = "Calibration\nscenario",
     title = "Sizes of fires (ha) in each Ecoregion"
   )
 
@@ -164,7 +176,8 @@ plot_nf_comp_eco <- ggplot(
     aes(
       x = region,
       y = nfires,
-      fill = set
+      fill = set,
+      col = scn
     )
   ) +
   scale_y_continuous(
@@ -180,6 +193,7 @@ plot_nf_comp_eco <- ggplot(
     x = "Ecoregion",
     y = "No. fires/year",
     fill = "Data set",
+    col = "Calibration\nscenario",
     title = "Number of fires per year in each Ecoregion",
     subtitle = "NB: log scale used for conveninece on Y, but most ecoregions\n had some years of zero fires in both data sets"
   )
