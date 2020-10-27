@@ -11,7 +11,8 @@
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=1
 
-# Always edit
+# megabytes per process
+#SBATCH --mem=51200
 
 # job name from batch
 # output name from batch
@@ -19,8 +20,10 @@
 # days-hours:mins:sec
 #SBATCH --time=0-00:01:00
 
+# commands from batch
 i=$1
 
+# modules
 module load gcccore/8.3.0
 module load gcc/8.3.0
 module load openmpi/3.1.4
@@ -32,7 +35,9 @@ module load gdal/3.0.2-python-3.7.4
 module load rgdal/1.4-4-r-3.6.0
 module load r/3.6.2
 
+# 
 cd /data/gpfs/projects/punim0995/rfst
 
+# Commands
 Rscript --vanilla R/spartan/spartan_XX.R $i
 
