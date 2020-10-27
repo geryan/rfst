@@ -1,6 +1,10 @@
 make.landis <- function(
   master.dir,
   new.dir,
+  lsc = c(
+    "EG19",
+    "EG20"
+  ),
   th = c(
     "19",
     "30",
@@ -46,7 +50,7 @@ make.landis <- function(
   
   dynamic_input_files <- list.files(
     path = master.dir,
-    pattern = "Dynamic_Input",
+    pattern = "Dynamic_RCP",
     full.names = TRUE
   )
   
@@ -55,6 +59,8 @@ make.landis <- function(
     pattern = "Fire_Weather",
     full.names = TRUE
   )
+  
+  
   
   # copy files going to all scenarios
   
@@ -123,9 +129,8 @@ make.landis <- function(
     from = dynamic_input_files[
       grep(
         pattern = sprintf(
-          "%s_R%s",
-          rcp,
-          rep
+          "%s_",
+          rcp
         ),
         x = dynamic_input_files
       )
@@ -138,7 +143,7 @@ make.landis <- function(
   biomass_succession <- readLines(
     con = paste0(
       new.dir,
-      "/Succession_Biomass_CHR.txt"
+      "/Succession_Biomass_EG.txt"
     )
   )
   
@@ -152,7 +157,7 @@ make.landis <- function(
     text = biomass_succession,
     con  = paste0(
       new.dir,
-      "/Succession_Biomass_CHR.txt"
+      "/Succession_Biomass_EG.txt"
     ),
     sep = "\n"
   )
@@ -171,42 +176,19 @@ make.landis <- function(
     recursive = TRUE
   )
   
- dynamic_fire <- readLines(
-   con = paste0(
-     new.dir,
-     "/fire-DFFS.txt"
-   )
- )
+  file.copy(
+    from = fire_weather_files[
+      grep(
+        pattern = "Fire_Weather_Current",
+        x = fire_weather_files
+      )
+      ],
+    to = new.dir,
+    overwrite = TRUE,
+    recursive = TRUE
+  )
   
- dynamic_fire[50] <- sprintf(
-   "InitialWeatherDatabase   ./Fire_Weather_T0_%s.csv",
-   rcp
- )
  
- dynamic_fire[54] <- sprintf(
-   "10\t ./Fire_Weather_T10_%s.csv",
-   rcp
- )
- 
- dynamic_fire[55] <- sprintf(
-   "40\t ./Fire_Weather_T40_%s.csv",
-   rcp
- )
- 
- dynamic_fire[56] <- sprintf(
-   "70\t ./Fire_Weather_T70_%s.csv",
-   rcp
- )
- 
- 
- writeLines(
-   text = dynamic_fire,
-   con = paste0(
-     new.dir,
-     "/fire-DFFS.txt"
-   ),
-   sep = "\n"
- )
  
  print("Done")
  

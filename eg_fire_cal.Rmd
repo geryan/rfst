@@ -12,6 +12,7 @@ library(sf)
 library(tidyr)
 library(tibble)
 library(ggplot2)
+library(purrr)
 ```
 
 
@@ -221,10 +222,9 @@ fire_hist_eg_summary <- readRDS(
 
 ```{r}
 fire_size_new_eg_summary <- bind_rows(
-  bind_cols(
-    tibble(region = c("RFA", "RFA")),
-    fire_size_new_eg_rfa_summary
-  ),
+  fire_size_new_eg_rfa_summary %>%
+    mutate(region = "RFA") %>%
+    dplyr::select(region, everything()),
   fire_size_new_eg_eco_summary
 )
 
@@ -373,12 +373,12 @@ saveRDS(
   file = "output/fire_eg_comparison.Rds"
 )
 
-write.csv(
-  x = fire_eg_comparison,
-  file = "fire_eg_comparison.csv",
-  quote = FALSE,
-  row.names = FALSE
-)
+# write.csv(
+#   x = fire_eg_comparison,
+#   file = "fire_eg_comparison.csv",
+#   quote = FALSE,
+#   row.names = FALSE
+# )
 ```
 
 
@@ -388,17 +388,93 @@ fire_eg_comparison %>%
   dplyr::select(dataset, region, scn, mean_fire_ha, mean_nfires, mean_area_burnt)
 ```
 
+
 ```{r}
-fire_eg_comparison %>%
-  mutate(
-    sigma = sigma.dffs(mean_fire_ha, sd_fire_ha),
-    mu = mu.dffs(mean_fire_ha, sigma),
-    mf = mean.fire.dffs(mu, sigma),
-    sf = sd.fire.dffs(mu, sigma)
-  ) %>%
-  select(dataset, region, scn, mu, sigma, mf, sf, mean_fire_ha, sd_fire_ha)
+area_burnt_new_rfa <- fire_size_new_eg_rfa %>%
+  group_by(yr, scn, rep) %>%
+  summarise(
+    area_burnt = sum(area_ha)
+  )
+
+area_burnt_new_rfa
 ```
 
+```{r}
+area_burnt_hist_rfa <- fire_size_hist_eg_rfa %>%
+  group_by(season) %>%
+  summarise(area_burnt = sum(area_ha))
+
+area_burnt_hist_rfa
+```
+
+```{r}
+area_burnt_all_rfa <- area_burnt_new_rfa %>%
+  ungroup %>%
+  mutate(set = "calibration") %>%
+  dplyr::select(set, scn, area_burnt) %>%
+  bind_rows(
+    area_burnt_hist_rfa %>%
+      ungroup %>%
+      mutate(
+        set = "historical",
+        scn = NA
+      ) %>%
+      dplyr::select(set, scn, area_burnt)
+  )
+
+area_burnt_all_rfa
+```
+
+
+```{r}
+# fire_eg_comparison %>%
+#   mutate(
+#     sigma = sigma.dffs(mean_fire_ha, sd_fire_ha),
+#     mu = mu.dffs(mean_fire_ha, sigma),
+#     mf = mean.fire.dffs(mu, sigma),
+#     sf = sd.fire.dffs(mu, sigma)
+#   ) %>%
+#   select(dataset, region, scn, mu, sigma, mf, sf, mean_fire_ha, sd_fire_ha)
+```
+```{r}
+br <- 10^(0:6)
+
+plot_ab_comp_rfa <- ggplot(data = area_burnt_all_rfa) +
+  geom_boxplot(
+    aes(
+      x = set,
+      y = area_burnt,
+      colour = scn,
+      fill = set
+    )
+  ) +
+ scale_y_continuous(
+    trans = "log10",
+    breaks = br,
+    labels = br
+  ) +
+  scale_fill_manual(
+    values = c(
+      "white",
+      "grey40"
+    )
+  ) +
+  # scale_colour_manual(
+  #   values = c(
+  #     "black",
+  #     "grey30"
+  #   )
+  # ) +
+  labs(
+    x = "Data set",
+    y = "Area burnt (ha)",
+    fill = "Data set",
+    col = "Calibration\nscenario",
+    title = "Area burnt (ha) annually in East Gippsland RFA"
+  )
+
+plot_ab_comp_rfa
+```
 
 ### RFA
 
