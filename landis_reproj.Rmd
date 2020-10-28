@@ -44,13 +44,13 @@ as <- proc.ras.eg(x = "EG19_fc/Aspect_EG.img")
 ```
 
 
-## Rescale to 400m2
+## Rescale to 40000m2
 ```{r}
 l4_ec_a <- raster::aggregate(ec, fact = 2, fun = most.freq)
 l4_ic19_a <- raster::aggregate(ic19, fact = 2, fun = most.freq)
 l4_ic20_a <- raster::aggregate(ic20, fact = 2, fun = most.freq)
-l4_ma_a <- raster::aggregate(ma, fact = 2, fun = most.freq)
-l4_st_a <- raster::aggregate(st, fact = 2, fun = most.freq)
+l4_ma_a <- raster::aggregate(ma, fact = 2, fun = set.nth)
+l4_st_a <- raster::aggregate(st, fact = 2, fun = set.nth)
 l4_fe_a <- raster::aggregate(fe, fact = 2, fun = most.freq)
 l4_sl_a <- raster::aggregate(sl, fact = 2, fun = function(x, na.rm = TRUE){as.integer(mean(x, na.rm = na.rm))})
 l4_as_a <- raster::aggregate(as, fact = 2, aspect.avg)
@@ -65,13 +65,35 @@ plot(l4_ic19_a)
 ```
 
 
+```{r}
+plot(l4_st_a)
+```
+
+
+```{r}
+plot(l4_ma_a)
+```
+
+
+```{r}
+vst <- getValues(l4_st_a)
+vma <- getValues(l4_ma_a)
+```
+
+
+```{r}
+for(i in 1:length(unique(vst))){
+  
+}
+```
+
 
 ```{r}
 writeRaster(x = l4_ec_a,   filename = paste0(dirpath, "/", "EG2019_400/Ecoregion_EG.img"), format = "HFA", datatype = "INT4S", overwrite = TRUE, NAflag = -Inf)
 writeRaster(x = l4_ic19_a, filename = paste0(dirpath, "/", "EG2019_400/IC_EG_2019.img"),   format = "HFA", datatype = "INT4S", overwrite = TRUE, NAflag = 0)
 writeRaster(x = l4_ic20_a, filename = paste0(dirpath, "/", "EG2019_400/IC_EG_2020.img"),   format = "HFA", datatype = "INT4S", overwrite = TRUE, NAflag = 0)
-writeRaster(x = l4_ma_a,   filename = paste0(dirpath, "/", "EG2019_400/Zones_EG.img"),     format = "HFA", datatype = "INT4S", overwrite = TRUE)
-writeRaster(x = l4_st_a,   filename = paste0(dirpath, "/", "EG2019_400/Stands_EG.img"),    format = "HFA", datatype = "INT4S", overwrite = TRUE)
+writeRaster(x = l4_ma_a,   filename = paste0(dirpath, "/", "EG2019_400/Zones_EG.img"),     format = "HFA", datatype = "INT4S", overwrite = TRUE, NAflag = 0)
+writeRaster(x = l4_st_a,   filename = paste0(dirpath, "/", "EG2019_400/Stands_EG.img"),    format = "HFA", datatype = "INT4S", overwrite = TRUE, NAflag = 0)
 writeRaster(x = l4_fe_a,   filename = paste0(dirpath, "/", "EG2019_400/FireEco.img"),      format = "HFA", datatype = "INT4S", overwrite = TRUE, NAflag = 0)
 writeRaster(x = l4_sl_a,   filename = paste0(dirpath, "/", "EG2019_400/Slope_EG.img"),     format = "HFA", datatype = "INT2S", overwrite = TRUE, NAflag = 0)
 writeRaster(x = l4_as_a,   filename = paste0(dirpath, "/", "EG2019_400/Aspect_EG.img"),    format = "HFA", datatype = "INT2S", overwrite = TRUE, NAflag = 0)

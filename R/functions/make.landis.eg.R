@@ -15,7 +15,6 @@ make.landis.eg <- function(
     "45",
     "85"
   ),
-  
   rep,
   overwrite = FALSE
 ){
@@ -59,17 +58,6 @@ make.landis.eg <- function(
   )
   
   
-  file.copy(
-    from = fire_weather_files[
-      grep(
-        pattern = rcp,
-        x = fire_weather_files
-      )
-      ],
-    to = new.dir,
-    overwrite = TRUE,
-    recursive = TRUE
-  )
   
   scenario <- readLines(
     con = scenario_files[
@@ -78,7 +66,8 @@ make.landis.eg <- function(
           fmt = "%s_%s",
           yr,
           rcp
-        )
+        ),
+        x = scenario_files
       )
     ],
     
@@ -89,21 +78,6 @@ make.landis.eg <- function(
     scenario[21] <- sprintf(
       "\"Biomass Harvest\"\t            ./Biomass_Harvest_TH%s_PB.txt",
       th
-    )
-    
-    file.copy(
-      from = biomass_harvest_files[
-        grep(
-          pattern = sprintf(
-            "TH%s_PB",
-            th
-          ),
-          x = biomass_harvest_files
-        )
-      ],
-      to = new.dir,
-      overwrite = TRUE,
-      recursive = TRUE
     )
     
     

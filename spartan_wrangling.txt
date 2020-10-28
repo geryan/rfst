@@ -25,10 +25,13 @@ cp -r source_directory destination_directory
 check_home_usage
 	checks data use in /home/ryange
 	
-check_project_usage
-	checks data use in /data/cefphs/punim0995
+check_project_usage 
+	checks data use in /data/gpfs/projects/punim0995 and /punim1340
+	
+check_scratch_usage
 
-sinteractive --time=<dd-hh:mm:ss> --partition=<partition>
+
+sinteractive --time=<dd-hh:mm:ss> --partition=<partition> --mem=25600
   specify partition name
 
 squeue --user=<username> --job=<jobid>

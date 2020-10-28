@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Never edit
-#SBATCH --account="punim0995"
+#SBATCH --account="punim1340"
 #SBATCH --mail-user=ryange@unimelb.edu.au
 #SBATCH --mail-type=ALL
 
@@ -14,7 +14,7 @@
 # Always edit
 
 # megabytes per process
-#SBATCH --mem=25600
+# #
 
 # job name from batch
 # output name from batch

@@ -1,8 +1,10 @@
+source("R/spartan/spartan_settings.R")
+
 library(dplyr)
 library(tidyr)
 library(magrittr)
 
-source("R/functions/make.landis.R")
+source("R/functions/make.landis.eg.R")
 
 rep_list <- sprintf("%02d", 1:10)
 
@@ -12,30 +14,34 @@ rcp <- c("rcp45", "rcp85")
 
 plan_burn <- c("PB", "NB")
 
+lsc <- c("EG19", "EG20")
 
 scn_table <- expand.grid(
   harvest_scenario = harvest_scenario,
   rcp = rcp,
   plan_burn = plan_burn,
-  scenario_replicate = rep_list
+  scenario_replicate = rep_list,
+  lsc = lsc
 ) %>%
   as_tibble %>%
   mutate(
     scenario = sprintf(
-      "%s_%s_%s",
+      "%s_%s_%s_%s",
+      lsc,
       harvest_scenario,
       rcp,
       plan_burn
     ),
     scn_id = sprintf(
-      "%s_%s_%s_%s",
+      "%s_%s_%s_%s_%s",
+      lsc,
       harvest_scenario,
       rcp,
       plan_burn,
       scenario_replicate
     ),
     dir = paste0(
-      "/data/scratch/projects/punim0995/landis_raw/central_highlands/",
+      "/data/scratch/projects/punim1340/landis_raw/east_gippsland/",
       scn_id
     ),
     th = sub(
@@ -78,13 +84,14 @@ scn_table <- expand.grid(
 
 scn_table %$%
   mapply(
-    FUN = make.landis,
+    FUN = make.landis.eg,
     new.dir = dir,
+    lsc = lsc,
     th = th,
     pb = pb,
     rcp = rc,
     rep = scenario_replicate,
     MoreArgs = list(
-      master.dir = "/home/ryange/landis_master_scenario"
+      master.dir = "/data/gpfs/projects/punim1340/landis_master_scenario_eg_4"
     )
   )
