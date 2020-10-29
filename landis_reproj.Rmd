@@ -81,12 +81,6 @@ vma <- getValues(l4_ma_a)
 ```
 
 
-```{r}
-for(i in 1:length(unique(vst))){
-  
-}
-```
-
 
 ```{r}
 writeRaster(x = l4_ec_a,   filename = paste0(dirpath, "/", "EG2019_400/Ecoregion_EG.img"), format = "HFA", datatype = "INT4S", overwrite = TRUE, NAflag = -Inf)

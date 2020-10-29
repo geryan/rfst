@@ -19,7 +19,7 @@
 #SBATCH --output="/data/gpfs/projects/punim0995/rfst/slurm/slurm_output/job_landis_create_eg_4.out"
 
 # days-hours:mins:sec
-#SBATCH --time=0-1:00:00
+#SBATCH --time=0-0:10:00
 
 # Location to run job from
 cd /data/gpfs/projects/punim0995/rfst/

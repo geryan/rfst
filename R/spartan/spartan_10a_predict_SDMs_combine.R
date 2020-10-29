@@ -80,7 +80,7 @@ aggs <- tibble(
 )
 
 
-
+###########
 
 
 p_id <- sub(
@@ -132,26 +132,45 @@ p_maps <- lapply(
 )
 
 
+
 preds <- tibble(
   cscnid = p_csn,
   sp =  p_sp,
   predmaps = p_maps
 )
 
+######
 
-predagg <- full_join(
-  x = preds,
-  y = aggs,
-  by = c("cscnid", "sp")
-)
+
+vs <- var_set %>%
+  dplyr::select(
+    scenario,
+    scenario_replicate,
+    rcp,
+    climate_model,
+    harvest_scenario,
+    plan_burn,
+    scn_id,
+    cscnid
+  )
+
+
 
 pred_set <- full_join(
-  x = var_set,
-  y = predagg
+  x = vs,
+  y = preds,
+  by = "cscnid"
+)
+
+agg_set <- full_join(
+  x = vs,
+  y = aggs,
+  by = "cscnid"
 )
 
 
 save(
   pred_set,
+  agg_set,
   file = "output/RData/10_predict_SDMs.RData"
 ) 
