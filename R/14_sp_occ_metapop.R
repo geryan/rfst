@@ -9,8 +9,8 @@ library(readr)
 library(readxl)
 library(tidyr)
 library(dplyr)
-#library(future)
-#library(future.apply)
+library(future)
+library(future.apply)
 library(lubridate)
 library(ggplot2)
 
@@ -2025,11 +2025,11 @@ pa_list_eg <- tibble(
 
 
 
-#plan(multisession)
+plan(multisession)
 
 pad_ch <- pa_list_ch %$%
-  #future_mapply(
-  mapply(
+  future_mapply(
+  #mapply(
     FUN = buff.sample.pa,
     species = species,
     survey_method = survey_methods,
@@ -2041,17 +2041,17 @@ pad_ch <- pa_list_ch %$%
     SIMPLIFY = FALSE
   )
 
-#plan(sequential)
+plan(sequential)
 
 
-pa_data_ch <- pa_list %>%
+pa_data_ch <- pa_list_ch %>%
   bind_cols(
     tibble(
       pa_dat = pad_ch
     )
   )
 
-#pa_data
+#pa_data_ch
 
 
 # Number of presences and absences for each species

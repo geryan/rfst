@@ -10,17 +10,17 @@
 
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
-#SBATCH --cpus-per-task=1
+#SBATCH --cpus-per-task=6
 
 # megabytes per process
-# --mem=25600
+# --mem=51200
 
 # Always edit
 #SBATCH --job-name="job_14_sp_occ_metapop"
 #SBATCH --output="/data/gpfs/projects/punim0995/rfst/slurm/slurm_output/job_14_sp_occ_metapop.out"
 
 # days-hours:mins:sec
-#SBATCH --time=0-12:00:00
+#SBATCH --time=0-2:00:00
 
 # Location to run job from
 cd /data/gpfs/projects/punim0995/rfst/
