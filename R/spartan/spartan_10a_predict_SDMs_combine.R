@@ -174,3 +174,8 @@ save(
   agg_set,
   file = "output/RData/10_predict_SDMs.RData"
 ) 
+
+save(
+  agg_set,
+  file = "output/RData/10_predict_SDMs_agg.RData"
+) 

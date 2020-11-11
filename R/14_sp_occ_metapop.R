@@ -1,4 +1,4 @@
-# 02 Species occurrence
+# 14 Species occurrence for metapopulation capacity models
 
 source("R/spartan/spartan_settings.R")
 
@@ -2099,6 +2099,6 @@ pa_data_ch %$%
 
 save(
   pa_data_ch,
-  file = "output/RData/13_sp_occ_metapop.RData"
+  file = "output/RData/14_sp_occ_metapop.RData"
 )
 
