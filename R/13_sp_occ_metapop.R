@@ -36,7 +36,7 @@ vba_dat <- lapply(
   ),
   FUN = proc.vba,
   project.crs = ch_proj,
-  cutoff.date = "2009-03-01"
+  cutoff.date = "2000-01-01"
 ) %>%
   do.call(
     what = rbind,
@@ -85,30 +85,31 @@ species_list <- c(
   "Cinclosoma punctatum",
   "Climacteris picumnus",
   "Lophoictinia isura",
-  "Melanodryas cucullata cucullata",
-  "Ninox connivens connivens",
+  "Melanodryas cucullata",
+  "Ninox connivens",
   "Ninox strenua",
   "Petroica rosea",
   "Pyrrholaemus sagittatus",
-  "Tyto novaehollandiae novaehollandiae",
+  "Tyto novaehollandiae",
   "Dasyurus maculatus maculatus",
   "Isoodon obesulus obesulus",
   "Mastacomys fuscus mordicus",
   "Myotis macropus",
-  "Potorous tridactylus tridactylus",
+  "Potorous tridactylus trisulcatus",
   "Pseudomys fumeus",
   "Eucalyptus mackintii",
   "Grevillea barklyana",
-  "Leionema bilobum",
+  "Leionema bilobum subsp. serrulatum",
   "Persoonia arborea",
   "Persoonia silvatica",
-  "Phebalium squamulosum squamulosum",
+  "Phebalium squamulosum subsp. squamulosum",
   "Pomaderris discolor",
   "Tetratheca subaphylla",
   "Wittsteinia vacciniacea",
-  "Zieria smithii smithii",
+  "Zieria smithii subsp. smithii",
   "Morelia spilota spilota"
 )
+
 
 sl <- c(
   "liau",
@@ -598,19 +599,19 @@ sm_clpi <- c(
 spn <- 10
 print(species_list[spn])
 
-ggplot() +
-  geom_sf(
-    data = rfa,
-    aes(
-      col = NAME
-    )
-  ) +
-  geom_sf(
-    dat = vba_dat %>%
-      filter(species == species_list[spn])
-  )
-
-print(species_list[spn])
+# ggplot() +
+#   geom_sf(
+#     data = rfa,
+#     aes(
+#       col = NAME
+#     )
+#   ) +
+#   geom_sf(
+#     dat = vba_dat %>%
+#       filter(species == species_list[spn])
+#   )
+# 
+# print(species_list[spn])
 
 print("CH")
 
@@ -646,23 +647,23 @@ sm_lois <- c(
   "Birds Australia fixed route survey"
 )
 
-# 11  Hooded Robin	              Melanodryas cucullata cucullata ----
-spn <- 1
+# 11  Hooded Robin	              Melanodryas cucullata ----
+spn <- 11
 print(species_list[spn])
 
-ggplot() +
-  geom_sf(
-    data = rfa,
-    aes(
-      col = NAME
-    )
-  ) +
-  geom_sf(
-    dat = vba_dat %>%
-      filter(species == species_list[spn])
-  )
-
-print(species_list[spn])
+# ggplot() +
+#   geom_sf(
+#     data = rfa,
+#     aes(
+#       col = NAME
+#     )
+#   ) +
+#   geom_sf(
+#     dat = vba_dat %>%
+#       filter(species == species_list[spn])
+#   )
+# 
+# print(species_list[spn])
 
 print("CH")
 
@@ -689,28 +690,32 @@ vba_dat_eg %>%
   unique(survey_method)
 
 
-sm_gyle <- c(
-  "Camera - Surveillance/Remote",
-  "Camera - Thermal imaging"
+sm_mecu <- c(
+  "Bird count",
+  "Bird transect",
+  "Birds Australia 500m area search",
+  "Birds Australia 2ha search",
+  "Birds Australia 5km area search",
+  "Birds Australia fixed route survey"
 )
 
 # 12  Barking Owl	                Ninox connivens connivens  ----
-spn <- 1
+spn <- 12
 print(species_list[spn])
 
-ggplot() +
-  geom_sf(
-    data = rfa,
-    aes(
-      col = NAME
-    )
-  ) +
-  geom_sf(
-    dat = vba_dat %>%
-      filter(species == species_list[spn])
-  )
-
-print(species_list[spn])
+# ggplot() +
+#   geom_sf(
+#     data = rfa,
+#     aes(
+#       col = NAME
+#     )
+#   ) +
+#   geom_sf(
+#     dat = vba_dat %>%
+#       filter(species == species_list[spn])
+#   )
+# 
+# print(species_list[spn])
 
 print("CH")
 
@@ -737,28 +742,33 @@ vba_dat_eg %>%
   unique(survey_method)
 
 
-sm_gyle <- c(
-  "Camera - Surveillance/Remote",
-  "Camera - Thermal imaging"
+sm_nico <- c(
+  "Owl census",
+  "Bird count",
+  "Bird transect",
+  "Birds Australia 500m area search",
+  "Birds Australia 2ha search",
+  "Birds Australia 5km area search",
+  "Birds Australia fixed route survey"
 )
 
 # 13  Powerful Owl	              Ninox strenua ----
-spn <- 1
+spn <- 13
 print(species_list[spn])
 
-ggplot() +
-  geom_sf(
-    data = rfa,
-    aes(
-      col = NAME
-    )
-  ) +
-  geom_sf(
-    dat = vba_dat %>%
-      filter(species == species_list[spn])
-  )
-
-print(species_list[spn])
+# ggplot() +
+#   geom_sf(
+#     data = rfa,
+#     aes(
+#       col = NAME
+#     )
+#   ) +
+#   geom_sf(
+#     dat = vba_dat %>%
+#       filter(species == species_list[spn])
+#   )
+# 
+# print(species_list[spn])
 
 print("CH")
 
@@ -785,28 +795,33 @@ vba_dat_eg %>%
   unique(survey_method)
 
 
-sm_gyle <- c(
-  "Camera - Surveillance/Remote",
-  "Camera - Thermal imaging"
+sm_nist <- sm_nico <- c(
+  "Owl census",
+  "Bird count",
+  "Bird transect",
+  "Birds Australia 500m area search",
+  "Birds Australia 2ha search",
+  "Birds Australia 5km area search",
+  "Birds Australia fixed route survey"
 )
 
 # 14  Rose robin	                Petroica rosea ----
-spn <- 1
+spn <- 14
 print(species_list[spn])
 
-ggplot() +
-  geom_sf(
-    data = rfa,
-    aes(
-      col = NAME
-    )
-  ) +
-  geom_sf(
-    dat = vba_dat %>%
-      filter(species == species_list[spn])
-  )
-
-print(species_list[spn])
+# ggplot() +
+#   geom_sf(
+#     data = rfa,
+#     aes(
+#       col = NAME
+#     )
+#   ) +
+#   geom_sf(
+#     dat = vba_dat %>%
+#       filter(species == species_list[spn])
+#   )
+# 
+# print(species_list[spn])
 
 print("CH")
 
@@ -833,28 +848,32 @@ vba_dat_eg %>%
   unique(survey_method)
 
 
-sm_gyle <- c(
-  "Camera - Surveillance/Remote",
-  "Camera - Thermal imaging"
+sm_pero <- c(
+  "Bird count",
+  "Bird transect",
+  "Birds Australia 500m area search",
+  "Birds Australia 2ha search",
+  "Birds Australia 5km area search",
+  "Birds Australia fixed route survey"
 )
 
 # 15  Speckled Warbler	          Pyrrholaemus sagittatus ----
-spn <- 1
+spn <- 15
 print(species_list[spn])
 
-ggplot() +
-  geom_sf(
-    data = rfa,
-    aes(
-      col = NAME
-    )
-  ) +
-  geom_sf(
-    dat = vba_dat %>%
-      filter(species == species_list[spn])
-  )
-
-print(species_list[spn])
+# ggplot() +
+#   geom_sf(
+#     data = rfa,
+#     aes(
+#       col = NAME
+#     )
+#   ) +
+#   geom_sf(
+#     dat = vba_dat %>%
+#       filter(species == species_list[spn])
+#   )
+# 
+# print(species_list[spn])
 
 print("CH")
 
@@ -881,28 +900,32 @@ vba_dat_eg %>%
   unique(survey_method)
 
 
-sm_gyle <- c(
-  "Camera - Surveillance/Remote",
-  "Camera - Thermal imaging"
+sm_pysa <- c(
+  "Bird count",
+  "Bird transect",
+  "Birds Australia 500m area search",
+  "Birds Australia 2ha search",
+  "Birds Australia 5km area search",
+  "Birds Australia fixed route survey"
 )
 
-# 16  Masked Owl	                Tyto novaehollandiae novaehollandiae  ----
-spn <- 1
+# 16  Masked Owl	                Tyto novaehollandiae  ----
+spn <- 16
 print(species_list[spn])
 
-ggplot() +
-  geom_sf(
-    data = rfa,
-    aes(
-      col = NAME
-    )
-  ) +
-  geom_sf(
-    dat = vba_dat %>%
-      filter(species == species_list[spn])
-  )
-
-print(species_list[spn])
+# ggplot() +
+#   geom_sf(
+#     data = rfa,
+#     aes(
+#       col = NAME
+#     )
+#   ) +
+#   geom_sf(
+#     dat = vba_dat %>%
+#       filter(species == species_list[spn])
+#   )
+# 
+# print(species_list[spn])
 
 print("CH")
 
@@ -929,28 +952,33 @@ vba_dat_eg %>%
   unique(survey_method)
 
 
-sm_gyle <- c(
-  "Camera - Surveillance/Remote",
-  "Camera - Thermal imaging"
+sm_tyno <- c(
+  "Owl census",
+  "Bird count",
+  "Bird transect",
+  "Birds Australia 500m area search",
+  "Birds Australia 2ha search",
+  "Birds Australia 5km area search",
+  "Birds Australia fixed route survey"
 )
 
-# 18  Spot-tailed Quoll	          Dasyurus maculatus maculatus  ----
-spn <- 1
+# 17  Spot-tailed Quoll	          Dasyurus maculatus maculatus  ----
+spn <- 17
 print(species_list[spn])
 
-ggplot() +
-  geom_sf(
-    data = rfa,
-    aes(
-      col = NAME
-    )
-  ) +
-  geom_sf(
-    dat = vba_dat %>%
-      filter(species == species_list[spn])
-  )
-
-print(species_list[spn])
+# ggplot() +
+#   geom_sf(
+#     data = rfa,
+#     aes(
+#       col = NAME
+#     )
+#   ) +
+#   geom_sf(
+#     dat = vba_dat %>%
+#       filter(species == species_list[spn])
+#   )
+# 
+# print(species_list[spn])
 
 print("CH")
 
@@ -977,28 +1005,27 @@ vba_dat_eg %>%
   unique(survey_method)
 
 
-sm_gyle <- c(
-  "Camera - Surveillance/Remote",
-  "Camera - Thermal imaging"
+sm_dama <- c(
+  "Camera - Surveillance/Remote"
 )
 
-# 19  Southern Brown Bandicoot	  Isoodon obesulus obesulus  ----
-spn <- 1
+# 18  Southern Brown Bandicoot	  Isoodon obesulus obesulus  ----
+spn <- 18
 print(species_list[spn])
 
-ggplot() +
-  geom_sf(
-    data = rfa,
-    aes(
-      col = NAME
-    )
-  ) +
-  geom_sf(
-    dat = vba_dat %>%
-      filter(species == species_list[spn])
-  )
-
-print(species_list[spn])
+# ggplot() +
+#   geom_sf(
+#     data = rfa,
+#     aes(
+#       col = NAME
+#     )
+#   ) +
+#   geom_sf(
+#     dat = vba_dat %>%
+#       filter(species == species_list[spn])
+#   )
+# 
+# print(species_list[spn])
 
 print("CH")
 
@@ -1025,28 +1052,29 @@ vba_dat_eg %>%
   unique(survey_method)
 
 
-sm_gyle <- c(
+sm_isob <- c(
   "Camera - Surveillance/Remote",
-  "Camera - Thermal imaging"
+  "Large hair tubes",
+  "Faunatech hair tubes(bait type in X)"
 )
 
-# 20  Broad-toothed Rat	          Mastacomys fuscus mordicus ----
-spn <- 1
+# 19  Broad-toothed Rat	          Mastacomys fuscus mordicus ----
+spn <- 19
 print(species_list[spn])
 
-ggplot() +
-  geom_sf(
-    data = rfa,
-    aes(
-      col = NAME
-    )
-  ) +
-  geom_sf(
-    dat = vba_dat %>%
-      filter(species == species_list[spn])
-  )
-
-print(species_list[spn])
+# ggplot() +
+#   geom_sf(
+#     data = rfa,
+#     aes(
+#       col = NAME
+#     )
+#   ) +
+#   geom_sf(
+#     dat = vba_dat %>%
+#       filter(species == species_list[spn])
+#   )
+# 
+# print(species_list[spn])
 
 print("CH")
 
@@ -1073,28 +1101,73 @@ vba_dat_eg %>%
   unique(survey_method)
 
 
-sm_gyle <- c(
-  "Camera - Surveillance/Remote",
-  "Camera - Thermal imaging"
+sm_mafu <- NA
+
+# 20  Large-footed Myotis	        Myotis macropus ----
+spn <- 20
+print(species_list[spn])
+
+# ggplot() +
+#   geom_sf(
+#     data = rfa,
+#     aes(
+#       col = NAME
+#     )
+#   ) +
+#   geom_sf(
+#     dat = vba_dat %>%
+#       filter(species == species_list[spn])
+#   )
+# 
+# print(species_list[spn])
+
+print("CH")
+
+vba_dat_ch %>%
+  filter(species == species_list[spn]) %$%
+  table(survey_method, PA) %>%
+  print %>%
+  sum
+
+vba_dat_ch %>%
+  filter(species == species_list[spn]) %$%
+  unique(survey_method)
+
+print("EG")
+
+vba_dat_eg %>%
+  filter(species == species_list[spn]) %$%
+  table(survey_method, PA) %>%
+  print %>%
+  sum
+
+vba_dat_eg %>%
+  filter(species == species_list[spn]) %$%
+  unique(survey_method)
+
+
+sm_myma <- c(
+  "Bat trap",
+  "Bat detector"
 )
 
-# 21  Large-footed Myotis	        Myotis macropus ----
-spn <- 1
+# 21  Long-nosed Potoroo	        Potorous tridactylus trisulcatus ----
+spn <- 21
 print(species_list[spn])
 
-ggplot() +
-  geom_sf(
-    data = rfa,
-    aes(
-      col = NAME
-    )
-  ) +
-  geom_sf(
-    dat = vba_dat %>%
-      filter(species == species_list[spn])
-  )
-
-print(species_list[spn])
+# ggplot() +
+#   geom_sf(
+#     data = rfa,
+#     aes(
+#       col = NAME
+#     )
+#   ) +
+#   geom_sf(
+#     dat = vba_dat %>%
+#       filter(species == species_list[spn])
+#   )
+# 
+# print(species_list[spn])
 
 print("CH")
 
@@ -1121,28 +1194,28 @@ vba_dat_eg %>%
   unique(survey_method)
 
 
-sm_gyle <- c(
+sm_potr <- c(
   "Camera - Surveillance/Remote",
-  "Camera - Thermal imaging"
+  "Large hair tubes"
 )
 
-# 22  Long-nosed Potoroo	        Potorous tridactylus tridactylus ----
-spn <- 1
+# 22  Smoky Mouse	                Pseudomys fumeus ----
+spn <- 22
 print(species_list[spn])
 
-ggplot() +
-  geom_sf(
-    data = rfa,
-    aes(
-      col = NAME
-    )
-  ) +
-  geom_sf(
-    dat = vba_dat %>%
-      filter(species == species_list[spn])
-  )
-
-print(species_list[spn])
+# ggplot() +
+#   geom_sf(
+#     data = rfa,
+#     aes(
+#       col = NAME
+#     )
+#   ) +
+#   geom_sf(
+#     dat = vba_dat %>%
+#       filter(species == species_list[spn])
+#   )
+# 
+# print(species_list[spn])
 
 print("CH")
 
@@ -1169,28 +1242,28 @@ vba_dat_eg %>%
   unique(survey_method)
 
 
-sm_gyle <- c(
+sm_psfu <- sm_isob <- c(
   "Camera - Surveillance/Remote",
-  "Camera - Thermal imaging"
+  "Faunatech hair tubes(bait type in X)"
 )
 
-# 23  Smoky Mouse	                Pseudomys fumeus ----
-spn <- 1
+# 23  Gippsland Stringybark	      Eucalyptus mackintii ----
+spn <- 23
 print(species_list[spn])
 
-ggplot() +
-  geom_sf(
-    data = rfa,
-    aes(
-      col = NAME
-    )
-  ) +
-  geom_sf(
-    dat = vba_dat %>%
-      filter(species == species_list[spn])
-  )
-
-print(species_list[spn])
+# ggplot() +
+#   geom_sf(
+#     data = rfa,
+#     aes(
+#       col = NAME
+#     )
+#   ) +
+#   geom_sf(
+#     dat = vba_dat %>%
+#       filter(species == species_list[spn])
+#   )
+# 
+# print(species_list[spn])
 
 print("CH")
 
@@ -1217,28 +1290,27 @@ vba_dat_eg %>%
   unique(survey_method)
 
 
-sm_gyle <- c(
-  "Camera - Surveillance/Remote",
-  "Camera - Thermal imaging"
+sm_euma <- c(
+  "Quadrat"
 )
 
-# 24  Gippsland Stringybark	      Eucalyptus mackintii ----
-spn <- 1
+# 24  Gully Grevillea	            Grevillea barklyana ----
+spn <- 24
 print(species_list[spn])
 
-ggplot() +
-  geom_sf(
-    data = rfa,
-    aes(
-      col = NAME
-    )
-  ) +
-  geom_sf(
-    dat = vba_dat %>%
-      filter(species == species_list[spn])
-  )
-
-print(species_list[spn])
+# ggplot() +
+#   geom_sf(
+#     data = rfa,
+#     aes(
+#       col = NAME
+#     )
+#   ) +
+#   geom_sf(
+#     dat = vba_dat %>%
+#       filter(species == species_list[spn])
+#   )
+# 
+# print(species_list[spn])
 
 print("CH")
 
@@ -1265,28 +1337,27 @@ vba_dat_eg %>%
   unique(survey_method)
 
 
-sm_gyle <- c(
-  "Camera - Surveillance/Remote",
-  "Camera - Thermal imaging"
+sm_grba <- c(
+  "Quadrat"
 )
 
-# 25  Gully Grevillea	            Grevillea barklyana ----
-spn <- 1
+# 25  Toothed Leionema	          Leionema bilobum subsp. serrulatum----
+spn <- 25
 print(species_list[spn])
 
-ggplot() +
-  geom_sf(
-    data = rfa,
-    aes(
-      col = NAME
-    )
-  ) +
-  geom_sf(
-    dat = vba_dat %>%
-      filter(species == species_list[spn])
-  )
-
-print(species_list[spn])
+# ggplot() +
+#   geom_sf(
+#     data = rfa,
+#     aes(
+#       col = NAME
+#     )
+#   ) +
+#   geom_sf(
+#     dat = vba_dat %>%
+#       filter(species == species_list[spn])
+#   )
+# 
+# print(species_list[spn])
 
 print("CH")
 
@@ -1313,26 +1384,25 @@ vba_dat_eg %>%
   unique(survey_method)
 
 
-sm_gyle <- c(
-  "Camera - Surveillance/Remote",
-  "Camera - Thermal imaging"
+sm_lebi <- c(
+  "Quadrat"
 )
 
-# 26  Toothed Leionema	          Leionema bilobum ----
-spn <- 1
+# 26  Tree Geebung	              Persoonia arborea ----
+spn <- 26
 print(species_list[spn])
 
-ggplot() +
-  geom_sf(
-    data = rfa,
-    aes(
-      col = NAME
-    )
-  ) +
-  geom_sf(
-    dat = vba_dat %>%
-      filter(species == species_list[spn])
-  )
+# ggplot() +
+#   geom_sf(
+#     data = rfa,
+#     aes(
+#       col = NAME
+#     )
+#   ) +
+#   geom_sf(
+#     dat = vba_dat %>%
+#       filter(species == species_list[spn])
+#   )
 
 print(species_list[spn])
 
@@ -1361,28 +1431,27 @@ vba_dat_eg %>%
   unique(survey_method)
 
 
-sm_gyle <- c(
-  "Camera - Surveillance/Remote",
-  "Camera - Thermal imaging"
+sm_pear <- c(
+  "Quadrat"
 )
 
-# 27  Tree Geebung	              Persoonia arborea ----
-spn <- 1
+# 27  Forest Geebung	            Persoonia silvatica ----
+spn <- 27
 print(species_list[spn])
 
-ggplot() +
-  geom_sf(
-    data = rfa,
-    aes(
-      col = NAME
-    )
-  ) +
-  geom_sf(
-    dat = vba_dat %>%
-      filter(species == species_list[spn])
-  )
-
-print(species_list[spn])
+# ggplot() +
+#   geom_sf(
+#     data = rfa,
+#     aes(
+#       col = NAME
+#     )
+#   ) +
+#   geom_sf(
+#     dat = vba_dat %>%
+#       filter(species == species_list[spn])
+#   )
+# 
+# print(species_list[spn])
 
 print("CH")
 
@@ -1409,28 +1478,27 @@ vba_dat_eg %>%
   unique(survey_method)
 
 
-sm_gyle <- c(
-  "Camera - Surveillance/Remote",
-  "Camera - Thermal imaging"
+sm_pesi <- c(
+  "Quadrat"
 )
 
-# 28  Forest Geebung	            Persoonia silvatica ----
-spn <- 1
+# 28  Forest Phebalium	          Phebalium squamulosum squamulosum ----
+spn <- 28
 print(species_list[spn])
 
-ggplot() +
-  geom_sf(
-    data = rfa,
-    aes(
-      col = NAME
-    )
-  ) +
-  geom_sf(
-    dat = vba_dat %>%
-      filter(species == species_list[spn])
-  )
-
-print(species_list[spn])
+# ggplot() +
+#   geom_sf(
+#     data = rfa,
+#     aes(
+#       col = NAME
+#     )
+#   ) +
+#   geom_sf(
+#     dat = vba_dat %>%
+#       filter(species == species_list[spn])
+#   )
+# 
+# print(species_list[spn])
 
 print("CH")
 
@@ -1457,28 +1525,27 @@ vba_dat_eg %>%
   unique(survey_method)
 
 
-sm_gyle <- c(
-  "Camera - Surveillance/Remote",
-  "Camera - Thermal imaging"
+sm_phsq <- c(
+  "Quadrat"
 )
 
-# 29  Forest Phebalium	          Phebalium squamulosum squamulosum ----
-spn <- 1
+# 29  Eastern Pomaderris	        Pomaderris discolor ----
+spn <- 29
 print(species_list[spn])
 
-ggplot() +
-  geom_sf(
-    data = rfa,
-    aes(
-      col = NAME
-    )
-  ) +
-  geom_sf(
-    dat = vba_dat %>%
-      filter(species == species_list[spn])
-  )
-
-print(species_list[spn])
+# ggplot() +
+#   geom_sf(
+#     data = rfa,
+#     aes(
+#       col = NAME
+#     )
+#   ) +
+#   geom_sf(
+#     dat = vba_dat %>%
+#       filter(species == species_list[spn])
+#   )
+# 
+# print(species_list[spn])
 
 print("CH")
 
@@ -1505,28 +1572,27 @@ vba_dat_eg %>%
   unique(survey_method)
 
 
-sm_gyle <- c(
-  "Camera - Surveillance/Remote",
-  "Camera - Thermal imaging"
+sm_podi <- c(
+  "Quadrat"
 )
 
-# 30  Eastern Pomaderris	        Pomaderris discolor ----
-spn <- 1
+# 30  Leafless Pink-bells	        Tetratheca subaphylla ----
+spn <- 30
 print(species_list[spn])
 
-ggplot() +
-  geom_sf(
-    data = rfa,
-    aes(
-      col = NAME
-    )
-  ) +
-  geom_sf(
-    dat = vba_dat %>%
-      filter(species == species_list[spn])
-  )
-
-print(species_list[spn])
+# ggplot() +
+#   geom_sf(
+#     data = rfa,
+#     aes(
+#       col = NAME
+#     )
+#   ) +
+#   geom_sf(
+#     dat = vba_dat %>%
+#       filter(species == species_list[spn])
+#   )
+# 
+# print(species_list[spn])
 
 print("CH")
 
@@ -1553,28 +1619,27 @@ vba_dat_eg %>%
   unique(survey_method)
 
 
-sm_gyle <- c(
-  "Camera - Surveillance/Remote",
-  "Camera - Thermal imaging"
+sm_tesu <- c(
+  "Quadrat"
 )
 
-# 31  Leafless Pink-bells	        Tetratheca subaphylla ----
-spn <- 1
+# 31  Baw Baw Berry	              Wittsteinia vacciniacea ----
+spn <- 31
 print(species_list[spn])
 
-ggplot() +
-  geom_sf(
-    data = rfa,
-    aes(
-      col = NAME
-    )
-  ) +
-  geom_sf(
-    dat = vba_dat %>%
-      filter(species == species_list[spn])
-  )
-
-print(species_list[spn])
+# ggplot() +
+#   geom_sf(
+#     data = rfa,
+#     aes(
+#       col = NAME
+#     )
+#   ) +
+#   geom_sf(
+#     dat = vba_dat %>%
+#       filter(species == species_list[spn])
+#   )
+# 
+# print(species_list[spn])
 
 print("CH")
 
@@ -1601,28 +1666,27 @@ vba_dat_eg %>%
   unique(survey_method)
 
 
-sm_gyle <- c(
-  "Camera - Surveillance/Remote",
-  "Camera - Thermal imaging"
+sm_wiva <- c(
+  "Quadrat"
 )
 
-# 32  Baw Baw Berry	              Wittsteinia vacciniacea ----
-spn <- 1
+# 32  Sandfly Zieria	            Zieria smithii smithii ----
+spn <- 32
 print(species_list[spn])
 
-ggplot() +
-  geom_sf(
-    data = rfa,
-    aes(
-      col = NAME
-    )
-  ) +
-  geom_sf(
-    dat = vba_dat %>%
-      filter(species == species_list[spn])
-  )
-
-print(species_list[spn])
+# ggplot() +
+#   geom_sf(
+#     data = rfa,
+#     aes(
+#       col = NAME
+#     )
+#   ) +
+#   geom_sf(
+#     dat = vba_dat %>%
+#       filter(species == species_list[spn])
+#   )
+# 
+# print(species_list[spn])
 
 print("CH")
 
@@ -1649,28 +1713,27 @@ vba_dat_eg %>%
   unique(survey_method)
 
 
-sm_gyle <- c(
-  "Camera - Surveillance/Remote",
-  "Camera - Thermal imaging"
+sm_zism <- c(
+  "Quadrat"
 )
 
-# 33  Sandfly Zieria	            Zieria smithii smithii ----
-spn <- 1
+# 33  Diamond Python	            Morelia spilota spilota ----
+spn <- 33
 print(species_list[spn])
 
-ggplot() +
-  geom_sf(
-    data = rfa,
-    aes(
-      col = NAME
-    )
-  ) +
-  geom_sf(
-    dat = vba_dat %>%
-      filter(species == species_list[spn])
-  )
-
-print(species_list[spn])
+# ggplot() +
+#   geom_sf(
+#     data = rfa,
+#     aes(
+#       col = NAME
+#     )
+#   ) +
+#   geom_sf(
+#     dat = vba_dat %>%
+#       filter(species == species_list[spn])
+#   )
+# 
+# print(species_list[spn])
 
 print("CH")
 
@@ -1697,73 +1760,235 @@ vba_dat_eg %>%
   unique(survey_method)
 
 
-sm_gyle <- c(
-  "Camera - Surveillance/Remote",
-  "Camera - Thermal imaging"
-)
-
-# 34  Diamond Python	            Morelia spilota spilota ----
-spn <- 1
-print(species_list[spn])
-
-ggplot() +
-  geom_sf(
-    data = rfa,
-    aes(
-      col = NAME
-    )
-  ) +
-  geom_sf(
-    dat = vba_dat %>%
-      filter(species == species_list[spn])
-  )
-
-print(species_list[spn])
-
-print("CH")
-
-vba_dat_ch %>%
-  filter(species == species_list[spn]) %$%
-  table(survey_method, PA) %>%
-  print %>%
-  sum
-
-vba_dat_ch %>%
-  filter(species == species_list[spn]) %$%
-  unique(survey_method)
-
-print("EG")
-
-vba_dat_eg %>%
-  filter(species == species_list[spn]) %$%
-  table(survey_method, PA) %>%
-  print %>%
-  sum
-
-vba_dat_eg %>%
-  filter(species == species_list[spn]) %$%
-  unique(survey_method)
-
-
-sm_gyle <- c(
-  "Camera - Surveillance/Remote",
-  "Camera - Thermal imaging"
+sm_mosp <- c(
+  "Herp census - active",
+  "Herp transect - passive",
+  "Herp spot count",
+  "Herp transect"
 )
 
 
 # Aggregate and get data --------------
 
+species_list_ch <- c(
+  #"Litoria aurea",
+  #"Litoria littlejohni",
+  #"Pseudophryne bibronii",
+  #"Pseudophryne dendyi",
+  "Pseudophryne semimarmorata",
+  "Accipiter novaehollandiae",
+  #"Calyptorhynchus lathami",
+  "Cinclosoma punctatum",
+  #"Climacteris picumnus",
+  "Lophoictinia isura",
+  #"Melanodryas cucullata",
+  "Ninox connivens",
+  "Ninox strenua",
+  "Petroica rosea",
+  #"Pyrrholaemus sagittatus",
+  "Tyto novaehollandiae",
+  #"Dasyurus maculatus maculatus",
+  "Isoodon obesulus obesulus",
+  #"Mastacomys fuscus mordicus",
+  "Myotis macropus",
+  #"Potorous tridactylus trisulcatus",
+  "Pseudomys fumeus",
+  #"Eucalyptus mackintii",
+  "Grevillea barklyana",
+  "Leionema bilobum subsp. serrulatum",
+  "Persoonia arborea",
+  #"Persoonia silvatica",
+  #"Phebalium squamulosum subsp. squamulosum",
+  #"Pomaderris discolor",
+  "Tetratheca subaphylla",
+  "Wittsteinia vacciniacea"#,
+  #"Zieria smithii subsp. smithii",
+  #"Morelia spilota spilota"
+)
 
-pa_list <- tibble(
-  species = species_list,
-  survey_methods = list(
-    sm_gyle,
-    sm_pevo,
-    sm_peau,
-    sm_smle,
-    sm_tyte,
-    sm_vave
+species_list_eg <- c(
+  "Litoria aurea",
+  "Litoria littlejohni",
+  #"Pseudophryne bibronii",
+  "Pseudophryne dendyi",
+  #"Pseudophryne semimarmorata",
+  "Accipiter novaehollandiae",
+  "Calyptorhynchus lathami",
+  "Cinclosoma punctatum",
+  "Climacteris picumnus",
+  "Lophoictinia isura",
+  "Melanodryas cucullata",
+  #"Ninox connivens",
+  "Ninox strenua",
+  "Petroica rosea",
+  "Pyrrholaemus sagittatus",
+  "Tyto novaehollandiae",
+  "Dasyurus maculatus maculatus",
+  "Isoodon obesulus obesulus",
+  #"Mastacomys fuscus mordicus",
+  #"Myotis macropus",
+  "Potorous tridactylus trisulcatus",
+  #"Pseudomys fumeus",
+  "Eucalyptus mackintii",
+  #"Grevillea barklyana",
+  #"Leionema bilobum subsp. serrulatum",
+  #"Persoonia arborea",
+  #"Persoonia silvatica",
+  #"Phebalium squamulosum subsp. squamulosum",
+  #"Pomaderris discolor",
+  "Tetratheca subaphylla",
+  #"Wittsteinia vacciniacea",
+  #"Zieria smithii subsp. smithii",
+  "Morelia spilota spilota"
+)
+
+
+sm_list <- list(
+  sm_liau,
+  sm_lili,
+  sm_psbi,
+  sm_psde,
+  sm_psse,
+  sm_acno,
+  sm_cala,
+  sm_cipu,
+  sm_clpi,
+  sm_lois,
+  sm_mecu,
+  sm_nico,
+  sm_nist,
+  sm_pero,
+  sm_pysa,
+  sm_tyno,
+  sm_dama,
+  sm_isob,
+  sm_mafu,
+  sm_myma,
+  sm_potr,
+  sm_psfu,
+  sm_euma,
+  sm_grba,
+  sm_lebi,
+  sm_pear,
+  sm_pesi,
+  sm_phsq,
+  sm_podi,
+  sm_tesu,
+  sm_wiva,
+  sm_zism,
+  sm_mosp
+)
+
+sm_list_ch <- list(
+  #sm_liau,
+  #sm_lili,
+  #sm_psbi,
+  #sm_psde,
+  sm_psse,
+  sm_acno,
+  #sm_cala,
+  sm_cipu,
+  #sm_clpi,
+  sm_lois,
+  #sm_mecu,
+  sm_nico,
+  sm_nist,
+  sm_pero,
+  #sm_pysa,
+  sm_tyno,
+  #sm_dama,
+  sm_isob,
+  #sm_mafu,
+  sm_myma,
+  #sm_potr,
+  sm_psfu,
+  #sm_euma,
+  sm_grba,
+  sm_lebi,
+  sm_pear,
+  #sm_pesi,
+  #sm_phsq,
+  #sm_podi,
+  sm_tesu,
+  sm_wiva#,
+  #sm_zism,
+  #sm_mosp
+)
+
+sm_list_eg <- list(
+  sm_liau,
+  sm_lili,
+  #sm_psbi,
+  sm_psde,
+  #sm_psse,
+  sm_acno,
+  sm_cala,
+  sm_cipu,
+  sm_clpi,
+  sm_lois,
+  sm_mecu,
+  #sm_nico,
+  sm_nist,
+  sm_pero,
+  sm_pysa,
+  sm_tyno,
+  sm_dama,
+  sm_isob,
+  #sm_mafu,
+  #sm_myma,
+  sm_potr,
+  #sm_psfu,
+  sm_euma,
+  #sm_grba,
+  #sm_lebi,
+  #sm_pear,
+  #sm_pesi,
+  #sm_phsq,
+  #sm_podi,
+  sm_tesu,
+  #sm_wiva,
+  #sm_zism,
+  sm_mosp
+)
+
+pa_list_ch <- tibble(
+  species = species_list_ch,
+  survey_methods = sm_list_ch
+) %>%
+  mutate(
+    gen = sub(
+      pattern = " .*",
+      replacement = "",
+      x = species
+    ) %>%
+      tolower %>%
+      substr(
+        start = 1,
+        stop = 2
+      ),
+    spe = sub(
+      pattern = ".* ",
+      replacement = "",
+      x = species
+    ) %>%
+      substr(
+        start = 1,
+        stop = 2
+      ),
+    sp = paste0(
+      gen,
+      spe
+    )
+  ) %>%
+  dplyr::select(
+    species,
+    sp,
+    survey_methods
   )
+
+pa_list_eg <- tibble(
+  species = species_list_eg,
+  survey_methods = sm_list_eg
 ) %>%
   mutate(
     gen = sub(
@@ -1797,9 +2022,12 @@ pa_list <- tibble(
   )
 
 
+
+
+
 #plan(multisession)
 
-pad <- pa_list %$%
+pad_ch <- pa_list_ch %$%
   #future_mapply(
   mapply(
     FUN = buff.sample.pa,
@@ -1816,10 +2044,10 @@ pad <- pa_list %$%
 #plan(sequential)
 
 
-pa_data <- pa_list %>%
+pa_data_ch <- pa_list %>%
   bind_cols(
     tibble(
-      pa_dat = pad
+      pa_dat = pad_ch
     )
   )
 
@@ -1828,7 +2056,7 @@ pa_data <- pa_list %>%
 
 # Number of presences and absences for each species
 lapply(
-  X = pa_data$pa_dat,
+  X = pa_data_ch$pa_dat,
   FUN = function(x){
     table(x$PA)
   }
@@ -1838,7 +2066,7 @@ lapply(
 
 # Write and save data --------------------------
 
-pa_data %$%
+pa_data_ch %$%
   mapply(
     FUN = function(
       x,
@@ -1847,7 +2075,7 @@ pa_data %$%
       st_write(
         obj = x,
         dsn = sprintf(
-          "output/pa/pa_%s.shp",
+          "output/pa/pa_ch_%s.shp",
           y
         ),
         delete_dsn = TRUE
@@ -1856,7 +2084,7 @@ pa_data %$%
       st_write(
         obj = x,
         dsn = sprintf(
-          "output/pa/pa_%s.csv",
+          "output/pa/pa_ch_%s.csv",
           y
         ),
         layer_options = "GEOMETRY=AS_XY",
@@ -1869,8 +2097,8 @@ pa_data %$%
 
 
 
-# save(
-#   pa_data,
-#   file = "output/RData/02_species_occurrences.RData"
-# )
+save(
+  pa_data_ch,
+  file = "output/RData/13_sp_occ_metapop.RData"
+)
 
