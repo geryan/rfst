@@ -80,10 +80,10 @@ species_list <- c(
   "Pseudophryne bibronii",
   "Pseudophryne dendyi",
   "Pseudophryne semimarmorata",
-  "Accipiter novaehollandiae novaehollandiae",
-  "Calyptorhynchus lathami lathami",
+  "Accipiter novaehollandiae",
+  "Calyptorhynchus lathami",
   "Cinclosoma punctatum",
-  "Climacteris picumnus victoriae",
+  "Climacteris picumnus",
   "Lophoictinia isura",
   "Melanodryas cucullata cucullata",
   "Ninox connivens connivens",
@@ -195,7 +195,7 @@ sm_liau <- c(
   "Frog census"
 )
 
-# 02  2Large Brown Tree Frog      Litoria littlejohni  ------
+# 02  2Large Brown Tree Frog      Litoria littlejohni  ----
 spn <- 2
 print(species_list[spn])
 
@@ -294,19 +294,19 @@ sm_psbi <- c(
 spn <- 4
 print(species_list[spn])
 
-ggplot() +
-  geom_sf(
-    data = rfa,
-    aes(
-      col = NAME
-    )
-  ) +
-  geom_sf(
-    dat = vba_dat %>%
-      filter(species == species_list[spn])
-  )
-
-print(species_list[spn])
+# ggplot() +
+#   geom_sf(
+#     data = rfa,
+#     aes(
+#       col = NAME
+#     )
+#   ) +
+#   geom_sf(
+#     dat = vba_dat %>%
+#       filter(species == species_list[spn])
+#   )
+# 
+# print(species_list[spn])
 
 print("CH")
 
@@ -334,27 +334,27 @@ vba_dat_eg %>%
 
 
 sm_psde <- c(
-  "Camera - Surveillance/Remote",
-  "Camera - Thermal imaging"
+  "Frog transect",
+  "Frog census"
 )
 
 # 05  Southern Toadlet 	          Pseudophryne semimarmorata ----
-spn <- 1
+spn <- 5
 print(species_list[spn])
 
-ggplot() +
-  geom_sf(
-    data = rfa,
-    aes(
-      col = NAME
-    )
-  ) +
-  geom_sf(
-    dat = vba_dat %>%
-      filter(species == species_list[spn])
-  )
-
-print(species_list[spn])
+# ggplot() +
+#   geom_sf(
+#     data = rfa,
+#     aes(
+#       col = NAME
+#     )
+#   ) +
+#   geom_sf(
+#     dat = vba_dat %>%
+#       filter(species == species_list[spn])
+#   )
+# 
+# print(species_list[spn])
 
 print("CH")
 
@@ -381,28 +381,28 @@ vba_dat_eg %>%
   unique(survey_method)
 
 
-sm_gyle <- c(
-  "Camera - Surveillance/Remote",
-  "Camera - Thermal imaging"
+sm_psse <- c(
+  "Frog transect",
+  "Frog census"
 )
 
-# 06  Grey Goshawk 	              Accipiter novaehollandiae novaehollandiae  ----
-spn <- 1
+# 06  Grey Goshawk 	              Accipiter novaehollandiae ----
+spn <- 6
 print(species_list[spn])
 
-ggplot() +
-  geom_sf(
-    data = rfa,
-    aes(
-      col = NAME
-    )
-  ) +
-  geom_sf(
-    dat = vba_dat %>%
-      filter(species == species_list[spn])
-  )
-
-print(species_list[spn])
+# ggplot() +
+#   geom_sf(
+#     data = rfa,
+#     aes(
+#       col = NAME
+#     )
+#   ) +
+#   geom_sf(
+#     dat = vba_dat %>%
+#       filter(species == species_list[spn])
+#   )
+# 
+# print(species_list[spn])
 
 print("CH")
 
@@ -429,28 +429,32 @@ vba_dat_eg %>%
   unique(survey_method)
 
 
-sm_gyle <- c(
-  "Camera - Surveillance/Remote",
-  "Camera - Thermal imaging"
+sm_acno <- c(
+  "Bird count",
+  "Bird transect",
+  "Birds Australia 500m area search",
+  "Birds Australia 2ha search",
+  "Birds Australia 5km area search",
+  "Birds Australia fixed route survey"
 )
 
-# 07  Glossy Black-Cockatoo	      Calyptorhynchus lathami lathami  ----
-spn <- 1
+# 07  Glossy Black-Cockatoo	      Calyptorhynchus lathami ----
+spn <- 7
 print(species_list[spn])
-
-ggplot() +
-  geom_sf(
-    data = rfa,
-    aes(
-      col = NAME
-    )
-  ) +
-  geom_sf(
-    dat = vba_dat %>%
-      filter(species == species_list[spn])
-  )
-
-print(species_list[spn])
+# 
+# ggplot() +
+#   geom_sf(
+#     data = rfa,
+#     aes(
+#       col = NAME
+#     )
+#   ) +
+#   geom_sf(
+#     dat = vba_dat %>%
+#       filter(species == species_list[spn])
+#   )
+# 
+# print(species_list[spn])
 
 print("CH")
 
@@ -477,13 +481,17 @@ vba_dat_eg %>%
   unique(survey_method)
 
 
-sm_gyle <- c(
-  "Camera - Surveillance/Remote",
-  "Camera - Thermal imaging"
+sm_cala <- c(
+  "Bird count",
+  "Bird transect",
+  "Birds Australia 500m area search",
+  "Birds Australia 2ha search",
+  "Birds Australia 5km area search",
+  "Birds Australia fixed route survey"
 )
 
 # 08  Spotted Quail-thrush 	      Cinclosoma punctatum ----
-spn <- 1
+spn <- 8
 print(species_list[spn])
 
 ggplot() +
@@ -525,28 +533,32 @@ vba_dat_eg %>%
   unique(survey_method)
 
 
-sm_gyle <- c(
-  "Camera - Surveillance/Remote",
-  "Camera - Thermal imaging"
+sm_cipu <- c(
+  "Bird count",
+  "Bird transect",
+  "Birds Australia 500m area search",
+  "Birds Australia 2ha search",
+  "Birds Australia 5km area search",
+  "Birds Australia fixed route survey"
 )
 
-# 09  Brown Treecreeper (SE ssp)	Climacteris picumnus victoriae ----
-spn <- 1
+# 09  Brown Treecreeper (SE ssp)	Climacteris picumnus ----
+spn <- 9
 print(species_list[spn])
 
-ggplot() +
-  geom_sf(
-    data = rfa,
-    aes(
-      col = NAME
-    )
-  ) +
-  geom_sf(
-    dat = vba_dat %>%
-      filter(species == species_list[spn])
-  )
-
-print(species_list[spn])
+# ggplot() +
+#   geom_sf(
+#     data = rfa,
+#     aes(
+#       col = NAME
+#     )
+#   ) +
+#   geom_sf(
+#     dat = vba_dat %>%
+#       filter(species == species_list[spn])
+#   )
+# 
+# print(species_list[spn])
 
 print("CH")
 
@@ -573,13 +585,17 @@ vba_dat_eg %>%
   unique(survey_method)
 
 
-sm_gyle <- c(
-  "Camera - Surveillance/Remote",
-  "Camera - Thermal imaging"
+sm_clpi <- c(
+  "Bird count",
+  "Bird transect",
+  "Birds Australia 500m area search",
+  "Birds Australia 2ha search",
+  "Birds Australia 5km area search",
+  "Birds Australia fixed route survey"
 )
 
 # 10  Square-tailed Kite	        Lophoictinia isura ----
-spn <- 1
+spn <- 10
 print(species_list[spn])
 
 ggplot() +
@@ -621,9 +637,13 @@ vba_dat_eg %>%
   unique(survey_method)
 
 
-sm_gyle <- c(
-  "Camera - Surveillance/Remote",
-  "Camera - Thermal imaging"
+sm_lois <- c(
+  "Bird count",
+  "Bird transect",
+  "Birds Australia 500m area search",
+  "Birds Australia 2ha search",
+  "Birds Australia 5km area search",
+  "Birds Australia fixed route survey"
 )
 
 # 11  Hooded Robin	              Melanodryas cucullata cucullata ----
