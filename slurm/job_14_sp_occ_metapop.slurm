@@ -16,8 +16,8 @@
 
 
 # Always edit
-#SBATCH --job-name="job_13_sp_occ_metapop"
-#SBATCH --output="/data/gpfs/projects/punim0995/rfst/slurm/slurm_output/job_13_sp_occ_metapop.out"
+#SBATCH --job-name="job_14_sp_occ_metapop"
+#SBATCH --output="/data/gpfs/projects/punim0995/rfst/slurm/slurm_output/job_14_sp_occ_metapop.out"
 
 # days-hours:mins:sec
 #SBATCH --time=0-5:00:00
@@ -38,4 +38,4 @@ module load rgdal/1.4-4-r-3.6.0
 module load r/3.6.2
 
 # Commands
-Rscript --vanilla R/13_sp_occ_metapop.R
+Rscript --vanilla R/14_sp_occ_metapop.R
