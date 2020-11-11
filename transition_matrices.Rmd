@@ -1,0 +1,156 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+
+```{r}
+matrix(
+  data = c(
+    0.0, 0.0, 0.5,
+    0.7, 0.0, 0.0,
+    0.0, 0.6, 0.8
+  ),
+  nrow = 3,
+  ncol = 3,
+  byrow = TRUE,
+  dimnames = list(
+    c('Newborn','Juvenile','Adult'),
+    c('Newborn','Juvenile','Adult')
+  )
+)
+```
+
+
+## Leadbeater's possum
+```{r}
+
+tm_lb_1 <- matrix(
+  data = c(
+    0.00, 0.50 * 0.75, 0.80 *0.75,
+                  0.50,        0.00,       0.00,
+                  0.00,        0.50,       0.80
+  ),
+  nrow = 3,
+  ncol = 3,
+  byrow = TRUE,
+  dimnames = list(
+    c('Newborn','Juvenile','Adult'),
+    c('Newborn','Juvenile','Adult')
+  )
+)
+
+
+tm_lb_2 <- matrix(c(0.00, 0.65 * 0.75, 0.80 *0.75,
+                    0.65,        0.00,       0.00,
+                    0.00,        0.65,       0.80),
+                  nrow = 3,
+                  ncol = 3,
+                  byrow = TRUE,
+                  dimnames = list(c('Newborn','Juvenile','Adult'),
+                                  c('Newborn','Juvenile','Adult')))
+
+```
+
+
+## Greater Glider
+```{r}
+tm_gg_1 <- matrix(
+  data = c(
+   0.00, 0.85 * 0.50, 0.90 *0.50,
+   0.50,        0.00,       0.00,
+   0.00,        0.85,       0.90
+  ),
+  nrow = 3,
+  ncol = 3,
+  byrow = TRUE,
+  dimnames = list(
+    c('Newborn','Juvenile','Adult'),
+    c('Newborn','Juvenile','Adult')
+  )
+)
+
+
+tm_gg_2 <- matrix(
+  data = c(
+   0.00, 0.85 * 0.50, 0.85 *0.50,
+   0.50,        0.00,       0.00,
+   0.00,        0.85,       0.85
+  ),
+  nrow = 3,
+  ncol = 3,
+  byrow = TRUE,
+  dimnames = list(
+    c('Newborn','Juvenile','Adult'),
+    c('Newborn','Juvenile','Adult')
+  )
+)
+```
+
+## Yellow-bellied glider
+Direct from comadre database. Possibly naiive specification - Mick commented that prob is pre-breeding but if birth rate is equal all are 
+```{r}
+tm_peau_1 <- matrix(
+  data = c(
+    0.0, 0.0, 0.5,
+    0.7, 0.0, 0.0,
+    0.0, 0.6, 0.8
+  ),
+  nrow = 3,
+  ncol = 3,
+  byrow = TRUE,
+  dimnames = list(
+    c('Newborn','Juvenile','Adult'),
+    c('Newborn','Juvenile','Adult')
+  )
+)
+
+tm_peau_1
+
+rmax(tm_peau_1)
+```
+
+Post-breeding census
+```{r}
+tm_peau_2 <- matrix(
+  data = c(
+    0.0, 0.6*0.8, 0.5*0.8,
+    0.7,     0.0,     0.0,
+    0.0,     0.6,     0.8
+  ),
+  nrow = 3,
+  ncol = 3,
+  byrow = TRUE,
+  dimnames = list(
+    c('Newborn','Juvenile','Adult'),
+    c('Newborn','Juvenile','Adult')
+  )
+)
+
+tm_peau_2
+
+rmax(tm_peau_2)
+```
+
+Pre-breeding census
+```{r}
+tm_peau_3 <- matrix(
+  data = c(
+    0.0,     0.0,     0.0,
+    0.0,     0.0, 0.5*0.7,
+    0.0,     0.6,     0.8
+  ),
+  nrow = 3,
+  ncol = 3,
+  byrow = TRUE,
+  dimnames = list(
+    c('Newborn','Juvenile','Adult'),
+    c('Newborn','Juvenile','Adult')
+  )
+)
+
+tm_peau_3
+
+rmax(tm_peau_3)
+```
+
