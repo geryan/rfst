@@ -4,9 +4,20 @@ patmat <- function(
   out_path = "output/patch_matrix/",
   scn_id = NA,
   varset = "",
-  species,
+  species = NA,
   write = TRUE
 ){
+  
+  if(write){
+    if(is.na(scn_id)) {
+      stop("scn_id missing")
+    }
+    
+    if(is.na(species)){
+      stop("species missing")
+    }
+  }
+  
   
   x[x < threshold] <- 0
   
