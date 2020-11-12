@@ -19,7 +19,7 @@
 # output name from batch
 
 # days-hours:mins:sec
-#SBATCH --time=0-02:00:00
+#SBATCH --time=0-06:00:00
 
 # commands from batch
 i=$1
