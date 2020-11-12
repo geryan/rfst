@@ -1,19 +1,4 @@
-
-
-
-
-
-
-
-### DEPRECATED ####
-
-
-
-
-
-
-
-# 14 Species occurrence for metapopulation capacity models
+# 14.0 Species occurrence lists for metapopulation capacity models
 
 source("R/spartan/spartan_settings.R")
 
@@ -24,8 +9,6 @@ library(readr)
 library(readxl)
 library(tidyr)
 library(dplyr)
-#library(future)
-#library(future.apply)
 library(lubridate)
 library(ggplot2)
 
@@ -65,18 +48,18 @@ vba_dat <- lapply(
     survey_method,
     geometry
   ) #%>%
-  # mutate(
-  #   genus = sub(
-  #     pattern = " .*",
-  #     replacement = "",
-  #     x = species
-  #   )
-  # ) %>%
-  # dplyr::select(
-  #   species,
-  #   genus,
-  #   everything()
-  # )
+# mutate(
+#   genus = sub(
+#     pattern = " .*",
+#     replacement = "",
+#     x = species
+#   )
+# ) %>%
+# dplyr::select(
+#   species,
+#   genus,
+#   everything()
+# )
 
 
 vba_dat_ch <- vba_dat[ch_rfa,]
@@ -211,7 +194,7 @@ sm_liau <- c(
   "Frog census"
 )
 
-# 02  2Large Brown Tree Frog      Litoria littlejohni  ----
+# 02  Large Brown Tree Frog      Litoria littlejohni  ----
 spn <- 2
 print(species_list[spn])
 
@@ -2037,83 +2020,17 @@ pa_list_eg <- tibble(
   )
 
 
-
-
-
-#plan(multisession)
-
-pad_ch <- pa_list_ch %$%
-  #future_mapply(
-  mapply(
-    FUN = buff.sample.pa,
-    species = species,
-    survey_method = survey_methods,
-    MoreArgs = list(
-      x = vba_dat_ch,
-      rfa = ch_rfa,
-      cellsize = 200
-    ),
-    SIMPLIFY = FALSE
-  )
-
-#plan(sequential)
-
-
-pa_data_ch <- pa_list_ch %>%
-  bind_cols(
-    tibble(
-      pa_dat = pad_ch
-    )
-  )
-
-#pa_data_ch
-
-
-# Number of presences and absences for each species
-lapply(
-  X = pa_data_ch$pa_dat,
-  FUN = function(x){
-    table(x$PA)
-  }
-)
-
-
-
-# Write and save data --------------------------
-
-pa_data_ch %$%
-  mapply(
-    FUN = function(
-      x,
-      y
-    ){
-      st_write(
-        obj = x,
-        dsn = sprintf(
-          "output/pa/pa_ch_%s.shp",
-          y
-        ),
-        delete_dsn = TRUE
-      )
-      
-      st_write(
-        obj = x,
-        dsn = sprintf(
-          "output/pa/pa_ch_%s.csv",
-          y
-        ),
-        layer_options = "GEOMETRY=AS_XY",
-        delete_dsn = TRUE
-      )
-    },
-    x = pa_dat,
-    y = sp
-  )
-
-
-
 save(
-  pa_data_ch,
-  file = "output/RData/14_sp_occ_metapop.RData"
+  vba_dat_ch,
+  vba_dat_eg,
+  pa_list_ch,
+  pa_list_eg,
+  species_list,
+  species_list_ch,
+  species_list_eg,
+  sm_list,
+  sm_list_ch,
+  sm_list_eg,
+  file = "output/RData/14.0_sp_occ_metapop_list.RData"
 )
 
