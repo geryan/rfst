@@ -14,7 +14,7 @@ library(tidyr)
 load(file = "output/RData/00_controls.RData")
 load(file = "output/RData/01_landscape_variables.RData")
 load(file = "output/RData/07a_varset_mpc.RData")
-load(file = "output/RData/14_sp_occ_metapop.RData")
+load(file = "output/RData/14.1_sp_occ_metapop.RData")
 
 
 source.functions("R/functions")
@@ -23,7 +23,7 @@ source.functions("R/functions")
 
 md_set <- bind_cols(
   varset_mpc[1,],
-  pa_data_ch
+  pa_data_ch_model
 )
 
 
@@ -37,7 +37,8 @@ md <- md_set %$%
   )
 
 
-distribution_model_data_mpc <- pa_data %>%
+
+distribution_model_data_mpc <- pa_data_ch_model[,1:4] %>%
   bind_cols(
     tibble(
       dist_mod_dat = md
@@ -46,5 +47,5 @@ distribution_model_data_mpc <- pa_data %>%
 
 save(
   distribution_model_data_mpc,
-  file = "output/RData/15_distribution_model_data.RData"
+  file = "output/RData/15_distribution_model_data_mpc.RData"
 )

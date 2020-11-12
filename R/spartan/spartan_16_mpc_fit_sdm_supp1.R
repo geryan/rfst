@@ -24,9 +24,11 @@ load(file = "output/RData/15_distribution_model_data_mpc.RData")
 
 source.functions("R/functions")
 
-command_args <- commandArgs(trailingOnly = TRUE)
+#command_args <- commandArgs(trailingOnly = TRUE)
 
-i <- as.numeric(command_args[1])
+spid <- "acno"
+
+#spid <- "tyno"
 
 
 varlist <- c(
@@ -92,7 +94,7 @@ sp_sdm_vars <- tribble(
 
 
 sdm_data <- bind_cols(
-  distribution_model_data_mpc[i,],
+  distribution_model_data_mpc[which(distribution_model_data_mpc$sp == spid),],
   sp_sdm_vars
 )
 
@@ -111,7 +113,7 @@ sdm_fit <- sdm_data %>%
       .x = model_data,
       .f = gbmstep,
       tree.complexity = 5,
-      learning.rate = 0.001,
+      learning.rate = 0.0005,
       #step.size = 1,
       bag.fraction = 0.5,
       prev.stratify = TRUE,
@@ -120,7 +122,7 @@ sdm_fit <- sdm_data %>%
     )
   ) %>%
   mutate(auc = map(.x = brt.fit,
-                          .f = brt_auc)) %>%
+                   .f = brt_auc)) %>%
   unnest(auc) %>%
   mutate(trees = map(.x = brt.fit, .f = ~ .$gbm.call$best.trees)) %>%
   unnest(trees)
@@ -133,6 +135,6 @@ saveRDS(
   file = sprintf(
     "%s/sdm_fit_ch_%s.Rds",
     "/data/gpfs/projects/punim0995/rfst/output/spartan_RData/sdm_fit_mpc/ch",
-    distribution_model_data_mpc$sp[i]
+    spid
   )
 )

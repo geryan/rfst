@@ -1,4 +1,4 @@
-# get 14.0 Species occurrence lists for metapopulation capacity models
+# get 14.1 Species occurrence data processing
 
 source("R/spartan/spartan_settings.R")
 
@@ -22,7 +22,7 @@ i <- as.numeric(command_args[1])
 
 
 pad <- buff.sample.pa(
-  x = vba_dat_ch %>% filter(species == "Pseudophryne semimarmorata"),
+  x = vba_dat_ch,
   rfa = ch_rfa,
   cellsize = 200,
   buff.dist = 500,
@@ -44,7 +44,8 @@ saveRDS(
 st_write(
   obj = pad,
   dsn = sprintf(
-    "output/pa_metapop/ch/pa_ch_%s.shp",
+    "%s/pa_ch_%s.shp",
+    "/data/gpfs/projects/punim0995/rfst/output/pa_metapop/ch",
     pa_list_ch$sp[i]
   ),
   delete_dsn = TRUE
@@ -54,7 +55,8 @@ st_write(
 st_write(
   obj = pad,
   dsn = sprintf(
-    "output/pa_metapop/ch/pa_ch_%s.csv",
+    "%s/pa_ch_%s.csv",
+    "/data/gpfs/projects/punim0995/rfst/output/pa_metapop/ch",
     pa_list_ch$sp[i]
   ),
   layer_options = "GEOMETRY=AS_XY",
