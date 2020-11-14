@@ -70,6 +70,8 @@ module load r/3.6.2
 cd /data/gpfs/projects/punim0995/rfst
 
 
+module load r/3.6.0
+
 cd /data/gpfs/projects/punim1340
 
 cd /data/scratch/projects/punim0995

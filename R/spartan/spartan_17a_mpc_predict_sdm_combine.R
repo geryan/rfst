@@ -11,11 +11,12 @@ library(raster)
 library(sp)
 library(gbm)
 library(dismo)
-#library(sf)
+library(sf)
 
 load(file = "output/RData/00_controls.RData")
 load(file = "output/RData/01_landscape_variables.RData")
 load(file = "output/RData/07a_varset_mpc.RData")
+load(file = "output/RData/14.1_sp_occ_metapop.RData")
 
 source.functions("R/functions")
 
@@ -76,20 +77,30 @@ preds <- tibble(
 )
 
 
+pred_mpc <- full_join(
+  x = varset_mpc %>%
+    dplyr::select(
+      "scenario",
+      "scenario_replicate",
+      "rcp",
+      "climate_model",
+      "harvest_scenario",
+      "plan_burn",
+      "scn_id",
+      "th",
+      "rc",
+      "pb",
+      "scn_no",
+      "cscnid"
+    ),
+  y = preds,
+  by = "cscnid"
+)
 
-spid <- sdm_results_mpc_ch$sp[i]
 
-threshold <- pred[[1]] %>%
-  raster::extract(
-    y = pa_data_ch$pa_dat[[which(pa_data_ch$sp == spid)]] %>% dplyr::filter(PA == 1)
-  ) %>%
-  quantile(probs = c(0.75)) %>%
-  signif(digits = 3)
-
-patch_pred <- patmat(
-  x = pred,
-  threshold = threshold,
-  write = FALSE
+save(
+  pred_mpc,
+  file =  "/data/gpfs/projects/punim0995/rfst/output/RData/17_mpc_predict_sdm.RData"
 )
 
 

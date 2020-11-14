@@ -15,7 +15,15 @@ metacapstack <- function(x, f, year0 = NULL){
   
   metapopulation_capacity <- sapply(
     X = reslist,
-    FUN = meta_capacity,
+    FUN = function(x, f){
+      
+      result <- try(meta_capacity(x = x, f = f))
+      
+      result <- ifelse(is.character(result), 0, result)
+      
+      return(result)
+      
+    },
     f = f
   )
   
