@@ -1,4 +1,4 @@
-# 16 combine fitted distribution models for metapopulation capacity models
+# 18.1 combine  metapopulation capacity model results
 
 source("R/spartan/spartan_settings.R")
 
