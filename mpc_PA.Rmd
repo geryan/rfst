@@ -1,0 +1,281 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+source("R/spartan/spartan_settings.R")
+```
+
+```{r}
+library(dplyr)
+library(purrr)
+library(tibble)
+library(tidyr)
+library(raster)
+library(sp)
+library(gbm)
+library(dismo)
+library(sf)
+library(ggplot2)
+```
+
+```{r}
+load(file = "output/RData/00_controls.RData")
+load(file = "output/RData/01_landscape_variables.RData")
+load(file = "output/RData/07a_varset_mpc.RData")
+load(file = "output/RData/14.1_sp_occ_metapop.RData")
+load(file = "output/RData/16_mpc_fit_sdm.RData")
+```
+
+```{r}
+spn <- 1
+ggplot() + 
+  geom_sf(
+    data = ch_rfa,
+    #aes(col = NAME)
+  ) +
+  geom_sf(
+    data = pa_data_ch_model$pa_dat[[spn]],
+    aes(col = as.factor(PA))
+  ) + 
+  labs(
+    title = pa_data_ch_model$species[spn],
+    colour = "Presence\nabsence"
+  )
+```
+
+
+```{r}
+spn <- 2
+ggplot() + 
+  geom_sf(
+    data = ch_rfa,
+    #aes(col = NAME)
+  ) +
+  geom_sf(
+    data = pa_data_ch_model$pa_dat[[spn]],
+    aes(col = as.factor(PA))
+  ) + 
+  labs(
+    title = pa_data_ch_model$species[spn],
+    colour = "Presence\nabsence"
+  )
+```
+
+
+```{r}
+spn <- 3
+ggplot() + 
+  geom_sf(
+    data = ch_rfa,
+    #aes(col = NAME)
+  ) +
+  geom_sf(
+    data = pa_data_ch_model$pa_dat[[spn]],
+    aes(col = as.factor(PA))
+  ) + 
+  labs(
+    title = pa_data_ch_model$species[spn],
+    colour = "Presence\nabsence"
+  )
+```
+
+
+```{r}
+spn <- 4
+ggplot() + 
+  geom_sf(
+    data = ch_rfa,
+    #aes(col = NAME)
+  ) +
+  geom_sf(
+    data = pa_data_ch_model$pa_dat[[spn]],
+    aes(col = as.factor(PA))
+  ) + 
+  labs(
+    title = pa_data_ch_model$species[spn],
+    colour = "Presence\nabsence"
+  )
+```
+
+
+```{r}
+spn <- 5
+ggplot() + 
+  geom_sf(
+    data = ch_rfa,
+    #aes(col = NAME)
+  ) +
+  geom_sf(
+    data = pa_data_ch_model$pa_dat[[spn]],
+    aes(col = as.factor(PA))
+  ) + 
+  labs(
+    title = pa_data_ch_model$species[spn],
+    colour = "Presence\nabsence"
+  )
+```
+
+
+```{r}
+spn <- 6
+ggplot() + 
+  geom_sf(
+    data = ch_rfa,
+    #aes(col = NAME)
+  ) +
+  geom_sf(
+    data = pa_data_ch_model$pa_dat[[spn]],
+    aes(col = as.factor(PA))
+  ) + 
+  labs(
+    title = pa_data_ch_model$species[spn],
+    colour = "Presence\nabsence"
+  )
+```
+
+
+```{r}
+spn <- 7
+ggplot() + 
+  geom_sf(
+    data = ch_rfa,
+    #aes(col = NAME)
+  ) +
+  geom_sf(
+    data = pa_data_ch_model$pa_dat[[spn]],
+    aes(col = as.factor(PA))
+  ) + 
+  labs(
+    title = pa_data_ch_model$species[spn],
+    colour = "Presence\nabsence"
+  )
+```
+
+
+```{r}
+spn <- 8
+ggplot() + 
+  geom_sf(
+    data = ch_rfa,
+    #aes(col = NAME)
+  ) +
+  geom_sf(
+    data = pa_data_ch_model$pa_dat[[spn]],
+    aes(col = as.factor(PA))
+  ) + 
+  labs(
+    title = pa_data_ch_model$species[spn],
+    colour = "Presence\nabsence"
+  )
+```
+
+
+```{r}
+spn <- 9
+ggplot() + 
+  geom_sf(
+    data = ch_rfa,
+    #aes(col = NAME)
+  ) +
+  geom_sf(
+    data = pa_data_ch_model$pa_dat[[spn]],
+    aes(col = as.factor(PA))
+  ) + 
+  labs(
+    title = pa_data_ch_model$species[spn],
+    colour = "Presence\nabsence"
+  )
+```
+
+
+```{r}
+spn <- 10
+ggplot() + 
+  geom_sf(
+    data = ch_rfa,
+    #aes(col = NAME)
+  ) +
+  geom_sf(
+    data = pa_data_ch_model$pa_dat[[spn]],
+    aes(col = as.factor(PA))
+  ) + 
+  labs(
+    title = pa_data_ch_model$species[spn],
+    colour = "Presence\nabsence"
+  )
+```
+
+
+```{r}
+spn <- 11
+ggplot() + 
+  geom_sf(
+    data = ch_rfa,
+    #aes(col = NAME)
+  ) +
+  geom_sf(
+    data = pa_data_ch_model$pa_dat[[spn]],
+    aes(col = as.factor(PA))
+  ) + 
+  labs(
+    title = pa_data_ch_model$species[spn],
+    colour = "Presence\nabsence"
+  )
+```
+
+
+```{r}
+spn <- 12
+ggplot() + 
+  geom_sf(
+    data = ch_rfa,
+    #aes(col = NAME)
+  ) +
+  geom_sf(
+    data = pa_data_ch_model$pa_dat[[spn]],
+    aes(col = as.factor(PA))
+  ) + 
+  labs(
+    title = pa_data_ch_model$species[spn],
+    colour = "Presence\nabsence"
+  )
+```
+
+
+```{r}
+spn <- 13
+ggplot() + 
+  geom_sf(
+    data = ch_rfa,
+    #aes(col = NAME)
+  ) +
+  geom_sf(
+    data = pa_data_ch_model$pa_dat[[spn]],
+    aes(col = as.factor(PA))
+  ) + 
+  labs(
+    title = pa_data_ch_model$species[spn],
+    colour = "Presence\nabsence"
+  )
+```
+
+
+```{r}
+spn <- 14
+ggplot() + 
+  geom_sf(
+    data = ch_rfa,
+    #aes(col = NAME)
+  ) +
+  geom_sf(
+    data = pa_data_ch_model$pa_dat[[spn]],
+    aes(col = as.factor(PA))
+  ) + 
+  labs(
+    title = pa_data_ch_model$species[spn],
+    colour = "Presence\nabsence"
+  )
+```
+
