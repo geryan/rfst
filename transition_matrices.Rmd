@@ -5,31 +5,30 @@ output: html_notebook
 
 
 ```{r}
-matrix(
-  data = c(
-    0.0, 0.0, 0.5,
-    0.7, 0.0, 0.0,
-    0.0, 0.6, 0.8
-  ),
-  nrow = 3,
-  ncol = 3,
-  byrow = TRUE,
-  dimnames = list(
-    c('Newborn','Juvenile','Adult'),
-    c('Newborn','Juvenile','Adult')
-  )
-)
+# matrix(
+#   data = c(
+#     , , ,
+#     , , ,
+#     , , 
+#   ),
+#   nrow = 3,
+#   ncol = 3,
+#   byrow = TRUE,
+#   dimnames = list(
+#     c('Newborn','Juvenile','Adult'),
+#     c('Newborn','Juvenile','Adult')
+#   )
+# )
 ```
 
 
 ## Leadbeater's possum
 ```{r}
-
-tm_lb_1 <- matrix(
+tm_gyle <- matrix(
   data = c(
-    0.00, 0.50 * 0.75, 0.80 *0.75,
-                  0.50,        0.00,       0.00,
-                  0.00,        0.50,       0.80
+   0.00, 0.00, 0.80,
+   0.50, 0.00, 0.00,
+   0.00, 0.60, 0.88
   ),
   nrow = 3,
   ncol = 3,
@@ -40,26 +39,19 @@ tm_lb_1 <- matrix(
   )
 )
 
+tm_gyle
 
-tm_lb_2 <- matrix(c(0.00, 0.65 * 0.75, 0.80 *0.75,
-                    0.65,        0.00,       0.00,
-                    0.00,        0.65,       0.80),
-                  nrow = 3,
-                  ncol = 3,
-                  byrow = TRUE,
-                  dimnames = list(c('Newborn','Juvenile','Adult'),
-                                  c('Newborn','Juvenile','Adult')))
-
+rmax(tm_gyle)
 ```
 
 
 ## Greater Glider
 ```{r}
-tm_gg_1 <- matrix(
+tm_pevo <- matrix(
   data = c(
-   0.00, 0.85 * 0.50, 0.90 *0.50,
-   0.50,        0.00,       0.00,
-   0.00,        0.85,       0.90
+   0.00, 0.00, 0.50,
+   0.50, 0.00, 0.00,
+   0.00, 0.85, 0.90
   ),
   nrow = 3,
   ncol = 3,
@@ -70,27 +62,16 @@ tm_gg_1 <- matrix(
   )
 )
 
+tm_pevo
 
-tm_gg_2 <- matrix(
-  data = c(
-   0.00, 0.85 * 0.50, 0.85 *0.50,
-   0.50,        0.00,       0.00,
-   0.00,        0.85,       0.85
-  ),
-  nrow = 3,
-  ncol = 3,
-  byrow = TRUE,
-  dimnames = list(
-    c('Newborn','Juvenile','Adult'),
-    c('Newborn','Juvenile','Adult')
-  )
-)
+rmax(tm_pevo)
 ```
+
 
 ## Yellow-bellied glider
 Direct from comadre database. Possibly naiive specification - Mick commented that prob is pre-breeding but if birth rate is equal all are 
 ```{r}
-tm_peau_1 <- matrix(
+tm_peau <- matrix(
   data = c(
     0.0, 0.0, 0.5,
     0.7, 0.0, 0.0,
@@ -105,52 +86,87 @@ tm_peau_1 <- matrix(
   )
 )
 
-tm_peau_1
+tm_peau
 
-rmax(tm_peau_1)
+rmax(tm_peau)
 ```
 
-Post-breeding census
+## White-footed dunnart
 ```{r}
-tm_peau_2 <- matrix(
+tm_smle <- matrix(
   data = c(
-    0.0, 0.6*0.8, 0.5*0.8,
-    0.7,     0.0,     0.0,
-    0.0,     0.6,     0.8
+    0.00, 4.20,
+    0.29, 0.05
+  ),
+  nrow = 2,
+  ncol = 2,
+  byrow = TRUE,
+  dimnames = list(
+    c('Newborn', 'Adult'),
+    c('Newborn', 'Adult')
+  )
+)
+
+tm_smle
+
+rmax(tm_smle)
+```
+
+## Lace Monitor
+```{r}
+vava_j_surv <- reptile_juv_survival(
+  a = 4,
+  Sa = 0.93,
+  n = 1,
+  c = 7.8
+)
+vava_j_surv
+```
+
+```{r}
+tm_vava <- matrix(
+  data = c(
+    0.00, 0.00, 0.00, 2.69,
+    0.37, 0.00, 0.00, 0.00, 
+    0.00, 0.37, 0.00, 0.00,
+    0.00, 0.00, 0.37, 0.93
+  ),
+  nrow = 4,
+  ncol = 4,
+  byrow = TRUE,
+  dimnames = list(
+    c('Hatchling','Juvenile', "Sub-adult",'Adult'),
+    c('Hatchling','Juvenile', "Sub-adult",'Adult')
+  )
+)
+
+tm_vava
+
+rmax(tm_vava)
+```
+## Sooty Owl
+Based on survival estimates for juv Powerful Owl, clutch size of "usually 1" but give 1 in 10 chance of 2, and proportion of 0.69 first year animals breeding (from Barn Owl)
+```{r}
+tm_tyte <- matrix(
+  data = c(
+           0.00, 0.00, 0.55,
+    0.31 * 0.67, 0.00, 0.00,
+    0.69 * 0.67, 0.67, 0.74 
   ),
   nrow = 3,
   ncol = 3,
   byrow = TRUE,
   dimnames = list(
-    c('Newborn','Juvenile','Adult'),
-    c('Newborn','Juvenile','Adult')
+    c('Newborn','Sub-adult','Adult'),
+    c('Newborn','Sub-adult','Adult')
   )
 )
 
-tm_peau_2
+tm_tyte
 
-rmax(tm_peau_2)
+rmax(tm_tyte)
 ```
 
-Pre-breeding census
-```{r}
-tm_peau_3 <- matrix(
-  data = c(
-    0.0,     0.0,     0.0,
-    0.0,     0.0, 0.5*0.7,
-    0.0,     0.6,     0.8
-  ),
-  nrow = 3,
-  ncol = 3,
-  byrow = TRUE,
-  dimnames = list(
-    c('Newborn','Juvenile','Adult'),
-    c('Newborn','Juvenile','Adult')
-  )
-)
 
-tm_peau_3
 
-rmax(tm_peau_3)
-```
-
+## Long-footed potoroo
