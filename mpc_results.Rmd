@@ -81,6 +81,23 @@ mpc_rs
 ```
 
 
+```{r}
+aa <- mpc_rs %>%
+  group_by(
+    scenario,
+    rcp,
+    climate_model,
+    harvest_scenario,
+    sp
+  ) %>%
+  summarise(
+    median_mpc = median(mpc_median_90)
+  )
+
+aa %>% filter(sp == "isob")
+```
+
+
 
 ```{r}
 ggplot(mpc_res_summary %>% filter(sp == "isob")) +
