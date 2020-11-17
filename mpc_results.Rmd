@@ -1,0 +1,164 @@
+---
+title: "Metapopulation capacity results"
+output: html_document
+---
+
+
+```{r}
+source("R/spartan/spartan_settings.R")
+```
+
+
+```{r}
+library(dplyr)
+library(purrr)
+library(tibble)
+library(tidyr)
+library(raster)
+library(sp)
+library(sf)
+library(magrittr)
+library(ggplot2)
+```
+
+```{r}
+load(file = "output/RData/00_controls.RData")
+load(file = "output/RData/01_landscape_variables.RData")
+load(file = "output/RData/18.1_mpc.RData")
+```
+
+```{r}
+source.functions("R/functions")
+```
+
+```{r}
+mpc_res_summary <- mpc_results_ch %>%
+  group_by(
+    scenario,
+    scenario_replicate,
+    rcp,
+    climate_model,
+    harvest_scenario,
+    plan_burn,
+    scn_id,
+    th,
+    rc,
+    pb,
+    cscnid,
+    sp
+  ) %>%
+  summarise(
+    mpc_min_90 = min(mpc_90),
+    mpc_mean_90 = mean(mpc_90),
+    mpc_median_90 = median(mpc_90),
+    mpc_min_75 = min(mpc_75),
+    mpc_mean_75 = mean(mpc_75),
+    mpc_median_75 = median(mpc_75),
+    mpc_min_07 = min(mpc_07),
+    mpc_mean_07 = mean(mpc_07),
+    mpc_median_07 = median(mpc_07),
+  )
+
+mpc_res_summary
+```
+
+```{r}
+mpc_rs <- mpc_res_summary %>%
+  group_by(sp) %>%
+  mutate(
+    r_min_90 = mpc_min_90[scn_id == "TH00_rcp45_NB_01"],
+    r_median_90 = mpc_median_90[scn_id == "TH00_rcp45_NB_01"]
+  ) %>%
+  ungroup %>%
+  mutate(
+    delta_min_90 = r_min_90 - mpc_min_90,
+    delta_median_90 = r_median_90 - mpc_median_90,
+    dp_min_90 = delta_min_90/r_min_90,
+    dp_median_90 = delta_median_90/r_median_90
+  )
+
+mpc_rs
+```
+
+
+
+```{r}
+ggplot(mpc_res_summary %>% filter(sp == "isob")) +
+  geom_boxplot(
+    aes(
+      x = scenario,
+      y = mpc_min_90,
+      col = rcp,
+      fill = harvest_scenario
+    ) 
+  ) +
+  scale_colour_viridis_d(option = "B") +
+  scale_fill_viridis_d()
+```
+
+```{r}
+ggplot(mpc_rs %>% filter(sp == "isob")) +
+  geom_boxplot(
+    aes(
+      x = scenario,
+      y = dp_median_90,
+      col = rcp,
+      fill = harvest_scenario
+    ) 
+  ) +
+  scale_colour_viridis_d(option = "B") +
+  scale_fill_viridis_d()
+```
+
+```{r}
+ggplot(mpc_res_summary) +
+  geom_boxplot(
+    aes(
+      x = scenario,
+      y = mpc_min_90,
+      col = rcp,
+      fill = harvest_scenario
+    ) 
+  ) +
+  facet_wrap(~sp, scales = "free_y") +
+  scale_colour_viridis_d(option = "A") +
+  scale_fill_viridis_d()
+```
+
+```{r}
+iris_dat <- iris %>%
+  group_by(Species) %>%
+  mutate(id = row_number(Species))
+
+iris_dat
+
+
+iris_ref <- iris_dat %>%
+  filter(id == 1) %>%
+  dplyr::select(Species, sep.ref = Sepal.Length)
+
+iris_ref
+
+
+iris_comp <- iris_dat %>%
+  full_join(
+    y = iris_ref,
+    by = "Species"
+  ) %>%
+  mutate(
+    delta_sepal = sep.ref - Sepal.Length
+  ) %>%
+  dplyr::select(Species, id, delta_sepal)
+
+iris_comp
+```
+
+```{r}
+iris %>%
+  group_by(Species) %>%
+  mutate(
+    id = row_number(Species),
+    sep.ref = Sepal.Length[id == 1]
+  )
+```
+
