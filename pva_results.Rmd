@@ -1,0 +1,244 @@
+---
+title: "PVA Results"
+output: html_document
+---
+
+
+```{r}
+source("R/spartan/spartan_settings.R")
+```
+
+
+```{r}
+library(dplyr)
+library(purrr)
+library(tibble)
+library(tidyr)
+library(raster)
+library(sp)
+library(sf)
+library(magrittr)
+library(ggplot2)
+library(forcats)
+```
+
+```{r}
+load(file = "output/RData/00_controls.RData")
+load(file = "output/RData/01_landscape_variables.RData")
+load(file = "output/RData/14.0_sp_occ_metapop_list.RData")
+load(file = "output/RData/11_pva.RData")
+```
+
+```{r}
+source.functions("R/functions")
+```
+
+```{r}
+species_names_pva <- pa_data %>%
+  dplyr::select(species, sp) %>%
+  mutate(
+    species_com = case_when(
+      sp == "gyle" ~ "Leadbeater's possum",
+      sp == "pevo" ~ "Greater glider",
+      sp == "peau" ~ "Yellow-bellied glider",
+      #sp == "smle" ~ "White-footed dunnart",
+      sp == "tyte" ~ "Sooty Owl",
+      sp == "vava" ~ "Lace monitor"
+    )
+  ) %>%
+  mutate(
+    species_com = factor(
+      x = species_com,
+      levels = c(
+        "Leadbeater's possum",
+        "Greater glider",
+        "Yellow-bellied glider",
+        #"White-footed dunnart",
+        "Sooty Owl",
+        "Lace monitor"
+      )
+    )
+  ) %>%
+  filter(!is.na(species_com))
+
+species_names_pva
+```
+
+
+```{r}
+scenario_names <- tribble(
+  ~scenario,       ~scn,
+  "TH19_rcp45_PB", "Ongoing harvest RCP4.5",
+  "TH30_rcp45_PB", "Stop harvest 2030 RCP4.5",
+  "TH30_rcp85_PB", "Stop harvest 2030 RCP8.5",
+  "TH00_rcp45_PB", "No harvest RCP4.5",
+  "TH00_rcp85_PB", "No harvest RCP8.5",
+  "TH00_rcp45_NB", "No harvest no planned burning RCP4.5"
+) %>%
+  mutate(
+    scn = factor(
+      x = scn,
+      levels = c(
+        "Ongoing harvest RCP4.5",
+        "Stop harvest 2030 RCP4.5",
+        "Stop harvest 2030 RCP8.5",
+        "No harvest RCP4.5",
+        "No harvest RCP8.5",
+        "No harvest no planned burning RCP4.5"
+      )
+    )
+  )
+
+scenario_names
+levels(scenario_names$scn)
+```
+
+
+
+```{r}
+exminpop <- emp
+
+pva_r_ch <- pva_results_ch %>%
+  left_join(
+    y = species_names_pva,
+    by = "sp"
+  ) %>%
+  left_join(
+    y = scenario_names,
+    by = "scenario"
+  ) %>%
+  mutate(
+    scenario = fct_reorder(
+      .f = scenario,
+      .x = as.numeric(scn)
+    ),
+    sp = fct_reorder(
+      .f = sp,
+      .x = as.numeric(species_com)
+    ),
+    species = fct_reorder(
+      .f = species,
+      .x = as.numeric(species_com)
+    )
+  ) %>%
+  mutate(
+    emp_med = map(
+      .x = emp_all,
+      .f = median
+    ) %>%
+      unlist,
+    med_pop = map(
+      .x = pva,
+      .f = med.pop
+    ) %>%
+      unlist,
+    emp_95 = map(
+      .x = pva,
+      .f = exminpop,
+      q = 0.05
+    ) %>%
+      unlist,
+    prop_extinct = map(
+      .x = pva,
+      .f = nex,
+      p = TRUE
+    ) %>%
+      unlist,
+    prop_extant = 1 - prop_extinct
+  )
+
+pva_r_ch
+```
+
+```{r}
+pva_r_ch_a1 <- pva_r_ch %>%
+  filter(climate_model == "ACCESS1-0")
+
+pva_r_ch_a1
+```
+
+
+```{r}
+plot_emp_a1_vava <- ggplot(pva_r_ch_a1 %>% filter(sp == "vava")) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = emp_95
+    ) 
+  ) +
+  labs(
+    x = "Expected minimum population",
+    y = "Management scenario",
+    title = "Lace monitor"
+  )
+plot_emp_a1_vava
+```
+
+```{r}
+png(
+  filename = "plots/emp_a1_vava.png",
+  width = 20,
+  height = 10,
+  units = "cm",
+  res = 300
+) +
+  xlim(0, NA)
+plot_emp_a1_vava
+dev.off()
+```
+
+
+```{r}
+plot_emp_a1_pevo <- ggplot(pva_r_ch_a1 %>% filter(sp == "pevo")) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = emp_95
+    ) 
+  ) +
+  labs(
+    x = "Expected minimum population",
+    y = "Management scenario",
+    title = "Greater glider"
+  ) +
+  xlim(0, NA)
+plot_emp_a1_pevo
+```
+
+```{r}
+png(
+  filename = "plots/emp_a1_pevo.png",
+  width = 20,
+  height = 10,
+  units = "cm",
+  res = 300
+)
+plot_emp_a1_pevo
+dev.off()
+```
+
+```{r}
+plot_emp_a1 <- ggplot(pva_r_ch_a1) +
+  geom_vline(xintercept = 0) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = emp_95,
+      #col = species_com,
+      fill = species_com
+    ) 
+  ) +
+  #scale_colour_viridis_d(option = "D") #+
+  scale_fill_viridis_d() +
+  labs(
+    x = "Expected minimum population",
+    y = "Management scenario",
+    fill = "Species"
+  ) +
+  xlim(0, NA)
+
+plot_emp_a1
+```
+
+
+

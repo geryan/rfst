@@ -19,11 +19,13 @@ library(sp)
 library(sf)
 library(magrittr)
 library(ggplot2)
+library(forcats)
 ```
 
 ```{r}
 load(file = "output/RData/00_controls.RData")
 load(file = "output/RData/01_landscape_variables.RData")
+load(file = "output/RData/14.0_sp_occ_metapop_list.RData")
 load(file = "output/RData/18.1_mpc.RData")
 ```
 
@@ -32,7 +34,112 @@ source.functions("R/functions")
 ```
 
 ```{r}
-mpc_res_summary <- mpc_results_ch %>%
+species_names <- pa_list_ch %>%
+  dplyr::select(-survey_methods) %>%
+  mutate(
+    species_com = case_when(
+      sp == "psse" ~ "Southern toadlet",
+      sp == "acno" ~ "Grey Goshawk",
+      sp == "cipu" ~ "Spotted Quail-thrush",
+      sp == "lois" ~ "Square-tailed Kite",
+      sp == "nico" ~ "Barking Owl",
+      sp == "nist" ~ "Powerful Owl",
+      sp == "pero" ~ "Rose Robin",
+      sp == "tyno" ~ "Masked Owl",
+      sp == "isob" ~ "Southern brown bandicoot",
+      sp == "psfu" ~ "Smoky mouse",
+      sp == "grba" ~ "Gully Grevillea",
+      sp == "lese" ~ "Toothed Leionema",
+      sp == "pear" ~ "Tree Gebung",
+      sp == "wiva" ~ "Baw Baw Berry"
+    )
+  ) %>%
+  mutate(
+    species_com = factor(
+      x = species_com,
+      levels = c(
+        "Southern toadlet",
+        "Spotted Quail-thrush",
+        "Rose Robin",
+        "Grey Goshawk",
+        "Square-tailed Kite",
+        "Barking Owl",
+        "Powerful Owl",
+        "Masked Owl",
+        "Southern brown bandicoot",
+        "Smoky mouse",
+        "Gully Grevillea",
+        "Toothed Leionema",
+        "Tree Gebung",
+        "Baw Baw Berry"
+      )
+    )
+  ) %>%
+  filter(!is.na(species_com))
+
+species_names
+```
+
+
+```{r}
+scenario_names <- tribble(
+  ~scenario,       ~scn,
+  "TH19_rcp45_PB", "Ongoing harvest RCP4.5",
+  "TH30_rcp45_PB", "Stop harvest 2030 RCP4.5",
+  "TH30_rcp85_PB", "Stop harvest 2030 RCP8.5",
+  "TH00_rcp45_PB", "No harvest RCP4.5",
+  "TH00_rcp85_PB", "No harvest RCP8.5",
+  "TH00_rcp45_NB", "No harvest no planned burning RCP4.5"
+) %>%
+  mutate(
+    scn = factor(
+      x = scn,
+      levels = c(
+        "Ongoing harvest RCP4.5",
+        "Stop harvest 2030 RCP4.5",
+        "Stop harvest 2030 RCP8.5",
+        "No harvest RCP4.5",
+        "No harvest RCP8.5",
+        "No harvest no planned burning RCP4.5"
+      )
+    )
+  )
+
+scenario_names
+levels(scenario_names$scn)
+```
+
+```{r}
+mpc_r_ch <- mpc_results_ch %>%
+  left_join(
+    y = species_names,
+    by = "sp"
+  ) %>%
+  left_join(
+    y = scenario_names,
+    by = "scenario"
+  ) %>%
+  mutate(
+    scenario = fct_reorder(
+      .f = scenario,
+      .x = as.numeric(scn)
+    ),
+    sp = fct_reorder(
+      .f = sp,
+      .x = as.numeric(species_com)
+    ),
+    species = fct_reorder(
+      .f = species,
+      .x = as.numeric(species_com)
+    )
+  )
+
+mpc_r_ch
+```
+
+
+```{r}
+mpc_res_summary <- mpc_r_ch  %>%
   group_by(
     scenario,
     scenario_replicate,
@@ -45,7 +152,10 @@ mpc_res_summary <- mpc_results_ch %>%
     rc,
     pb,
     cscnid,
-    sp
+    sp,
+    species,
+    species_com,
+    scn
   ) %>%
   summarise(
     mpc_min_90 = min(mpc_90),
@@ -66,116 +176,279 @@ mpc_res_summary
 mpc_rs <- mpc_res_summary %>%
   group_by(sp) %>%
   mutate(
-    r_min_90 = mpc_min_90[scn_id == "TH00_rcp45_NB_01"],
-    r_median_90 = mpc_median_90[scn_id == "TH00_rcp45_NB_01"]
+    r_min_90 = median(mpc_min_90[scenario == "TH19_rcp45_PB"]),
+    r_median_90 = median(mpc_median_90[scenario == "TH19_rcp45_PB"]),
+    r_min_75 = median(mpc_min_75[scenario == "TH19_rcp45_PB"]),
+    r_median_75 = median(mpc_median_75[scenario == "TH19_rcp45_PB"])
   ) %>%
   ungroup %>%
   mutate(
-    delta_min_90 = r_min_90 - mpc_min_90,
-    delta_median_90 = r_median_90 - mpc_median_90,
-    dp_min_90 = delta_min_90/r_min_90,
-    dp_median_90 = delta_median_90/r_median_90
-  )
+    delta_min_90    = mpc_min_90    - r_min_90,
+    delta_median_90 = mpc_median_90 - r_median_90,
+    delta_min_75    = mpc_min_75    - r_min_75,
+    delta_median_75 = mpc_median_75 - r_median_75,
+    dp_min_90       = delta_min_90    / r_min_90,
+    dp_median_90    = delta_median_90 / r_median_90,
+    dp_min_75       = delta_min_75    / r_min_75,
+    dp_median_75    = delta_median_75 / r_median_75
+  ) 
 
 mpc_rs
 ```
 
 
 ```{r}
-aa <- mpc_rs %>%
+mpc_rs_summary <- mpc_rs %>%
   group_by(
     scenario,
     rcp,
     climate_model,
     harvest_scenario,
-    sp
+    sp,
+    scn,
+    species,
+    species_com
   ) %>%
   summarise(
-    median_mpc = median(mpc_median_90)
+    dp_min_90_mid = median(dp_min_90),
+    dp_min_75_mid = median(dp_min_75),
+    dp_min_90_up = max(dp_min_90),
+    dp_min_75_up = max(dp_min_75),
+    dp_min_90_lo = min(dp_min_90),
+    dp_min_75_lo = min(dp_min_75),
+    dp_median_90_mid = median(dp_median_90),
+    dp_median_75_mid = median(dp_median_75),
+    dp_median_90_up = max(dp_median_90),
+    dp_median_75_up = max(dp_median_75),
+    dp_median_90_lo = min(dp_median_90),
+    dp_median_75_lo = min(dp_median_75),
+  )
+mpc_rs_summary
+```
+
+```{r}
+mpc_rs_summary %>% filter(sp == "isob")
+```
+
+
+## 90% threshold
+
+## Median Metapopulation capacity
+
+```{r}
+plot_mpc_med_90_lois <- ggplot(mpc_rs %>% filter(sp == "lois")) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = dp_median_90
+    ) 
+  ) +
+  labs(
+    x = "Median metapopulation capacity\n(proportional difference)",
+    y = "Management scenario"
+  )
+plot_mpc_med_90_lois
+```
+
+```{r}
+png(
+  filename = "plots/mpc_med_90_lois.png",
+  width = 20,
+  height = 10,
+  units = "cm",
+  res = 300
+)
+plot_mpc_med_90_lois
+dev.off()
+```
+
+```{r}
+plot_mpc_box_med_90 <- ggplot(mpc_rs) +
+  geom_vline(xintercept = 0) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = dp_median_90,
+      #col = species_com,
+      fill = species_com
+    ) 
+  ) +
+  #scale_colour_viridis_d(option = "D") #+
+  scale_fill_viridis_d() +
+  labs(
+    x = "Median metapopulation capacity\n(proportional difference)",
+    y = "Management scenario",
+    fill = "Species"
   )
 
-aa %>% filter(sp == "isob")
+plot_mpc_box_med_90
+```
+
+```{r}
+png(
+  filename = "plots/mpc_box_med_90.png",
+  width = 20,
+  height = 20,
+  units = "cm",
+  res = 300
+)
+plot_mpc_box_med_90
+dev.off()
 ```
 
 
+```{r}
+plot_mpc_ebar_med_90 <- ggplot(mpc_rs_summary) +
+  geom_hline(yintercept = 0) +
+  geom_errorbar(
+    aes(
+      x = scn,
+      ymin = dp_median_90_lo,
+      ymax = dp_median_90_up
+    ),
+    #width = 0.3,
+    position = position_dodge2(width = 1)
+  ) +
+  geom_point(
+    aes(
+      x = scn,
+      y = dp_median_90_mid,
+      col = species_com
+    ),
+    position = position_dodge2(width = 1)
+  ) +
+  scale_colour_viridis_d(option = "D") +
+  scale_fill_viridis_d() +
+  labs(
+    y = "Median metapopulation capacity\n(proportional difference)",
+    x = "Management scenario",
+    col = "Species"
+  ) +
+  coord_flip()
+
+plot_mpc_ebar_med_90
+```
 
 ```{r}
-ggplot(mpc_res_summary %>% filter(sp == "isob")) +
+png(
+  filename = "plots/mpc_box_ebar_90.png",
+  width = 20,
+  height = 20,
+  units = "cm",
+  res = 300
+)
+plot_mpc_ebar_med_90
+dev.off()
+```
+
+### Minimum metapopulation capacity
+
+
+```{r}
+plot_mpc_min_90_lois <- ggplot(mpc_rs %>% filter(sp == "lois")) +
   geom_boxplot(
     aes(
-      x = scenario,
-      y = mpc_min_90,
-      col = rcp,
-      fill = harvest_scenario
+      y = scn,
+      x = dp_min_90
     ) 
   ) +
-  scale_colour_viridis_d(option = "B") +
-  scale_fill_viridis_d()
-```
-
-```{r}
-ggplot(mpc_rs %>% filter(sp == "isob")) +
-  geom_boxplot(
-    aes(
-      x = scenario,
-      y = dp_median_90,
-      col = rcp,
-      fill = harvest_scenario
-    ) 
-  ) +
-  scale_colour_viridis_d(option = "B") +
-  scale_fill_viridis_d()
-```
-
-```{r}
-ggplot(mpc_res_summary) +
-  geom_boxplot(
-    aes(
-      x = scenario,
-      y = mpc_min_90,
-      col = rcp,
-      fill = harvest_scenario
-    ) 
-  ) +
-  facet_wrap(~sp, scales = "free_y") +
-  scale_colour_viridis_d(option = "A") +
-  scale_fill_viridis_d()
-```
-
-```{r}
-iris_dat <- iris %>%
-  group_by(Species) %>%
-  mutate(id = row_number(Species))
-
-iris_dat
-
-
-iris_ref <- iris_dat %>%
-  filter(id == 1) %>%
-  dplyr::select(Species, sep.ref = Sepal.Length)
-
-iris_ref
-
-
-iris_comp <- iris_dat %>%
-  full_join(
-    y = iris_ref,
-    by = "Species"
-  ) %>%
-  mutate(
-    delta_sepal = sep.ref - Sepal.Length
-  ) %>%
-  dplyr::select(Species, id, delta_sepal)
-
-iris_comp
-```
-
-```{r}
-iris %>%
-  group_by(Species) %>%
-  mutate(
-    id = row_number(Species),
-    sep.ref = Sepal.Length[id == 1]
+  labs(
+    x = "Minimim metapopulation capacity\n(proportional difference)",
+    y = "Management scenario",
+    title = mpc_rs$species_com[which(mpc_rs$sp == "lois")[1]]
   )
+
+plot_mpc_min_90_lois
 ```
+```{r}
+png(
+  filename = "plots/mpc_min_90_lois.png",
+  width = 20,
+  height = 10,
+  units = "cm",
+  res = 300
+)
+plot_mpc_min_90_lois
+dev.off()
+```
+
+
+```{r}
+plot_mpc_box_min_90 <- ggplot(mpc_rs) +
+  geom_vline(xintercept = 0) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = dp_min_90,
+      #col = species_com,
+      fill = species_com
+    ) 
+  ) +
+  #scale_colour_viridis_d(option = "D") #+
+  scale_fill_viridis_d() +
+  labs(
+    x = "Minimum metapopulation capacity\n(proportional difference)",
+    y = "Management scenario",
+    fill = "Species"
+  )
+
+plot_mpc_box_min_90
+```
+
+```{r}
+png(
+  filename = "plots/mpc_box_min_90.png",
+  width = 20,
+  height = 20,
+  units = "cm",
+  res = 300
+)
+plot_mpc_box_min_90
+dev.off()
+```
+
+```{r}
+plot_mpc_ebar_min_90 <- ggplot(mpc_rs_summary) +
+  geom_hline(yintercept = 0) +
+  geom_errorbar(
+    aes(
+      x = scn,
+      ymin = dp_min_90_lo,
+      ymax = dp_min_90_up
+    ),
+    #width = 0.3,
+    position = position_dodge2(width = 1)
+  ) +
+  geom_point(
+    aes(
+      x = scn,
+      y = dp_min_90_mid,
+      col = species_com
+    ),
+    position = position_dodge2(width = 1, padding = 0.1)
+  ) +
+  scale_colour_viridis_d(option = "D") +
+  scale_fill_viridis_d() +
+  labs(
+    y = "Minimum metapopulation capacity\n(proportional difference)",
+    x = "Management scenario",
+    col = "Species"
+  ) +
+  coord_flip()
+
+plot_mpc_ebar_min_90
+```
+
+```{r}
+png(
+  filename = "plots/mpc_ebar_min_90.png",
+  width = 20,
+  height = 20,
+  units = "cm",
+  res = 300
+)
+plot_mpc_ebar_min_90
+dev.off()
+```
+
 
