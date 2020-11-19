@@ -39,5 +39,5 @@ module load r/3.6.2
 cd /data/gpfs/projects/punim0995/rfst
 
 # Commands
-Rscript --vanilla R/spartan/spartan_11_pva.R $i
+Rscript --vanilla R/spartan/spartan_11_pva_smle.R $i
 
