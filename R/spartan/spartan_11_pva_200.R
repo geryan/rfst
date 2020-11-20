@@ -17,6 +17,7 @@ load(file = "output/RData/01_landscape_variables.RData")
 load(file = "output/RData/04.1_mortality_aggregated.RData")
 load(file = "output/RData/10_predict_SDMs_agg.RData")
 
+
 source.functions("R/functions")
 
 
@@ -24,8 +25,6 @@ command_args <- commandArgs(trailingOnly = TRUE)
 
 i <- as.numeric(command_args[1])
 
-agg_set <- agg_set %>%
-  filter(sp == "smle")
 
 tm_gyle <- matrix(
   data = c(
@@ -129,7 +128,7 @@ species_dat <- tribble(
   "gyle", tm_gyle, 3000,     245, cc_245, 0.2,    2000,
   "pevo", tm_pevo, 5000,     60,  cc_60,  0.2,    4000,
   "peau", tm_peau, 2000,     10,  cc_10,  0.2,    20000,
-  "smle", tm_smle, 1000,     309, cc_309, 0.6,    2000, # had to increase this to > cell size
+  "smle", tm_smle, 1000,     309, cc_309, 0.6,    2000,
   "tyte", tm_tyte, 1000,     1,   cc_1,   0.4,    20000,
   "vava", tm_vava, 5000,     100, cc_100, 0.2,    5000
 ) %>% mutate(
@@ -206,26 +205,24 @@ pop_dyn <- population_dynamics(
 
 
 
-simres <- simulation(
-  landscape = lsc,
-  population_dynamics = pop_dyn,
-  demo_stochasticity = "full",
-  timesteps = 50,
-  replicates = 100,
-  verbose = TRUE
-)
-
-
-
-
 # simres <- simulation(
 #   landscape = lsc,
 #   population_dynamics = pop_dyn,
 #   demo_stochasticity = "full",
-#   timesteps = ntimesteps,
-#   replicates = nreplicates,
-#   verbose = FALSE
-# )
+#   timesteps = 20,
+#   replicates = 5,
+#   verbose = TRUE
+)
+
+
+simres <- simulation(
+  landscape = lsc,
+  population_dynamics = pop_dyn,
+  demo_stochasticity = "full",
+  timesteps = ntimesteps,
+  replicates = nreplicates,
+  verbose = FALSE
+)
 
 
 simpop <- get_pop_simulation(simres)
@@ -265,3 +262,5 @@ saveRDS(
     agg_set$sp[i]
   )
 )
+
+}

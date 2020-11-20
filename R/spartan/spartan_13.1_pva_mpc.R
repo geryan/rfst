@@ -28,16 +28,16 @@ i <- as.numeric(command_args[1])
 
 agg_map <- mpc_dat_pva$aggmaps[[i]]
 
-dispfun <- dispersal_negexp(1/mpc_dat_pva$ddist[1])
+dispfun <- dispersal_negexp(1/mpc_dat_pva$ddist[i])
 
-patch_90 <- patmat(
+patch <- patmat(
   x = agg_map,
-  threshold = mpc_dat_pva$threshold_90[i],
+  threshold = mpc_dat_pva$threshold_max_sss[i],
   write = FALSE
 )
 
-mpc_90 <- metacapstack(
-  x = patch_90,
+mpc <- metacapstack(
+  x = patch,
   f = dispfun,
   year0 = year0
 ) %>%
@@ -46,51 +46,10 @@ mpc_90 <- metacapstack(
   )
 
 
-patch_75 <- patmat(
-  x = agg_map,
-  threshold = mpc_dat_pva$threshold_75[i],
-  write = FALSE
-)
-
-mpc_75 <- metacapstack(
-  x = patch_75,
-  f = dispfun,
-  year0 = year0
-) %>%
-  rename(
-    mpc_75 = metapopulation_capacity
-  )
-
-
-patch_07 <- patmat(
-  x = agg_map,
-  threshold = 0.7,
-  write = FALSE
-)
-
-
-mpc_07 <- metacapstack(
-  x = patch_07,
-  f = dispfun,
-  year0 = year0
-) %>%
-  rename(
-    mpc_07 = metapopulation_capacity
-  )
-
 mpc_results_pva <- bind_cols(
   mpc_dat_pva[i,],
-  mpc_90,
-  mpc_75,
-  mpc_07
-) %>%
-  dplyr::select(
-    -year...15,
-    -year...17
-  ) %>%
-  rename(
-    year = year...19
-  )
+  mpc
+)
 
 saveRDS(
   object = mpc_results_pva,

@@ -1,0 +1,46 @@
+---
+title: "fire_sum"
+output: html_document
+---
+
+
+```{r}
+load(file = "output/RData/04_disturbance_variables.RData")
+```
+
+
+
+```{r}
+aa <- disturbance_variables$dist_vars[1:2]
+```
+
+
+
+```{r}
+zz <- lapply(
+  X = aa,
+  FUN = function(x){
+    sum(getValues(x$fi), na.rm = TRUE)
+  }
+)
+```
+
+```{r}
+firesum <- lapply(
+  X = disturbance_variables$dist_vars,
+  FUN = function(y){
+    lapply(
+      X = y,
+      FUN = function(x){
+        sum(getValues(x$fi), na.rm = TRUE)
+      }
+    )
+  }
+)
+
+saveRDS(
+  object = firesum,
+  file = "output/firesum.Rds"
+)
+```
+

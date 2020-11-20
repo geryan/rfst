@@ -32,69 +32,30 @@ agg_map <- raster::aggregate(
 )
 
 
-dispfun <- dispersal_negexp(1/mpc_dat$ddist[1])
+dispfun <- dispersal_negexp(1/mpc_dat$ddist[i])
 
-patch_90 <- patmat(
+patch <- patmat(
   x = agg_map,
-  threshold = mpc_dat$threshold_90[i],
+  threshold = mpc_dat$threshold_max_sss[i],
   write = FALSE
 )
 
-mpc_90 <- metacapstack(
-  x = patch_90,
+mpc <- metacapstack(
+  x = patch,
   f = dispfun,
   year0 = year0
 ) %>%
   rename(
-    mpc_90 = metapopulation_capacity
+    mpc = metapopulation_capacity
   )
 
-
-patch_75 <- patmat(
-  x = agg_map,
-  threshold = mpc_dat$threshold_75[i],
-  write = FALSE
-)
-
-mpc_75 <- metacapstack(
-  x = patch_75,
-  f = dispfun,
-  year0 = year0
-) %>%
-  rename(
-    mpc_75 = metapopulation_capacity
-  )
-
-
-patch_07 <- patmat(
-  x = agg_map,
-  threshold = 0.7,
-  write = FALSE
-)
-
-
-mpc_07 <- metacapstack(
-  x = patch_07,
-  f = dispfun,
-  year0 = year0
-) %>%
-  rename(
-    mpc_07 = metapopulation_capacity
-  )
 
 mpc_results <- bind_cols(
   mpc_dat[i,],
-  mpc_90,
-  mpc_75,
-  mpc_07
+  mpc
 ) %>%
   dplyr::select(
-    -predmaps,
-    -year...19,
-    -year...21
-  ) %>%
-  rename(
-    year = year...23
+    -predmaps
   )
 
 saveRDS(

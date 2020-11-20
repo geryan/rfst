@@ -21,32 +21,19 @@ source.functions("R/functions")
 
 
 
-p_threshold_90 <- pred_set[1:6,] %$%
+threshold_max_sss <- pred_set[1:6,] %$%
   mapply(
     x = predmaps,
     sp = sp,
-    FUN = get.mpc.threshold,
+    FUN = get.threshold.max.sss,
     MoreArgs = list(
-      y = pa_data,
-      probs = 0.1
-    )
-  )
-
-p_threshold_75 <- pred_set[1:6,] %$%
-  mapply(
-    x = predmaps,
-    sp = sp,
-    FUN = get.mpc.threshold,
-    MoreArgs = list(
-      y = pa_data,
-      probs = 0.25
+      y = pa_data
     )
   )
 
 thresholds <- tibble(
   sp = pred_set$sp[1:6],
-  threshold_90 = p_threshold_90,
-  threshold_75 = p_threshold_75
+  threshold_max_sss = threshold_max_sss
 )
 
 
