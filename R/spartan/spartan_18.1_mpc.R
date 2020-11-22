@@ -50,12 +50,52 @@ mpc <- metacapstack(
   )
 
 
+patch_07 <- patmat(
+  x = agg_map,
+  threshold = 0.7,
+  write = FALSE
+)
+
+
+mpc_07 <- metacapstack(
+  x = patch_07,
+  f = dispfun,
+  year0 = year0
+) %>%
+  rename(
+    mpc_07 = metapopulation_capacity
+  )
+
+
+patch_05 <- patmat(
+  x = agg_map,
+  threshold = 0.5,
+  write = FALSE
+)
+
+
+mpc_05 <- metacapstack(
+  x = patch_05,
+  f = dispfun,
+  year0 = year0
+) %>%
+  rename(
+    mpc_05 = metapopulation_capacity
+  )
+
 mpc_results <- bind_cols(
   mpc_dat[i,],
-  mpc
+  mpc,
+  mpc_05,
+  mpc_07
 ) %>%
+  rename(
+    year = year...18
+  ) %>%
   dplyr::select(
-    -predmaps
+    -predmaps,
+    -year...20,
+    -year...22
   )
 
 saveRDS(
