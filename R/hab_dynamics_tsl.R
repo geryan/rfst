@@ -74,8 +74,13 @@ plot(hab_output)
 min_tsl <- min(cellStats(tsl_stack, min))
 max_tsl <- max(cellStats(tsl_stack, max))
 
+min_tsl <- 0
+max_tsl <- 200
+
 hyperbolic_dist <- function(x, shift, offset) (x - shift)^2 + offset
 plot(seq(min_tsl, max_tsl, length.out = 100), hyperbolic_dist(seq(min_tsl, max_tsl, length.out = 100), mean(c(min_tsl, max_tsl)), 100), type = 'l')
+
+
 
 logistic_dist <- function(x, shift, offset, shape) offset / (1 + exp(-(x - shift) / shape)) # Note, this can be a straight line also by changin parameters
 plot(seq(min_tsl, max_tsl, length.out = 100), logistic_dist(seq(min_tsl, max_tsl, length.out = 100), mean(c(min_tsl, max_tsl)), 10, 10), type = 'l')
