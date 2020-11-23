@@ -14,15 +14,15 @@ load(file = "output/RData/01_landscape_variables.RData")
 source.functions("R/functions")
 
 
-file_list <- list.files("/data/gpfs/projects/punim0995/rfst/output/spartan_RData/pva/")
+file_list <- list.files("/data/gpfs/projects/punim0995/rfst/output/spartan_RData/pva_habitat/")
 
 
-pva_list <- lapply(
+pva_habitat_list <- lapply(
   X = file_list,
   FUN = function(x){
     z <- readRDS(
       file = sprintf(
-        "/data/gpfs/projects/punim0995/rfst/output/spartan_RData/pva/%s",
+        "/data/gpfs/projects/punim0995/rfst/output/spartan_RData/pva_habitat/%s",
         x
       )
     )
@@ -32,11 +32,11 @@ pva_list <- lapply(
   }
 )
 
-pva_results_ch <- bind_rows(pva_list)
+pva_habitat_results_ch <- bind_rows(pva_habitat_list)
 
 
 
 save(
-  pva_results_ch,
-  file = "/data/gpfs/projects/punim0995/rfst/output/RData/11_pva.RData"
+  pva_habitat_results_ch,
+  file = "/data/gpfs/projects/punim0995/rfst/output/RData/11_pva_habitat.RData"
 )

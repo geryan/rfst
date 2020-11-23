@@ -35,7 +35,7 @@ tsl_agg <- lapply(
   X = tsl,
   FUN = raster::aggregate,
   fact = 10,
-  fun = min,
+  fun = mean,
   na.rm = TRUE
 ) %>%
   brick
