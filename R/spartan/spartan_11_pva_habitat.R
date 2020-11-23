@@ -15,7 +15,7 @@ library(steps)
 load(file = "output/RData/00_controls.RData")
 load(file = "output/RData/01_landscape_variables.RData")
 load(file = "output/RData/04.1_mortality_aggregated.RData")
-load(file = "outpu")
+load(file = "output/RData/04.3_tsl_aggregated.RData")
 load(file = "output/RData/10_predict_SDMs_agg.RData")
 
 source.functions("R/functions")
@@ -151,6 +151,7 @@ j <- which(species_dat$sp == agg_set$sp[i])
 
 k <- which(mort_agg_ch$scn_id == agg_set$scn_id[[i]])
 
+l <- which(tsl_agg_ch$scn_id == agg_set$scn_id[[i]])
 
 initial_population <- initpop2(
   hs = agg_set$aggmaps[[i]][[1]],
@@ -166,7 +167,7 @@ lsc <- landscape(
   suitability = agg_set$aggmaps[[i]],
   "mortality" = mort_agg_ch$mort_agg[[k]],
   "sf_layer" = sf_layer,
-  "disturbance" = ,
+  "disturbance" = tsl_agg_ch$tsl_agg[[l]],
   carrying_capacity = species_dat$ccfun[[j]]
 )
 
@@ -209,32 +210,32 @@ pop_dyn <- population_dynamics(
 
 
 hab_dyn <- list(
-  custom_dist(
+  steps.custom_dist(
     disturbance_layers = "disturbance",
     disturbance_function = species_dat$habfun[[j]]
   )
 )
 
 
-simres <- simulation(
-  landscape = lsc,
-  population_dynamics = pop_dyn,
-  habitat_dynamics = hab_dyn,
-  demo_stochasticity = "full",
-  timesteps = 20,
-  replicates = 5,
-  verbose = TRUE
-)
-
-
 # simres <- simulation(
 #   landscape = lsc,
 #   population_dynamics = pop_dyn,
+#   habitat_dynamics = hab_dyn,
 #   demo_stochasticity = "full",
-#   timesteps = ntimesteps,
-#   replicates = nreplicates,
-#   verbose = FALSE
+#   timesteps = 20,
+#   replicates = 5,
+#   verbose = TRUE
 # )
+
+
+simres <- simulation(
+  landscape = lsc,
+  population_dynamics = pop_dyn,
+  demo_stochasticity = "full",
+  timesteps = ntimesteps,
+  replicates = nreplicates,
+  verbose = FALSE
+)
 
 
 simpop <- get_pop_simulation(simres)
@@ -275,4 +276,3 @@ saveRDS(
   )
 )
 
-}

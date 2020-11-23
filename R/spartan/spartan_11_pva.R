@@ -24,8 +24,6 @@ command_args <- commandArgs(trailingOnly = TRUE)
 
 i <- as.numeric(command_args[1])
 
-if(agg_set$sp[i] != "smle"){ # some dimension problem with wfd models
-
 
 tm_gyle <- matrix(
   data = c(
@@ -129,7 +127,7 @@ species_dat <- tribble(
   "gyle", tm_gyle, 3000,     245, cc_245, 0.2,    2000,
   "pevo", tm_pevo, 5000,     60,  cc_60,  0.2,    4000,
   "peau", tm_peau, 2000,     10,  cc_10,  0.2,    20000,
-  "smle", tm_smle, 1000,     309, cc_309, 0.6,    1000,
+  "smle", tm_smle, 1000,     309, cc_309, 0.6,    2000,
   "tyte", tm_tyte, 1000,     1,   cc_1,   0.4,    20000,
   "vava", tm_vava, 5000,     100, cc_100, 0.2,    5000
 ) %>% mutate(
@@ -213,7 +211,7 @@ pop_dyn <- population_dynamics(
 #   timesteps = 20,
 #   replicates = 5,
 #   verbose = TRUE
-# )
+)
 
 
 simres <- simulation(
@@ -264,4 +262,3 @@ saveRDS(
   )
 )
 
-}
