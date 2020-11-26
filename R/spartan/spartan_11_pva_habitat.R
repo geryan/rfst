@@ -147,6 +147,8 @@ agg_set <- agg_set %>%
   filter(sp != "smle" & sp != "vava")
 
 
+i <- 1
+
 j <- which(species_dat$sp == agg_set$sp[i])
 
 k <- which(mort_agg_ch$scn_id == agg_set$scn_id[[i]])
@@ -217,29 +219,28 @@ hab_dyn <- list(
 )
 
 
-# simres <- simulation(
-#   landscape = lsc,
-#   population_dynamics = pop_dyn,
-#   habitat_dynamics = hab_dyn,
-#   demo_stochasticity = "full",
-#   timesteps = 20,
-#   replicates = 5,
-#   verbose = TRUE
-# )
-
-
-simres <- simulation(
+simres2 <- simulation(
   landscape = lsc,
   population_dynamics = pop_dyn,
+  habitat_dynamics = hab_dyn,
   demo_stochasticity = "full",
-  timesteps = ntimesteps,
-  replicates = nreplicates,
-  verbose = FALSE
+  timesteps = 50,
+  replicates = 100,
+  verbose = TRUE
 )
 
 
-simpop <- get_pop_simulation(simres)
+# simres <- simulation(
+#   landscape = lsc,
+#   population_dynamics = pop_dyn,
+#   demo_stochasticity = "full",
+#   timesteps = ntimesteps,
+#   replicates = nreplicates,
+#   verbose = FALSE
+# )
 
+
+simpop <- get_pop_simulation(simres)
 
 pva_emp <- emp(simpop)
 
@@ -260,7 +261,7 @@ pva_res <- tibble(
   emp_all = pva_emp_all
 )
 
-pva <- bind_cols(
+pva2 <- bind_cols(
   pva_dat,
   pva_res
 )

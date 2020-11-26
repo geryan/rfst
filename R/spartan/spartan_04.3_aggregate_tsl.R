@@ -35,7 +35,7 @@ tsl_agg <- lapply(
   X = tsl,
   FUN = raster::aggregate,
   fact = 10,
-  fun = mean,
+  fun = tsl.agg,
   na.rm = TRUE
 ) %>%
   brick
@@ -58,11 +58,39 @@ tsl_agg <- brick(
   )
 )
 
-tsl_table <- tibble(
-  scn_id = disturbance_variables$scn_id[i],
-  tsl_agg = list(tsl_agg)
+
+tsl_agg_5 <- lapply(
+  X = tsl,
+  FUN = raster::aggregate,
+  fact = 5,
+  fun = tsl.agg,
+  na.rm = TRUE
+) %>%
+  brick
+
+writeRaster(
+  tsl_agg_5,
+  filename = sprintf(
+    fmt = "%s/tsl_agg_5_%s.grd",
+    "/data/gpfs/projects/punim0995/rfst/output/tsl_aggregated",
+    disturbance_variables$scn_id[i]
+  ),
+  overwrite = TRUE
 )
 
+tsl_agg_5 <- brick(
+  x = sprintf(
+    fmt = "%s/tsl_agg_5_%s.grd",
+    "/data/gpfs/projects/punim0995/rfst/output/tsl_aggregated",
+    disturbance_variables$scn_id[i]
+  )
+)
+
+tsl_table <- tibble(
+  scn_id = disturbance_variables$scn_id[i],
+  tsl_agg = list(tsl_agg),
+  tsl_agg5 = list(tsl_agg5)
+)
 
 saveRDS(
   object = tsl_table,

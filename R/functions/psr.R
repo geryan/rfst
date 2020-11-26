@@ -94,7 +94,7 @@ psr <- function(
         text(
           x = dim(popmat)[1]/2,
           y = ty,
-          labels = "ILLUSTRATIVE ONLY",
+          #labels = "ILLUSTRATIVE ONLY",
           col = "red"
         )
       }
@@ -174,7 +174,7 @@ psr <- function(
       text(
         x = dim(popmat)[1]/2,
         y = ty,
-        labels = "ILLUSTRATIVE ONLY",
+        #labels = "ILLUSTRATIVE ONLY",
         col = "red"
       )
     }
@@ -225,7 +225,7 @@ psr <- function(
         text(
           x = dim(popmat)[1]/2,
           y = ty,
-          labels = "ILLUSTRATIVE ONLY",
+          #labels = "ILLUSTRATIVE ONLY",
           col = "red"
         )
       }

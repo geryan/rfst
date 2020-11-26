@@ -19,7 +19,8 @@ emp <- function(x, q = NULL){
         },
         MARGIN = 3
       ),
-      probs = q
+      probs = q,
+      na.rm = TRUE
     )
   }
   

@@ -1,0 +1,954 @@
+---
+title: Illustrative Results of STEPS Population Viability Analysis for Leadbeater's
+  Possum and Greater Glider
+author: "GE Ryan - University of Melbourne"
+output:
+  pdf_document:
+    fig_height: 6
+    fig_width: 7
+    fig_caption: true
+    toc: yes
+    toc_depth: 3
+    includes:  
+      in_header: header.tex
+  word_document:
+    toc: yes
+    toc_depth: '3'
+---
+
+# Introduction
+
+```{r setup, echo = FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+```{r}
+source("R/spartan/spartan_settings.R")
+```
+
+```{r}
+.libPaths("/data/gpfs/projects/punim0995/gr_lib")
+```
+
+```{r packages, results = 'hide', warning = FALSE, include = FALSE}
+library(magrittr)
+library(dplyr)
+library(tibble)
+library(sf)
+library(lwgeom)
+library(rgdal)
+library(readr)
+library(readxl)
+library(ggplot2)
+library(lubridate)
+library(foreach)
+library(doMC)
+library(future)
+library(future.apply)
+library(tidyr)
+library(gbm)
+library(dismo)
+library(steps)
+library(raster)
+library(rasterVis)
+library(rlang)
+library(viridis)
+library(purrr)
+library(rerddap)
+library(knitr)
+```
+
+```{r load everything}
+load(file = "output/RData/00_controls.RData")
+load(file = "output/RData/01_landscape_variables.RData")
+load(file = "output/RData/02_species_occurrences.RData")
+load(file = "output/RData/03_LANDIS_variables.RData")
+load(file = "output/RData/04_disturbance_variables.RData")
+load(file = "output/RData/04.2_temporally_agg_dist_vars.RData")
+load(file = "output/RData/05_geophys_vars.RData")
+load(file = "output/RData/06_climate_variables.RData")
+#load(file = "output/RData/07_combined_variables.RData")
+load(file = "output/RData/09_fit_distribution_models.RData")
+load(file = "output/RData/10_predict_SDMs_agg.RData")
+load(file = "output/RData/11_pva.RData")
+load(file = "output/RData/13.1a_mpc_all.RData")
+```
+
+```{r source all functions}
+source(file = "R/functions/source.functions.R")
+source.functions("R/functions")
+```
+
+```{r}
+pa_data
+```
+
+```{r}
+disturbance_variables
+```
+
+```{r}
+disturbance_variables$landis_vars[[1]][[1]]sdm_results$brt.fit[[1]]
+```
+
+```{r}
+disturbance_variables$dist_vars[[1]][[1]] %>% names
+```
+
+```{r}
+temporally_agg_dist_vars
+```
+
+```{r}
+temporally_agg_dist_vars$fire_ag[[1]]
+```
+
+```{r}
+geo_vars
+```
+
+```{r}
+clim_vars
+```
+
+```{r}
+clim_vars$climate_projections[[1]][[1]]
+```
+
+```{r}
+#var_set
+```
+
+```{r}
+sdm_results
+```
+
+```{r}
+sdm_results$brt.fit[[1]]
+```
+
+```{r}
+pva_results_ch
+```
+
+Transition matrix
+```{r}
+pva_results_ch$tm[[1]]
+```
+
+```{r}
+#mpc_results_all_ch
+```
+
+# LANDIS results
+
+## Maximum age
+Maximum age in years of any tree in 1 ha cell - direct output from LANDIS.
+
+Large image is 2019, multi-plots are 10 year time-slices.
+
+### Business as usual
+
+```{r max_age 1_01 bau, fig.cap = "Maximum age, business as usual scenario, 2019"}
+max_age_1_01 <- lxtract(
+  x = disturbance_variables$landis_vars[[1]][c(1,11,21,31,41,51)],
+  y = "max_age",
+  layernames = sprintf("max_age_20%s9", 1:6)
+)
+```
+
+```{r, fig.cap = "Maximum age, no harvest scenario, 2019"}
+lp(max_age_1_01, mm = 1)
+```
+
+```{r, fig.cap = "Maximum age, business as usual scenario, 2069"}
+lp(max_age_1_01, mm = 6)
+```
+
+```{r, fig.cap = "Maximum age, business as usual scenario, 2019, 2029, 2039, 2049, 2059, 2069"}
+lp(max_age_1_01)
+```
+
+### No harvest after 30 years
+```{r max_age 8_01 h30}
+max_age_8_01 <- lxtract(
+  x = disturbance_variables$landis_vars[[11]][c(1,11,21,31,41,51)],
+  y = "max_age",
+  layernames = sprintf("max_age_20%s9", 1:6)
+)
+```
+
+```{r fig.cap = "Maximum age, no harvest after 30 years scenario, 2019"}
+lp(max_age_8_01, mm = 1)
+```
+
+```{r, fig.cap = "Maximum age, no harvest after 30 years scenario, 2069"}
+lp(max_age_8_01, mm = 6)
+```
+
+```{r, fig.cap = "Maximum age, no harvest after 30 years scenario, 2019, 2029, 2039, 2049, 2059, 2069"}
+lp(max_age_8_01)
+```
+
+### No harvest
+```{r max_age 4_01 nth}
+max_age_4_01 <- lxtract(
+  x = disturbance_variables$landis_vars[[31]][c(1,11,21,31,41,51)],
+  y = "max_age",
+  layernames = sprintf("max_age_20%s9", 1:6)
+)
+```
+
+```{r, fig.cap = "Maximum age, no harvest scenario, 2019"}
+lp(max_age_4_01, mm = 1)
+```
+
+```{r, fig.cap = "Maximum age, no harvest scenario, 2069"}
+lp(max_age_4_01, mm = 6)
+```
+
+```{r, fig.cap = "Maximum age, no harvest scenario, 2019, 2029, 2039, 2049, 2059, 2069"}
+lp(max_age_4_01)
+```
+
+## Old growth eucalypt biomass
+Average biomass of old-growth eucalypt forest - trees >150 years of age - in 1km radius.
+
+Single plot is 2019, multi-plots are 10 year time-slices.
+
+### Business as usual
+```{r biom_oge_1k 1_01 bau}
+biom_oge_1k_1_01 <- lxtract(
+  x = disturbance_variables$landis_vars[[1]][c(1,11,21,31,41,51)],
+  y = "biom_oge_1k",
+  layernames = sprintf("OGbiom_20%s9", 1:6)
+)
+```
+
+```{r, fig.cap = "Average biomass of old growth eucalypts in 1 km radius, business as usual scenario, 2019"}
+lp(biom_oge_1k_1_01, mm = 1)
+```
+
+```{r, fig.cap = "Average biomass of old growth eucalypts in 1 km radius, business as usual scenario, 2069"}
+lp(biom_oge_1k_1_01, mm = 6)
+```
+
+```{r, fig.cap = "Average biomass of old growth eucalypts in 1 km radius, business as usual scenario, 2019, 2029, 2039, 2049, 2059, 2069"}
+lp(biom_oge_1k_1_01)
+```
+
+### No harvest after 30 years
+```{r biom_oge_1k 8_01 h30}
+biom_oge_1k_8_01 <- lxtract(
+  x = disturbance_variables$landis_vars[[11]][c(1,11,21,31,41,51)],
+  y = "biom_oge_1k",
+  layernames = sprintf("OGbiom_20%s9", 1:6)
+)
+```
+
+```{r, fig.cap = "Average biomass of old growth eucalypts in 1 km radius, no harvest after 30 years scenario, 2019"}
+lp(biom_oge_1k_8_01, mm = 1)
+```
+
+```{r, fig.cap = "Average biomass of old growth eucalypts in 1 km radius, no harvest after 30 years scenario, 2069"}
+lp(biom_oge_1k_8_01, mm = 6)
+```
+
+
+```{r fig.cap = "Average biomass of old growth eucalypts in 1 km radius, no harvest after 30 years scenario, 2019, 2029, 2039, 2049, 2059, 2069"}
+lp(biom_oge_1k_8_01)
+```
+
+### No harvest
+```{r biom_oge_1k 4_01 nth}
+biom_oge_1k_4_01 <- lxtract(
+  x = disturbance_variables$landis_vars[[31]][c(1,11,21,31,41,51)],
+  y = "biom_oge_1k",
+  layernames = sprintf("OGbiom_20%s9", 1:6)
+)
+```
+
+```{r, fig.cap = "Average biomass of old growth eucalypts in 1 km radius, no harvest scenario, 2019"}
+lp(biom_oge_1k_4_01, mm = 1)
+```
+
+```{r, fig.cap = "Average biomass of old growth eucalypts in 1 km radius, no harvest scenario, 2069"}
+lp(biom_oge_1k_4_01, mm = 6)
+```
+
+```{r, fig.cap = "Average biomass of old growth eucalypts in 1 km radius, no harvest scenario, 2019, 2029, 2039, 2049, 2059, 2069"}
+lp(biom_oge_1k_4_01)
+```
+
+## Acacia and midstorey biomass
+Biomass of midstorey species and acacias important for Leadbeater's Possum.
+
+### Business as usual
+```{r lbm_biom 1_01 bau}
+lbm_biom_1_01 <- lxtract(
+  x = disturbance_variables$landis_vars[[1]][c(1,11,21,31,41,51)],
+  y = "lbm_biom",
+  layernames = sprintf("lbm_biom_20%s9", 1:6)
+)
+```
+
+```{r, fig.cap = "Biomass of acacias and midstorey species, business as usual scenario, 2019"}
+lp(lbm_biom_1_01, mm = 1)
+```
+
+```{r, fig.cap = "Biomass of acacias and midstorey species, business as usual scenario, 2069"}
+lp(lbm_biom_1_01, mm = 6)
+```
+
+```{r,   fig.cap = "Biomass of acacias and midstorey species, business as usual scenario, 2019, 2029, 2039, 2049, 2059, 2069"}
+lp(lbm_biom_1_01)
+```
+
+### No harvest after 30 years
+```{r lbm_biom 8_01 h30}
+lbm_biom_8_01 <- lxtract(
+  x = disturbance_variables$landis_vars[[11]][c(1,11,21,31,41,51)],
+  y = "lbm_biom",
+  layernames = sprintf("lbm_biom_20%s9", 1:6)
+)
+```
+
+```{r, fig.cap = "Biomass of acacias and midstorey species, no harvest after 30 years scenario, 2019"}
+lp(lbm_biom_8_01, mm = 1)
+```
+
+```{r, fig.cap = "Biomass of acacias and midstorey species, no harvest after 30 years scenario, 2069"}
+lp(lbm_biom_8_01, mm = 6)
+```
+
+```{r, fig.cap = "Biomass of acacias and midstorey species, no harvest after 30 years scenario, 2019, 2029, 2039, 2049, 2059, 2069"}
+lp(lbm_biom_8_01)
+```
+
+
+### No harvest
+```{r lbm_biom 4_01 nth}
+lbm_biom_4_01 <- lxtract(
+  x = disturbance_variables$landis_vars[[31]][c(1,11,21,31,41,51)],
+  y = "lbm_biom",
+  layernames = sprintf("lbm_biom_20%s9", 1:6)
+)
+```
+
+```{r, fig.cap = "Biomass of acacias and midstorey species, no harvest scenario, 2019"}
+lp(lbm_biom_4_01, mm = 1)
+```
+
+```{r, fig.cap = "Biomass of acacias and midstorey species, no harvest scenario, 2069"}
+lp(lbm_biom_4_01, mm = 6)
+```
+
+```{r, fig.cap = "Biomass of acacias and midstorey species, no harvest scenario, 2019, 2029, 2039, 2049, 2059, 2069"}
+lp(lbm_biom_4_01)
+```
+
+
+# Disturbances
+
+## Fires
+Cells where fires occured over 10 year period, with large map showing 2019-2028, and multi-plot showing all following periods of 10 years.
+
+Fires are stochasticaly generated based on fire weather and fuel loads in the simulated landscape, and each simulation has unique fire outcomes.
+
+### Business as usual
+```{r fire_1_01 bau, fig.cap = "Fires over 10 year period business as usual scenario, 2019-2028"}
+lp(temporally_agg_dist_vars$fire_ag[[1]][[1]], twocol = TRUE)
+```
+
+```{r, fig.cap = "Fires over 10 year period business as usual scenario, 2019-2028, 2029-2038, 2039-2048, 2049-2058, 2059-2068"}
+lp(temporally_agg_dist_vars$fire_ag[[1]], twocol = TRUE)
+```
+
+### No harvest after 30 years
+```{r fire_8_01 h30, fig.cap = "Fires over 10 year period no harvest after 30 years scenario, 2019-2028"}
+lp(temporally_agg_dist_vars$fire_ag[[11]][[1]], twocol = TRUE)
+```
+
+```{r, fig.cap = "Fires over 10 year period no harvest after 30 years scenario, 2019-2028, 2029-2038, 2039-2048, 2049-2058, 2059-2068"}
+lp(temporally_agg_dist_vars$fire_ag[[11]], twocol = TRUE)
+```
+
+### No harvest
+```{r fire_4_01 nth, fig.cap = "Fires over 10 year period no harvest scenario, 2019-2028"}
+lp(temporally_agg_dist_vars$fire_ag[[31]][[1]], twocol = TRUE)
+```
+
+```{r, fig.cap = "Fires over 10 year period no harvest scenario, 2019-2028, 2029-2038, 2039-2048, 2049-2058, 2059-2068"}
+lp(temporally_agg_dist_vars$fire_ag[[31]], twocol = TRUE)
+```
+
+### Fires in time 50 (2068) in each LANDIS run
+Fires in year 50 of all 30 LANDIS simulations (10 runs of each of the three scenarios) - illustratiing variation in fire occurrence in a single simulated timestep among simulations.
+
+```{r}
+fire_example <- disturbance_variables %>%
+  mutate(
+    fi = map(
+      .x = dist_vars,
+      .f = function(x){
+        y <- lapply(X = x, function(z){z[["fi"]]})
+        
+        y <- stack(y)
+        
+        return(y)
+      }
+    )
+  ) %>%
+  mutate(
+    fi.50 = map(
+      .x = fi,
+      .f = ~.x[[50]]
+    )
+  ) %>%
+  arrange(scenario)
+ 
+firestack <- stack(fire_example$fi.50)
+```
+
+#### Business as usual
+```{r, fig.cap = "Fires in 2068, business as usual scenario, simulations 1-6"}
+lp(firestack[[1:6]], twocol = TRUE)
+```
+
+```{r, fig.cap = "Fires in 2068, business as usual scenario, simulations 7-10"}
+lp(firestack[[7:10]], twocol = TRUE)
+```
+
+#### No harvest after 30 years
+```{r, fig.cap = "Fires in 2068, no harvest after 30 years scenario , simulations 1-6"}
+lp(firestack[[21:26]], twocol = TRUE)
+```
+
+```{r, fig.cap = "Fires in 2068, no harvest after 30 years scenario, simulations 7-10"}
+lp(firestack[[27:30]], twocol = TRUE)
+```
+
+#### No harvest
+```{r , fig.cap = "Fires in 2068, no harvest scenario, simulations 1-6"}
+lp(firestack[[11:16]], twocol = TRUE)
+```
+
+```{r, fig.cap = "Fires in 2068, no harvest scenario, simulations 7-10"}
+lp(firestack[[17:20]], twocol = TRUE)
+```
+
+
+## Timber harvest
+Areas harvested in a 10 year period. Large image is 2019-2028, multi-plot is over all 10 year periods.
+
+### Business as usual
+```{r harvest_1_01 bau, fig.cap = "Timber harvest over 10 year period business as usual scenario, 2019-2028"}
+lp(temporally_agg_dist_vars$harvest_ag[[1]][[1]], twocol = TRUE)
+```
+
+```{r, fig.cap = "Timber harvest over 10 year period business as usual scenario, 2019-2028, 2029-2038, 2039-2048, 2049-2058, 2059-2068"}
+lp(temporally_agg_dist_vars$harvest_ag[[1]], twocol = TRUE)
+```
+
+### No harvest after 30 years
+```{r harvest_8_01 h30, fig.cap = "Timber harvest over 10 year period no harvest after 30 years scenario, 2019-2028"}
+lp(temporally_agg_dist_vars$harvest_ag[[11]][[1]], twocol = TRUE)
+```
+
+```{r, fig.cap = "Timber harvest over 10 year period no harvest after 30 years scenario, 2019-2028, 2029-2038, 2039-2048, 2049-2058, 2059-2068"}
+lp(temporally_agg_dist_vars$harvest_ag[[11]], twocol = TRUE)
+```
+
+### No harvest
+```{r harvest_4_01 nth, fig.cap = "Timber harvest over 10 year period no harvest scenario, 2019-2028"}
+lp(temporally_agg_dist_vars$harvest_ag[[31]][[1]], twocol = TRUE)
+```
+
+```{r, fig.cap = "Timber harvest over 10 year period no harvest scenario, 2019-2028, 2029-2038, 2039-2048, 2049-2058, 2059-2068"}
+lp(temporally_agg_dist_vars$harvest_ag[[31]], twocol = TRUE)
+```
+
+
+## Planned burning
+Areas burnt through planned burning in a 10 year period. Large image is 2019-2028, multi-plot is over all 10 year periods.
+
+### Business as usual
+```{r pb_1_01 bau, fig.cap = "Planned burning over 10 year period business as usual scenario, 2019-2028"}
+lp(temporally_agg_dist_vars$pb_ag[[1]][[1]], twocol = TRUE)
+```
+
+```{r, fig.cap = "Planned burning over 10 year period business as usual scenario, 2019-2028, 2029-2038, 2039-2048, 2049-2058, 2059-2068"}
+lp(temporally_agg_dist_vars$fire_ag[[1]], twocol = TRUE)
+```
+
+### No harvest after 30 years
+```{r pb_8_01 h30, fig.cap = "Planned burning over 10 year period no harvest after 30 years scenario, 2019-2028"}
+lp(temporally_agg_dist_vars$fire_ag[[11]][[1]], twocol = TRUE)
+```
+
+```{r, fig.cap = "Planned burning over 10 year period no harvest after 30 years scenario, 2019-2028, 2029-2038, 2039-2048, 2049-2058, 2059-2068"}
+lp(temporally_agg_dist_vars$fire_ag[[11]], twocol = TRUE)
+```
+
+### No harvest
+```{r pb_4_01 nth, fig.cap = "Planned burning over 10 year period no harvest scenario, 2019-2028"}
+lp(temporally_agg_dist_vars$fire_ag[[31]][[1]], twocol = TRUE)
+```
+
+```{r, fig.cap = "Planned burning over 10 year period no harvest scenario, 2019-2028, 2029-2038, 2039-2048, 2049-2058, 2059-2068"}
+lp(temporally_agg_dist_vars$fire_ag[[31]][[1]], twocol = TRUE)
+```
+
+## Total burnt and harvested
+```{r, cache = TRUE}
+sims_table <-  disturbance_variables %>%
+  mutate(
+    fi = map(
+      .f = lapply,
+      .x = dist_vars,
+      FUN = function(x){x[["fi"]]}
+    ),
+    fi  = map(
+      
+      .f = stack,
+      .x = fi
+     )
+  )
+
+
+sims_table <- sims_table %>%
+  mutate(
+    fi.sum = map(
+      .f = function(x){
+        sum(getValues(x), na.rm = TRUE)
+      },
+      .x = fi
+    )
+  )
+
+
+sims_table <- unnest(sims_table, cols = fi.sum) %>%
+  mutate(
+    scenario = case_when(scenario == "TH19_rcp45_PB" ~ "BAU",
+                         scenario == "TH30_rcp45_PB" ~ "No harvest",
+                         scenario == "TH00_rcp45_PB" ~ "Cease harvest Y30")
+  )
+
+
+sims_table <- sims_table %>%
+  mutate(
+    lo = map(
+      .f = lapply,
+      .x = dist_vars,
+      FUN = function(x){x[["lo"]]}
+    ),
+    lo  = map(
+      
+      .f = stack,
+      .x = lo
+     )
+  )
+
+
+sims_table <- sims_table %>%
+  mutate(
+    lo.sum = map(
+      .f = function(x){
+        sum(getValues(x), na.rm = TRUE)
+      },
+      .x = lo
+    )
+  )
+
+sims_table <- unnest(sims_table, cols = lo.sum)
+```
+
+```{r, fig.cap="Total area burnt in each LANDIS simulation, by scenario type."}
+ggplot(sims_table, aes(x = scenario, y = fi.sum)) +
+  geom_boxplot() +
+  geom_point(aes(colour = scenario_replicate), position = position_jitter(width = 0.1, height = 0)) 
+```
+
+```{r, fig.cap = "Total area harvested in each LANDIS simulation, by scenario type."}
+ggplot(sims_table, aes(x = scenario, y = lo.sum)) +
+  geom_boxplot() +
+  geom_point(aes(colour = scenario_replicate), position = position_jitter(width = 0.1, height = 0)) 
+```
+
+# Climate
+
+## Precipitation
+
+### January, RCP 4.5
+Rainfall in January, large image is 2019, multi-plot shows 10 year time-slices.
+
+```{r precipJan4.5}
+precipJan4.5 <- lxtract(
+  x =  clim_vars$climate_projections[[1]][c(1,11,21,31,41,51)],
+  y = 1,
+  layernames = sprintf("prec_djf_20%s9", 1:6)
+)
+```
+
+```{r, fig.cap= "Rainfall, January, 2019"}
+lp(precipJan4.5,
+   mm = 1)
+```
+
+```{r, fig.cap = "Rainfall, January, 2019, 2029, 2039, 2049, 2059, 2069"}
+lp(precipJan4.5)
+```
+
+### July, RCP 4.5
+Rainfall in July, large image is 2019, multi-plot shows 10 year time-slices.
+
+```{r precipJul4.5}
+precipJul4.5 <- lxtract(
+  x =  clim_vars$climate_projections[[1]][c(1,11,21,31,41,51)],
+  y = 2,
+  layernames = sprintf("prec_jja_20%s9", 1:6)
+)
+```
+
+```{r, fig.cap = "Rainfall, July, 2019"}
+lp(precipJul4.5, mm = 6)
+```
+
+```{r, fig.cap= "Rainfall, July, 2019, 2029, 2039, 2049, 2059, 2069"}
+lp(precipJul4.5)
+```
+
+
+## Temperature
+
+### January, maximum temperature, RCP 4.5
+Large image is 2019, multi-plot shows 10 year time-slices.
+
+```{r tmaxJan4.5}
+tmaxJan4.5 <- lxtract(
+  x =  clim_vars$climate_projections[[1]][c(1,11,21,31,41,51)],
+  y = 3,
+  layernames = sprintf("tmax_djf_20%s9", 1:6)
+)
+```
+
+```{r, fig.cap = "Maximum temperature, January, 2019"}
+lp(tmaxJan4.5, mm = 1)
+```
+
+```{r, fig.cap = "Maximum temperature, January, 2019, 2029, 2039, 2049, 2059, 2069"}
+lp(tmaxJan4.5)
+```
+
+### July, minumum temperature, RCP 4.5
+Large image is 2019, multi-plot shows 10 year time-slices.
+
+```{r tminJul4.5}
+tminJul4.5 <- lxtract(
+  x =  clim_vars$climate_projections[[1]][c(1,11,21,31,41,51)],
+  y = 4,
+  layernames = sprintf("tmin_jja_20%s9", 1:6)
+)
+```
+
+```{r, fig.cap="Minimum temerature, July, 2019"}
+lp(tminJul4.5, mm = 1)
+```
+
+
+```{r fig.cap="Minimum temperature, July, 2019, 2029, 2039, 2049, 2059, 2069"}
+lp(tminJul4.5)
+```
+
+# Leadbeater's Possum results
+
+## Species distribution model
+
+Summary information for Leadbeater's possum species distribution model.
+
+Variables are, in order:
+
+- maximum January temperature,
+- January rainfall,
+- maximum age of trees,
+- log vertical distance from major waterways,
+- July minimum temperature,
+- proportion of midstorey biomass,
+- total midstorey biomass,
+- July rainfall,
+- log vertical distance from minor waterways,
+- proportion of biomass >150 years old,
+- log vertical distance from salt waterway,
+- anisotronic heating x ruggedness, thorium,
+- log vertical distance from any waterway,
+- proportion of old growth biomass in surrounding 3 ha x 3ha area,
+- total biomass of old growth forest in surrounding 3 ha x 3 ha area 
+
+```{r, fig.cap="Percentage contribution of Leadbeater's possum distribution model"}
+summary(sdm_results$brt.fit[[1]])
+```
+
+```{r, fig.cap="Partial dependence plot for Leadbeater's possum species distribution model"}
+gbm.plot(sdm_results$brt.fit[[1]])
+```
+
+```{r sdm 1_01 bau lb, fig.cap="Baseline species distribution model for Leadbeater's possum"}
+plb_BAU <- pva_results_ch$aggmaps[[709]][[c(1,11,21,31,41,51)]]
+
+names(plb_BAU) <- sprintf("sdm_20%s9", 1:6)
+
+lp(plb_BAU[[1]])
+```
+
+```{r, fig.cap="Baseline species distribution model for Leadbeater's possum, with presence (yellow) and absence (blue) records overlaid"}
+plot(plb_BAU[[1]], col = magma(16))
+plot(pa_data$pa_dat[[1]][2], pch = 20, cex = 0.3,  add = TRUE)
+```
+
+### SDM spatial predictions
+
+### Business as usual
+```{r, fig.cap = "Species distribution model for Leadbeater's possum, business as usual scenario, 2019, 2029, 2039, 2049, 2059, 2069"}
+lp(plb_BAU)
+```
+
+### No harvest after 30 years
+```{r sdm 8_01 h30 lb, fig.cap = "Species distribution model for Leadbeater's possum, no harvest after 30 years scenario, 2019, 2029, 2039, 2049, 2059, 2069"}
+plb_NH30 <- pva_results_ch$aggmaps[[944]][[c(1,11,21,31,41,51)]]
+
+names(plb_NH30) <- sprintf("sdm_20%s9", 1:6)
+
+lp(plb_1NH30[[1]])
+```
+
+### No harvest
+```{r sdm 4_01 nth lb, fig.cap = "Species distribution model for Leadbeater's possum, no harvest scenario, 2019, 2029, 2039, 2049, 2059, 2069"}
+plb_NH <- pva_results_ch$aggmaps[[238]][[c(1,11,21,31,41,51)]]
+
+names(plb_NH) <- sprintf("sdm_20%s9", 1:6)
+
+lp(plb_NH[[1]])
+```
+
+## Population viability analysis
+
+## All life stages
+Population for each life history stage over 100 simulations for a single LANDIS simulation of each management scenario.
+
+Coloured lines are mean, grey lines are population over a single simulation. Panels are newborn (left), juvenile (middle), and adult (right) populations.
+
+### Business as usual
+```{r pop all stages 1_01 bau lb, fig.cap = "Newborn, juvenile, and adult populations of Leadbeater's possum, business as usual scenario"}
+psr(pva_results_ch$pva[[709]])
+```
+
+### No harvest after 30 years
+```{r pop all stages 8_01 h30 lb, fig.cap = "Newborn, juvenile, and adult populations of Leadbeater's possum, no harvest after 30 years scenario"}
+psr(pva_results_ch$pva[[944]])
+```
+
+### No harvest
+```{r pop all stages 4_01 nth lb, fig.cap = "Newborn, juvenile, and adult populations of Leadbeater's possum, no harvest scenario"}
+psr(pva_results_ch$pva[[238]])
+```
+
+## Total population
+
+Total population for each of 100 PVA simulations for a single LANDIS simulation of each management scenario.
+
+Dark grey line is mean, grey ribbon is 95% bound of simulated population size, and light grey lines are population over a single PVA simulation. Dotted line below is the expected minimum population size, which is red when it equals zero.
+
+### Business as usual
+```{r pop total 1_01 bau lb, fig.cap = "Total populationof Leadbeater's possum, business as usual scenario"}
+psr(pva_results_ch$pva[[709]], stages = 0, ylim = c(0, 5000))
+```
+
+### No harvest after 30 years
+```{r pop total 8_01 h30 lb, fig.cap = "Total populationof Leadbeater's possum, no harvest after 30 years scenario"}
+psr(pva_results_ch$pva[[944]], stages = 0, ylim = c(0, 5000))
+```
+
+### No harvest
+```{r pop total 4_01 nth lb, fig.cap = "Total populationof Leadbeater's possum, no harvest scenario"}
+psr(pva_results_ch$pva[[238]], stages = 0, ylim = c(0, 5000))
+```
+
+## Spatial population
+Population as distributed in space. First multi-plot is the initial population in each life-history stage, and second multi-plot is the simulated total population at 10-year time-slices.
+
+### Business as usual
+```{r, fig.cap = "Initial population of Leadbeater's possum, Business as usual scenario"}
+lp(simset_lb$init_pop[[1]])
+```
+
+```{r spat pop adult 1_01 bau lb, fig.cap = "Total population of Leadbeater's possum, business as usual scenario, 2019, 2029, 2039, 2049, 2059, 2069"}
+psr_raster(simset_lb$pva_sims[[1]], timesteps = c(1,10,20,30,40,50))
+```
+
+### No harvest after 30 years
+```{r, fig.cap = "Initial population of Leadbeater's possum, no harvest after 30 years scenario"}
+lp(simset_lb$init_pop[[2]])
+```
+
+
+```{r spat pop 8_01 h30 lb, fig.cap = "Total population of Leadbeater's possum, no harvest after 30 years scenario, 2019, 2029, 2039, 2049, 2059, 2069"}
+psr_raster(simset_lb$pva_sims[[2]], timesteps = c(1,10,20,30,40,50))
+```
+
+### No harvest
+```{r, fig.cap = "Initial population of Leadbeater's possum, no harvest scenario"}
+lp(simset_lb$init_pop[[3]])
+```
+
+```{r spat pop 4_01 nth lb, fig.cap = "Total population of Leadbeater's possum, no harvest scenario, 2019, 2029, 2039, 2049, 2059, 2069"}
+psr_raster(simset_lb$pva_sims[[3]], timesteps = c(1,10,20,30,40,50))
+```
+
+# Greater Glider
+
+## Species distribution model
+
+Summary information for greater glider species distribution model.
+
+Variables are, in order:
+
+- maximum age of trees,
+- January rainfall,
+- July minimum temperature,
+- July rainfall,
+- thorium,
+- log vertical distance from major waterways,
+- anisotronic heating x ruggedness, thorium,
+- biomass of greater glider food tree species,
+- log vertical distance from minor waterways,
+- log vertical distance from any waterway,
+- proportion of biomass of greater glider food tree species,
+- proportion of biomass >150 years old,
+- proportion of old growth biomass in surrounding 1 km radius,
+- biomass of old growth known greater glider den tree species,
+- maximum January temperature,
+- total old growth biomass in surrounding 1 km radius,
+- log vertical distance from salt waterway,
+- proportion biomass of old growth known greater glider den tree species.
+
+```{r, fig.cap="Percentage contribution of greater glider distribution model"}
+summary(sdm_results$brt.fit[[2]])
+```
+
+```{r, fig.cap="Partial dependence plot for greater glider species distribution model"}
+gbm.plot(sdm_results$brt.fit[[2]])
+```
+
+
+```{r sdm 1_01 bau gg, fig.cap="Baseline species distribution model for greater glider"}
+pgg_BAU <- pva_results_ch$aggmaps[[711]][[c(1,11,21,31,41,51)]]
+
+names(pgg_BAU) <- sprintf("sdm_20%s9", 1:6)
+
+lp(pgg_BAU[[1]])
+```
+
+```{r, fig.cap="Baseline species distribution model for greater glider, with presence (yellow) and absence (blue) records overlaid"}
+plot(pgg_BAU[[1]], col = magma(16))
+plot(pa_data$pa_dat[[2]][2], pch = 20, cex = 0.3,  add = TRUE)
+```
+
+### SDM spatial predictions
+
+### Business as usual
+```{r, fig.cap = "Species distribution model for greater glider, business as usual scenario, 2019, 2029, 2039, 2049, 2059, 2069"}
+lp(pgg_BAU)
+```
+
+### No harvest after 30 years
+```{r sdm 8_01 h30 gg, fig.cap = "Species distribution model for greater glider, no harvest after 30 years scenario, 2019, 2029, 2039, 2049, 2059, 2069"}
+pgg_NH30 <- pva_results_ch$aggmaps[[946]][[c(1,11,21,31,41,51)]]
+
+names(pgg_NH30) <- sprintf("sdm_20%s9", 1:6)
+
+lp(pgg_NH30)
+```
+
+### No harvest
+```{r sdm 4_01 nth gg, fig.cap = "Species distribution model for greater glider, no harvest scenario, 2019, 2029, 2039, 2049, 2059, 2069"}
+pgg_NH <- pva_results_ch$aggmaps[[240]][[c(1,11,21,31,41,51)]]
+
+names(pgg_NH) <- sprintf("sdm_20%s9", 1:6)
+
+lp(pgg_NH)
+```
+
+
+## Populaition viability analysis
+
+## All life stages
+Population for each life history stage over 100 simulations for a single LANDIS simulation of each management scenario.
+
+Coloured lines are mean, grey lines are population over a single simulation. Panels are newborn (left), juvenile (middle), and adult (right) populations.
+
+### Business as usual
+```{r pop all stages 1_01 bau gg, fig.cap = "Newborn, juvenile, and adult populations of greater glider, business as usual scenario"}
+psr(pva_results_ch$pva[[711]])
+```
+
+### No harvest after 30 years
+```{r pop all stages 8_01 h30 gg, fig.cap = "Newborn, juvenile, and adult populations of greater glider, no harvest after 30 years scenario"}
+psr(pva_results_ch$pva[[946]])
+```
+
+### No harvest
+```{r pop all stages 4_01 nth gg, fig.cap = "Newborn, juvenile, and adult populations of greater glider, no harvest scenario"}
+psr(pva_results_ch$pva[[240]])
+```
+
+## Total population
+
+Total population for each of 100 PVA simulations for a single LANDIS simulation of each management scenario.
+
+Dark grey line is mean, grey ribbon is 95% bound of simulated population size, and light grey lines are population over a single PVA simulation. Dotted line below is the expected minimum population size, which is red when it equals zero.
+
+### Business as usual
+```{r pop total 1_01 bau gg, fig.cap = "Total populationof greater glider, business as usual scenario"}
+psr(pva_results_ch$pva[[711]], stages = 0, ylim = c(0, 10000))
+```
+
+### No harvest after 30 years
+```{r pop total 8_01 h30 gg, fig.cap = "Total populationof greater glider, no harvest after 30 years scenario"}
+psr(pva_results_ch$pva[[946]], stages = 0, ylim = c(0, 10000))
+```
+
+### No harvest
+```{r pop total 4_01 nth gg, fig.cap = "Total populationof greater glider, no harvest scenario"}
+psr(pva_results_ch$pva[[240]], stages = 0, ylim = c(0, 10000))
+```
+
+## Spatial population
+Population as distributed in space. First multi-plot is the initial population in each life-history stage, and second multi-plot is the simulated total population at 10-year time-slices.
+
+### Business as usual
+```{r, fig.cap = "Initial population of greater glider, Business as usual scenario"}
+lp(simset_gg$init_pop[[1]])
+```
+
+```{r spat pop adult 1_01 bau gg, fig.cap = "Total population of greater glider, business as usual scenario, 2019, 2029, 2039, 2049, 2059, 2069"}
+psr_raster(simset_gg$pva_sims[[1]], timesteps = c(1,10,20,30,40,50))
+```
+
+### No harvest after 30 years
+```{r, fig.cap = "Initial population of greater glider, no harvest after 30 years scenario"}
+lp(simset_gg$init_pop[[2]])
+```
+
+
+```{r spat pop 8_01 h30 gg, fig.cap = "Total population of greater glider, no harvest after 30 years scenario, 2019, 2029, 2039, 2049, 2059, 2069"}
+psr_raster(simset_gg$pva_sims[[2]], timesteps = c(1,10,20,30,40,50))
+```
+
+### No harvest
+```{r, fig.cap = "Initial population of greater glider, no harvest scenario"}
+lp(simset_gg$init_pop[[3]])
+```
+
+```{r spat pop 4_01 nth gg, fig.cap = "Total population of greater glider, no harvest scenario, 2019, 2029, 2039, 2049, 2059, 2069"}
+psr_raster(simset_gg$pva_sims[[3]], timesteps = c(1,10,20,30,40,50))
+```

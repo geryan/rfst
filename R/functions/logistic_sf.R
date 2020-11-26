@@ -1,12 +1,12 @@
-logistic_sf <- function(x){
+logistic_sf <- function(x, y = 10, z = 0.4){
   
   v <- getValues(x)
   
-  z <-  1/(1 + exp(-10*(v - 0.1)))
+  w <-  1/(1 + exp(-y*(v - z)))
   
   result <- x
   
-  result[] <- z
+  result[] <- w
   
   return(result)
   
