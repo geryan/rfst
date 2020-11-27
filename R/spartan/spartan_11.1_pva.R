@@ -107,25 +107,25 @@ pop_dyn <- population_dynamics(
 )
 
 
-simres <- simulation(
-  landscape = lsc,
-  population_dynamics = pop_dyn,
-  demo_stochasticity = "full",
-  timesteps = 5,
-  replicates = 3,
-  verbose = FALSE
-)
-
-
-
 # simres <- simulation(
 #   landscape = lsc,
 #   population_dynamics = pop_dyn,
 #   demo_stochasticity = "full",
-#   timesteps = ntimesteps,
-#   replicates = nreplicates,
+#   timesteps = 5,
+#   replicates = 3,
 #   verbose = FALSE
 # )
+
+
+
+simres <- simulation(
+  landscape = lsc,
+  population_dynamics = pop_dyn,
+  demo_stochasticity = "full",
+  timesteps = ntimesteps,
+  replicates = nreplicates,
+  verbose = FALSE
+)
 
 
 simpop <- get_pop_simulation(simres)

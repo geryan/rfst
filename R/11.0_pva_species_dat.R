@@ -112,12 +112,12 @@ tm_vava <- matrix(
 
 species_dat_pva <- tribble(
   ~sp,    ~tm,     ~popsize, ~cc, ~ccfun, ~stoch, ~max_disp, ~habfun,
-  "gyle", tm_gyle, 3000,     245, cc_245, 0.2,    2000,      habitat.downupfun,
-  "pevo", tm_pevo, 5000,     60,  cc_60,  0.2,    4000,      habitat.upfun,
-  "peau", tm_peau, 2000,     10,  cc_10,  0.2,    20000,     habitat.upfun,
-  "smle", tm_smle, 1000,     309, cc_309, 0.6,    2000,      NA,
-  "tyte", tm_tyte, 1000,     1,   cc_1,   0.4,    20000,     habitat.downupfun,
-  "vava", tm_vava, 5000,     100, cc_100, 0.2,    5000,      NA
+  "gyle", tm_gyle, 3000,     60,  cc_60,  0.2,    2000,      habitat.downupfun,
+  "pevo", tm_pevo, 5000,     15,  cc_15,  0.2,    4000,      habitat.upfun,
+  "peau", tm_peau, 2000,     3,    cc_3,  0.2,    20000,     habitat.upfun,
+  "smle", tm_smle, 1000,     75,  cc_75,  0.6,    2000,      NA,
+  "tyte", tm_tyte, 1000,     1,    cc_1,  0.4,    20000,     habitat.downupfun,
+  "vava", tm_vava, 5000,     25,  cc_25,  0.2,    5000,      NA
 ) %>% mutate(
   ss = map(
     .x = tm,
