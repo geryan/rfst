@@ -147,7 +147,8 @@ agg_set <- agg_set %>%
   filter(sp != "smle" & sp != "vava")
 
 
-i <- 1
+#####
+#i <- 1
 
 j <- which(species_dat$sp == agg_set$sp[i])
 
@@ -155,21 +156,85 @@ k <- which(mort_agg_ch$scn_id == agg_set$scn_id[[i]])
 
 l <- which(tsl_agg_ch$scn_id == agg_set$scn_id[[i]])
 
-initial_population <- initpop2(
-  hs = agg_set$aggmaps[[i]][[1]],
+#####
+
+habitat_map <- agg_set$aggmaps[[i]]
+
+mortality_map <- mort_agg_ch$mort_agg[[k]]
+
+disturbance_map <- tsl_agg_ch$tsl_agg[[l]]
+
+survival_fecundity_map <- logistic_sf(habitat_map)
+
+#####
+
+habitat_map2 <- habitat_map
+
+hab_vals <- getValues(habitat_map2)
+
+dist_vals <- getValues(disturbance_map)
+
+mod_vals <- habitat.upfun(dist_vals)
+
+mod_hab_vals <- mod_vals * hab_vals
+
+habitat_map2[] <- mod_hab_vals
+
+survival_fecundity_map2 <- logistic_sf(habitat_map2)
+
+
+#####
+
+initial_population1 <- initpop2(
+  hs = habitat_map[[1]],
   popsize = species_dat$popsize[j],
   cc = species_dat$cc[j],
   ss = species_dat$ss[[j]]
 )
 
-sf_layer <- logistic_sf(x = agg_set$aggmaps[[i]])
 
-lsc <- landscape(
-  population = initial_population,
-  suitability = agg_set$aggmaps[[i]],
-  "mortality" = mort_agg_ch$mort_agg[[k]],
-  "sf_layer" = sf_layer,
-  "disturbance" = tsl_agg_ch$tsl_agg[[l]],
+
+initial_population2 <- initpop2(
+  hs = habitat_map2[[1]],
+  popsize = species_dat$popsize[j],
+  cc = species_dat$cc[j],
+  ss = species_dat$ss[[j]]
+)
+
+
+
+lsc11 <- landscape(
+  population = initial_population1,
+  suitability = habitat_map,
+  "mortality" = mortality_map,
+  "sf_layer" = survival_fecundity_map,
+  "disturbance" = disturbance_map,
+  carrying_capacity = species_dat$ccfun[[j]]
+)
+
+lsc21 <- landscape(
+  population = initial_population1,
+  suitability = habitat_map2,
+  "mortality" = mortality_map,
+  "sf_layer" = survival_fecundity_map2,
+  carrying_capacity = species_dat$ccfun[[j]]
+)
+
+
+lsc12 <- landscape(
+  population = initial_population2,
+  suitability = habitat_map,
+  "mortality" = mortality_map,
+  "sf_layer" = survival_fecundity_map,
+  "disturbance" = disturbance_map,
+  carrying_capacity = species_dat$ccfun[[j]]
+)
+
+lsc22 <- landscape(
+  population = initial_population2,
+  suitability = habitat_map2,
+  "mortality" = mortality_map,
+  "sf_layer" = survival_fecundity_map2,
   carrying_capacity = species_dat$ccfun[[j]]
 )
 
@@ -181,7 +246,7 @@ prop_dispersing <- c(
   )
 )
 
-disp <- kernel_dispersal(
+disp_kd <- kernel_dispersal(
   dispersal_kernel = exponential_dispersal_kernel(
     distance_decay = species_dat$max_disp[j]/2
   ),
@@ -192,6 +257,12 @@ disp <- kernel_dispersal(
   )
 )
 
+disp_ca <- cellular_automata_dispersal(
+  max_cells = 8,
+  dispersal_proportion =  set_proportion_dispersing(
+    proportions = prop_dispersing
+  )
+)
 
 grow <- growth(
   transition_matrix = species_dat$tm[[j]],
@@ -202,11 +273,16 @@ grow <- growth(
   )
 )
 
-
-
-pop_dyn <- population_dynamics(
+pop_dyn_kd <- population_dynamics(
   change = grow,
-  dispersal = disp,
+  dispersal = disp_kd,
+  modification = mortality(mortality_layer = "mortality")
+)
+
+
+pop_dyn_ca <- population_dynamics(
+  change = grow,
+  dispersal = disp_ca,
   modification = mortality(mortality_layer = "mortality")
 )
 
@@ -219,14 +295,59 @@ hab_dyn <- list(
 )
 
 
-simres2 <- simulation(
-  landscape = lsc,
-  population_dynamics = pop_dyn,
+simres1kd1 <- simulation(
+  landscape = lsc11,
+  population_dynamics = pop_dyn_kd,
   habitat_dynamics = hab_dyn,
   demo_stochasticity = "full",
   timesteps = 50,
-  replicates = 100,
+  replicates = 25,
+  verbose = FALSE
+)
+
+
+simres1kd <- simulation(
+  landscape = lsc12,
+  population_dynamics = pop_dyn_kd,
+  habitat_dynamics = hab_dyn,
+  demo_stochasticity = "full",
+  timesteps = 50,
+  replicates = 50,
+  verbose = FALSE
+)
+
+
+
+simres1ca <- simulation(
+  landscape = lsc12,
+  population_dynamics = pop_dyn_ca,
+  habitat_dynamics = hab_dyn,
+  demo_stochasticity = "full",
+  timesteps = 50,
+  replicates = 50,
   verbose = TRUE
+)
+
+
+
+simres2kd <- simulation(
+  landscape = lsc22,
+  population_dynamics = pop_dyn_kd,
+  demo_stochasticity = "full",
+  timesteps = 50,
+  replicates = 50,
+  verbose = FALSE
+)
+
+
+
+simres2ca <- simulation(
+  landscape = lsc22,
+  population_dynamics = pop_dyn_ca,
+  demo_stochasticity = "full",
+  timesteps = 50,
+  replicates = 50,
+  verbose = FALSE
 )
 
 
@@ -240,9 +361,51 @@ simres2 <- simulation(
 # )
 
 
+
+simpop1kd <- get_pop_simulation(simres1kd)
+simpop1ca <- get_pop_simulation(simres1ca)
+simpop2kd <- get_pop_simulation(simres2kd)
+simpop2ca <- get_pop_simulation(simres2ca)
+simpop1kd1 <- get_pop_simulation(simres1kd1)
+
 simpop <- get_pop_simulation(simres)
 
+pva_emp1kd <- emp(simpop1kd)
+pva_emp1ca <- emp(simpop1ca)
+pva_emp2kd <- emp(simpop2kd)
+pva_emp2ca <- emp(simpop2ca)
+pva_emp1kd1 <- emp(simpop1kd1)
+
+
 pva_emp <- emp(simpop)
+
+
+pva_emp_all1kd <- emp.all(simpop1kd)
+pva_emp_all1ca <- emp.all(simpop1ca)
+pva_emp_all2kd <- emp.all(simpop2kd)
+pva_emp_all2ca <- emp.all(simpop2ca)
+pva_emp_all1kd1 <- emp.all(simpop1kd1)
+
+emps <- tibble(
+  lsc = c(1,1,2,2,1),
+  disp = c("kd", "ca", "kd", "ca", "kd"),
+  ipop = c(2,2,2,2,1),
+  emp = list(pva_emp_all1kd, pva_emp_all1ca, pva_emp_all2kd, pva_emp_all2ca, pva_emp_all1kd1)
+) %>%
+  unnest(emp) %>%
+  unnest(emp)
+
+
+ggplot(emps) +
+  geom_boxplot(
+    aes(
+      x = disp,
+      y = emp,
+      colour = as.factor(lsc),
+      fill = as.factor(ipop)
+    )
+  )
+
 
 pva_emp_all <- emp.all(simpop)
 
@@ -261,7 +424,7 @@ pva_res <- tibble(
   emp_all = pva_emp_all
 )
 
-pva2 <- bind_cols(
+pva <- bind_cols(
   pva_dat,
   pva_res
 )

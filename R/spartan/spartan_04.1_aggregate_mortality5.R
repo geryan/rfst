@@ -35,7 +35,7 @@ mort_agg <- lapply(
   X = mort,
   FUN = raster::aggregate,
   fact = 5,
-  fun = mean,
+  fun = min,
   na.rm = TRUE
 ) %>%
   brick

@@ -6,19 +6,19 @@
 #SBATCH --mail-type=ALL
 
 # Sometimes edit
-#SBATCH --partition=physical
+#SBATCH --partition="physical,snowy"
 #SBATCH --nodes=1
 #SBATCH --ntasks=1
 #SBATCH --cpus-per-task=1
 
 # megabytes per process
-
+#SBATCH --mem=25600
 
 # job name from batch
 # output name from batch
 
 # days-hours:mins:sec
-#SBATCH --time=0-00:15:00
+#SBATCH --time=0-02:00:00
 
 # commands from batch
 i=$1
@@ -39,5 +39,5 @@ module load r/3.6.2
 cd /data/gpfs/projects/punim0995/rfst
 
 # Commands
-Rscript --vanilla R/spartan/spartan_04.3_aggregate_tsl.R $i
+Rscript --vanilla R/spartan/spartan_11.1_pva.R $i
 

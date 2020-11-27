@@ -89,7 +89,7 @@ tsl_agg_5 <- brick(
 tsl_table <- tibble(
   scn_id = disturbance_variables$scn_id[i],
   tsl_agg = list(tsl_agg),
-  tsl_agg5 = list(tsl_agg5)
+  tsl_agg5 = list(tsl_agg_5)
 )
 
 saveRDS(
