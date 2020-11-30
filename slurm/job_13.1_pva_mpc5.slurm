@@ -18,7 +18,7 @@
 # output name from batch
 
 # days-hours:mins:sec
-#SBATCH --time=0-02:00:00
+#SBATCH --time=0-01:00:00
 
 # commands from batch
 i=$1
@@ -39,5 +39,5 @@ module load r/3.6.2
 cd /data/gpfs/projects/punim0995/rfst
 
 # Commands
-Rscript --vanilla R/spartan/spartan_18.1_mpc.R $i
+Rscript --vanilla R/spartan/spartan_13.1_pva_mpc5.R $i
 

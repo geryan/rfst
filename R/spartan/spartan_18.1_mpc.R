@@ -27,7 +27,7 @@ i <- as.numeric(command_args[1])
 
 agg_map <- raster::aggregate(
   x = mpc_dat$predmaps[[i]],
-  fact = 10,
+  fact = 5,
   na.rm = TRUE
 )
 
