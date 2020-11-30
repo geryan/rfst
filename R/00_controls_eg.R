@@ -38,6 +38,8 @@ landis_path_eg <- "/data/scratch/projects/punim1340/landis_raw/east_gippsland/"
 
 data_path <- "/data/gpfs/projects/punim0995/rfst/data"
 
+out_path_eg <- "/data/gpfs/projects/punim1340/rfst_eg/output/"
+
 #proj_path <- "/home/unimelb.edu.au/ryange/rfst"
 # proj_path <- "D:/Users/ryan/Dropbox/Work/RFA_STEPS/rfst/"
 
@@ -187,8 +189,7 @@ save(
   ntimesteps,
   ncores,
   nreplicates,
-  #scn_list,
-  #rep_list,
+  out_path_eg,
   source.functions,
   scn_table_eg,
   species_table_eg,
