@@ -26,6 +26,10 @@ command_args <- commandArgs(trailingOnly = TRUE)
 
 i <- as.numeric(command_args[1])
 
+agg5_ch <- agg5_ch %>%
+  filter(sp == "tyte")
+
+
 j <- which(species_dat_pva$sp == agg5_ch$sp[i])
 
 k <- which(mort_agg5_ch$scn_id == agg5_ch$scn_id[[i]])
@@ -52,16 +56,10 @@ mod_hab_vals <- mod_vals * hab_vals
 
 habitat_map2[] <- mod_hab_vals
 
-survival_fecundity_map <- logistic_sf(habitat_map2)
+survival_fecundity_map <- logistic_sf(habitat_map2, z = 0.2)
 
 
-initial_population <- initpop2(
-  hs = habitat_map2[[1]],
-  popsize = species_dat_pva$popsize[j],
-  cc = species_dat_pva$cc[j],
-  ss = species_dat_pva$ss[[j]]
-)
-
+initial_population <- brick("output/initpop/ip_tyte_ch.grd")
 
 lsc <- landscape(
   population = initial_population,
@@ -79,14 +77,10 @@ prop_dispersing <- c(
   )
 )
 
-disp <- kernel_dispersal(
-  dispersal_kernel = exponential_dispersal_kernel(
-    distance_decay = species_dat_pva$max_disp[j]/2
-  ),
-  max_distance = species_dat_pva$max_disp[j],
-  arrival_probability = "both",
+disp <- cellular_automata_dispersal(
+  max_cells = 40,
   dispersal_proportion = set_proportion_dispersing(
-    proportions = prop_dispersing
+    proportions = c(1,0,0)
   )
 )
 
@@ -103,19 +97,19 @@ grow <- growth(
 pop_dyn <- population_dynamics(
   change = grow,
   dispersal = disp,
-  density_dependence = ceiling_density(),
+  density_dependence = ceiling_density(stages = c(2,3)),
   modification = mortality(mortality_layer = "mortality")
 )
 
 
-# simres <- simulation(
-#   landscape = lsc,
-#   population_dynamics = pop_dyn,
-#   demo_stochasticity = "full",
-#   timesteps = 5,
-#   replicates = 3,
-#   verbose = FALSE
-# )
+simres1 <- simulation(
+  landscape = lsc,
+  population_dynamics = pop_dyn,
+  demo_stochasticity = "full",
+  timesteps = 50,
+  replicates = 5,
+  verbose = TRUE
+)
 
 
 
@@ -170,7 +164,7 @@ pva <- bind_cols(
 saveRDS(
   object = pva,
   file = sprintf(
-    fmt = "%s/pva5_%s_%s.Rds",
+    fmt = "%s/pva5t_%s_%s.Rds",
     "/data/gpfs/projects/punim0995/rfst/output/spartan_RData/pva",
     agg5_ch$cscnid[i],
     agg5_ch$sp[i]

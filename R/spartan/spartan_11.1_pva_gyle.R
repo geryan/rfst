@@ -26,6 +26,10 @@ command_args <- commandArgs(trailingOnly = TRUE)
 
 i <- as.numeric(command_args[1])
 
+agg5_ch <- agg5_ch %>%
+  filter(sp == "gyle")
+
+
 j <- which(species_dat_pva$sp == agg5_ch$sp[i])
 
 k <- which(mort_agg5_ch$scn_id == agg5_ch$scn_id[[i]])
@@ -55,13 +59,7 @@ habitat_map2[] <- mod_hab_vals
 survival_fecundity_map <- logistic_sf(habitat_map2)
 
 
-initial_population <- initpop2(
-  hs = habitat_map2[[1]],
-  popsize = species_dat_pva$popsize[j],
-  cc = species_dat_pva$cc[j],
-  ss = species_dat_pva$ss[[j]]
-)
-
+initial_population <- brick("output/initpop/ip_gyle_ch.grd")
 
 lsc <- landscape(
   population = initial_population,
@@ -93,6 +91,7 @@ disp <- kernel_dispersal(
 
 grow <- growth(
   transition_matrix = species_dat_pva$tm[[j]],
+  #transition_matrix = tm_gyle,
   global_stochasticity = species_dat_pva$stoch[j],
   transition_function = modified_transition(
     survival_layer = "sf_layer",
@@ -108,13 +107,13 @@ pop_dyn <- population_dynamics(
 )
 
 
-# simres <- simulation(
+# simres1 <- simulation(
 #   landscape = lsc,
 #   population_dynamics = pop_dyn,
 #   demo_stochasticity = "full",
-#   timesteps = 5,
-#   replicates = 3,
-#   verbose = FALSE
+#   timesteps = 50,
+#   replicates = 5,
+#   verbose = TRUE
 # )
 
 
@@ -170,7 +169,7 @@ pva <- bind_cols(
 saveRDS(
   object = pva,
   file = sprintf(
-    fmt = "%s/pva5_%s_%s.Rds",
+    fmt = "%s/pva5g_%s_%s.Rds",
     "/data/gpfs/projects/punim0995/rfst/output/spartan_RData/pva",
     agg5_ch$cscnid[i],
     agg5_ch$sp[i]

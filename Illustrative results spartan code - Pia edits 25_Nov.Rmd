@@ -3,6 +3,9 @@ title: Illustrative Results of STEPS Population Viability Analysis for Leadbeate
   Possum and Greater Glider
 author: "GE Ryan - University of Melbourne"
 output:
+  word_document:
+    toc: yes
+    toc_depth: '3'
   pdf_document:
     fig_height: 6
     fig_width: 7
@@ -11,9 +14,6 @@ output:
     toc_depth: 3
     includes:  
       in_header: header.tex
-  word_document:
-    toc: yes
-    toc_depth: '3'
 ---
 
 # Introduction
@@ -71,7 +71,7 @@ load(file = "output/RData/06_climate_variables.RData")
 load(file = "output/RData/09_fit_distribution_models.RData")
 load(file = "output/RData/10_predict_SDMs_agg.RData")
 load(file = "output/RData/11_pva.RData")
-load(file = "output/RData/13.1a_mpc_all.RData")
+#load(file = "output/RData/13.1a_mpc_all.RData")
 ```
 
 ```{r source all functions}
@@ -79,66 +79,6 @@ source(file = "R/functions/source.functions.R")
 source.functions("R/functions")
 ```
 
-```{r}
-pa_data
-```
-
-```{r}
-disturbance_variables
-```
-
-```{r}
-disturbance_variables$landis_vars[[1]][[1]]sdm_results$brt.fit[[1]]
-```
-
-```{r}
-disturbance_variables$dist_vars[[1]][[1]] %>% names
-```
-
-```{r}
-temporally_agg_dist_vars
-```
-
-```{r}
-temporally_agg_dist_vars$fire_ag[[1]]
-```
-
-```{r}
-geo_vars
-```
-
-```{r}
-clim_vars
-```
-
-```{r}
-clim_vars$climate_projections[[1]][[1]]
-```
-
-```{r}
-#var_set
-```
-
-```{r}
-sdm_results
-```
-
-```{r}
-sdm_results$brt.fit[[1]]
-```
-
-```{r}
-pva_results_ch
-```
-
-Transition matrix
-```{r}
-pva_results_ch$tm[[1]]
-```
-
-```{r}
-#mpc_results_all_ch
-```
 
 # LANDIS results
 
@@ -357,29 +297,29 @@ Fires are stochasticaly generated based on fire weather and fuel loads in the si
 
 ### Business as usual
 ```{r fire_1_01 bau, fig.cap = "Fires over 10 year period business as usual scenario, 2019-2028"}
-lp(temporally_agg_dist_vars$fire_ag[[1]][[1]], twocol = TRUE)
+lp(temporally_agg_dist_vars$fire_ag[[31]][[1]], twocol = TRUE)
 ```
 
 ```{r, fig.cap = "Fires over 10 year period business as usual scenario, 2019-2028, 2029-2038, 2039-2048, 2049-2058, 2059-2068"}
-lp(temporally_agg_dist_vars$fire_ag[[1]], twocol = TRUE)
+lp(temporally_agg_dist_vars$fire_ag[[31]], twocol = TRUE)
 ```
 
 ### No harvest after 30 years
 ```{r fire_8_01 h30, fig.cap = "Fires over 10 year period no harvest after 30 years scenario, 2019-2028"}
-lp(temporally_agg_dist_vars$fire_ag[[11]][[1]], twocol = TRUE)
+lp(temporally_agg_dist_vars$fire_ag[[41]][[1]], twocol = TRUE)
 ```
 
 ```{r, fig.cap = "Fires over 10 year period no harvest after 30 years scenario, 2019-2028, 2029-2038, 2039-2048, 2049-2058, 2059-2068"}
-lp(temporally_agg_dist_vars$fire_ag[[11]], twocol = TRUE)
+lp(temporally_agg_dist_vars$fire_ag[[41]], twocol = TRUE)
 ```
 
 ### No harvest
 ```{r fire_4_01 nth, fig.cap = "Fires over 10 year period no harvest scenario, 2019-2028"}
-lp(temporally_agg_dist_vars$fire_ag[[31]][[1]], twocol = TRUE)
+lp(temporally_agg_dist_vars$fire_ag[[11]][[1]], twocol = TRUE)
 ```
 
 ```{r, fig.cap = "Fires over 10 year period no harvest scenario, 2019-2028, 2029-2038, 2039-2048, 2049-2058, 2059-2068"}
-lp(temporally_agg_dist_vars$fire_ag[[31]], twocol = TRUE)
+lp(temporally_agg_dist_vars$fire_ag[[11]], twocol = TRUE)
 ```
 
 ### Fires in time 50 (2068) in each LANDIS run
@@ -443,29 +383,29 @@ Areas harvested in a 10 year period. Large image is 2019-2028, multi-plot is ove
 
 ### Business as usual
 ```{r harvest_1_01 bau, fig.cap = "Timber harvest over 10 year period business as usual scenario, 2019-2028"}
-lp(temporally_agg_dist_vars$harvest_ag[[1]][[1]], twocol = TRUE)
+lp(temporally_agg_dist_vars$harvest_ag[[31]][[1]], twocol = TRUE)
 ```
 
 ```{r, fig.cap = "Timber harvest over 10 year period business as usual scenario, 2019-2028, 2029-2038, 2039-2048, 2049-2058, 2059-2068"}
-lp(temporally_agg_dist_vars$harvest_ag[[1]], twocol = TRUE)
+lp(temporally_agg_dist_vars$harvest_ag[[31]], twocol = TRUE)
 ```
 
 ### No harvest after 30 years
 ```{r harvest_8_01 h30, fig.cap = "Timber harvest over 10 year period no harvest after 30 years scenario, 2019-2028"}
-lp(temporally_agg_dist_vars$harvest_ag[[11]][[1]], twocol = TRUE)
+lp(temporally_agg_dist_vars$harvest_ag[[41]][[1]], twocol = TRUE)
 ```
 
 ```{r, fig.cap = "Timber harvest over 10 year period no harvest after 30 years scenario, 2019-2028, 2029-2038, 2039-2048, 2049-2058, 2059-2068"}
-lp(temporally_agg_dist_vars$harvest_ag[[11]], twocol = TRUE)
+lp(temporally_agg_dist_vars$harvest_ag[[41]], twocol = TRUE)
 ```
 
 ### No harvest
 ```{r harvest_4_01 nth, fig.cap = "Timber harvest over 10 year period no harvest scenario, 2019-2028"}
-lp(temporally_agg_dist_vars$harvest_ag[[31]][[1]], twocol = TRUE)
+lp(temporally_agg_dist_vars$harvest_ag[[11]][[1]], twocol = TRUE)
 ```
 
 ```{r, fig.cap = "Timber harvest over 10 year period no harvest scenario, 2019-2028, 2029-2038, 2039-2048, 2049-2058, 2059-2068"}
-lp(temporally_agg_dist_vars$harvest_ag[[31]], twocol = TRUE)
+lp(temporally_agg_dist_vars$harvest_ag[[11]], twocol = TRUE)
 ```
 
 
@@ -474,105 +414,105 @@ Areas burnt through planned burning in a 10 year period. Large image is 2019-202
 
 ### Business as usual
 ```{r pb_1_01 bau, fig.cap = "Planned burning over 10 year period business as usual scenario, 2019-2028"}
-lp(temporally_agg_dist_vars$pb_ag[[1]][[1]], twocol = TRUE)
+lp(temporally_agg_dist_vars$pb_ag[[31]][[1]], twocol = TRUE)
 ```
 
 ```{r, fig.cap = "Planned burning over 10 year period business as usual scenario, 2019-2028, 2029-2038, 2039-2048, 2049-2058, 2059-2068"}
-lp(temporally_agg_dist_vars$fire_ag[[1]], twocol = TRUE)
+lp(temporally_agg_dist_vars$fire_ag[[31]], twocol = TRUE)
 ```
 
 ### No harvest after 30 years
 ```{r pb_8_01 h30, fig.cap = "Planned burning over 10 year period no harvest after 30 years scenario, 2019-2028"}
-lp(temporally_agg_dist_vars$fire_ag[[11]][[1]], twocol = TRUE)
+lp(temporally_agg_dist_vars$fire_ag[[41]][[1]], twocol = TRUE)
 ```
 
 ```{r, fig.cap = "Planned burning over 10 year period no harvest after 30 years scenario, 2019-2028, 2029-2038, 2039-2048, 2049-2058, 2059-2068"}
-lp(temporally_agg_dist_vars$fire_ag[[11]], twocol = TRUE)
+lp(temporally_agg_dist_vars$fire_ag[[41]], twocol = TRUE)
 ```
 
 ### No harvest
 ```{r pb_4_01 nth, fig.cap = "Planned burning over 10 year period no harvest scenario, 2019-2028"}
-lp(temporally_agg_dist_vars$fire_ag[[31]][[1]], twocol = TRUE)
+lp(temporally_agg_dist_vars$fire_ag[[11]][[1]], twocol = TRUE)
 ```
 
 ```{r, fig.cap = "Planned burning over 10 year period no harvest scenario, 2019-2028, 2029-2038, 2039-2048, 2049-2058, 2059-2068"}
-lp(temporally_agg_dist_vars$fire_ag[[31]][[1]], twocol = TRUE)
+lp(temporally_agg_dist_vars$fire_ag[[11]][[1]], twocol = TRUE)
 ```
 
 ## Total burnt and harvested
 ```{r, cache = TRUE}
-sims_table <-  disturbance_variables %>%
-  mutate(
-    fi = map(
-      .f = lapply,
-      .x = dist_vars,
-      FUN = function(x){x[["fi"]]}
-    ),
-    fi  = map(
-      
-      .f = stack,
-      .x = fi
-     )
-  )
-
-
-sims_table <- sims_table %>%
-  mutate(
-    fi.sum = map(
-      .f = function(x){
-        sum(getValues(x), na.rm = TRUE)
-      },
-      .x = fi
-    )
-  )
-
-
-sims_table <- unnest(sims_table, cols = fi.sum) %>%
-  mutate(
-    scenario = case_when(scenario == "TH19_rcp45_PB" ~ "BAU",
-                         scenario == "TH30_rcp45_PB" ~ "No harvest",
-                         scenario == "TH00_rcp45_PB" ~ "Cease harvest Y30")
-  )
-
-
-sims_table <- sims_table %>%
-  mutate(
-    lo = map(
-      .f = lapply,
-      .x = dist_vars,
-      FUN = function(x){x[["lo"]]}
-    ),
-    lo  = map(
-      
-      .f = stack,
-      .x = lo
-     )
-  )
-
-
-sims_table <- sims_table %>%
-  mutate(
-    lo.sum = map(
-      .f = function(x){
-        sum(getValues(x), na.rm = TRUE)
-      },
-      .x = lo
-    )
-  )
-
-sims_table <- unnest(sims_table, cols = lo.sum)
+# sims_table <-  disturbance_variables %>%
+#   mutate(
+#     fi = map(
+#       .f = lapply,
+#       .x = dist_vars,
+#       FUN = function(x){x[["fi"]]}
+#     ),
+#     fi  = map(
+#       
+#       .f = stack,
+#       .x = fi
+#      )
+#   )
+# 
+# 
+# sims_table <- sims_table %>%
+#   mutate(
+#     fi.sum = map(
+#       .f = function(x){
+#         sum(getValues(x), na.rm = TRUE)
+#       },
+#       .x = fi
+#     )
+#   )
+# 
+# 
+# sims_table <- unnest(sims_table, cols = fi.sum) %>%
+#   mutate(
+#     scenario = case_when(scenario == "TH19_rcp45_PB" ~ "BAU",
+#                          scenario == "TH30_rcp45_PB" ~ "No harvest",
+#                          scenario == "TH00_rcp45_PB" ~ "Cease harvest Y30")
+#   )
+# 
+# 
+# sims_table <- sims_table %>%
+#   mutate(
+#     lo = map(
+#       .f = lapply,
+#       .x = dist_vars,
+#       FUN = function(x){x[["lo"]]}
+#     ),
+#     lo  = map(
+#       
+#       .f = stack,
+#       .x = lo
+#      )
+#   )
+# 
+# 
+# sims_table <- sims_table %>%
+#   mutate(
+#     lo.sum = map(
+#       .f = function(x){
+#         sum(getValues(x), na.rm = TRUE)
+#       },
+#       .x = lo
+#     )
+#   )
+# 
+# sims_table <- unnest(sims_table, cols = lo.sum)
 ```
 
 ```{r, fig.cap="Total area burnt in each LANDIS simulation, by scenario type."}
-ggplot(sims_table, aes(x = scenario, y = fi.sum)) +
-  geom_boxplot() +
-  geom_point(aes(colour = scenario_replicate), position = position_jitter(width = 0.1, height = 0)) 
+# ggplot(sims_table, aes(x = scenario, y = fi.sum)) +
+#   geom_boxplot() +
+#   geom_point(aes(colour = scenario_replicate), position = position_jitter(width = 0.1, height = 0)) 
 ```
 
 ```{r, fig.cap = "Total area harvested in each LANDIS simulation, by scenario type."}
-ggplot(sims_table, aes(x = scenario, y = lo.sum)) +
-  geom_boxplot() +
-  geom_point(aes(colour = scenario_replicate), position = position_jitter(width = 0.1, height = 0)) 
+# ggplot(sims_table, aes(x = scenario, y = lo.sum)) +
+#   geom_boxplot() +
+#   geom_point(aes(colour = scenario_replicate), position = position_jitter(width = 0.1, height = 0)) 
 ```
 
 # Climate
@@ -718,7 +658,7 @@ plb_NH30 <- pva_results_ch$aggmaps[[944]][[c(1,11,21,31,41,51)]]
 
 names(plb_NH30) <- sprintf("sdm_20%s9", 1:6)
 
-lp(plb_1NH30[[1]])
+lp(plb_NH30[[1]])
 ```
 
 ### No harvest
@@ -778,30 +718,30 @@ Population as distributed in space. First multi-plot is the initial population i
 
 ### Business as usual
 ```{r, fig.cap = "Initial population of Leadbeater's possum, Business as usual scenario"}
-lp(simset_lb$init_pop[[1]])
+#lp(simset_lb$init_pop[[1]])
 ```
 
 ```{r spat pop adult 1_01 bau lb, fig.cap = "Total population of Leadbeater's possum, business as usual scenario, 2019, 2029, 2039, 2049, 2059, 2069"}
-psr_raster(simset_lb$pva_sims[[1]], timesteps = c(1,10,20,30,40,50))
+#psr_raster(simset_lb$pva_sims[[1]], timesteps = c(1,10,20,30,40,50))
 ```
 
 ### No harvest after 30 years
 ```{r, fig.cap = "Initial population of Leadbeater's possum, no harvest after 30 years scenario"}
-lp(simset_lb$init_pop[[2]])
+#lp(simset_lb$init_pop[[2]])
 ```
 
 
 ```{r spat pop 8_01 h30 lb, fig.cap = "Total population of Leadbeater's possum, no harvest after 30 years scenario, 2019, 2029, 2039, 2049, 2059, 2069"}
-psr_raster(simset_lb$pva_sims[[2]], timesteps = c(1,10,20,30,40,50))
+#psr_raster(simset_lb$pva_sims[[2]], timesteps = c(1,10,20,30,40,50))
 ```
 
 ### No harvest
 ```{r, fig.cap = "Initial population of Leadbeater's possum, no harvest scenario"}
-lp(simset_lb$init_pop[[3]])
+#lp(simset_lb$init_pop[[3]])
 ```
 
 ```{r spat pop 4_01 nth lb, fig.cap = "Total population of Leadbeater's possum, no harvest scenario, 2019, 2029, 2039, 2049, 2059, 2069"}
-psr_raster(simset_lb$pva_sims[[3]], timesteps = c(1,10,20,30,40,50))
+#psr_raster(simset_lb$pva_sims[[3]], timesteps = c(1,10,20,30,40,50))
 ```
 
 # Greater Glider
@@ -927,28 +867,28 @@ Population as distributed in space. First multi-plot is the initial population i
 
 ### Business as usual
 ```{r, fig.cap = "Initial population of greater glider, Business as usual scenario"}
-lp(simset_gg$init_pop[[1]])
+#lp(simset_gg$init_pop[[1]])
 ```
 
 ```{r spat pop adult 1_01 bau gg, fig.cap = "Total population of greater glider, business as usual scenario, 2019, 2029, 2039, 2049, 2059, 2069"}
-psr_raster(simset_gg$pva_sims[[1]], timesteps = c(1,10,20,30,40,50))
+#psr_raster(simset_gg$pva_sims[[1]], timesteps = c(1,10,20,30,40,50))
 ```
 
 ### No harvest after 30 years
 ```{r, fig.cap = "Initial population of greater glider, no harvest after 30 years scenario"}
-lp(simset_gg$init_pop[[2]])
+#lp(simset_gg$init_pop[[2]])
 ```
 
 
 ```{r spat pop 8_01 h30 gg, fig.cap = "Total population of greater glider, no harvest after 30 years scenario, 2019, 2029, 2039, 2049, 2059, 2069"}
-psr_raster(simset_gg$pva_sims[[2]], timesteps = c(1,10,20,30,40,50))
+#psr_raster(simset_gg$pva_sims[[2]], timesteps = c(1,10,20,30,40,50))
 ```
 
 ### No harvest
 ```{r, fig.cap = "Initial population of greater glider, no harvest scenario"}
-lp(simset_gg$init_pop[[3]])
+#lp(simset_gg$init_pop[[3]])
 ```
 
 ```{r spat pop 4_01 nth gg, fig.cap = "Total population of greater glider, no harvest scenario, 2019, 2029, 2039, 2049, 2059, 2069"}
-psr_raster(simset_gg$pva_sims[[3]], timesteps = c(1,10,20,30,40,50))
+#psr_raster(simset_gg$pva_sims[[3]], timesteps = c(1,10,20,30,40,50))
 ```

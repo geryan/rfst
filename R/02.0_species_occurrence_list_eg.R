@@ -1,0 +1,265 @@
+# 02 Species occurrence
+
+source("R/spartan/spartan_settings.R")
+
+library(magrittr)
+library(raster)
+library(sf)
+library(readr)
+library(readxl)
+library(tidyr)
+library(dplyr)
+#library(future)
+#library(future.apply)
+library(lubridate)
+
+
+load(file = "output/RData/00_controls_eg.RData")
+load(file = "output/RData/01_landscape_variables_eg.RData")
+
+source.functions("R/functions")
+
+
+# All VBA data --------------------------------------------------------------
+
+vba_files <- list.files(
+  path = "data/tabular/",
+  pattern = "vba",
+  recursive = FALSE
+)
+
+vba_dat <- lapply(
+  X = paste0(
+    "data/tabular/",
+    vba_files
+  ),
+  FUN = proc.vba,
+  project.crs = eg_proj,
+  cutoff.date = "2009-03-01"
+) %>%
+  do.call(
+    what = rbind,
+    args = .
+  ) %>%
+  distinct(
+    species,
+    PA,
+    date,
+    proj_id,
+    survey_method,
+    geometry
+  ) #%>%
+  # mutate(
+  #   genus = sub(
+  #     pattern = " .*",
+  #     replacement = "",
+  #     x = species
+  #   )
+  # ) %>%
+  # dplyr::select(
+  #   species,
+  #   genus,
+  #   everything()
+  # )
+
+
+
+vba_dat_eg <- vba_dat[eg_rfa,]
+
+# Presence-absence-pseudo-absence
+
+species_list <- c(
+  #"Gymnobelideus leadbeateri",
+  "Petauroides volans",
+  "Petaurus australis",
+  "Potorous longipes",
+  "Sminthopsis leucopus",
+  "Tyto tenebricosa",
+  "Varanus varius"
+)
+
+
+# Leadbeater's possum - Gymnobelideus leadbeateri -------------------
+
+# vba_dat_eg %>%
+#   filter(species == species_list[1]) %$%
+#   table(survey_method, PA)
+# 
+# vba_dat_eg %>%
+#   filter(species == species_list[1]) %$%
+#   unique(survey_method)
+# 
+# 
+# sm_gyle <- c(
+#   "Camera - Surveillance/Remote",
+#   "Camera - Thermal imaging",
+#   "Nest box",
+#   "Owl census",
+#   "Spotlighting on foot",
+#   "Spotlighting",
+#   "Stag watching"
+# )
+
+# Greater Glider - Petauroides volans ------------------
+  
+  vba_dat_eg %>%
+    filter(species == species_list[1]) %$%
+    table(survey_method, PA)
+  
+  vba_dat_eg %>%
+    filter(species == species_list[1]) %$%
+    unique(survey_method)
+
+sm_pevo <- c(
+  "Camera - Surveillance/Remote",
+  "Camera - Thermal imaging",
+  "Nest box",
+  "Owl census",
+  "Spotlighting on foot",
+  "Spotlighting",
+  "Stag watching"
+)
+
+# Yellow-bellied Glider - Petaurus Australis ------------------
+
+vba_dat_eg %>%
+  filter(species == species_list[2]) %$%
+  table(survey_method, PA)
+
+vba_dat_eg %>%
+  filter(species == species_list[2]) %$%
+  unique(survey_method)
+
+sm_peau <- c(
+  "Camera - Surveillance/Remote",
+  "Camera - Thermal imaging",
+  "Nest box",
+  "Owl census",
+  "Spotlighting on foot",
+  "Spotlighting",
+  "Stag watching"
+)
+
+
+# Long-footed Potoroo - Potorous longipes ------------------
+
+vba_dat_eg %>%
+  filter(species == species_list[3]) %$%
+  table(survey_method, PA)
+
+vba_dat_eg %>%
+  filter(species == species_list[3]) %$%
+  unique(survey_method)
+
+sm_polo <- c(
+  "Camera - Surveillance/Remote"
+)
+
+# White-footed dunnart - Sminthopsus leucopus ------------------
+
+vba_dat_eg %>%
+  filter(species == species_list[4]) %$%
+  table(survey_method, PA)
+
+vba_dat_eg %>%
+  filter(species == species_list[4]) %$%
+  unique(survey_method)
+
+sm_smle <- c(
+  "Camera - Surveillance/Remote",
+  "Elliott trap"
+)
+
+
+# Sooty Owl - Tyto tenebricosa ------------------
+
+vba_dat_eg %>%
+  filter(species == species_list[5]) %$%
+  table(survey_method, PA)
+
+vba_dat_eg %>%
+  filter(species == species_list[5]) %$%
+  unique(survey_method)
+
+sm_tyte <- c(
+  "Bird count",
+  "Bird transect",
+  "Birds Australia 2ha search",
+  "Birds Australia 500m area search",
+  "Owl census",
+  "Spotlighting on foot",
+  "Spotlighting"
+)
+
+# Lace Monitor - Varanus varius ------------------
+
+vba_dat_eg %>%
+  filter(species == species_list[6]) %$%
+  table(survey_method, PA)
+
+vba_dat_eg %>%
+  filter(species == species_list[6]) %$%
+  unique(survey_method)
+
+sm_vave <- c(
+  "Camera - Surveillance/Remote",
+  "Herp census - active",
+  "Herp spot count",
+  "Herp transect"
+)
+
+# Aggregate and get data --------------
+
+
+pa_list_eg <- tibble(
+  species = species_list,
+  survey_methods = list(
+    sm_pevo,
+    sm_peau,
+    sm_polo,
+    sm_smle,
+    sm_tyte,
+    sm_vave
+  )
+) %>%
+  mutate(
+    gen = sub(
+      pattern = " .*",
+      replacement = "",
+      x = species
+    ) %>%
+      tolower %>%
+      substr(
+        start = 1,
+        stop = 2
+      ),
+    spe = sub(
+      pattern = ".* ",
+      replacement = "",
+      x = species
+    ) %>%
+      substr(
+        start = 1,
+        stop = 2
+      ),
+    sp = paste0(
+      gen,
+      spe
+    )
+  ) %>%
+  dplyr::select(
+    species,
+    sp,
+    survey_methods
+  )
+
+
+
+
+
+save(
+  pa_list_eg,
+  vba_dat_eg,
+  file = "output/RData/02.0_species_occurrences_list_eg.RData"
+)
+

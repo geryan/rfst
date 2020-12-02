@@ -1,7 +1,13 @@
 ---
 title: "Metapopulation capacity results"
-output: html_document
+output:
+  word_document: default
+  html_document: default
 ---
+
+```{r}
+knitr::opts_chunk$set(fig.width=8, fig.height=8)
+```
 
 
 ```{r}
@@ -14,441 +20,1715 @@ library(dplyr)
 library(purrr)
 library(tibble)
 library(tidyr)
-library(raster)
-library(sp)
-library(sf)
 library(magrittr)
 library(ggplot2)
-library(forcats)
+library(raster)
 ```
 
 ```{r}
 load(file = "output/RData/00_controls.RData")
 load(file = "output/RData/01_landscape_variables.RData")
-load(file = "output/RData/14.0_sp_occ_metapop_list.RData")
-load(file = "output/RData/18.1_mpc.RData")
+load(file = "output/RData/19_mpc_results_summary.RData")
 ```
 
 ```{r}
 source.functions("R/functions")
 ```
 
+
+## LBP
+
+
+###  RAW
 ```{r}
-species_names <- pa_list_ch %>%
-  dplyr::select(-survey_methods) %>%
-  mutate(
-    species_com = case_when(
-      sp == "psse" ~ "Southern toadlet",
-      sp == "acno" ~ "Grey Goshawk",
-      sp == "cipu" ~ "Spotted Quail-thrush",
-      sp == "lois" ~ "Square-tailed Kite",
-      sp == "nico" ~ "Barking Owl",
-      sp == "nist" ~ "Powerful Owl",
-      sp == "pero" ~ "Rose Robin",
-      sp == "tyno" ~ "Masked Owl",
-      sp == "isob" ~ "Southern brown bandicoot",
-      sp == "psfu" ~ "Smoky mouse",
-      sp == "grba" ~ "Gully Grevillea",
-      sp == "lese" ~ "Toothed Leionema",
-      sp == "pear" ~ "Tree Gebung",
-      sp == "wiva" ~ "Baw Baw Berry"
-    )
-  ) %>%
-  mutate(
-    species_com = factor(
-      x = species_com,
-      levels = c(
-        "Southern toadlet",
-        "Spotted Quail-thrush",
-        "Rose Robin",
-        "Grey Goshawk",
-        "Square-tailed Kite",
-        "Barking Owl",
-        "Powerful Owl",
-        "Masked Owl",
-        "Southern brown bandicoot",
-        "Smoky mouse",
-        "Gully Grevillea",
-        "Toothed Leionema",
-        "Tree Gebung",
-        "Baw Baw Berry"
-      )
-    )
-  ) %>%
-  filter(!is.na(species_com))
-
-species_names
-```
-
-
-```{r}
-scenario_names <- tribble(
-  ~scenario,       ~scn,
-  "TH19_rcp45_PB", "Ongoing harvest RCP4.5",
-  "TH30_rcp45_PB", "Stop harvest 2030 RCP4.5",
-  "TH30_rcp85_PB", "Stop harvest 2030 RCP8.5",
-  "TH00_rcp45_PB", "No harvest RCP4.5",
-  "TH00_rcp85_PB", "No harvest RCP8.5",
-  "TH00_rcp45_NB", "No harvest no planned burning RCP4.5"
-) %>%
-  mutate(
-    scn = factor(
-      x = scn,
-      levels = c(
-        "Ongoing harvest RCP4.5",
-        "Stop harvest 2030 RCP4.5",
-        "Stop harvest 2030 RCP8.5",
-        "No harvest RCP4.5",
-        "No harvest RCP8.5",
-        "No harvest no planned burning RCP4.5"
-      )
-    )
-  )
-
-scenario_names
-levels(scenario_names$scn)
-```
-
-```{r}
-mpc_r_ch <- mpc_results_ch %>%
-  left_join(
-    y = species_names,
-    by = "sp"
-  ) %>%
-  left_join(
-    y = scenario_names,
-    by = "scenario"
-  ) %>%
-  mutate(
-    scenario = fct_reorder(
-      .f = scenario,
-      .x = as.numeric(scn)
-    ),
-    sp = fct_reorder(
-      .f = sp,
-      .x = as.numeric(species_com)
-    ),
-    species = fct_reorder(
-      .f = species,
-      .x = as.numeric(species_com)
-    )
-  )
-
-mpc_r_ch
-```
-
-
-```{r}
-mpc_res_summary <- mpc_r_ch  %>%
-  group_by(
-    scenario,
-    scenario_replicate,
-    rcp,
-    climate_model,
-    harvest_scenario,
-    plan_burn,
-    scn_id,
-    th,
-    rc,
-    pb,
-    cscnid,
-    sp,
-    species,
-    species_com,
-    scn
-  ) %>%
-  summarise(
-    mpc_min_90 = min(mpc_90),
-    mpc_mean_90 = mean(mpc_90),
-    mpc_median_90 = median(mpc_90),
-    mpc_min_75 = min(mpc_75),
-    mpc_mean_75 = mean(mpc_75),
-    mpc_median_75 = median(mpc_75),
-    mpc_min_07 = min(mpc_07),
-    mpc_mean_07 = mean(mpc_07),
-    mpc_median_07 = median(mpc_07),
-  )
-
-mpc_res_summary
-```
-
-```{r}
-mpc_rs <- mpc_res_summary %>%
-  group_by(sp) %>%
-  mutate(
-    r_min_90 = median(mpc_min_90[scenario == "TH19_rcp45_PB"]),
-    r_median_90 = median(mpc_median_90[scenario == "TH19_rcp45_PB"]),
-    r_min_75 = median(mpc_min_75[scenario == "TH19_rcp45_PB"]),
-    r_median_75 = median(mpc_median_75[scenario == "TH19_rcp45_PB"])
-  ) %>%
-  ungroup %>%
-  mutate(
-    delta_min_90    = mpc_min_90    - r_min_90,
-    delta_median_90 = mpc_median_90 - r_median_90,
-    delta_min_75    = mpc_min_75    - r_min_75,
-    delta_median_75 = mpc_median_75 - r_median_75,
-    dp_min_90       = delta_min_90    / r_min_90,
-    dp_median_90    = delta_median_90 / r_median_90,
-    dp_min_75       = delta_min_75    / r_min_75,
-    dp_median_75    = delta_median_75 / r_median_75
-  ) 
-
-mpc_rs
-```
-
-
-```{r}
-mpc_rs_summary <- mpc_rs %>%
-  group_by(
-    scenario,
-    rcp,
-    climate_model,
-    harvest_scenario,
-    sp,
-    scn,
-    species,
-    species_com
-  ) %>%
-  summarise(
-    dp_min_90_mid = median(dp_min_90),
-    dp_min_75_mid = median(dp_min_75),
-    dp_min_90_up = max(dp_min_90),
-    dp_min_75_up = max(dp_min_75),
-    dp_min_90_lo = min(dp_min_90),
-    dp_min_75_lo = min(dp_min_75),
-    dp_median_90_mid = median(dp_median_90),
-    dp_median_75_mid = median(dp_median_75),
-    dp_median_90_up = max(dp_median_90),
-    dp_median_75_up = max(dp_median_75),
-    dp_median_90_lo = min(dp_median_90),
-    dp_median_75_lo = min(dp_median_75),
-  )
-mpc_rs_summary
-```
-
-```{r}
-mpc_rs_summary %>% filter(sp == "isob")
-```
-
-
-## 90% threshold
-
-## Median Metapopulation capacity
-
-```{r}
-plot_mpc_med_90_lois <- ggplot(mpc_rs %>% filter(sp == "lois")) +
+p_mss_min_gyle <- ggplot(data = mpc_rs %>% filter(sp == "gyle")) +
   geom_boxplot(
     aes(
       y = scn,
-      x = dp_median_90
-    ) 
+      x = mpc_min
+    )
   ) +
   labs(
-    x = "Median metapopulation capacity\n(proportional difference)",
-    y = "Management scenario"
-  )
-plot_mpc_med_90_lois
-```
-
-```{r}
-png(
-  filename = "plots/mpc_med_90_lois.png",
-  width = 20,
-  height = 10,
-  units = "cm",
-  res = 300
-)
-plot_mpc_med_90_lois
-dev.off()
-```
-
-```{r}
-plot_mpc_box_med_90 <- ggplot(mpc_rs) +
-  geom_vline(xintercept = 0) +
-  geom_boxplot(
-    aes(
-      y = scn,
-      x = dp_median_90,
-      #col = species_com,
-      fill = species_com
-    ) 
-  ) +
-  #scale_colour_viridis_d(option = "D") #+
-  scale_fill_viridis_d() +
-  labs(
-    x = "Median metapopulation capacity\n(proportional difference)",
+    x = "Minimum metapopulation capacity",
     y = "Management scenario",
+    title = "Leadbeater's possum"
+  )
+p_mss_min_gyle
+```
+
+```{r}
+p_mss_med_gyle <- ggplot(data = mpc_rs %>% filter(sp == "gyle")) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = mpc_median
+    )
+  ) +
+  labs(
+    x = "Median metapopulation capacity",
+    y = "Management scenario",
+    title = "Leadbeater's possum"
+  )
+p_mss_med_gyle
+```
+
+```{r}
+p_m07_min_gyle <- ggplot(data = mpc_rs %>% filter(sp == "gyle")) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = mpc_min_07
+    )
+  ) +
+  labs(
+    x = "Minimum metapopulation capacity\n70% threshold",
+    y = "Management scenario",
+    title = "Leadbeater's possum"
+  )
+p_m07_min_gyle
+```
+
+```{r}
+p_m07_med_gyle <- ggplot(data = mpc_rs %>% filter(sp == "gyle")) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = mpc_median_07
+    )
+  ) +
+  labs(
+    x = "Median metapopulation capacity\n70% threshold",
+    y = "Management scenario",
+    title = "Leadbeater's possum"
+  )
+p_m07_med_gyle
+```
+
+```{r}
+p_m05_min_gyle <- ggplot(data = mpc_rs %>% filter(sp == "gyle")) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = mpc_min_05
+    )
+  ) +
+  labs(
+    x = "Minimum metapopulation capacity\n50% threshold",
+    y = "Management scenario",
+    title = "Leadbeater's possum"
+  )
+p_m05_min_gyle
+```
+
+```{r}
+p_m05_med_gyle <- ggplot(data = mpc_rs %>% filter(sp == "gyle")) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = mpc_median_05
+    )
+  ) +
+  labs(
+    x = "Median metapopulation capacity\n50% threshold",
+    y = "Management scenario",
+    title = "Leadbeater's possum"
+  )
+p_m05_med_gyle
+```
+
+###  delta
+```{r}
+p_dmss_min_gyle <- ggplot(data = mpc_rs %>% filter(sp == "gyle")) +
+  geom_vline(xintercept = 0 ) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = delta_min
+    )
+  ) +
+  labs(
+    x = "Change in minimum metapopulation capacity from baseline\n(ongoing harvest)",
+    y = "Management scenario",
+    title = "Leadbeater's possum"
+  )
+p_dmss_min_gyle
+```
+
+```{r}
+p_dmss_med_gyle <- ggplot(data = mpc_rs %>% filter(sp == "gyle")) +
+  geom_vline(xintercept = 0 ) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = delta_median
+    )
+  ) +
+  labs(
+    x = "Change in median metapopulation capacity from baseline\n(ongoing harvest)",
+    y = "Management scenario",
+    title = "Leadbeater's possum"
+  )
+p_dmss_med_gyle
+```
+
+```{r}
+p_dm07_min_gyle <- ggplot(data = mpc_rs %>% filter(sp == "gyle")) +
+  geom_vline(xintercept = 0 ) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = delta_min_07
+    )
+  ) +
+  labs(
+    x = "Change in minimum metapopulation capacity (70% threshold)\n from baseline (ongoing harvest)",
+    y = "Management scenario",
+    title = "Leadbeater's possum"
+  )
+p_dm07_min_gyle
+```
+
+```{r}
+p_dm07_med_gyle <- ggplot(data = mpc_rs %>% filter(sp == "gyle")) +
+  geom_vline(xintercept = 0 ) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = delta_median_07
+    )
+  ) +
+  labs(
+    x = "Change in median metapopulation capacity (70% threshold)\nfrom baseline (ongoing harvest)",
+    y = "Management scenario",
+    title = "Leadbeater's possum"
+  )
+p_dm07_med_gyle
+```
+
+```{r}
+p_dm05_min_gyle <- ggplot(data = mpc_rs %>% filter(sp == "gyle")) +
+  geom_vline(xintercept = 0 ) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = delta_min_05
+    )
+  ) +
+  labs(
+    x = "Change in minimum metapopulation capacity (50% threshold)\nfrom baseline (ongoing harvest)",
+    y = "Management scenario",
+    title = "Leadbeater's possum"
+  )
+
+p_dm05_min_gyle
+```
+
+```{r}
+p_dm05_med_gyle <- ggplot(data = mpc_rs %>% filter(sp == "gyle")) +
+  geom_vline(xintercept = 0 ) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = delta_median_05
+    )
+  ) +
+  labs(
+    x ="Change in median metapopulation capacity (50% threshold)\nfrom baseline (ongoing harvest)",
+    y = "Management scenario",
+    title = "Leadbeater's possum"
+  )
+p_dm05_med_gyle
+```
+
+### delta proportional
+```{r}
+p_pmss_min_gyle <- ggplot(data = mpc_rs %>% filter(sp == "gyle")) +
+  geom_vline(xintercept = 0 ) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = dp_min
+    )
+  ) +
+  labs(
+    x = "Proportional change in minimum metapopulation capacity from baseline\n(ongoing harvest)",
+    y = "Management scenario",
+    title = "Leadbeater's possum"
+  )
+p_pmss_min_gyle
+```
+
+```{r}
+p_pmss_med_gyle <- ggplot(data = mpc_rs %>% filter(sp == "gyle")) +
+  geom_vline(xintercept = 0 ) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = dp_median
+    )
+  ) +
+  labs(
+    x = "Proportional change in median metapopulation capacity from baseline\n(ongoing harvest)",
+    y = "Management scenario",
+    title = "Leadbeater's possum"
+  )
+p_pmss_med_gyle
+```
+
+```{r}
+p_pm07_min_gyle <- ggplot(data = mpc_rs %>% filter(sp == "gyle")) +
+  geom_vline(xintercept = 0 ) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = dp_min_07
+    )
+  ) +
+  labs(
+    x = "Proportional change in minimum metapopulation capacity (70% threshold)\n from baseline (ongoing harvest)",
+    y = "Management scenario",
+    title = "Leadbeater's possum"
+  )
+p_pm07_min_gyle
+```
+
+```{r}
+p_pm07_med_gyle <- ggplot(data = mpc_rs %>% filter(sp == "gyle")) +
+  geom_vline(xintercept = 0 ) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = dp_median_07
+    )
+  ) +
+  labs(
+    x = "Proportional change in median metapopulation capacity (70% threshold)\nfrom baseline (ongoing harvest)",
+    y = "Management scenario",
+    title = "Leadbeater's possum"
+  )
+p_pm07_med_gyle
+```
+
+```{r}
+p_pm05_min_gyle <- ggplot(data = mpc_rs %>% filter(sp == "gyle")) +
+  geom_vline(xintercept = 0 ) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = dp_min_05
+    )
+  ) +
+  labs(
+    x = "Proportional change in minimum metapopulation capacity (50% threshold)\nfrom baseline (ongoing harvest)",
+    y = "Management scenario",
+    title = "Leadbeater's possum"
+  )
+
+p_pm05_min_gyle
+```
+
+```{r}
+p_pm05_med_gyle <- ggplot(data = mpc_rs %>% filter(sp == "gyle")) +
+  geom_vline(xintercept = 0 ) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = dp_median_05
+    )
+  ) +
+  labs(
+    x ="Proportional change in median metapopulation capacity (50% threshold)\nfrom baseline (ongoing harvest)",
+    y = "Management scenario",
+    title = "Leadbeater's possum"
+  )
+p_pm05_med_gyle
+```
+
+## Sooty Owl
+###  RAW
+```{r}
+p_mss_min_tyte <- ggplot(data = mpc_rs %>% filter(sp == "tyte")) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = mpc_min
+    )
+  ) +
+  labs(
+    x = "Minimum metapopulation capacity",
+    y = "Management scenario",
+    title = "Sooty Owl"
+  )
+p_mss_min_tyte
+```
+
+```{r}
+p_mss_med_tyte <- ggplot(data = mpc_rs %>% filter(sp == "tyte")) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = mpc_median
+    )
+  ) +
+  labs(
+    x = "Median metapopulation capacity",
+    y = "Management scenario",
+    title = "Sooty Owl"
+  )
+p_mss_med_tyte
+```
+
+```{r}
+p_m07_min_tyte <- ggplot(data = mpc_rs %>% filter(sp == "tyte")) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = mpc_min_07
+    )
+  ) +
+  labs(
+    x = "Minimum metapopulation capacity\n70% threshold",
+    y = "Management scenario",
+    title = "Sooty Owl"
+  )
+p_m07_min_tyte
+```
+
+```{r}
+p_m07_med_tyte <- ggplot(data = mpc_rs %>% filter(sp == "tyte")) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = mpc_median_07
+    )
+  ) +
+  labs(
+    x = "Median metapopulation capacity\n70% threshold",
+    y = "Management scenario",
+    title = "Sooty Owl"
+  )
+p_m07_med_tyte
+```
+
+```{r}
+p_m05_min_tyte <- ggplot(data = mpc_rs %>% filter(sp == "tyte")) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = mpc_min_05
+    )
+  ) +
+  labs(
+    x = "Minimum metapopulation capacity\n50% threshold",
+    y = "Management scenario",
+    title = "Sooty Owl"
+  )
+p_m05_min_tyte
+```
+
+```{r}
+p_m05_med_tyte <- ggplot(data = mpc_rs %>% filter(sp == "tyte")) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = mpc_median_05
+    )
+  ) +
+  labs(
+    x = "Median metapopulation capacity\n50% threshold",
+    y = "Management scenario",
+    title = "Sooty Owl"
+  )
+p_m05_med_tyte
+```
+
+###  delta
+```{r}
+p_dmss_min_tyte <- ggplot(data = mpc_rs %>% filter(sp == "tyte")) +
+  geom_vline(xintercept = 0 ) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = delta_min
+    )
+  ) +
+  labs(
+    x = "Change in minimum metapopulation capacity from baseline\n(ongoing harvest)",
+    y = "Management scenario",
+    title = "Sooty Owl"
+  )
+p_dmss_min_tyte
+```
+
+```{r}
+p_dmss_med_tyte <- ggplot(data = mpc_rs %>% filter(sp == "tyte")) +
+  geom_vline(xintercept = 0 ) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = delta_median
+    )
+  ) +
+  labs(
+    x = "Change in median metapopulation capacity from baseline\n(ongoing harvest)",
+    y = "Management scenario",
+    title = "Sooty Owl"
+  )
+p_dmss_med_tyte
+```
+
+```{r}
+p_dm07_min_tyte <- ggplot(data = mpc_rs %>% filter(sp == "tyte")) +
+  geom_vline(xintercept = 0 ) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = delta_min_07
+    )
+  ) +
+  labs(
+    x = "Change in minimum metapopulation capacity (70% threshold)\n from baseline (ongoing harvest)",
+    y = "Management scenario",
+    title = "Sooty Owl"
+  )
+p_dm07_min_tyte
+```
+
+```{r}
+p_dm07_med_tyte <- ggplot(data = mpc_rs %>% filter(sp == "tyte")) +
+  geom_vline(xintercept = 0 ) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = delta_median_07
+    )
+  ) +
+  labs(
+    x = "Change in median metapopulation capacity (70% threshold)\nfrom baseline (ongoing harvest)",
+    y = "Management scenario",
+    title = "Sooty Owl"
+  )
+p_dm07_med_tyte
+```
+
+```{r}
+p_dm05_min_tyte <- ggplot(data = mpc_rs %>% filter(sp == "tyte")) +
+  geom_vline(xintercept = 0 ) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = delta_min_05
+    )
+  ) +
+  labs(
+    x = "Change in minimum metapopulation capacity (50% threshold)\nfrom baseline (ongoing harvest)",
+    y = "Management scenario",
+    title = "Sooty Owl"
+  )
+
+p_dm05_min_tyte
+```
+
+```{r}
+p_dm05_med_tyte <- ggplot(data = mpc_rs %>% filter(sp == "tyte")) +
+  geom_vline(xintercept = 0 ) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = delta_median_05
+    )
+  ) +
+  labs(
+    x ="Change in median metapopulation capacity (50% threshold)\nfrom baseline (ongoing harvest)",
+    y = "Management scenario",
+    title = "Sooty Owl"
+  )
+p_dm05_med_tyte
+```
+
+### delta proportional
+```{r}
+p_pmss_min_tyte <- ggplot(data = mpc_rs %>% filter(sp == "tyte")) +
+  geom_vline(xintercept = 0 ) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = dp_min
+    )
+  ) +
+  labs(
+    x = "Proportional change in minimum metapopulation capacity from baseline\n(ongoing harvest)",
+    y = "Management scenario",
+    title = "Sooty Owl"
+  )
+p_pmss_min_tyte
+```
+
+```{r}
+p_pmss_med_tyte <- ggplot(data = mpc_rs %>% filter(sp == "tyte")) +
+  geom_vline(xintercept = 0 ) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = dp_median
+    )
+  ) +
+  labs(
+    x = "Proportional change in median metapopulation capacity from baseline\n(ongoing harvest)",
+    y = "Management scenario",
+    title = "Sooty Owl"
+  )
+p_pmss_med_tyte
+```
+
+```{r}
+p_pm07_min_tyte <- ggplot(data = mpc_rs %>% filter(sp == "tyte")) +
+  geom_vline(xintercept = 0 ) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = dp_min_07
+    )
+  ) +
+  labs(
+    x = "Proportional change in minimum metapopulation capacity (70% threshold)\n from baseline (ongoing harvest)",
+    y = "Management scenario",
+    title = "Sooty Owl"
+  )
+p_pm07_min_tyte
+```
+
+```{r}
+p_pm07_med_tyte <- ggplot(data = mpc_rs %>% filter(sp == "tyte")) +
+  geom_vline(xintercept = 0 ) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = dp_median_07
+    )
+  ) +
+  labs(
+    x = "Proportional change in median metapopulation capacity (70% threshold)\nfrom baseline (ongoing harvest)",
+    y = "Management scenario",
+    title = "Sooty Owl"
+  )
+p_pm07_med_tyte
+```
+
+```{r}
+p_pm05_min_tyte <- ggplot(data = mpc_rs %>% filter(sp == "tyte")) +
+  geom_vline(xintercept = 0 ) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = dp_min_05
+    )
+  ) +
+  labs(
+    x = "Proportional change in minimum metapopulation capacity (50% threshold)\nfrom baseline (ongoing harvest)",
+    y = "Management scenario",
+    title = "Sooty Owl"
+  )
+
+p_pm05_min_tyte
+```
+
+```{r}
+p_pm05_med_tyte <- ggplot(data = mpc_rs %>% filter(sp == "tyte")) +
+  geom_vline(xintercept = 0 ) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = dp_median_05
+    )
+  ) +
+  labs(
+    x ="Proportional change in median metapopulation capacity (50% threshold)\nfrom baseline (ongoing harvest)",
+    y = "Management scenario",
+    title = "Sooty Owl"
+  )
+p_pm05_med_tyte
+```
+
+
+## PVA Species
+###  RAW
+```{r}
+p_mss_min_pva <- ggplot(data = mpc_rs %>% filter(sp_group == "PVA")) +
+  geom_boxplot(
+    aes(
+      fill = species_com,
+      y = scn,
+      x = mpc_min
+    )
+  ) +
+  labs(
+    x = "Minimum metapopulation capacity",
+    y = "Management scenario",
+    title = "PVA species",
     fill = "Species"
-  )
-
-plot_mpc_box_med_90
-```
-
-```{r}
-png(
-  filename = "plots/mpc_box_med_90.png",
-  width = 20,
-  height = 20,
-  units = "cm",
-  res = 300
-)
-plot_mpc_box_med_90
-dev.off()
-```
-
-
-```{r}
-plot_mpc_ebar_med_90 <- ggplot(mpc_rs_summary) +
-  geom_hline(yintercept = 0) +
-  geom_errorbar(
-    aes(
-      x = scn,
-      ymin = dp_median_90_lo,
-      ymax = dp_median_90_up
-    ),
-    #width = 0.3,
-    position = position_dodge2(width = 1)
   ) +
-  geom_point(
-    aes(
-      x = scn,
-      y = dp_median_90_mid,
-      col = species_com
-    ),
-    position = position_dodge2(width = 1)
-  ) +
-  scale_colour_viridis_d(option = "D") +
-  scale_fill_viridis_d() +
-  labs(
-    y = "Median metapopulation capacity\n(proportional difference)",
-    x = "Management scenario",
-    col = "Species"
-  ) +
-  coord_flip()
-
-plot_mpc_ebar_med_90
+  scale_fill_viridis_d()
+p_mss_min_pva
 ```
 
 ```{r}
-png(
-  filename = "plots/mpc_box_ebar_90.png",
-  width = 20,
-  height = 20,
-  units = "cm",
-  res = 300
-)
-plot_mpc_ebar_med_90
-dev.off()
-```
-
-### Minimum metapopulation capacity
-
-
-```{r}
-plot_mpc_min_90_lois <- ggplot(mpc_rs %>% filter(sp == "lois")) +
+p_mss_med_pva <- ggplot(data = mpc_rs %>% filter(sp_group == "PVA")) +
   geom_boxplot(
     aes(
+      fill = species_com,
       y = scn,
-      x = dp_min_90
-    ) 
+      x = mpc_median
+    )
   ) +
   labs(
-    x = "Minimim metapopulation capacity\n(proportional difference)",
+    x = "Median metapopulation capacity",
     y = "Management scenario",
-    title = mpc_rs$species_com[which(mpc_rs$sp == "lois")[1]]
-  )
-
-plot_mpc_min_90_lois
-```
-```{r}
-png(
-  filename = "plots/mpc_min_90_lois.png",
-  width = 20,
-  height = 10,
-  units = "cm",
-  res = 300
-)
-plot_mpc_min_90_lois
-dev.off()
-```
-
-
-```{r}
-plot_mpc_box_min_90 <- ggplot(mpc_rs) +
-  geom_vline(xintercept = 0) +
-  geom_boxplot(
-    aes(
-      y = scn,
-      x = dp_min_90,
-      #col = species_com,
-      fill = species_com
-    ) 
-  ) +
-  #scale_colour_viridis_d(option = "D") #+
-  scale_fill_viridis_d() +
-  labs(
-    x = "Minimum metapopulation capacity\n(proportional difference)",
-    y = "Management scenario",
+    title = "PVA species",
     fill = "Species"
-  )
-
-plot_mpc_box_min_90
+  ) +
+  scale_fill_viridis_d()
+p_mss_med_pva
 ```
 
 ```{r}
-png(
-  filename = "plots/mpc_box_min_90.png",
-  width = 20,
-  height = 20,
-  units = "cm",
-  res = 300
-)
-plot_mpc_box_min_90
-dev.off()
-```
-
-```{r}
-plot_mpc_ebar_min_90 <- ggplot(mpc_rs_summary) +
-  geom_hline(yintercept = 0) +
-  geom_errorbar(
+p_m07_min_pva <- ggplot(data = mpc_rs %>% filter(sp_group == "PVA")) +
+  geom_boxplot(
     aes(
-      x = scn,
-      ymin = dp_min_90_lo,
-      ymax = dp_min_90_up
-    ),
-    #width = 0.3,
-    position = position_dodge2(width = 1)
+      fill = species_com,
+      y = scn,
+      x = mpc_min_07
+    )
   ) +
-  geom_point(
-    aes(
-      x = scn,
-      y = dp_min_90_mid,
-      col = species_com
-    ),
-    position = position_dodge2(width = 1, padding = 0.1)
-  ) +
-  scale_colour_viridis_d(option = "D") +
-  scale_fill_viridis_d() +
   labs(
-    y = "Minimum metapopulation capacity\n(proportional difference)",
-    x = "Management scenario",
-    col = "Species"
+    x = "Minimum metapopulation capacity\n70% threshold",
+    y = "Management scenario",
+    title = "PVA species",
+    fill = "Species"
   ) +
-  coord_flip()
-
-plot_mpc_ebar_min_90
+  scale_fill_viridis_d()
+p_m07_min_pva
 ```
 
 ```{r}
-png(
-  filename = "plots/mpc_ebar_min_90.png",
-  width = 20,
-  height = 20,
-  units = "cm",
-  res = 300
-)
-plot_mpc_ebar_min_90
-dev.off()
+p_m07_med_pva <- ggplot(data = mpc_rs %>% filter(sp_group == "PVA")) +
+  geom_boxplot(
+    aes(
+      fill = species_com,
+      y = scn,
+      x = mpc_median_07
+    )
+  ) +
+  labs(
+    x = "Median metapopulation capacity\n70% threshold",
+    y = "Management scenario",
+    title = "PVA species",
+    fill = "Species"
+  ) +
+  scale_fill_viridis_d()
+p_m07_med_pva
+```
+
+```{r}
+p_m05_min_pva <- ggplot(data = mpc_rs %>% filter(sp_group == "PVA")) +
+  geom_boxplot(
+    aes(
+      fill = species_com,
+      y = scn,
+      x = mpc_min_05
+    )
+  ) +
+  labs(
+    x = "Minimum metapopulation capacity\n50% threshold",
+    y = "Management scenario",
+    title = "PVA species",
+    fill = "Species"
+  ) +
+  scale_fill_viridis_d()
+p_m05_min_pva
+```
+
+```{r}
+p_m05_med_pva <- ggplot(data = mpc_rs %>% filter(sp_group == "PVA")) +
+  geom_boxplot(
+    aes(
+      fill = species_com,
+      y = scn,
+      x = mpc_median_05
+    )
+  ) +
+  labs(
+    x = "Median metapopulation capacity\n50% threshold",
+    y = "Management scenario",
+    title = "PVA species",
+    fill = "Species"
+  ) +
+  scale_fill_viridis_d()
+p_m05_med_pva
+```
+
+###  delta
+```{r}
+p_dmss_min_pva <- ggplot(data = mpc_rs %>% filter(sp_group == "PVA")) +
+  geom_vline(xintercept = 0 ) +
+  geom_boxplot(
+    aes(
+      fill = species_com,
+      y = scn,
+      x = delta_min
+    )
+  ) +
+  labs(
+    x = "Change in minimum metapopulation capacity from baseline\n(ongoing harvest)",
+    y = "Management scenario",
+    title = "PVA species",
+    fill = "Species"
+  ) +
+  scale_fill_viridis_d()
+p_dmss_min_pva
+```
+
+```{r}
+p_dmss_med_pva <- ggplot(data = mpc_rs %>% filter(sp_group == "PVA")) +
+  geom_vline(xintercept = 0 ) +
+  geom_boxplot(
+    aes(
+      fill = species_com,
+      y = scn,
+      x = delta_median
+    )
+  ) +
+  labs(
+    x = "Change in median metapopulation capacity from baseline\n(ongoing harvest)",
+    y = "Management scenario",
+    title = "PVA species",
+    fill = "Species"
+  ) +
+  scale_fill_viridis_d()
+p_dmss_med_pva
+```
+
+```{r}
+p_dm07_min_pva <- ggplot(data = mpc_rs %>% filter(sp_group == "PVA")) +
+  geom_vline(xintercept = 0 ) +
+  geom_boxplot(
+    aes(
+      fill = species_com,
+      y = scn,
+      x = delta_min_07
+    )
+  ) +
+  labs(
+    x = "Change in minimum metapopulation capacity (70% threshold)\n from baseline (ongoing harvest)",
+    y = "Management scenario",
+    title = "PVA species",
+    fill = "Species"
+  ) +
+  scale_fill_viridis_d()
+p_dm07_min_pva
+```
+
+```{r}
+p_dm07_med_pva <- ggplot(data = mpc_rs %>% filter(sp_group == "PVA")) +
+  geom_vline(xintercept = 0 ) +
+  geom_boxplot(
+    aes(
+      fill = species_com,
+      y = scn,
+      x = delta_median_07
+    )
+  ) +
+  labs(
+    x = "Change in median metapopulation capacity (70% threshold)\nfrom baseline (ongoing harvest)",
+    y = "Management scenario",
+    title = "PVA species",
+    fill = "Species"
+  ) +
+  scale_fill_viridis_d()
+p_dm07_med_pva
+```
+
+```{r}
+p_dm05_min_pva <- ggplot(data = mpc_rs %>% filter(sp_group == "PVA")) +
+  geom_vline(xintercept = 0 ) +
+  geom_boxplot(
+    aes(
+      fill = species_com,
+      y = scn,
+      x = delta_min_05
+    )
+  ) +
+  labs(
+    x = "Change in minimum metapopulation capacity (50% threshold)\nfrom baseline (ongoing harvest)",
+    y = "Management scenario",
+    title = "PVA species",
+    fill = "Species"
+  ) +
+  scale_fill_viridis_d()
+
+p_dm05_min_pva
+```
+
+```{r}
+p_dm05_med_pva <- ggplot(data = mpc_rs %>% filter(sp_group == "PVA")) +
+  geom_vline(xintercept = 0 ) +
+  geom_boxplot(
+    aes(
+      fill = species_com,
+      y = scn,
+      x = delta_median_05
+    )
+  ) +
+  labs(
+    x ="Change in median metapopulation capacity (50% threshold)\nfrom baseline (ongoing harvest)",
+    y = "Management scenario",
+    title = "PVA species",
+    fill = "Species"
+  ) +
+  scale_fill_viridis_d()
+p_dm05_med_pva
+```
+
+### delta proportional
+```{r}
+p_pmss_min_pva <- ggplot(data = mpc_rs %>% filter(sp_group == "PVA")) +
+  geom_vline(xintercept = 0 ) +
+  geom_boxplot(
+    aes(
+      fill = species_com,
+      y = scn,
+      x = dp_min
+    )
+  ) +
+  labs(
+    x = "Proportional change in minimum metapopulation capacity from baseline\n(ongoing harvest)",
+    y = "Management scenario",
+    title = "PVA species",
+    fill = "Species"
+  ) +
+  scale_fill_viridis_d()
+p_pmss_min_pva
+```
+
+```{r}
+p_pmss_med_pva <- ggplot(data = mpc_rs %>% filter(sp_group == "PVA")) +
+  geom_vline(xintercept = 0 ) +
+  geom_boxplot(
+    aes(
+      fill = species_com,
+      y = scn,
+      x = dp_median
+    )
+  ) +
+  labs(
+    x = "Proportional change in median metapopulation capacity from baseline\n(ongoing harvest)",
+    y = "Management scenario",
+    title = "PVA species",
+    fill = "Species"
+  ) +
+  scale_fill_viridis_d()
+p_pmss_med_pva
+```
+
+```{r}
+p_pm07_min_pva <- ggplot(data = mpc_rs %>% filter(sp_group == "PVA")) +
+  geom_vline(xintercept = 0 ) +
+  geom_boxplot(
+    aes(
+      fill = species_com,
+      y = scn,
+      x = dp_min_07
+    )
+  ) +
+  labs(
+    x = "Proportional change in minimum metapopulation capacity (70% threshold)\n from baseline (ongoing harvest)",
+    y = "Management scenario",
+    title = "PVA species",
+    fill = "Species"
+  ) +
+  scale_fill_viridis_d()
+p_pm07_min_pva
+```
+
+```{r}
+p_pm07_med_pva <- ggplot(data = mpc_rs %>% filter(sp_group == "PVA")) +
+  geom_vline(xintercept = 0 ) +
+  geom_boxplot(
+    aes(
+      fill = species_com,
+      y = scn,
+      x = dp_median_07
+    )
+  ) +
+  labs(
+    x = "Proportional change in median metapopulation capacity (70% threshold)\nfrom baseline (ongoing harvest)",
+    y = "Management scenario",
+    title = "PVA species",
+    fill = "Species"
+  ) +
+  scale_fill_viridis_d()
+p_pm07_med_pva
+```
+
+```{r}
+p_pm05_min_pva <- ggplot(data = mpc_rs %>% filter(sp_group == "PVA")) +
+  geom_vline(xintercept = 0 ) +
+  geom_boxplot(
+    aes(
+      fill = species_com,
+      y = scn,
+      x = dp_min_05
+    )
+  ) +
+  labs(
+    x = "Proportional change in minimum metapopulation capacity (50% threshold)\nfrom baseline (ongoing harvest)",
+    y = "Management scenario",
+    title = "PVA species",
+    fill = "Species"
+  ) +
+  scale_fill_viridis_d()
+
+p_pm05_min_pva
+```
+
+```{r}
+p_pm05_med_pva <- ggplot(data = mpc_rs %>% filter(sp_group == "PVA")) +
+  geom_vline(xintercept = 0 ) +
+  geom_boxplot(
+    aes(
+      fill = species_com,
+      y = scn,
+      x = dp_median_05
+    )
+  ) +
+  labs(
+    x ="Proportional change in median metapopulation capacity (50% threshold)\nfrom baseline (ongoing harvest)",
+    y = "Management scenario",
+    title = "PVA species",
+    fill = "Species"
+  ) +
+  scale_fill_viridis_d()
+p_pm05_med_pva
 ```
 
 
+## MPC Species
+###  RAW
+```{r}
+p_mss_min_mpc <- ggplot(data = mpc_rs %>% filter(sp_group == "MPC")) +
+  geom_boxplot(
+    aes(
+      fill = species_com,
+      y = scn,
+      x = mpc_min
+    )
+  ) +
+  labs(
+    x = "Minimum metapopulation capacity",
+    y = "Management scenario",
+    title = "MPC species",
+    fill = "Species"
+  ) +
+  scale_fill_viridis_d()
+p_mss_min_mpc
+```
+
+```{r}
+p_mss_med_mpc <- ggplot(data = mpc_rs %>% filter(sp_group == "MPC")) +
+  geom_boxplot(
+    aes(
+      fill = species_com,
+      y = scn,
+      x = mpc_median
+    )
+  ) +
+  labs(
+    x = "Median metapopulation capacity",
+    y = "Management scenario",
+    title = "MPC species",
+    fill = "Species"
+  ) +
+  scale_fill_viridis_d()
+p_mss_med_mpc
+```
+
+```{r}
+p_m07_min_mpc <- ggplot(data = mpc_rs %>% filter(sp_group == "MPC")) +
+  geom_boxplot(
+    aes(
+      fill = species_com,
+      y = scn,
+      x = mpc_min_07
+    )
+  ) +
+  labs(
+    x = "Minimum metapopulation capacity\n70% threshold",
+    y = "Management scenario",
+    title = "MPC species",
+    fill = "Species"
+  ) +
+  scale_fill_viridis_d()
+p_m07_min_mpc
+```
+
+```{r}
+p_m07_med_mpc <- ggplot(data = mpc_rs %>% filter(sp_group == "MPC")) +
+  geom_boxplot(
+    aes(
+      fill = species_com,
+      y = scn,
+      x = mpc_median_07
+    )
+  ) +
+  labs(
+    x = "Median metapopulation capacity\n70% threshold",
+    y = "Management scenario",
+    title = "MPC species",
+    fill = "Species"
+  ) +
+  scale_fill_viridis_d()
+p_m07_med_mpc
+```
+
+```{r}
+p_m05_min_mpc <- ggplot(data = mpc_rs %>% filter(sp_group == "MPC")) +
+  geom_boxplot(
+    aes(
+      fill = species_com,
+      y = scn,
+      x = mpc_min_05
+    )
+  ) +
+  labs(
+    x = "Minimum metapopulation capacity\n50% threshold",
+    y = "Management scenario",
+    title = "MPC species",
+    fill = "Species"
+  ) +
+  scale_fill_viridis_d()
+p_m05_min_mpc
+```
+
+```{r}
+p_m05_med_mpc <- ggplot(data = mpc_rs %>% filter(sp_group == "MPC")) +
+  geom_boxplot(
+    aes(
+      fill = species_com,
+      y = scn,
+      x = mpc_median_05
+    )
+  ) +
+  labs(
+    x = "Median metapopulation capacity\n50% threshold",
+    y = "Management scenario",
+    title = "MPC species",
+    fill = "Species"
+  ) +
+  scale_fill_viridis_d()
+p_m05_med_mpc
+```
+
+###  delta
+```{r}
+p_dmss_min_mpc <- ggplot(data = mpc_rs %>% filter(sp_group == "MPC")) +
+  geom_vline(xintercept = 0 ) +
+  geom_boxplot(
+    aes(
+      fill = species_com,
+      y = scn,
+      x = delta_min
+    )
+  ) +
+  labs(
+    x = "Change in minimum metapopulation capacity from baseline\n(ongoing harvest)",
+    y = "Management scenario",
+    title = "MPC species",
+    fill = "Species"
+  ) +
+  scale_fill_viridis_d()
+p_dmss_min_mpc
+```
+
+```{r}
+p_dmss_med_mpc <- ggplot(data = mpc_rs %>% filter(sp_group == "MPC")) +
+  geom_vline(xintercept = 0 ) +
+  geom_boxplot(
+    aes(
+      fill = species_com,
+      y = scn,
+      x = delta_median
+    )
+  ) +
+  labs(
+    x = "Change in median metapopulation capacity from baseline\n(ongoing harvest)",
+    y = "Management scenario",
+    title = "MPC species",
+    fill = "Species"
+  ) +
+  scale_fill_viridis_d()
+p_dmss_med_mpc
+```
+
+```{r}
+p_dm07_min_mpc <- ggplot(data = mpc_rs %>% filter(sp_group == "MPC")) +
+  geom_vline(xintercept = 0 ) +
+  geom_boxplot(
+    aes(
+      fill = species_com,
+      y = scn,
+      x = delta_min_07
+    )
+  ) +
+  labs(
+    x = "Change in minimum metapopulation capacity (70% threshold)\n from baseline (ongoing harvest)",
+    y = "Management scenario",
+    title = "MPC species",
+    fill = "Species"
+  ) +
+  scale_fill_viridis_d()
+p_dm07_min_mpc
+```
+
+```{r}
+p_dm07_med_mpc <- ggplot(data = mpc_rs %>% filter(sp_group == "MPC")) +
+  geom_vline(xintercept = 0 ) +
+  geom_boxplot(
+    aes(
+      fill = species_com,
+      y = scn,
+      x = delta_median_07
+    )
+  ) +
+  labs(
+    x = "Change in median metapopulation capacity (70% threshold)\nfrom baseline (ongoing harvest)",
+    y = "Management scenario",
+    title = "MPC species",
+    fill = "Species"
+  ) +
+  scale_fill_viridis_d()
+p_dm07_med_mpc
+```
+
+```{r}
+p_dm05_min_mpc <- ggplot(data = mpc_rs %>% filter(sp_group == "MPC")) +
+  geom_vline(xintercept = 0 ) +
+  geom_boxplot(
+    aes(
+      fill = species_com,
+      y = scn,
+      x = delta_min_05
+    )
+  ) +
+  labs(
+    x = "Change in minimum metapopulation capacity (50% threshold)\nfrom baseline (ongoing harvest)",
+    y = "Management scenario",
+    title = "MPC species",
+    fill = "Species"
+  ) +
+  scale_fill_viridis_d()
+
+p_dm05_min_mpc
+```
+
+```{r}
+p_dm05_med_mpc <- ggplot(data = mpc_rs %>% filter(sp_group == "MPC")) +
+  geom_vline(xintercept = 0 ) +
+  geom_boxplot(
+    aes(
+      fill = species_com,
+      y = scn,
+      x = delta_median_05
+    )
+  ) +
+  labs(
+    x ="Change in median metapopulation capacity (50% threshold)\nfrom baseline (ongoing harvest)",
+    y = "Management scenario",
+    title = "MPC species",
+    fill = "Species"
+  ) +
+  scale_fill_viridis_d()
+p_dm05_med_mpc
+```
+
+### delta proportional
+```{r}
+p_pmss_min_mpc <- ggplot(data = mpc_rs %>% filter(sp_group == "MPC")) +
+  geom_vline(xintercept = 0 ) +
+  geom_boxplot(
+    aes(
+      fill = species_com,
+      y = scn,
+      x = dp_min
+    )
+  ) +
+  labs(
+    x = "Proportional change in minimum metapopulation capacity from baseline\n(ongoing harvest)",
+    y = "Management scenario",
+    title = "MPC species",
+    fill = "Species"
+  ) +
+  scale_fill_viridis_d()
+p_pmss_min_mpc
+```
+
+```{r}
+p_pmss_med_mpc <- ggplot(data = mpc_rs %>% filter(sp_group == "MPC")) +
+  geom_vline(xintercept = 0 ) +
+  geom_boxplot(
+    aes(
+      fill = species_com,
+      y = scn,
+      x = dp_median
+    )
+  ) +
+  labs(
+    x = "Proportional change in median metapopulation capacity from baseline\n(ongoing harvest)",
+    y = "Management scenario",
+    title = "MPC species",
+    fill = "Species"
+  ) +
+  scale_fill_viridis_d()
+p_pmss_med_mpc
+```
+
+```{r}
+p_pm07_min_mpc <- ggplot(data = mpc_rs %>% filter(sp_group == "MPC")) +
+  geom_vline(xintercept = 0 ) +
+  geom_boxplot(
+    aes(
+      fill = species_com,
+      y = scn,
+      x = dp_min_07
+    )
+  ) +
+  labs(
+    x = "Proportional change in minimum metapopulation capacity (70% threshold)\n from baseline (ongoing harvest)",
+    y = "Management scenario",
+    title = "MPC species",
+    fill = "Species"
+  ) +
+  scale_fill_viridis_d()
+p_pm07_min_mpc
+```
+
+```{r}
+p_pm07_med_mpc <- ggplot(data = mpc_rs %>% filter(sp_group == "MPC")) +
+  geom_vline(xintercept = 0 ) +
+  geom_boxplot(
+    aes(
+      fill = species_com,
+      y = scn,
+      x = dp_median_07
+    )
+  ) +
+  labs(
+    x = "Proportional change in median metapopulation capacity (70% threshold)\nfrom baseline (ongoing harvest)",
+    y = "Management scenario",
+    title = "MPC species",
+    fill = "Species"
+  ) +
+  scale_fill_viridis_d()
+p_pm07_med_mpc
+```
+
+```{r}
+p_pm05_min_mpc <- ggplot(data = mpc_rs %>% filter(sp_group == "MPC")) +
+  geom_vline(xintercept = 0 ) +
+  geom_boxplot(
+    aes(
+      fill = species_com,
+      y = scn,
+      x = dp_min_05
+    )
+  ) +
+  labs(
+    x = "Proportional change in minimum metapopulation capacity (50% threshold)\nfrom baseline (ongoing harvest)",
+    y = "Management scenario",
+    title = "MPC species",
+    fill = "Species"
+  ) +
+  scale_fill_viridis_d()
+
+p_pm05_min_mpc
+```
+
+```{r}
+p_pm05_med_mpc <- ggplot(data = mpc_rs %>% filter(sp_group == "MPC")) +
+  geom_vline(xintercept = 0 ) +
+  geom_boxplot(
+    aes(
+      fill = species_com,
+      y = scn,
+      x = dp_median_05
+    )
+  ) +
+  labs(
+    x ="Proportional change in median metapopulation capacity (50% threshold)\nfrom baseline (ongoing harvest)",
+    y = "Management scenario",
+    title = "MPC species",
+    fill = "Species"
+  ) +
+  scale_fill_viridis_d()
+p_pm05_med_mpc
+```
+
+
+## ALL Species
+###  RAW
+```{r}
+p_mss_min_all <- ggplot(data = mpc_rs) +
+  geom_boxplot(
+    aes(
+      fill = species_com,
+      y = scn,
+      x = mpc_min
+    )
+  ) +
+  labs(
+    x = "Minimum metapopulation capacity",
+    y = "Management scenario",
+    
+    fill = "Species"
+  ) +
+  scale_fill_viridis_d()
+p_mss_min_all
+```
+
+```{r}
+p_mss_med_all <- ggplot(data = mpc_rs) +
+  geom_boxplot(
+    aes(
+      fill = species_com,
+      y = scn,
+      x = mpc_median
+    )
+  ) +
+  labs(
+    x = "Median metapopulation capacity",
+    y = "Management scenario",
+    
+    fill = "Species"
+  ) +
+  scale_fill_viridis_d()
+p_mss_med_all
+```
+
+```{r}
+p_m07_min_all <- ggplot(data = mpc_rs) +
+  geom_boxplot(
+    aes(
+      fill = species_com,
+      y = scn,
+      x = mpc_min_07
+    )
+  ) +
+  labs(
+    x = "Minimum metapopulation capacity\n70% threshold",
+    y = "Management scenario",
+    
+    fill = "Species"
+  ) +
+  scale_fill_viridis_d()
+p_m07_min_all
+```
+
+```{r}
+p_m07_med_all <- ggplot(data = mpc_rs) +
+  geom_boxplot(
+    aes(
+      fill = species_com,
+      y = scn,
+      x = mpc_median_07
+    )
+  ) +
+  labs(
+    x = "Median metapopulation capacity\n70% threshold",
+    y = "Management scenario",
+    
+    fill = "Species"
+  ) +
+  scale_fill_viridis_d()
+p_m07_med_all
+```
+
+```{r}
+p_m05_min_all <- ggplot(data = mpc_rs) +
+  geom_boxplot(
+    aes(
+      fill = species_com,
+      y = scn,
+      x = mpc_min_05
+    )
+  ) +
+  labs(
+    x = "Minimum metapopulation capacity\n50% threshold",
+    y = "Management scenario",
+    
+    fill = "Species"
+  ) +
+  scale_fill_viridis_d()
+p_m05_min_all
+```
+
+```{r}
+p_m05_med_all <- ggplot(data = mpc_rs) +
+  geom_boxplot(
+    aes(
+      fill = species_com,
+      y = scn,
+      x = mpc_median_05
+    )
+  ) +
+  labs(
+    x = "Median metapopulation capacity\n50% threshold",
+    y = "Management scenario",
+    
+    fill = "Species"
+  ) +
+  scale_fill_viridis_d()
+p_m05_med_all
+```
+
+###  delta
+```{r}
+p_dmss_min_all <- ggplot(data = mpc_rs) +
+  geom_vline(xintercept = 0 ) +
+  geom_boxplot(
+    aes(
+      fill = species_com,
+      y = scn,
+      x = delta_min
+    )
+  ) +
+  labs(
+    x = "Change in minimum metapopulation capacity from baseline\n(ongoing harvest)",
+    y = "Management scenario",
+    
+    fill = "Species"
+  ) +
+  scale_fill_viridis_d()
+p_dmss_min_all
+```
+
+```{r}
+p_dmss_med_all <- ggplot(data = mpc_rs) +
+  geom_vline(xintercept = 0 ) +
+  geom_boxplot(
+    aes(
+      fill = species_com,
+      y = scn,
+      x = delta_median
+    )
+  ) +
+  labs(
+    x = "Change in median metapopulation capacity from baseline\n(ongoing harvest)",
+    y = "Management scenario",
+    
+    fill = "Species"
+  ) +
+  scale_fill_viridis_d()
+p_dmss_med_all
+```
+
+```{r}
+p_dm07_min_all <- ggplot(data = mpc_rs) +
+  geom_vline(xintercept = 0 ) +
+  geom_boxplot(
+    aes(
+      fill = species_com,
+      y = scn,
+      x = delta_min_07
+    )
+  ) +
+  labs(
+    x = "Change in minimum metapopulation capacity (70% threshold)\n from baseline (ongoing harvest)",
+    y = "Management scenario",
+    
+    fill = "Species"
+  ) +
+  scale_fill_viridis_d()
+p_dm07_min_all
+```
+
+```{r}
+p_dm07_med_all <- ggplot(data = mpc_rs) +
+  geom_vline(xintercept = 0 ) +
+  geom_boxplot(
+    aes(
+      fill = species_com,
+      y = scn,
+      x = delta_median_07
+    )
+  ) +
+  labs(
+    x = "Change in median metapopulation capacity (70% threshold)\nfrom baseline (ongoing harvest)",
+    y = "Management scenario",
+    
+    fill = "Species"
+  ) +
+  scale_fill_viridis_d()
+p_dm07_med_all
+```
+
+```{r}
+p_dm05_min_all <- ggplot(data = mpc_rs) +
+  geom_vline(xintercept = 0 ) +
+  geom_boxplot(
+    aes(
+      fill = species_com,
+      y = scn,
+      x = delta_min_05
+    )
+  ) +
+  labs(
+    x = "Change in minimum metapopulation capacity (50% threshold)\nfrom baseline (ongoing harvest)",
+    y = "Management scenario",
+    
+    fill = "Species"
+  ) +
+  scale_fill_viridis_d()
+
+p_dm05_min_all
+```
+
+```{r}
+p_dm05_med_all <- ggplot(data = mpc_rs) +
+  geom_vline(xintercept = 0 ) +
+  geom_boxplot(
+    aes(
+      fill = species_com,
+      y = scn,
+      x = delta_median_05
+    )
+  ) +
+  labs(
+    x ="Change in median metapopulation capacity (50% threshold)\nfrom baseline (ongoing harvest)",
+    y = "Management scenario",
+    
+    fill = "Species"
+  ) +
+  scale_fill_viridis_d()
+p_dm05_med_all
+```
+
+### delta proportional
+```{r}
+p_pmss_min_all <- ggplot(data = mpc_rs) +
+  geom_vline(xintercept = 0 ) +
+  geom_boxplot(
+    aes(
+      fill = species_com,
+      y = scn,
+      x = dp_min
+    )
+  ) +
+  labs(
+    x = "Proportional change in minimum metapopulation capacity from baseline\n(ongoing harvest)",
+    y = "Management scenario",
+    
+    fill = "Species"
+  ) +
+  scale_fill_viridis_d()
+p_pmss_min_all
+```
+
+```{r}
+p_pmss_med_all <- ggplot(data = mpc_rs) +
+  geom_vline(xintercept = 0 ) +
+  geom_boxplot(
+    aes(
+      fill = species_com,
+      y = scn,
+      x = dp_median
+    )
+  ) +
+  labs(
+    x = "Proportional change in median metapopulation capacity from baseline\n(ongoing harvest)",
+    y = "Management scenario",
+    
+    fill = "Species"
+  ) +
+  scale_fill_viridis_d()
+p_pmss_med_all
+```
+
+```{r}
+p_pm07_min_all <- ggplot(data = mpc_rs) +
+  geom_vline(xintercept = 0 ) +
+  geom_boxplot(
+    aes(
+      fill = species_com,
+      y = scn,
+      x = dp_min_07
+    )
+  ) +
+  labs(
+    x = "Proportional change in minimum metapopulation capacity (70% threshold)\n from baseline (ongoing harvest)",
+    y = "Management scenario",
+    
+    fill = "Species"
+  ) +
+  scale_fill_viridis_d()
+p_pm07_min_all
+```
+
+```{r}
+p_pm07_med_all <- ggplot(data = mpc_rs) +
+  geom_vline(xintercept = 0 ) +
+  geom_boxplot(
+    aes(
+      fill = species_com,
+      y = scn,
+      x = dp_median_07
+    )
+  ) +
+  labs(
+    x = "Proportional change in median metapopulation capacity (70% threshold)\nfrom baseline (ongoing harvest)",
+    y = "Management scenario",
+    
+    fill = "Species"
+  ) +
+  scale_fill_viridis_d()
+p_pm07_med_all
+```
+
+```{r}
+p_pm05_min_all <- ggplot(data = mpc_rs) +
+  geom_vline(xintercept = 0 ) +
+  geom_boxplot(
+    aes(
+      fill = species_com,
+      y = scn,
+      x = dp_min_05
+    )
+  ) +
+  labs(
+    x = "Proportional change in minimum metapopulation capacity (50% threshold)\nfrom baseline (ongoing harvest)",
+    y = "Management scenario",
+    
+    fill = "Species"
+  ) +
+  scale_fill_viridis_d()
+
+p_pm05_min_all
+```
+
+```{r}
+p_pm05_med_all <- ggplot(data = mpc_rs) +
+  geom_vline(xintercept = 0 ) +
+  geom_boxplot(
+    aes(
+      fill = species_com,
+      y = scn,
+      x = dp_median_05
+    )
+  ) +
+  labs(
+    x ="Proportional change in median metapopulation capacity (50% threshold)\nfrom baseline (ongoing harvest)",
+    y = "Management scenario",
+    
+    fill = "Species"
+  ) +
+  scale_fill_viridis_d()
+p_pm05_med_all
+```

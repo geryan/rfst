@@ -1,6 +1,8 @@
 ---
 title: "PVA Results"
-output: html_document
+output:
+  word_document: default
+  html_document: default
 ---
 
 
@@ -22,12 +24,34 @@ library(ggplot2)
 library(forcats)
 ```
 
+
+
 ```{r}
 load(file = "output/RData/00_controls.RData")
 load(file = "output/RData/01_landscape_variables.RData")
-load(file = "output/RData/14.0_sp_occ_metapop_list.RData")
-load(file = "output/RData/11_pva.RData")
+load(file = "output/RData/02_species_occurrences.RData")
+#load(file = "output/RData/11_pva.RData")
+#load(file = "output/RData/11_pva_habitat.RData")
+load(file = "output/RData/11.1_pva.RData")
+load(file = "output/RData/11.1_pva_gyle.RData")
 ```
+
+```{r}
+source.functions("R/functions")
+```
+
+
+```{r}
+pva_res_ch <- bind_rows(
+  pva_results5_ch %>%
+    filter(sp != "gyle"),
+  pva_results5_gyle_ch
+) %>%
+  arrange(cscnid, sp)
+
+pva_res_ch
+```
+
 
 ```{r}
 source.functions("R/functions")
@@ -41,7 +65,7 @@ species_names_pva <- pa_data %>%
       sp == "gyle" ~ "Leadbeater's possum",
       sp == "pevo" ~ "Greater glider",
       sp == "peau" ~ "Yellow-bellied glider",
-      #sp == "smle" ~ "White-footed dunnart",
+      sp == "smle" ~ "White-footed dunnart",
       sp == "tyte" ~ "Sooty Owl",
       sp == "vava" ~ "Lace monitor"
     )
@@ -53,7 +77,7 @@ species_names_pva <- pa_data %>%
         "Leadbeater's possum",
         "Greater glider",
         "Yellow-bellied glider",
-        #"White-footed dunnart",
+        "White-footed dunnart",
         "Sooty Owl",
         "Lace monitor"
       )
@@ -90,15 +114,17 @@ scenario_names <- tribble(
   )
 
 scenario_names
-levels(scenario_names$scn)
 ```
 
+```{r}
+aa <- pva_res_ch$pva[[1]]
+```
 
 
 ```{r}
 exminpop <- emp
 
-pva_r_ch <- pva_results_ch %>%
+pva_r_ch <- pva_res_ch %>%
   left_join(
     y = species_names_pva,
     by = "sp"
@@ -144,100 +170,1803 @@ pva_r_ch <- pva_results_ch %>%
       p = TRUE
     ) %>%
       unlist,
-    prop_extant = 1 - prop_extinct
+    prop_extant = 1 - prop_extinct,
+    tt_ex = map(
+      .x = pva,
+      .f = ttex
+    ),
+    mean_tt_ex = map(
+      .x = tt_ex,
+      .f = mean,
+      na.rm = TRUE
+    ) %>%
+      unlist
+  ) %>%
+  group_by(sp) %>%
+  mutate(
+    ref_emp = median(emp[scenario == "TH19_rcp45_PB" & climate_model == "ACCESS1-0"]),
+    ref_emp_95 = median(emp_95[scenario == "TH19_rcp45_PB" & climate_model == "ACCESS1-0"]),
+    ref_emp_med = median(emp_med[scenario == "TH19_rcp45_PB" & climate_model == "ACCESS1-0"]),
+    ref_med_pop = median(med_pop[scenario == "TH19_rcp45_PB" & climate_model == "ACCESS1-0"]),
+    ref_prop_extant = median(prop_extant[scenario == "TH19_rcp45_PB" & climate_model == "ACCESS1-0"]),
+    ref_mean_tt_ex = median(mean_tt_ex[scenario == "TH19_rcp45_PB" & climate_model == "ACCESS1-0"])
+  ) %>%
+  ungroup %>%
+  mutate(
+    delta_emp = emp - ref_emp,
+    delta_emp_95 = emp_95 - ref_emp_95,
+    delta_emp_med = emp_med - ref_emp_med,
+    delta_med_pop = med_pop - ref_med_pop,
+    delta_prop_extant = prop_extant - ref_prop_extant,
+    delta_mean_tt_ex = mean_tt_ex - ref_mean_tt_ex
   )
 
 pva_r_ch
 ```
+## LBP
+
+### raw
 
 ```{r}
-pva_r_ch_a1 <- pva_r_ch %>%
-  filter(climate_model == "ACCESS1-0")
-
-pva_r_ch_a1
-```
-
-
-```{r}
-plot_emp_a1_vava <- ggplot(pva_r_ch_a1 %>% filter(sp == "vava")) +
+p_emp_gyle <- ggplot(pva_r_ch %>% filter(sp == "gyle")) +
   geom_boxplot(
     aes(
       y = scn,
-      x = emp_95
-    ) 
+      x = emp,
+      fill = climate_model
+    )
   ) +
+  scale_fill_viridis_d() +
   labs(
     x = "Expected minimum population",
     y = "Management scenario",
-    title = "Lace monitor"
+    fill = "Climate model",
+    title = "Leadbeater's possum"
   )
-plot_emp_a1_vava
+
+p_emp_gyle
 ```
 
 ```{r}
-png(
-  filename = "plots/emp_a1_vava.png",
-  width = 20,
-  height = 10,
-  units = "cm",
-  res = 300
-) +
-  xlim(0, NA)
-plot_emp_a1_vava
-dev.off()
-```
-
-
-```{r}
-plot_emp_a1_pevo <- ggplot(pva_r_ch_a1 %>% filter(sp == "pevo")) +
-  geom_boxplot(
-    aes(
-      y = scn,
-      x = emp_95
-    ) 
-  ) +
-  labs(
-    x = "Expected minimum population",
-    y = "Management scenario",
-    title = "Greater glider"
-  ) +
-  xlim(0, NA)
-plot_emp_a1_pevo
-```
-
-```{r}
-png(
-  filename = "plots/emp_a1_pevo.png",
-  width = 20,
-  height = 10,
-  units = "cm",
-  res = 300
-)
-plot_emp_a1_pevo
-dev.off()
-```
-
-```{r}
-plot_emp_a1 <- ggplot(pva_r_ch_a1) +
-  geom_vline(xintercept = 0) +
+p_emp95_gyle <- ggplot(pva_r_ch %>% filter(sp == "gyle")) +
   geom_boxplot(
     aes(
       y = scn,
       x = emp_95,
-      #col = species_com,
-      fill = species_com
-    ) 
+      fill = climate_model
+    )
   ) +
-  #scale_colour_viridis_d(option = "D") #+
+  scale_fill_viridis_d() +
+  labs(
+    x = "95% Expected minimum population",
+    y = "Management scenario",
+    fill = "Climate model",
+    title = "Leadbeater's possum"
+  )
+
+p_emp95_gyle
+```
+
+```{r}
+p_empmed_gyle <- ggplot(pva_r_ch %>% filter(sp == "gyle")) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = emp_med,
+      fill = climate_model
+    )
+  ) +
+  scale_fill_viridis_d() +
+  labs(
+    x = "Median minimum population",
+    y = "Management scenario",
+    fill = "Climate model",
+    title = "Leadbeater's possum"
+  )
+
+p_empmed_gyle
+```
+
+```{r}
+p_med_gyle <- ggplot(pva_r_ch %>% filter(sp == "gyle")) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = med_pop,
+      fill = climate_model
+    )
+  ) +
+  scale_fill_viridis_d() +
+  labs(
+    x = "Median population",
+    y = "Management scenario",
+    fill = "Climate model",
+    title = "Leadbeater's possum"
+  )
+
+p_med_gyle
+```
+
+```{r}
+p_pex_gyle <- ggplot(pva_r_ch %>% filter(sp == "gyle")) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = prop_extant,
+      fill = climate_model
+    )
+  ) +
+  scale_fill_viridis_d() +
+  labs(
+    x = "Proportion extant",
+    y = "Management scenario",
+    fill = "Climate model",
+    title = "Leadbeater's possum"
+  )
+
+p_pex_gyle
+```
+
+```{r}
+p_tex_gyle <- ggplot(pva_r_ch %>% filter(sp == "gyle")) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = mean_tt_ex,
+      fill = climate_model
+    )
+  ) +
+  scale_fill_viridis_d() +
+  labs(
+    x = "Mean time to extinction\n(if extinct)",
+    y = "Management scenario",
+    fill = "Climate model",
+    title = "Leadbeater's possum"
+  )
+
+p_tex_gyle
+```
+
+### delta
+
+```{r}
+p_demp_gyle <- ggplot(pva_r_ch %>% filter(sp == "gyle")) +
+  geom_vline(xintercept = 0) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = delta_emp,
+      fill = climate_model
+    )
+  ) +
+  scale_fill_viridis_d() +
+  labs(
+    x = "Change in Expected minimum population from baseline\n(ongoing harvest)",
+    y = "Management scenario",
+    fill = "Climate model",
+    title = "Leadbeater's possum"
+  )
+
+p_demp_gyle
+```
+
+```{r}
+p_demp95_gyle <- ggplot(pva_r_ch %>% filter(sp == "gyle")) +
+  geom_vline(xintercept = 0) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = delta_emp_95,
+      fill = climate_model
+    )
+  ) +
+  scale_fill_viridis_d() +
+  labs(
+    x = "Change in 95% Expected minimum population from baseline\n(ongoing harvest",
+    y = "Management scenario",
+    fill = "Climate model",
+    title = "Leadbeater's possum"
+  )
+
+p_demp95_gyle
+```
+
+```{r}
+p_dempmed_gyle <- ggplot(pva_r_ch %>% filter(sp == "gyle")) +
+  geom_vline(xintercept = 0) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = delta_emp_med,
+      fill = climate_model
+    )
+  ) +
+  scale_fill_viridis_d() +
+  labs(
+    x = "Change in median minimum population from baseline\n(ongoing harvest)",
+    y = "Management scenario",
+    fill = "Climate model",
+    title = "Leadbeater's possum"
+  )
+
+p_dempmed_gyle
+```
+
+```{r}
+p_dmed_gyle <- ggplot(pva_r_ch %>% filter(sp == "gyle")) +
+  geom_vline(xintercept = 0) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = delta_med_pop,
+      fill = climate_model
+    )
+  ) +
+  scale_fill_viridis_d() +
+  labs(
+    x = "Change in median population from baseline\n(ongoing harvest)",
+    y = "Management scenario",
+    fill = "Climate model",
+    title = "Leadbeater's possum"
+  )
+
+p_dmed_gyle
+```
+
+```{r}
+p_dpex_gyle <- ggplot(pva_r_ch %>% filter(sp == "gyle")) +
+  geom_vline(xintercept = 0) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = delta_prop_extant,
+      fill = climate_model
+    )
+  ) +
+  scale_fill_viridis_d() +
+  labs(
+    x = "Change in proportion extant from baseline\n(ongoing harvest)",
+    y = "Management scenario",
+    fill = "Climate model",
+    title = "Leadbeater's possum"
+  )
+
+p_dpex_gyle
+```
+
+```{r}
+p_dtex_gyle <- ggplot(pva_r_ch %>% filter(sp == "gyle")) +
+  geom_vline(xintercept = 0) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = delta_mean_tt_ex,
+      fill = climate_model
+    )
+  ) +
+  scale_fill_viridis_d() +
+  labs(
+    x = "Change in mean time to extinction (if extinct)\nfrom baseline (ongoing harvest)",
+    y = "Management scenario",
+    fill = "Climate model",
+    title = "Leadbeater's possum"
+  )
+
+p_dtex_gyle
+```
+
+## GG
+### raw
+
+```{r}
+p_emp_pevo <- ggplot(pva_r_ch %>% filter(sp == "pevo")) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = emp,
+      fill = climate_model
+    )
+  ) +
+  scale_fill_viridis_d() +
+  labs(
+    x = "Expected minimum population",
+    y = "Management scenario",
+    fill = "Climate model",
+    title = "Greater glider"
+  )
+
+p_emp_pevo
+```
+
+```{r}
+p_emp95_pevo <- ggplot(pva_r_ch %>% filter(sp == "pevo")) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = emp_95,
+      fill = climate_model
+    )
+  ) +
+  scale_fill_viridis_d() +
+  labs(
+    x = "95% Expected minimum population",
+    y = "Management scenario",
+    fill = "Climate model",
+    title = "Greater glider"
+  )
+
+p_emp95_pevo
+```
+
+```{r}
+p_empmed_pevo <- ggplot(pva_r_ch %>% filter(sp == "pevo")) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = emp_med,
+      fill = climate_model
+    )
+  ) +
+  scale_fill_viridis_d() +
+  labs(
+    x = "Median minimum population",
+    y = "Management scenario",
+    fill = "Climate model",
+    title = "Greater glider"
+  )
+
+p_empmed_pevo
+```
+
+```{r}
+p_med_pevo <- ggplot(pva_r_ch %>% filter(sp == "pevo")) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = med_pop,
+      fill = climate_model
+    )
+  ) +
+  scale_fill_viridis_d() +
+  labs(
+    x = "Median population",
+    y = "Management scenario",
+    fill = "Climate model",
+    title = "Greater glider"
+  )
+
+p_med_pevo
+```
+
+```{r}
+p_pex_pevo <- ggplot(pva_r_ch %>% filter(sp == "pevo")) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = prop_extant,
+      fill = climate_model
+    )
+  ) +
+  scale_fill_viridis_d() +
+  labs(
+    x = "Proportion extant",
+    y = "Management scenario",
+    fill = "Climate model",
+    title = "Greater glider"
+  )
+
+p_pex_pevo
+```
+
+```{r}
+p_tex_pevo <- ggplot(pva_r_ch %>% filter(sp == "pevo")) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = mean_tt_ex,
+      fill = climate_model
+    )
+  ) +
+  scale_fill_viridis_d() +
+  labs(
+    x = "Mean time to extinction\n(if extinct)",
+    y = "Management scenario",
+    fill = "Climate model",
+    title = "Greater glider"
+  )
+
+p_tex_pevo
+```
+
+### delta
+
+```{r}
+p_demp_pevo <- ggplot(pva_r_ch %>% filter(sp == "pevo")) +
+  geom_vline(xintercept = 0) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = delta_emp,
+      fill = climate_model
+    )
+  ) +
+  scale_fill_viridis_d() +
+  labs(
+    x = "Change in Expected minimum population from baseline\n(ongoing harvest)",
+    y = "Management scenario",
+    fill = "Climate model",
+    title = "Greater glider"
+  )
+
+p_demp_pevo
+```
+
+```{r}
+p_demp95_pevo <- ggplot(pva_r_ch %>% filter(sp == "pevo")) +
+  geom_vline(xintercept = 0) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = delta_emp_95,
+      fill = climate_model
+    )
+  ) +
+  scale_fill_viridis_d() +
+  labs(
+    x = "Change in 95% Expected minimum population from baseline\n(ongoing harvest",
+    y = "Management scenario",
+    fill = "Climate model",
+    title = "Greater glider"
+  )
+
+p_demp95_pevo
+```
+
+```{r}
+p_dempmed_pevo <- ggplot(pva_r_ch %>% filter(sp == "pevo")) +
+  geom_vline(xintercept = 0) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = delta_emp_med,
+      fill = climate_model
+    )
+  ) +
+  scale_fill_viridis_d() +
+  labs(
+    x = "Change in median minimum population from baseline\n(ongoing harvest)",
+    y = "Management scenario",
+    fill = "Climate model",
+    title = "Greater glider"
+  )
+
+p_dempmed_pevo
+```
+
+```{r}
+p_dmed_pevo <- ggplot(pva_r_ch %>% filter(sp == "pevo")) +
+  geom_vline(xintercept = 0) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = delta_med_pop,
+      fill = climate_model
+    )
+  ) +
+  scale_fill_viridis_d() +
+  labs(
+    x = "Change in median population from baseline\n(ongoing harvest)",
+    y = "Management scenario",
+    fill = "Climate model",
+    title = "Greater glider"
+  )
+
+p_dmed_pevo
+```
+
+```{r}
+p_dpex_pevo <- ggplot(pva_r_ch %>% filter(sp == "pevo")) +
+  geom_vline(xintercept = 0) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = delta_prop_extant,
+      fill = climate_model
+    )
+  ) +
+  scale_fill_viridis_d() +
+  labs(
+    x = "Change in proportion extant from baseline\n(ongoing harvest)",
+    y = "Management scenario",
+    fill = "Climate model",
+    title = "Greater glider"
+  )
+
+p_dpex_pevo
+```
+
+```{r}
+p_dtex_pevo <- ggplot(pva_r_ch %>% filter(sp == "pevo")) +
+  geom_vline(xintercept = 0) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = delta_mean_tt_ex,
+      fill = climate_model
+    )
+  ) +
+  scale_fill_viridis_d() +
+  labs(
+    x = "Change in mean time to extinction (if extinct)\nfrom baseline (ongoing harvest)",
+    y = "Management scenario",
+    fill = "Climate model",
+    title = "Greater glider"
+  )
+
+p_dtex_pevo
+```
+
+## YBG
+### raw
+
+```{r}
+p_emp_peau <- ggplot(pva_r_ch %>% filter(sp == "peau")) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = emp,
+      fill = climate_model
+    )
+  ) +
+  scale_fill_viridis_d() +
+  labs(
+    x = "Expected minimum population",
+    y = "Management scenario",
+    fill = "Climate model",
+    title = "Yellow-bellied glider"
+  )
+
+p_emp_peau
+```
+
+```{r}
+p_emp95_peau <- ggplot(pva_r_ch %>% filter(sp == "peau")) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = emp_95,
+      fill = climate_model
+    )
+  ) +
+  scale_fill_viridis_d() +
+  labs(
+    x = "95% Expected minimum population",
+    y = "Management scenario",
+    fill = "Climate model",
+    title = "Yellow-bellied glider"
+  )
+
+p_emp95_peau
+```
+
+```{r}
+p_empmed_peau <- ggplot(pva_r_ch %>% filter(sp == "peau")) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = emp_med,
+      fill = climate_model
+    )
+  ) +
+  scale_fill_viridis_d() +
+  labs(
+    x = "Median minimum population",
+    y = "Management scenario",
+    fill = "Climate model",
+    title = "Yellow-bellied glider"
+  )
+
+p_empmed_peau
+```
+
+```{r}
+p_med_peau <- ggplot(pva_r_ch %>% filter(sp == "peau")) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = med_pop,
+      fill = climate_model
+    )
+  ) +
+  scale_fill_viridis_d() +
+  labs(
+    x = "Median population",
+    y = "Management scenario",
+    fill = "Climate model",
+    title = "Yellow-bellied glider"
+  )
+
+p_med_peau
+```
+
+```{r}
+p_pex_peau <- ggplot(pva_r_ch %>% filter(sp == "peau")) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = prop_extant,
+      fill = climate_model
+    )
+  ) +
+  scale_fill_viridis_d() +
+  labs(
+    x = "Proportion extant",
+    y = "Management scenario",
+    fill = "Climate model",
+    title = "Yellow-bellied glider"
+  )
+
+p_pex_peau
+```
+
+```{r}
+p_tex_peau <- ggplot(pva_r_ch %>% filter(sp == "peau")) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = mean_tt_ex,
+      fill = climate_model
+    )
+  ) +
+  scale_fill_viridis_d() +
+  labs(
+    x = "Mean time to extinction\n(if extinct)",
+    y = "Management scenario",
+    fill = "Climate model",
+    title = "Yellow-bellied glider"
+  )
+
+p_tex_peau
+```
+
+### delta
+
+```{r}
+p_demp_peau <- ggplot(pva_r_ch %>% filter(sp == "peau")) +
+  geom_vline(xintercept = 0) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = delta_emp,
+      fill = climate_model
+    )
+  ) +
+  scale_fill_viridis_d() +
+  labs(
+    x = "Change in Expected minimum population from baseline\n(ongoing harvest)",
+    y = "Management scenario",
+    fill = "Climate model",
+    title = "Yellow-bellied glider"
+  )
+
+p_demp_peau
+```
+
+```{r}
+p_demp95_peau <- ggplot(pva_r_ch %>% filter(sp == "peau")) +
+  geom_vline(xintercept = 0) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = delta_emp_95,
+      fill = climate_model
+    )
+  ) +
+  scale_fill_viridis_d() +
+  labs(
+    x = "Change in 95% Expected minimum population from baseline\n(ongoing harvest",
+    y = "Management scenario",
+    fill = "Climate model",
+    title = "Yellow-bellied glider"
+  )
+
+p_demp95_peau
+```
+
+```{r}
+p_dempmed_peau <- ggplot(pva_r_ch %>% filter(sp == "peau")) +
+  geom_vline(xintercept = 0) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = delta_emp_med,
+      fill = climate_model
+    )
+  ) +
+  scale_fill_viridis_d() +
+  labs(
+    x = "Change in median minimum population from baseline\n(ongoing harvest)",
+    y = "Management scenario",
+    fill = "Climate model",
+    title = "Yellow-bellied glider"
+  )
+
+p_dempmed_peau
+```
+
+```{r}
+p_dmed_peau <- ggplot(pva_r_ch %>% filter(sp == "peau")) +
+  geom_vline(xintercept = 0) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = delta_med_pop,
+      fill = climate_model
+    )
+  ) +
+  scale_fill_viridis_d() +
+  labs(
+    x = "Change in median population from baseline\n(ongoing harvest)",
+    y = "Management scenario",
+    fill = "Climate model",
+    title = "Yellow-bellied glider"
+  )
+
+p_dmed_peau
+```
+
+```{r}
+p_dpex_peau <- ggplot(pva_r_ch %>% filter(sp == "peau")) +
+  geom_vline(xintercept = 0) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = delta_prop_extant,
+      fill = climate_model
+    )
+  ) +
+  scale_fill_viridis_d() +
+  labs(
+    x = "Change in proportion extant from baseline\n(ongoing harvest)",
+    y = "Management scenario",
+    fill = "Climate model",
+    title = "Yellow-bellied glider"
+  )
+
+p_dpex_peau
+```
+
+```{r}
+p_dtex_peau <- ggplot(pva_r_ch %>% filter(sp == "peau")) +
+  geom_vline(xintercept = 0) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = delta_mean_tt_ex,
+      fill = climate_model
+    )
+  ) +
+  scale_fill_viridis_d() +
+  labs(
+    x = "Change in mean time to extinction (if extinct)\nfrom baseline (ongoing harvest)",
+    y = "Management scenario",
+    fill = "Climate model",
+    title = "Yellow-bellied glider"
+  )
+
+p_dtex_peau
+```
+
+## WFD
+### raw
+
+```{r}
+p_emp_smle <- ggplot(pva_r_ch %>% filter(sp == "smle")) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = emp,
+      fill = climate_model
+    )
+  ) +
+  scale_fill_viridis_d() +
+  labs(
+    x = "Expected minimum population",
+    y = "Management scenario",
+    fill = "Climate model",
+    title = "White-footed dunnart"
+  )
+
+p_emp_smle
+```
+
+```{r}
+p_emp95_smle <- ggplot(pva_r_ch %>% filter(sp == "smle")) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = emp_95,
+      fill = climate_model
+    )
+  ) +
+  scale_fill_viridis_d() +
+  labs(
+    x = "95% Expected minimum population",
+    y = "Management scenario",
+    fill = "Climate model",
+    title = "White-footed dunnart"
+  )
+
+p_emp95_smle
+```
+
+```{r}
+p_empmed_smle <- ggplot(pva_r_ch %>% filter(sp == "smle")) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = emp_med,
+      fill = climate_model
+    )
+  ) +
+  scale_fill_viridis_d() +
+  labs(
+    x = "Median minimum population",
+    y = "Management scenario",
+    fill = "Climate model",
+    title = "White-footed dunnart"
+  )
+
+p_empmed_smle
+```
+
+```{r}
+p_med_smle <- ggplot(pva_r_ch %>% filter(sp == "smle")) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = med_pop,
+      fill = climate_model
+    )
+  ) +
+  scale_fill_viridis_d() +
+  labs(
+    x = "Median population",
+    y = "Management scenario",
+    fill = "Climate model",
+    title = "White-footed dunnart"
+  )
+
+p_med_smle
+```
+
+```{r}
+p_pex_smle <- ggplot(pva_r_ch %>% filter(sp == "smle")) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = prop_extant,
+      fill = climate_model
+    )
+  ) +
+  scale_fill_viridis_d() +
+  labs(
+    x = "Proportion extant",
+    y = "Management scenario",
+    fill = "Climate model",
+    title = "White-footed dunnart"
+  )
+
+p_pex_smle
+```
+
+```{r}
+p_tex_smle <- ggplot(pva_r_ch %>% filter(sp == "smle")) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = mean_tt_ex,
+      fill = climate_model
+    )
+  ) +
+  scale_fill_viridis_d() +
+  labs(
+    x = "Mean time to extinction\n(if extinct)",
+    y = "Management scenario",
+    fill = "Climate model",
+    title = "White-footed dunnart"
+  )
+
+p_tex_smle
+```
+
+### delta
+
+```{r}
+p_demp_smle <- ggplot(pva_r_ch %>% filter(sp == "smle")) +
+  geom_vline(xintercept = 0) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = delta_emp,
+      fill = climate_model
+    )
+  ) +
+  scale_fill_viridis_d() +
+  labs(
+    x = "Change in Expected minimum population from baseline\n(ongoing harvest)",
+    y = "Management scenario",
+    fill = "Climate model",
+    title = "White-footed dunnart"
+  )
+
+p_demp_smle
+```
+
+```{r}
+p_demp95_smle <- ggplot(pva_r_ch %>% filter(sp == "smle")) +
+  geom_vline(xintercept = 0) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = delta_emp_95,
+      fill = climate_model
+    )
+  ) +
+  scale_fill_viridis_d() +
+  labs(
+    x = "Change in 95% Expected minimum population from baseline\n(ongoing harvest",
+    y = "Management scenario",
+    fill = "Climate model",
+    title = "White-footed dunnart"
+  )
+
+p_demp95_smle
+```
+
+```{r}
+p_dempmed_smle <- ggplot(pva_r_ch %>% filter(sp == "smle")) +
+  geom_vline(xintercept = 0) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = delta_emp_med,
+      fill = climate_model
+    )
+  ) +
+  scale_fill_viridis_d() +
+  labs(
+    x = "Change in median minimum population from baseline\n(ongoing harvest)",
+    y = "Management scenario",
+    fill = "Climate model",
+    title = "White-footed dunnart"
+  )
+
+p_dempmed_smle
+```
+
+```{r}
+p_dmed_smle <- ggplot(pva_r_ch %>% filter(sp == "smle")) +
+  geom_vline(xintercept = 0) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = delta_med_pop,
+      fill = climate_model
+    )
+  ) +
+  scale_fill_viridis_d() +
+  labs(
+    x = "Change in median population from baseline\n(ongoing harvest)",
+    y = "Management scenario",
+    fill = "Climate model",
+    title = "White-footed dunnart"
+  )
+
+p_dmed_smle
+```
+
+```{r}
+p_dpex_smle <- ggplot(pva_r_ch %>% filter(sp == "smle")) +
+  geom_vline(xintercept = 0) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = delta_prop_extant,
+      fill = climate_model
+    )
+  ) +
+  scale_fill_viridis_d() +
+  labs(
+    x = "Change in proportion extant from baseline\n(ongoing harvest)",
+    y = "Management scenario",
+    fill = "Climate model",
+    title = "White-footed dunnart"
+  )
+
+p_dpex_smle
+```
+
+```{r}
+p_dtex_smle <- ggplot(pva_r_ch %>% filter(sp == "smle")) +
+  geom_vline(xintercept = 0) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = delta_mean_tt_ex,
+      fill = climate_model
+    )
+  ) +
+  scale_fill_viridis_d() +
+  labs(
+    x = "Change in mean time to extinction (if extinct)\nfrom baseline (ongoing harvest)",
+    y = "Management scenario",
+    fill = "Climate model",
+    title = "White-footed dunnart"
+  )
+
+p_dtex_smle
+```
+
+## SO
+### raw
+
+```{r}
+p_emp_tyte <- ggplot(pva_r_ch %>% filter(sp == "tyte")) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = emp,
+      fill = climate_model
+    )
+  ) +
+  scale_fill_viridis_d() +
+  labs(
+    x = "Expected minimum population",
+    y = "Management scenario",
+    fill = "Climate model",
+    title = "Sooty Owl"
+  )
+
+p_emp_tyte
+```
+
+```{r}
+p_emp95_tyte <- ggplot(pva_r_ch %>% filter(sp == "tyte")) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = emp_95,
+      fill = climate_model
+    )
+  ) +
+  scale_fill_viridis_d() +
+  labs(
+    x = "95% Expected minimum population",
+    y = "Management scenario",
+    fill = "Climate model",
+    title = "Sooty Owl"
+  )
+
+p_emp95_tyte
+```
+
+```{r}
+p_empmed_tyte <- ggplot(pva_r_ch %>% filter(sp == "tyte")) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = emp_med,
+      fill = climate_model
+    )
+  ) +
+  scale_fill_viridis_d() +
+  labs(
+    x = "Median minimum population",
+    y = "Management scenario",
+    fill = "Climate model",
+    title = "Sooty Owl"
+  )
+
+p_empmed_tyte
+```
+
+```{r}
+p_med_tyte <- ggplot(pva_r_ch %>% filter(sp == "tyte")) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = med_pop,
+      fill = climate_model
+    )
+  ) +
+  scale_fill_viridis_d() +
+  labs(
+    x = "Median population",
+    y = "Management scenario",
+    fill = "Climate model",
+    title = "Sooty Owl"
+  )
+
+p_med_tyte
+```
+
+```{r}
+p_pex_tyte <- ggplot(pva_r_ch %>% filter(sp == "tyte")) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = prop_extant,
+      fill = climate_model
+    )
+  ) +
+  scale_fill_viridis_d() +
+  labs(
+    x = "Proportion extant",
+    y = "Management scenario",
+    fill = "Climate model",
+    title = "Sooty Owl"
+  )
+
+p_pex_tyte
+```
+
+```{r}
+p_tex_tyte <- ggplot(pva_r_ch %>% filter(sp == "tyte")) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = mean_tt_ex,
+      fill = climate_model
+    )
+  ) +
+  scale_fill_viridis_d() +
+  labs(
+    x = "Mean time to extinction\n(if extinct)",
+    y = "Management scenario",
+    fill = "Climate model",
+    title = "Sooty Owl"
+  )
+
+p_tex_tyte
+```
+
+### delta
+
+```{r}
+p_demp_tyte <- ggplot(pva_r_ch %>% filter(sp == "tyte")) +
+  geom_vline(xintercept = 0) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = delta_emp,
+      fill = climate_model
+    )
+  ) +
+  scale_fill_viridis_d() +
+  labs(
+    x = "Change in Expected minimum population from baseline\n(ongoing harvest)",
+    y = "Management scenario",
+    fill = "Climate model",
+    title = "Sooty Owl"
+  )
+
+p_demp_tyte
+```
+
+```{r}
+p_demp95_tyte <- ggplot(pva_r_ch %>% filter(sp == "tyte")) +
+  geom_vline(xintercept = 0) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = delta_emp_95,
+      fill = climate_model
+    )
+  ) +
+  scale_fill_viridis_d() +
+  labs(
+    x = "Change in 95% Expected minimum population from baseline\n(ongoing harvest",
+    y = "Management scenario",
+    fill = "Climate model",
+    title = "Sooty Owl"
+  )
+
+p_demp95_tyte
+```
+
+```{r}
+p_dempmed_tyte <- ggplot(pva_r_ch %>% filter(sp == "tyte")) +
+  geom_vline(xintercept = 0) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = delta_emp_med,
+      fill = climate_model
+    )
+  ) +
+  scale_fill_viridis_d() +
+  labs(
+    x = "Change in median minimum population from baseline\n(ongoing harvest)",
+    y = "Management scenario",
+    fill = "Climate model",
+    title = "Sooty Owl"
+  )
+
+p_dempmed_tyte
+```
+
+```{r}
+p_dmed_tyte <- ggplot(pva_r_ch %>% filter(sp == "tyte")) +
+  geom_vline(xintercept = 0) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = delta_med_pop,
+      fill = climate_model
+    )
+  ) +
+  scale_fill_viridis_d() +
+  labs(
+    x = "Change in median population from baseline\n(ongoing harvest)",
+    y = "Management scenario",
+    fill = "Climate model",
+    title = "Sooty Owl"
+  )
+
+p_dmed_tyte
+```
+
+```{r}
+p_dpex_tyte <- ggplot(pva_r_ch %>% filter(sp == "tyte")) +
+  geom_vline(xintercept = 0) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = delta_prop_extant,
+      fill = climate_model
+    )
+  ) +
+  scale_fill_viridis_d() +
+  labs(
+    x = "Change in proportion extant from baseline\n(ongoing harvest)",
+    y = "Management scenario",
+    fill = "Climate model",
+    title = "Sooty Owl"
+  )
+
+p_dpex_tyte
+```
+
+```{r}
+p_dtex_tyte <- ggplot(pva_r_ch %>% filter(sp == "tyte")) +
+  geom_vline(xintercept = 0) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = delta_mean_tt_ex,
+      fill = climate_model
+    )
+  ) +
+  scale_fill_viridis_d() +
+  labs(
+    x = "Change in mean time to extinction (if extinct)\nfrom baseline (ongoing harvest)",
+    y = "Management scenario",
+    fill = "Climate model",
+    title = "Sooty Owl"
+  )
+
+p_dtex_tyte
+```
+
+## LM
+### raw
+
+```{r}
+p_emp_vava <- ggplot(pva_r_ch %>% filter(sp == "vava")) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = emp,
+      fill = climate_model
+    )
+  ) +
+  scale_fill_viridis_d() +
+  labs(
+    x = "Expected minimum population",
+    y = "Management scenario",
+    fill = "Climate model",
+    title = "Lace monitor"
+  )
+
+p_emp_vava
+```
+
+```{r}
+p_emp95_vava <- ggplot(pva_r_ch %>% filter(sp == "vava")) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = emp_95,
+      fill = climate_model
+    )
+  ) +
+  scale_fill_viridis_d() +
+  labs(
+    x = "95% Expected minimum population",
+    y = "Management scenario",
+    fill = "Climate model",
+    title = "Lace monitor"
+  )
+
+p_emp95_vava
+```
+
+```{r}
+p_empmed_vava <- ggplot(pva_r_ch %>% filter(sp == "vava")) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = emp_med,
+      fill = climate_model
+    )
+  ) +
+  scale_fill_viridis_d() +
+  labs(
+    x = "Median minimum population",
+    y = "Management scenario",
+    fill = "Climate model",
+    title = "Lace monitor"
+  )
+
+p_empmed_vava
+```
+
+```{r}
+p_med_vava <- ggplot(pva_r_ch %>% filter(sp == "vava")) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = med_pop,
+      fill = climate_model
+    )
+  ) +
+  scale_fill_viridis_d() +
+  labs(
+    x = "Median population",
+    y = "Management scenario",
+    fill = "Climate model",
+    title = "Lace monitor"
+  )
+
+p_med_vava
+```
+
+```{r}
+p_pex_vava <- ggplot(pva_r_ch %>% filter(sp == "vava")) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = prop_extant,
+      fill = climate_model
+    )
+  ) +
+  scale_fill_viridis_d() +
+  labs(
+    x = "Proportion extant",
+    y = "Management scenario",
+    fill = "Climate model",
+    title = "Lace monitor"
+  )
+
+p_pex_vava
+```
+
+```{r}
+p_tex_vava <- ggplot(pva_r_ch %>% filter(sp == "vava")) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = mean_tt_ex,
+      fill = climate_model
+    )
+  ) +
+  scale_fill_viridis_d() +
+  labs(
+    x = "Mean time to extinction\n(if extinct)",
+    y = "Management scenario",
+    fill = "Climate model",
+    title = "Lace monitor"
+  )
+
+p_tex_vava
+```
+
+### delta
+
+```{r}
+p_demp_vava <- ggplot(pva_r_ch %>% filter(sp == "vava")) +
+  geom_vline(xintercept = 0) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = delta_emp,
+      fill = climate_model
+    )
+  ) +
+  scale_fill_viridis_d() +
+  labs(
+    x = "Change in Expected minimum population from baseline\n(ongoing harvest)",
+    y = "Management scenario",
+    fill = "Climate model",
+    title = "Lace monitor"
+  )
+
+p_demp_vava
+```
+
+```{r}
+p_demp95_vava <- ggplot(pva_r_ch %>% filter(sp == "vava")) +
+  geom_vline(xintercept = 0) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = delta_emp_95,
+      fill = climate_model
+    )
+  ) +
+  scale_fill_viridis_d() +
+  labs(
+    x = "Change in 95% Expected minimum population from baseline\n(ongoing harvest",
+    y = "Management scenario",
+    fill = "Climate model",
+    title = "Lace monitor"
+  )
+
+p_demp95_vava
+```
+
+```{r}
+p_dempmed_vava <- ggplot(pva_r_ch %>% filter(sp == "vava")) +
+  geom_vline(xintercept = 0) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = delta_emp_med,
+      fill = climate_model
+    )
+  ) +
+  scale_fill_viridis_d() +
+  labs(
+    x = "Change in median minimum population from baseline\n(ongoing harvest)",
+    y = "Management scenario",
+    fill = "Climate model",
+    title = "Lace monitor"
+  )
+
+p_dempmed_vava
+```
+
+```{r}
+p_dmed_vava <- ggplot(pva_r_ch %>% filter(sp == "vava")) +
+  geom_vline(xintercept = 0) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = delta_med_pop,
+      fill = climate_model
+    )
+  ) +
+  scale_fill_viridis_d() +
+  labs(
+    x = "Change in median population from baseline\n(ongoing harvest)",
+    y = "Management scenario",
+    fill = "Climate model",
+    title = "Lace monitor"
+  )
+
+p_dmed_vava
+```
+
+```{r}
+p_dpex_vava <- ggplot(pva_r_ch %>% filter(sp == "vava")) +
+  geom_vline(xintercept = 0) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = delta_prop_extant,
+      fill = climate_model
+    )
+  ) +
+  scale_fill_viridis_d() +
+  labs(
+    x = "Change in proportion extant from baseline\n(ongoing harvest)",
+    y = "Management scenario",
+    fill = "Climate model",
+    title = "Lace monitor"
+  )
+
+p_dpex_vava
+```
+
+```{r}
+p_dtex_vava <- ggplot(pva_r_ch %>% filter(sp == "vava")) +
+  geom_vline(xintercept = 0) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = delta_mean_tt_ex,
+      fill = climate_model
+    )
+  ) +
+  scale_fill_viridis_d() +
+  labs(
+    x = "Change in mean time to extinction (if extinct)\nfrom baseline (ongoing harvest)",
+    y = "Management scenario",
+    fill = "Climate model",
+    title = "Lace monitor"
+  )
+
+p_dtex_vava
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## ALL SPECIES
+### raw
+
+```{r}
+p_emp_all <- ggplot(pva_r_ch ) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = emp,
+      fill = species_com
+    )
+  ) +
   scale_fill_viridis_d() +
   labs(
     x = "Expected minimum population",
     y = "Management scenario",
     fill = "Species"
-  ) +
-  xlim(0, NA)
+  )
 
-plot_emp_a1
+p_emp_all
+```
+
+```{r}
+p_emp95_all <- ggplot(pva_r_ch ) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = emp_95,
+      fill = species_com
+    )
+  ) +
+  scale_fill_viridis_d() +
+  labs(
+    x = "95% Expected minimum population",
+    y = "Management scenario",
+    fill = "Species"
+  )
+
+p_emp95_all
+```
+
+```{r}
+p_empmed_all <- ggplot(pva_r_ch ) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = emp_med,
+      fill = species_com
+    )
+  ) +
+  scale_fill_viridis_d() +
+  labs(
+    x = "Median minimum population",
+    y = "Management scenario",
+    fill = "Species"
+  )
+
+p_empmed_all
+```
+
+```{r}
+p_med_all <- ggplot(pva_r_ch ) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = med_pop,
+      fill = species_com
+    )
+  ) +
+  scale_fill_viridis_d() +
+  labs(
+    x = "Median population",
+    y = "Management scenario",
+    fill = "Species"
+  )
+
+p_med_all
+```
+
+```{r}
+p_pex_all <- ggplot(pva_r_ch ) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = prop_extant,
+      fill = species_com
+    )
+  ) +
+  scale_fill_viridis_d() +
+  labs(
+    x = "Proportion extant",
+    y = "Management scenario",
+    fill = "Species"
+  )
+
+p_pex_all
+```
+
+```{r}
+p_tex_all <- ggplot(pva_r_ch ) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = mean_tt_ex,
+      fill = species_com
+    )
+  ) +
+  scale_fill_viridis_d() +
+  labs(
+    x = "Mean time to extinction\n(if extinct)",
+    y = "Management scenario",
+    fill = "Species"
+  )
+
+p_tex_all
+```
+
+### delta
+
+```{r}
+p_demp_all <- ggplot(pva_r_ch ) +
+  geom_vline(xintercept = 0) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = delta_emp,
+      fill = species_com
+    )
+  ) +
+  scale_fill_viridis_d() +
+  labs(
+    x = "Change in Expected minimum population from baseline\n(ongoing harvest)",
+    y = "Management scenario",
+    fill = "Species"
+  )
+
+p_demp_all
+```
+
+```{r}
+p_demp95_all <- ggplot(pva_r_ch ) +
+  geom_vline(xintercept = 0) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = delta_emp_95,
+      fill = species_com
+    )
+  ) +
+  scale_fill_viridis_d() +
+  labs(
+    x = "Change in 95% Expected minimum population from baseline\n(ongoing harvest",
+    y = "Management scenario",
+    fill = "Species"
+  )
+
+p_demp95_all
+```
+
+```{r}
+p_dempmed_all <- ggplot(pva_r_ch ) +
+  geom_vline(xintercept = 0) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = delta_emp_med,
+      fill = species_com
+    )
+  ) +
+  scale_fill_viridis_d() +
+  labs(
+    x = "Change in median minimum population from baseline\n(ongoing harvest)",
+    y = "Management scenario",
+    fill = "Species"
+  )
+
+p_dempmed_all
+```
+
+```{r}
+p_dmed_all <- ggplot(pva_r_ch ) +
+  geom_vline(xintercept = 0) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = delta_med_pop,
+      fill = species_com
+    )
+  ) +
+  scale_fill_viridis_d() +
+  labs(
+    x = "Change in median population from baseline\n(ongoing harvest)",
+    y = "Management scenario",
+    fill = "Species"
+  )
+
+p_dmed_all
+```
+
+```{r}
+p_dpex_all <- ggplot(pva_r_ch ) +
+  geom_vline(xintercept = 0) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = delta_prop_extant,
+      fill = species_com
+    )
+  ) +
+  scale_fill_viridis_d() +
+  labs(
+    x = "Change in proportion extant from baseline\n(ongoing harvest)",
+    y = "Management scenario",
+    fill = "Species"
+  )
+
+p_dpex_all
+```
+
+```{r}
+p_dtex_all <- ggplot(pva_r_ch ) +
+  geom_vline(xintercept = 0) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = delta_mean_tt_ex,
+      fill = species_com
+    )
+  ) +
+  scale_fill_viridis_d() +
+  labs(
+    x = "Change in mean time to extinction (if extinct)\nfrom baseline (ongoing harvest)",
+    y = "Management scenario",
+    fill = "Species"
+  )
+
+p_dtex_all
 ```
 
 

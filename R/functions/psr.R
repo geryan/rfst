@@ -91,12 +91,12 @@ psr <- function(
           ty <- ylim[2]/2
         }
         
-        text(
-          x = dim(popmat)[1]/2,
-          y = ty,
-          #labels = "ILLUSTRATIVE ONLY",
-          col = "red"
-        )
+        # text(
+        #   x = dim(popmat)[1]/2,
+        #   y = ty,
+        #   #labels = "ILLUSTRATIVE ONLY",
+        #   col = "red"
+        # )
       }
       
     }
@@ -171,12 +171,12 @@ psr <- function(
         ty <- ylim[2]/2
       }
       
-      text(
-        x = dim(popmat)[1]/2,
-        y = ty,
-        #labels = "ILLUSTRATIVE ONLY",
-        col = "red"
-      )
+      # text(
+      #   x = dim(popmat)[1]/2,
+      #   y = ty,
+      #   #labels = "ILLUSTRATIVE ONLY",
+      #   col = "red"
+      # )
     }
      
   }
@@ -222,12 +222,12 @@ psr <- function(
           ty <- ylim[2]/2
         }
         
-        text(
-          x = dim(popmat)[1]/2,
-          y = ty,
-          #labels = "ILLUSTRATIVE ONLY",
-          col = "red"
-        )
+        # text(
+        #   x = dim(popmat)[1]/2,
+        #   y = ty,
+        #   #labels = "ILLUSTRATIVE ONLY",
+        #   col = "red"
+        # )
       }
       
     }    

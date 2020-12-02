@@ -1,0 +1,100 @@
+---
+title: "sdm results"
+output:
+  word_document: default
+  html_document: default
+---
+
+```{r}
+knitr::opts_chunk$set(fig.width=7, fig.height=7)
+```
+
+
+
+```{r}
+source("R/spartan/spartan_settings.R")
+```
+
+
+```{r}
+library(dplyr)
+library(purrr)
+library(tibble)
+library(tidyr)
+library(magrittr)
+library(ggplot2)
+library(raster)
+library(dismo)
+library(gbm)
+```
+
+```{r}
+load(file = "output/RData/00_controls.RData")
+load(file = "output/RData/01_landscape_variables.RData")
+load(file = "output/RData/09_fit_distribution_models.RData")
+```
+
+```{r}
+source.functions("R/functions")
+```
+
+
+## LBP
+```{r}
+summary(sdm_results$brt.fit[[1]])
+```
+
+
+```{r}
+gbm.plot(sdm_results$brt.fit[[1]])
+```
+
+## GG
+```{r}
+summary(sdm_results$brt.fit[[2]])
+```
+
+
+```{r}
+gbm.plot(sdm_results$brt.fit[[2]])
+```
+
+## YBG
+```{r}
+summary(sdm_results$brt.fit[[3]])
+```
+
+
+```{r}
+gbm.plot(sdm_results$brt.fit[[3]])
+```
+
+## WFD
+```{r}
+summary(sdm_results$brt.fit[[4]])
+```
+
+
+```{r}
+gbm.plot(sdm_results$brt.fit[[4]])
+```
+
+## SO
+```{r}
+summary(sdm_results$brt.fit[[5]])
+```
+
+
+```{r}
+gbm.plot(sdm_results$brt.fit[[5]])
+```
+
+## LM
+```{r}
+summary(sdm_results$brt.fit[[6]])
+```
+
+
+```{r}
+gbm.plot(sdm_results$brt.fit[[6]])
+```
