@@ -21,7 +21,7 @@ library(readr)
 library(readxl)
 library(rerddap)
 library(rgdal)
-library(rlang)
+#library(rlang)
 library(sf)
 library(steps)
 library(tibble)
@@ -79,7 +79,7 @@ scn_table_eg <- expand.grid(
       rcp,
       plan_burn
     ),
-    scn_id = sprintf(
+    yscn_id = sprintf(
       "%s_%s_%s_%s_%s",
       yearid,
       harvest_scenario,
@@ -87,9 +87,16 @@ scn_table_eg <- expand.grid(
       plan_burn,
       scenario_replicate
     ),
+    scn_id = sprintf(
+      "%s_%s_%s_%s",
+      harvest_scenario,
+      rcp,
+      plan_burn,
+      scenario_replicate
+    ),
     dir = paste0(
       landis_path_eg,
-      scn_id
+      yscn_id
     ),
     th = sub(
       pattern = "TH",
