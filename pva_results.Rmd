@@ -5,6 +5,10 @@ output:
   html_document: default
 ---
 
+```{r}
+knitr::opts_chunk$set(fig.width=6, fig.height=6)
+```
+
 
 ```{r}
 source("R/spartan/spartan_settings.R")
@@ -34,6 +38,7 @@ load(file = "output/RData/02_species_occurrences.RData")
 #load(file = "output/RData/11_pva_habitat.RData")
 load(file = "output/RData/11.1_pva.RData")
 load(file = "output/RData/11.1_pva_gyle.RData")
+load(file = "output/RData/11.1_pva_tyte.RData")
 ```
 
 ```{r}
@@ -44,8 +49,10 @@ source.functions("R/functions")
 ```{r}
 pva_res_ch <- bind_rows(
   pva_results5_ch %>%
-    filter(sp != "gyle"),
-  pva_results5_gyle_ch
+    filter(sp != "gyle") %>%
+    filter(sp != "tyte"),
+  pva_results5_gyle_ch,
+  pva_results5_tyte_ch
 ) %>%
   arrange(cscnid, sp)
 
@@ -116,9 +123,6 @@ scenario_names <- tribble(
 scenario_names
 ```
 
-```{r}
-aa <- pva_res_ch$pva[[1]]
-```
 
 
 ```{r}
@@ -205,8 +209,24 @@ pva_r_ch
 ```
 ## LBP
 
-### raw
+```{r}
+dat_pva_gyle <- pva_r_ch %>%
+  filter(sp == "gyle" & cscnid == "TH00_rcp45_PB_01_ACCESS1-0")
+dat_pva_gyle
+```
 
+```{r}
+p_pvas_gyle <- psr(dat_pva_gyle$pva[[1]])
+p_pvas_gyle
+```
+```{r}
+p_pva_gyle <- psr(dat_pva_gyle$pva[[1]], stages = 0)
+p_pva_gyle
+```
+
+
+
+### raw
 ```{r}
 p_emp_gyle <- ggplot(pva_r_ch %>% filter(sp == "gyle")) +
   geom_boxplot(
@@ -456,6 +476,22 @@ p_dtex_gyle
 ```
 
 ## GG
+
+```{r}
+dat_pva_pevo <- pva_r_ch %>%
+  filter(sp == "pevo" & cscnid == "TH00_rcp45_PB_01_ACCESS1-0")
+dat_pva_pevo
+```
+
+```{r}
+p_pvas_pevo <- psr(dat_pva_pevo$pva[[1]])
+p_pvas_pevo
+```
+```{r}
+p_pva_pevo <- psr(dat_pva_pevo$pva[[1]], stages = 0)
+p_pva_pevo
+```
+
 ### raw
 
 ```{r}
@@ -707,6 +743,22 @@ p_dtex_pevo
 ```
 
 ## YBG
+
+```{r}
+dat_pva_peau <- pva_r_ch %>%
+  filter(sp == "peau" & cscnid == "TH00_rcp45_PB_01_ACCESS1-0")
+dat_pva_peau
+```
+
+```{r}
+p_pvas_peau <- psr(dat_pva_peau$pva[[1]])
+p_pvas_peau
+```
+```{r}
+p_pva_peau <- psr(dat_pva_peau$pva[[1]], stages = 0)
+p_pva_peau
+```
+
 ### raw
 
 ```{r}
@@ -958,6 +1010,22 @@ p_dtex_peau
 ```
 
 ## WFD
+
+```{r}
+dat_pva_smle <- pva_r_ch %>%
+  filter(sp == "smle" & cscnid == "TH00_rcp45_PB_01_ACCESS1-0")
+dat_pva_smle
+```
+
+```{r}
+p_pvas_smle <- psr(dat_pva_smle$pva[[1]])
+p_pvas_smle
+```
+```{r}
+p_pva_smle <- psr(dat_pva_smle$pva[[1]], stages = 0)
+p_pva_smle
+```
+
 ### raw
 
 ```{r}
@@ -1209,6 +1277,22 @@ p_dtex_smle
 ```
 
 ## SO
+
+```{r}
+dat_pva_tyte <- pva_r_ch %>%
+  filter(sp == "tyte" & cscnid == "TH00_rcp45_PB_01_ACCESS1-0")
+dat_pva_tyte
+```
+
+```{r}
+p_pvas_tyte <- psr(dat_pva_tyte$pva[[1]])
+p_pvas_tyte
+```
+```{r}
+p_pva_tyte <- psr(dat_pva_tyte$pva[[1]], stages = 0)
+p_pva_tyte
+```
+
 ### raw
 
 ```{r}
@@ -1460,6 +1544,21 @@ p_dtex_tyte
 ```
 
 ## LM
+
+```{r}
+dat_pva_vava <- pva_r_ch %>%
+  filter(sp == "vava" & cscnid == "TH00_rcp45_PB_01_ACCESS1-0")
+dat_pva_vava
+```
+
+```{r}
+p_pvas_vava <- psr(dat_pva_vava$pva[[1]])
+p_pvas_vava
+```
+```{r}
+p_pva_vava <- psr(dat_pva_vava$pva[[1]], stages = 0)
+p_pva_vava
+```
 ### raw
 
 ```{r}

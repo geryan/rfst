@@ -26,22 +26,22 @@ landis_paths <- list.dirs(
 )
 
 
-scn_path <- landis_paths[i]
+yscn_path <- landis_paths[i]
 
 split_path <- strsplit(
-  x = scn_path,
+  x = yscn_path,
   split = "/"
 )
 
-scn_id <- split_path[[1]][length(split_path[[1]])]
+yscn_id <- split_path[[1]][length(split_path[[1]])]
 
-print(scn_id)
+print(yscn_id)
 
-print(scn_path)
+print(yscn_path)
 
 ht <- !grepl(
   pattern = "TH00",
-  scn_id
+  yscn_id
 )
 
 
@@ -53,7 +53,7 @@ result <- get.landis.vars.eg(
     out_path_eg,
     "habitat_vars"
   ),
-  scn_id = scn_id,
+  scn_id = yscn_id,
   proj_mask = eg_mask,
   timesteps = ntimesteps,
   cores = ncores,
@@ -65,7 +65,7 @@ saveRDS(
   file = sprintf(
     "%s/landscape_vars/landis_RDS/landis_vars_%s.Rds",
     out_path_eg,
-    scn_id
+    yscn_id
   )
 )
 
