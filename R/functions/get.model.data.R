@@ -28,7 +28,7 @@ get.model.data <- function(
       st_coordinates(xx) %>%
         as_tibble
     ) %>%
-    select(-lon, -lat) %>% #this is a temporary hack to remove the raster layer derived lon and lat for each point, rather than exact. Needs to be fully excised from 07...R
+    dplyr::select(-lon, -lat) %>% #this is a temporary hack to remove the raster layer derived lon and lat for each point, rather than exact. Needs to be fully excised from 07...R
     rename(
      "lon" = X,
      "lat" = Y
