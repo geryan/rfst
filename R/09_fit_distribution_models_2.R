@@ -162,39 +162,40 @@ sdm_pevo <- sdm_data %>%
       .y = sdm_vars,
       .f = clean.model.data,
       na.omit = TRUE
-    )#,
-    # model_data = map(
-    #   .x = model_data,
-    #   .f = function(x){
-    #     
-    #     z <- x %>%
-    #       group_by(PA) %>%
-    #       mutate(
-    #         npa = n()
-    #       ) %>%
-    #       ungroup %>%
-    #       mutate(
-    #         sump = length(which(PA == 1))
-    #       ) %>%
-    #       mutate(
-    #         site.weights = sump/npa
-    #       ) %>%
-    #       dplyr::select(
-    #         -npa,
-    #         -sump
-    #       )
-    #     
-    #     return(z) 
-    #   
-    #   }
-    # )
+    ),
+    model_data = map(
+      .x = model_data,
+      .f = function(x){
+        
+        z <- x %>%
+          group_by(PA) %>%
+          mutate(
+            npa = n()
+          ) %>%
+          ungroup %>%
+          mutate(
+            sump = length(which(PA == 1))
+          ) %>%
+          mutate(
+            site.weights = sump/npa
+          ) %>%
+          dplyr::select(
+            -npa,
+            -sump
+          )  %>%
+          as.data.frame
+        
+        return(z) 
+      
+      }
+    )
   ) %>%
   mutate(
     brt.fit = map(
-      .x = model_data,,
+      .x = model_data,
       .f = gbmstep,
-      tree.complexity = 7,
-      learning.rate = 0.03,
+      tree.complexity = 4,
+      learning.rate = 0.01,
       #step.size = 1,
       bag.fraction = 0.5,
       prev.stratify = TRUE,
@@ -339,8 +340,16 @@ sdm_results <- bind_rows(
   sdm_vava
 )
 
+
+sdm_results <- sdm_results %>%
+  filter(sp != "pevo") %>%
+  bind_rows(
+    sdm_pevo
+  ) %>%
+  arrange(sp)
+
 # -----------
 save(
   sdm_results,
-  file = "output/RData/09_fit_distribution_models.RData"
+  file = "output/RData/09_fit_distribution_models_2.RData"
 )

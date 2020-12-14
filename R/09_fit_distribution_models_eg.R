@@ -15,11 +15,11 @@ library(tidyr)
 library(dismo)
 library(gbm)
 
-load(file = "output/RData/00_controls.RData")
-load(file = "output/RData/01_landscape_variables.RData")
-load(file = "output/RData/02_species_occurrences.RData")
-load(file = "output/RData/07_combined_variables.RData")
-load(file = "output/RData/08_distribution_model_data.RData")
+load(file = "output/RData/00_controls_eg.RData")
+load(file = "output/RData/01_landscape_variables_eg.RData")
+load(file = "output/RData/02.1_species_occurrence_eg.RData")
+load(file = "output/RData/07_combined_variables_eg.RData")
+load(file = "output/RData/08_distribution_model_data_eg.RData")
 
 source.functions("R/functions")
 
@@ -29,70 +29,59 @@ source.functions("R/functions")
 varlist <- c(
   "date",         # 01
   "PA",           # 02
-  "lbm_prop",     # 03
-  "lbm_biom",     # 04
-  "ac_prop",      # 05
-  "ac_biom",      # 06
-  "ggf_prop",     # 07
-  "ggf_biom",     # 08
-  "ggd_prop",     # 09
-  "ggd_prop_og",  # 10
-  "ggd_biom",     # 11
-  "ggd_biom_og",  # 12
-  "prop_bio_regn",# 13
-  "prop_bio_targ",# 14
-  "prop_old_150", # 15
-  "prop_old_200", # 16
-  "prop_oge",     # 17
-  "prop_oge_3h",  # 18
-  "prop_oge_1k",  # 19
-  "biom_oge",     # 20
-  "biom_oge_3h",  # 21
-  "biom_oge_1k",  # 22
-  "harvest",      # 23
-  "firesev",      # 24
-  "max_age",      # 25
-  "pb",           # 26
-  "fi",           # 27
-  "lo",           # 28
-  "fihi",         # 29
-  "lohi",         # 30
-  "tsf",          # 31
-  "tsl",          # 32
-  "mort",         # 33
-  "prec_djf_2019",# 34
-  "prec_jja_2019",# 35
-  "tmax_djf_2019",# 36
-  "tmin_jja_2019",# 37
-  "lvdaw",        # 38
-  "lvdma",        # 39
-  "lvdmi",        # 40
-  "lvdsw",        # 41
-  "ahr",          # 42
-  "tho",          # 43
-  "lon",          # 44
-  "lat"           # 45
+  "prop_bio_regn",# 03
+  "prop_old_150", # 04
+  "prop_old_200", # 05
+  "prop_oge",     # 06
+  "prop_oge_3h",  # 07
+  "prop_oge_1k",  # 08
+  "biom_oge",     # 09
+  "biom_oge_3h",  # 10
+  "biom_oge_1k",  # 11
+  "harvest",      # 12
+  "firesev",      # 13
+  "max_age",      # 14
+  "pb",           # 15
+  "fi",           # 16
+  "lo",           # 17
+  "fihi",         # 18
+  "lohi",         # 19
+  "tsf",          # 20
+  "tsl",          # 21
+  "mort",         # 22
+  "prec_djf_2019",# 23
+  "prec_jja_2019",# 24
+  "tmax_djf_2019",# 25
+  "tmin_jja_2019",# 26
+  "lvdaw",        # 27
+  "lvdma",        # 28
+  "lvdmi",        # 29
+  "lvdsw",        # 30
+  "ahr",          # 31
+  "tho",          # 32
+  "lon",          # 33
+  "lat"           # 34
 )
 
 
 
 
-if(!all(colnames(distribution_model_data$dist_mod_dat[[1]]) == varlist)){
+if(!all(colnames(distribution_model_data_eg$dist_mod_dat[[1]]) == varlist)){
   stop("Varlist definition and variable layers are different")
 }
 
 sp_sdm_vars <- tribble(
   ~sp, ~ sdm_vars,
-  "gyle", varlist[c(3:8, 10, 12, 17:22, 25, 34:45)],
-  "pevo", varlist[c(3:8, 10, 12, 17:22, 25, 34:45)],
-  "peau", varlist[c(3:8, 10, 12, 17:22, 25, 34:45)],
-  "smle", varlist[c(3:8, 10, 12, 17:22, 25, 34:45)],
-  "tyte", varlist[c(3:8, 10, 12, 17:22, 25, 34:45)],
-  "vava", varlist[c(3:8, 10, 12, 17:22, 25, 34:45)]
+  #"polo", varlist[c(3:5, 7, 10, 14, 23:34)],
+  "pevo", varlist[c(3:5, 7, 10, 14, 23:29, 31:32)]#,
+  #"peau", varlist[c(3:5, 7, 10, 14, 23:34)],
+  #"smle", varlist[c(3:5, 7, 10, 14, 23:34)],
+  #"tyte", varlist[c(3:5, 7, 10, 14, 23:34)],
+  #"vava", varlist[c(3:5, 7, 10, 14, 23:34)]
 )
 
 sdm_data <- full_join(
-  x = distribution_model_data,
+  x = distribution_model_data_eg,
   y = sp_sdm_vars,
   by = "sp"
 ) %>%
@@ -191,10 +180,10 @@ sdm_pevo <- sdm_data %>%
   ) %>%
   mutate(
     brt.fit = map(
-      .x = model_data,,
+      .x = model_data,
       .f = gbmstep,
-      tree.complexity = 7,
-      learning.rate = 0.03,
+      tree.complexity = 4,
+      learning.rate = 0.01,
       #step.size = 1,
       bag.fraction = 0.5,
       prev.stratify = TRUE,
@@ -207,6 +196,8 @@ sdm_pevo <- sdm_data %>%
   unnest(auc) %>%
   mutate(trees = map(.x = brt.fit, .f = ~ .$gbm.call$best.trees)) %>%
   unnest(trees)
+
+
 
 # YBG -----------------
 sdm_peau <- sdm_data %>%
@@ -331,16 +322,16 @@ sdm_vava <- sdm_data %>%
 # -----------
 
 sdm_results <- bind_rows(
-  sdm_gyle,
-  sdm_pevo,
-  sdm_peau,
-  sdm_smle,
-  sdm_tyte,
-  sdm_vava
+  #sdm_gyle,
+  sdm_pevo#,
+  #sdm_peau,
+  #sdm_smle,
+  #sdm_tyte,
+  #sdm_vava
 )
 
 # -----------
 save(
   sdm_results,
-  file = "output/RData/09_fit_distribution_models.RData"
+  file = "output/RData/09_fit_distribution_models_eg.RData"
 )
