@@ -5,10 +5,10 @@
 #SBATCH --job-name="batch_10_eg"
 #SBATCH --output="/data/gpfs/projects/punim0995/rfst/slurm/slurm_output/batch_10_eg.out"
 
-for i in {1..240}
+for i in {1..480}
 do
 
-	for j in {1}
+	for j in {1..1}
 	do
 	
 		JOB_NAME="j10_${i}_${j}"
