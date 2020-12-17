@@ -1,8 +1,8 @@
-poprst <- function(x, popsize, cc){
+poprst <- function(x, popsize, cc, pp = 0.7){
   
   v1 <- getValues(x)
   
-  threshold <- quantile(v1, probs = 0.7, na.rm = TRUE)
+  threshold <- quantile(v1, probs = pp, na.rm = TRUE)
   
   v <- ifelse(is.na(v1), NA_real_, 0)
   

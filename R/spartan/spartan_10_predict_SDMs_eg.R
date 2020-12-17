@@ -40,7 +40,7 @@ pred <- brtpredict(
   variables = var_set_eg$all_vars[[i]],
   model = sdm_results_eg$brt.fit[[j]],
   out_path = pred_out_path,
-  scn_id = var_set$ycscnid[[i]], # NB needs ycscnid not scn_id if multiple climate scenarios or starting landscapes
+  scn_id = var_set_eg$ycscnid[[i]], # NB needs ycscnid not scn_id if multiple climate scenarios or starting landscapes
   varset = "",
   species = sdm_results_eg$sp[[j]],
   initial = FALSE,

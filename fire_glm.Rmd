@@ -1,0 +1,153 @@
+---
+title: "fire_sum"
+output: html_document
+---
+
+```{r}
+library(dplyr)
+library(ggplot2)
+#library(lme4)
+```
+
+
+```{r}
+load(file = "output/RData/fire_sum_ch.RData")
+load(file = "output/RData/pva_summary_ch.RData")
+load(file = "output/RData/19_mpc_results_summary.RData")
+```
+
+## Fire data
+Fire sum is sum fire over all years in each LANDIS run
+```{r}
+fire_sum
+```
+
+Per year
+```{r}
+fire_sum_year
+```
+
+Weighted by year
+```{r}
+fire_sum_weighted <- fire_sum_weighted %>%
+  group_by(scn_id) %>%
+  summarise(fire_weighted_sum = sum(fire_weighted))
+
+fire_sum_weighted
+```
+## Metapopulation capacity data
+Metapopulation capacity data
+
+Each mpc measure by year
+- mpc is the best response here - using maxumum sum sensitiy and specificity
+- mpc_05 and mpc_07 correspond to alternate measures of metapopulation capacity
+
+This data set has 4 climate models for PVA species, but only 1 for metapopulation capacity only species 
+
+```{r}
+mpc_r_ch
+```
+2 useable subsets:
+
+pva only spp with 4 climate models
+```{r}
+mpc_r_ch %>%
+  filter(sp_group == "PVA")
+```
+
+of all species and only ACCESS1-0 climate model
+```{r}
+mpc_r_ch %>%
+  filter(climate_model == "ACCESS1-0")
+```
+
+
+Summary of metapopulation capacity
+r_ values ar references corresponding to TH19_rcp45_PB scenario (median).
+delta is value - ref
+
+dp (delta proportion) = (value-ref)/ref
+
+dp is probably the measure to use
+
+dp_median
+ or dp_min probably?
+
+
+```{r}
+mpc_rs
+```
+
+## PVA data
+emp is minimum population of the 100 sims
+
+emp_95 is 5th%ile value population of 100 sims
+```{r}
+pva_r_ch
+```
+
+
+LANDIS runs = metapopulation capacity (only) speices
+- 6 management scenarios
+  - 10 replicate runs of each
+  
+Management scenarios vary
+  - harvesting - ongoing (1), stop in 2030 (2), none (3)
+  - carbon pathway / climate change (4 rcp 4.5, 2 rcp 8.5)
+  - planned burning (5 yes, 1 no)
+
+```{r}
+unique(pva_r_ch$scn)
+```
+
+PVA species
+- 4 climate models
+- 100 sims in each pva
+
+
+
+```{r}
+fire_pva <- full_join(
+  x = pva_r_ch,
+  y = fire_sum,
+  by = "scn_id"
+)
+fire_pva
+```
+
+```{r}
+ggplot(data = fire_pva) +
+  geom_point(
+    aes(
+      x = fire,
+    y = prop_extant,
+    shape = scenario
+    )
+  ) +
+  facet_wrap(~sp, scales = "free_y")
+```
+
+
+```{r}
+glm_emp <- glm(
+  emp ~ fire + sp + rcp + harvest_scenario + climate_model + fire*sp + rcp*sp +climate_model*sp + harvest_scenario*sp, data = fire_pva,
+  family = gaussian
+)
+```
+
+
+```{r}
+summary(glm_emp)
+```
+
+```{r}
+glm_prop_extant <- glm(
+  prop_extant ~ fire + sp + rcp + harvest_scenario + climate_model + fire*sp + rcp*sp +climate_model*sp + harvest_scenario*sp, data = fire_pva,
+  family = gaussian
+)
+```
+
+
+```{r}
+summary(glm_prop_extant)
+```

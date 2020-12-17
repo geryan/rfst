@@ -32,7 +32,7 @@ species_dat_pva <- tribble(
   "vava", 5000,     25,  cc_25,  0.05,    5000,      NA
 )
 
-##### gyle
+##### 
 
 tm_gyle <- matrix(
   data = c(
@@ -151,7 +151,7 @@ tm_pevo <- matrix(
   data = c(
     0.00, 0.00, 0.50,
     0.50, 0.00, 0.00,
-    0.00, 0.85, 0.90
+    0.00, 0.8, 0.84
   ),
   nrow = 3,
   ncol = 3,
@@ -161,6 +161,128 @@ tm_pevo <- matrix(
     c('Newborn','Juvenile','Adult')
   )
 )
+
+
+ss_pevo <- get.stable.states(tm_pevo)
+
+rmax(tm_pevo)
+
+rmax(altm(tm_pevo))
+
+# hm_pevo <- agg5_ch$aggmap5[[
+#   which(
+#     agg5_ch$sp == "pevo" &
+#       agg5_ch$cscnid == "TH00_rcp45_PB_01_ACCESS1-0"
+#   )
+# ]][[1]]
+
+hm_pevo <- raster("/data/gpfs/projects/punim0995/rfst/output/habitat_pred/brt_initial_pred_TH19_rcp45_PB_01_ACCESS1-0_init__pevo.grd") %>%
+  raster::aggregate(fact = 5)
+
+hm_long <- brick("output/brtpred_TH19_rcp45_PB_01_ACCESS1-0__pevo.grd") %>%
+  raster::aggregate(fact = 5)
+
+plot(hm_pevo)
+plot(pa_data$pa_dat[[2]]["PA"], add = TRUE)
+
+plot(pa_data$pa_dat[[2]])
+
+sf_pevo <- logistic_sf(hm_pevo)
+
+j_pevo <- which(species_dat_pva$sp == "pevo")
+
+ip_pevo <- initpop2(
+  hs = hm_pevo,
+  popsize = species_dat_pva$popsize[j_pevo],
+  cc = species_dat_pva$cc[j_pevo],
+  ss = ss_pevo,
+  pp = 0.95
+)
+
+
+# ip_pevo2 <- initpop3(
+#   hs = hm_pevo,
+#   popsize = species_dat_pva$popsize[j_pevo],
+#   cc = species_dat_pva$cc[j_pevo],
+#   ss = ss_pevo
+# )
+
+#ip_pevo <- ipredo
+
+lsc_pevo <- landscape(
+  population = ip_pevo,
+  suitability = hm_pevo,
+  "sf_layer" = sf_pevo,
+  carrying_capacity = species_dat_pva$ccfun[[j_pevo]]
+)
+
+
+prop_disp_pevo <- c(
+  1,
+  rep(
+    x = 0,
+    times = length(ss_pevo) - 1
+  )
+)
+
+# disp_pevo <- kernel_dispersal(
+#   dispersal_kernel = exponential_dispersal_kernel(
+#     distance_decay = species_dat_pva$max_disp[j_pevo]/2
+#   ),
+#   max_distance = species_dat_pva$max_disp[j_pevo],
+#   arrival_probability = "both",
+#   dispersal_proportion = set_proportion_dispersing(
+#     proportions = prop_disp_pevo
+#   )
+# )
+
+disp_pevo <- cellular_automata_dispersal(
+  max_cells = 80,
+  dispersal_proportion = set_proportion_dispersing(
+    proportions = prop_disp_pevo
+  ),
+  barriers = NULL,
+  use_suitability = TRUE,
+  carrying_capacity = "carrying_capacity"
+)
+
+
+grow_pevo <- growth(
+  transition_matrix = tm_pevo,
+  global_stochasticity = species_dat_pva$stoch[j_pevo],
+  transition_function = modified_transition(
+    survival_layer = "sf_layer",
+    fecundity_layer = "sf_layer"
+  )
+)
+
+pop_dyn_pevo <- population_dynamics(
+  change = grow_pevo,
+  dispersal = disp_pevo
+)
+
+simres <- simulation(
+  landscape = lsc_pevo,
+  population_dynamics = pop_dyn_pevo,
+  demo_stochasticity = "full",
+  timesteps = 50,
+  replicates = 10,
+  verbose = TRUE
+)
+
+plot(simres, stages = 0)
+
+plot(simres)
+
+#ipredo <- simres[[1]][[50]]$population
+
+
+plot(simres[1], type = "raster", stage = 3, timesteps = c(1, 25, 50), panels = c(3,1))
+plot(simres[1], type = "raster", stage = 3, timesteps = c(50), panels = c(1,1))
+
+
+
+
 
 #####
 

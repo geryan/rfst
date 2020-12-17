@@ -2,7 +2,8 @@ initpop2 <- function(
   hs,
   popsize,
   cc,
-  ss
+  ss,
+  pp = 0.7
 ){
   
   maxpop <- sum(cc - round(cc * dlogis(getValues(hs), scale = 0.25)), na.rm = TRUE)
@@ -22,12 +23,14 @@ initpop2 <- function(
     FUN = function(
       y,
       cc,
-      hs
+      hs,
+      pp
     ){
-      poprst(x = hs, popsize = y, cc = cc)
+      poprst(x = hs, popsize = y, cc = cc, pp = pp)
     },
     hs = hs,
-    cc = cc
+    cc = cc,
+    pp = pp
   )
   
   result <- stack(initpops)

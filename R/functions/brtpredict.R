@@ -7,12 +7,14 @@ brtpredict <- function(
   species,
   initial = TRUE,
   pll = FALSE,
-  ncores = 1
+  ncores = 1,
+  write = TRUE
 ){
   
   library(gbm)
   library(raster)
   library(dismo)
+  library(foreach)
   
   vnames <- model$var.names
   
@@ -40,18 +42,32 @@ brtpredict <- function(
   
   if(initial){
     
-    result <- raster::predict(object = predvars[[1]],
-                              model = model,
-                              type = "response",
-                              n.trees = model$gbm.call$best.trees,
-                              filename = sprintf("%s/brt_initial_pred_%s_%s_%s.grd",
-                                                 out_path,
-                                                 scn_id,
-                                                 varset,
-                                                 species),
-                              overwrite = TRUE)
+    if(write){
     
-    names(result) <- "sdm_00"
+        result <- raster::predict(object = predvars[[1]],
+                                model = model,
+                                type = "response",
+                                n.trees = model$gbm.call$best.trees,
+                                filename = sprintf("%s/brt_initial_pred_%s_%s_%s.grd",
+                                                   out_path,
+                                                   scn_id,
+                                                   varset,
+                                                   species),
+                                overwrite = TRUE)
+      
+      names(result) <- "sdm_00"
+      
+    } else {
+      
+      result <- raster::predict(
+        object = predvars[[1]],
+        model = model,
+        type = "response",
+        n.trees = model$gbm.call$best.trees
+      )
+      
+    }
+    
     
     
   } else {

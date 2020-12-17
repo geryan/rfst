@@ -84,7 +84,7 @@ if(!all(colnames(distribution_model_data$dist_mod_dat[[1]]) == varlist)){
 sp_sdm_vars <- tribble(
   ~sp, ~ sdm_vars,
   "gyle", varlist[c(3:8, 10, 12, 17:22, 25, 34:45)],
-  "pevo", varlist[c(3:8, 10, 12, 17:22, 25, 34:45)],
+  "pevo", varlist[c(3:8, 10, 12, 18, 21, 25, 34:43)],
   "peau", varlist[c(3:8, 10, 12, 17:22, 25, 34:45)],
   "smle", varlist[c(3:8, 10, 12, 17:22, 25, 34:45)],
   "tyte", varlist[c(3:8, 10, 12, 17:22, 25, 34:45)],
@@ -209,6 +209,27 @@ sdm_pevo <- sdm_data %>%
   mutate(trees = map(.x = brt.fit, .f = ~ .$gbm.call$best.trees)) %>%
   unnest(trees)
 
+
+pi_pevo <- brtpredict(
+  variables = var_set$all_vars[[1]],
+  model = sdm_pevo$brt.fit[[1]],
+  varset = sdm_data$sdm_vars[[2]],
+  write = FALSE
+)
+
+pp_pevo <- brtpredict(
+  variables = var_set$all_vars[[1]],
+  model = sdm_pevo$brt.fit[[1]],
+  out_path = "output",
+  scn_id = "TH19_rcp45_PB_01_ACCESS1-0",
+  varset = sdm_data$sdm_vars[[2]],
+  species = "pevo",
+  initial = FALSE,
+  pll = FALSE,
+  ncores = 1
+)
+
+
 # YBG -----------------
 sdm_peau <- sdm_data %>%
   filter(sp == "peau") %>%
@@ -332,12 +353,12 @@ sdm_vava <- sdm_data %>%
 # -----------
 
 sdm_results <- bind_rows(
-  sdm_gyle,
-  sdm_pevo,
-  sdm_peau,
-  sdm_smle,
-  sdm_tyte,
-  sdm_vava
+  #sdm_gyle,
+  sdm_pevo#,
+  #sdm_peau,
+  #sdm_smle,
+  #sdm_tyte,
+  #sdm_vava
 )
 
 
