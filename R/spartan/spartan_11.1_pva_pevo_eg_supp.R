@@ -27,10 +27,13 @@ command_args <- commandArgs(trailingOnly = TRUE)
 i <- as.numeric(command_args[1])
 
 
+nreplicates <- 50
+
 ####
 
 agg_set_eg <- agg_set_eg %>%
-  filter(climate_model == "ACCESS1-0")
+  filter(climate_model == "ACCESS1-0") %>%
+  filter(yearid == "EG19")
 ####
 
 
