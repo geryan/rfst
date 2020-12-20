@@ -90,8 +90,8 @@ pva_results_pevo_both_eg <- bind_rows(pva_pb_list)
 
 
 save(
-  pva_results_pevo_proj_eg,
-  pva_results_pevo_stat_eg,
+  #pva_results_pevo_proj_eg,
+  #pva_results_pevo_stat_eg,
   pva_results_pevo_both_eg,
-  file = "/data/gpfs/projects/punim1340/rfst_eg/output/RData/11.1_pva_pevo.RData"
+  file = "/data/gpfs/projects/punim0995/rfst/output/RData/11.1_pva_pevo_eg.RData"
 )

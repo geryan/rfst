@@ -58,7 +58,14 @@ pva_ps_list <- lapply(
     return(z)
     
   }
-)
+)# %>%
+#   lapply(
+#     FUN = function(y){
+#       y$scn_no <- ifelse(is.double(y$scn_no), y$scn_no, NA_real_)
+#       return(y)
+#     }
+#   )
+
 
 pva_results_pevo_stat <- bind_rows(pva_ps_list)
 
@@ -87,7 +94,10 @@ pva_pb_list <- lapply(
 
 pva_results_pevo_both <- bind_rows(pva_pb_list)
 
-
+# pva_results_pevo_both <- bind_rows(
+#   pva_results_pevo_proj,
+#   pva_results_pevo_stat
+# )
 
 save(
   pva_results_pevo_proj,

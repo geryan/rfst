@@ -244,7 +244,7 @@ saveRDS(
   file = sprintf(
     fmt = "%s/pva_proj_%s_%s.Rds",
     "/data/gpfs/projects/punim1340/rfst_eg/output/spartan_RData/pva",
-    agg_set_eg$cscnid[i],
+    agg_set_eg$ycscnid[i],
     agg_set_eg$sp[i]
   )
 )
