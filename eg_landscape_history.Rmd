@@ -1,0 +1,86 @@
+---
+title: "pevo_other"
+output: html_document
+---
+
+
+```{r}
+knitr::opts_chunk$set(fig.width=8, fig.height=8)
+```
+
+
+```{r}
+source("R/spartan/spartan_settings.R")
+```
+
+
+```{r}
+library(dplyr)
+library(purrr)
+library(tibble)
+library(tidyr)
+library(magrittr)
+library(ggplot2)
+library(raster)
+library(forcats)
+```
+
+```{r}
+load(file = "output/RData/00_controls.RData")
+load(file = "output/RData/01_landscape_variables.RData")
+```
+
+```{r}
+source.functions("R/functions")
+```
+
+```{r}
+plot(eg_mgt)
+```
+
+```{r}
+hval <- getValues(eg_mgt)
+
+hval <- ifelse(hval >= 4, 1, 0)
+
+eg_harvest <- eg_mgt
+
+eg_harvest[] <- hval
+```
+
+```{r}
+plot(eg_harvest)
+```
+```{r}
+plot(eg_logging_history)
+```
+```{r}
+plot(habitat_map[[1]])
+```
+```{r}
+plot(eg_fire_history_19)
+```
+```{r}
+plot(eg_fire_history_20)
+```
+
+```{r}
+egf20vals <- which(getValues(eg_fire_history_20) == 2020)
+
+eg_fire_20 <- eg_mask
+
+eg_fire_20[egf20vals] <- 0
+```
+
+```{r}
+plot(eg_fire_20)
+```
+
+
+```{r}
+plot(eg_mask)
+```
+```{r}
+
+```
+

@@ -1,0 +1,316 @@
+---
+title: "Metapopulation capacity results"
+output:
+  word_document: default
+  html_document: default
+---
+
+```{r}
+knitr::opts_chunk$set(fig.width=8, fig.height=8)
+```
+
+
+```{r}
+source("R/spartan/spartan_settings.R")
+```
+
+
+```{r}
+library(dplyr)
+library(purrr)
+library(tibble)
+library(tidyr)
+library(magrittr)
+library(ggplot2)
+library(raster)
+library(forcats)
+```
+
+```{r}
+load(file = "output/RData/00_controls.RData")
+load(file = "output/RData/01_landscape_variables.RData")
+load(file = "output/RData/13.1_pva_pevo.RData")
+load(file = "output/RData/13.1_pva_pevo_eg.RData")
+```
+
+```{r}
+source.functions("R/functions")
+```
+
+```{r}
+mpc_pevo_eg <- mpc_results_pevo_eg  %>%
+  mutate(
+    year = ifelse(
+      yearid == "EG19",
+      "2019",
+      "2020"
+    ),
+    landscape = "East Gippsland",
+    yscenario = scenario,
+    scenario = sub(
+      pattern = "...._",
+      replacement = "",
+      x = scenario
+    )
+  )
+
+mpc_pevo_eg
+```
+
+```{r}
+mpc_pevo_ch <- mpc_results_pevo_ch  %>%
+  mutate(
+    yscn_id = NA,
+    ycscnid = NA,
+    yearid = "CH",
+    yscenario = NA,
+    year = "2019",
+    landscape = "Central Highlands"
+  ) %>%
+  dplyr::select(names(mpc_pevo_eg))
+
+mpc_pevo_ch
+```
+
+```{r}
+mpc_pevo <- bind_rows(
+  mpc_pevo_ch,
+  mpc_pevo_eg
+)
+```
+
+```{r}
+
+scenario_names <- tribble(
+  ~scenario,       ~scn,
+  "TH19_rcp45_PB", "Ongoing harvest RCP4.5",
+  "TH30_rcp45_PB", "Stop harvest 2030 RCP4.5",
+  "TH30_rcp85_PB", "Stop harvest 2030 RCP8.5",
+  "TH00_rcp45_PB", "No harvest RCP4.5",
+  "TH00_rcp85_PB", "No harvest RCP8.5",
+  "TH00_rcp45_NB", "No harvest no planned burning RCP4.5"
+) %>%
+  mutate(
+    scn = factor(
+      x = scn,
+      levels = c(
+        "Ongoing harvest RCP4.5",
+        "Stop harvest 2030 RCP4.5",
+        "Stop harvest 2030 RCP8.5",
+        "No harvest RCP4.5",
+        "No harvest RCP8.5",
+        "No harvest no planned burning RCP4.5"
+      )
+    )
+  )
+
+scenario_names
+```
+
+
+```{r}
+mpc_r <- mpc_pevo %>%
+  mutate(
+    species_com = "Greater glider"
+  ) %>%
+  left_join(
+    y = scenario_names,
+    by = "scenario"
+  ) %>%
+  mutate(
+    logmpc = ifelse(mpc == 0, 0, log(mpc, base = 10))
+  )
+
+mpc_r
+```
+
+```{r}
+mpc_res_summary <- mpc_r  %>%
+  group_by(
+    scenario,
+    scenario_replicate,
+    rcp,
+    climate_model,
+    harvest_scenario,
+    plan_burn,
+    scn_id,
+    cscnid,
+    sp,
+    scn,
+    species_com,
+    landscape,
+    year,
+    yearid
+  ) %>%
+  summarise(
+    mpc_min = min(mpc),
+    mpc_mean = mean(mpc),
+    mpc_median = median(mpc),
+    lmpc_min = min(logmpc),
+    lmpc_mean = mean(logmpc),
+    lmpc_median = median(logmpc)
+  )
+
+mpc_res_summary
+```
+
+
+```{r}
+mpc_rs <- mpc_res_summary %>%
+  group_by(
+    yearid
+  ) %>%
+  mutate(
+    r_min = median(mpc_min[scenario == "TH19_rcp45_PB" & climate_model == "ACCESS1-0"]),
+    r_median = median(mpc_median[scenario == "TH19_rcp45_PB" & climate_model == "ACCESS1-0"]),
+    lr_min = median(lmpc_min[scenario == "TH19_rcp45_PB" & climate_model == "ACCESS1-0"]),
+    lr_median = median(lmpc_median[scenario == "TH19_rcp45_PB" & climate_model == "ACCESS1-0"])
+  ) %>%
+  ungroup %>%
+  mutate(
+    delta_min    = mpc_min    - r_min,
+    delta_median = mpc_median - r_median,
+    dp_min       = delta_min    / r_min,
+    dp_median    = delta_median / r_median,
+    ldelta_min    = lmpc_min    - lr_min,
+    ldelta_median = lmpc_median - lr_median,
+    ldp_min       = ldelta_min    / lr_min,
+    ldp_median    = ldelta_median / lr_median
+  ) 
+
+mpc_rs
+```
+
+
+
+**INSTRUCTIONS FOR TOMORROW**
+*split up CH and EG for the raw values plots, split up which should be log or non log transformed values to communicate values more clearly*
+
+## Landscape (ACCESS1-0 climate model only)
+
+###  RAW
+```{r}
+p_mss_min_gyle <- ggplot(data = mpc_rs %>% filter(climate_model == "ACCESS1-0")) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = mpc_min,
+      fill = yearid
+    )
+  ) +
+  labs(
+    x = "Minimum metapopulation capacity",
+    y = "Management scenario",
+    title = "Greater glider",
+    fill = "Landscape\n& year"
+  ) +
+  scale_fill_viridis_d()
+p_mss_min_gyle
+```
+
+```{r}
+p_mss_med_gyle <- ggplot(data = mpc_rs %>% filter(climate_model == "ACCESS1-0")) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = mpc_median,
+      fill = yearid
+    )
+  ) +
+  labs(
+    x = "Median metapopulation capacity",
+    y = "Management scenario",
+    title = "Greater glider",
+    fill = "Landscape\n& year"
+  ) +
+  scale_fill_viridis_d() +
+  facet_grid(landscape~., scales = "free_x")
+
+p_mss_med_gyle
+```
+
+
+###  delta
+```{r}
+p_dmss_min_gyle <- ggplot(data = mpc_rs %>% filter(climate_model == "ACCESS1-0")) +
+  geom_vline(xintercept = 0 ) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = delta_min,
+      fill = yearid
+    )
+  ) +
+  labs(
+    x = "Change in minimum metapopulation capacity from baseline\n(ongoing harvest)",
+    y = "Management scenario",
+    title = "Greater glider",
+    fill = "Landscape\n& year"
+  ) +
+  scale_fill_viridis_d()
+p_dmss_min_gyle
+```
+
+```{r}
+p_dmss_med_gyle <- ggplot(data = mpc_rs %>% filter(climate_model == "ACCESS1-0")) +
+  geom_vline(xintercept = 0 ) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = delta_median,
+      fill = yearid
+    )
+  ) +
+  labs(
+    x = "Change in median metapopulation capacity from baseline\n(ongoing harvest)",
+    y = "Management scenario",
+    title = "Greater glider",
+    fill = "Landscape\n& year"
+  ) +
+  scale_fill_viridis_d() #+
+  #scale_x_log10()
+p_dmss_med_gyle
+```
+
+
+### delta proportional
+```{r}
+p_pmss_min_gyle <- ggplot(data = mpc_rs %>% filter(climate_model == "ACCESS1-0")) +
+  geom_vline(xintercept = 0 ) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = dp_min,
+      fill = yearid
+    )
+  ) +
+  labs(
+    x = "Proportional change in minimum metapopulation capacity from baseline\n(ongoing harvest)",
+    y = "Management scenario",
+    title = "Greater glider",
+    fill = "Landscape\n& year"
+  ) +
+  scale_fill_viridis_d()
+p_pmss_min_gyle
+```
+
+```{r}
+p_pmss_med_gyle <- ggplot(data = mpc_rs %>% filter(climate_model == "ACCESS1-0")) +
+  geom_vline(xintercept = 0 ) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = dp_median,
+      fill = yearid
+    )
+  ) +
+  labs(
+    x = "Proportional change in median metapopulation capacity from baseline\n(ongoing harvest)",
+    y = "Management scenario",
+    title = "Greater glider",
+    fill = "Landscape\n& year"
+  ) +
+  scale_fill_viridis_d()
+p_pmss_med_gyle
+```
+
