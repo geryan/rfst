@@ -1,0 +1,117 @@
+---
+title: "sdm results"
+output:
+  word_document: default
+  html_document: default
+---
+
+```{r}
+knitr::opts_chunk$set(fig.width=7, fig.height=7)
+```
+
+
+
+```{r}
+source("R/spartan/spartan_settings.R")
+```
+
+
+```{r}
+library(dplyr)
+library(purrr)
+library(tibble)
+library(tidyr)
+library(magrittr)
+library(ggplot2)
+library(raster)
+library(dismo)
+library(gbm)
+```
+
+```{r}
+load(file = "output/RData/00_controls.RData")
+load(file = "output/RData/01_landscape_variables.RData")
+load(file = "output/RData/09_fit_distribution_models_2.RData")
+load(file = "output/RData/09_fit_distribution_models_eg.RData")
+
+load(file = "output/RData/06_climate_variables.RData")
+load(file = "output/RData/06_climate_variables_eg.RData")
+```
+
+```{r}
+source.functions("R/functions")
+```
+
+
+## CH
+```{r}
+summary(sdm_results$brt.fit[[1]])
+```
+
+
+```{r}
+gbm.plot(sdm_results$brt.fit[[1]])
+```
+
+
+## EG
+```{r}
+summary(sdm_results_eg$brt.fit[[1]])
+```
+
+
+```{r}
+gbm.plot(sdm_results_eg$brt.fit[[1]])
+```
+
+```{r}
+cp_ch <- cpdat %>%
+  dplyr::select(-climate_projections) %>%
+  pivot_longer(
+    cols = c(-climate_model, -rcp),
+    names_to = "var",
+    values_to = "value",
+  ) %>%
+  unnest(value) %>%
+  mutate(
+    year = rep(2019:2069, 32),
+    rc = case_when(
+      rcp == "rcp45" ~ "4.5",
+      rcp == "rcp85" ~ "8.5"
+    ),
+    variable = case_when(
+      var == "prec_djf" ~ "Summer rainfall",
+      var == "prec_jja" ~ "Winter rainfall",
+      var == "tmax_djf" ~ "Summer max. temp.",
+      var == "tmin_jja" ~ "Winter min. temp."
+    )
+  )
+
+cp_ch
+```
+
+```{r}
+ggplot(cp_ch) +
+  geom_line(
+    aes(
+      x = year,
+      y = value,
+      col = climate_model,
+      linetype = rc
+    )
+  ) +
+  scale_colour_viridis_d() +
+  facet_wrap(
+    facets = ~variable,
+    scales = "free_y",
+    ncol = 2
+  ) +
+  labs(
+    x = "Year",
+    y = "Value (degrees C/mm)",
+    title = "Central Highlands",
+    col = "Climate model",
+    linetype = "RCP"
+  )
+```
+

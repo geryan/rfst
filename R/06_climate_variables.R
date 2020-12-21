@@ -508,9 +508,70 @@ clim_vars <- climproj %>%
 
 plan(sequential)
 
+cpdat <- clim_vars %>%
+  mutate(
+    prec_djf = map(
+      .x = climate_projections,
+      .f = function(x){
+        sapply(
+          X = x,
+          FUN = function(y){
+            mean(
+              x = getValues(y[[1]]),
+              na.rm = TRUE
+            )
+          }
+        )
+      }
+    ),
+    prec_jja = map(
+      .x = climate_projections,
+      .f = function(x){
+        sapply(
+          X = x,
+          FUN = function(y){
+            mean(
+              x = getValues(y[[2]]),
+              na.rm = TRUE
+            )
+          }
+        )
+      }
+    ),
+    tmax_djf = map(
+      .x = climate_projections,
+      .f = function(x){
+        sapply(
+          X = x,
+          FUN = function(y){
+            mean(
+              x = getValues(y[[3]]),
+              na.rm = TRUE
+            )
+          }
+        )
+      }
+    ),
+    tmin_jja = map(
+      .x = climate_projections,
+      .f = function(x){
+        sapply(
+          X = x,
+          FUN = function(y){
+            mean(
+              x = getValues(y[[4]]),
+              na.rm = TRUE
+            )
+          }
+        )
+      }
+    )
+  )
+
 # Save outputs ---------------------
 
 save(
+  cpdat,
   clim_vars,
   climproj,
   file = "output/RData/06_climate_variables.RData"

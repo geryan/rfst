@@ -16,6 +16,7 @@ source("R/spartan/spartan_settings.R")
 
 
 ```{r}
+#library(magrittr)
 library(dplyr)
 library(purrr)
 library(tibble)
@@ -23,7 +24,7 @@ library(tidyr)
 library(raster)
 library(sp)
 library(sf)
-library(magrittr)
+
 library(ggplot2)
 library(forcats)
 ```
@@ -33,12 +34,17 @@ load(file = "output/RData/00_controls.RData")
 load(file = "output/RData/01_landscape_variables.RData")
 load(file = "output/RData/02_species_occurrences.RData")
 load(file = "output/RData/11.1_pva_pevo.RData")
-load(file = "output/RData/11.1_pva_pevo_eg.RData")
+load(file = "output/RData/11.1_pva_pevo_egb.RData")
 ```
 
 ```{r}
 source.functions("R/functions")
 ```
+
+```{r}
+pva_results_pevo_both_eg <- pva_results_pevo_both_egb
+```
+
 
 ```{r}
 pevo_pva_eg <- pva_results_pevo_both_eg %>%
@@ -237,10 +243,10 @@ pvr
 ```
 
 ```{r}
-save(
-  pvr,
-  file = "output/RData/pva_summary_pevo.RData"
-)
+# save(
+#   pvr,
+#   file = "output/RData/pva_summary_pevo.RData"
+# )
 ```
 
 
@@ -366,7 +372,7 @@ p_emp_pevo_ls <- ggplot(pvr %>% filter(climate_model == "ACCESS1-0")) +
     )
   ) +
   scale_fill_viridis_d() +
-  scale_colour_manual(values = c("grey40", "grey10")) +
+  scale_colour_manual(values = c("grey10", "grey40")) +
   labs(
     x = "Expected minimum population",
     y = "Management scenario",
@@ -390,7 +396,7 @@ p_emp95_pevo_ls <- ggplot(pvr %>% filter(climate_model == "ACCESS1-0")) +
     )
   ) +
   scale_fill_viridis_d() +
-  scale_colour_manual(values = c("grey40", "grey10")) +
+  scale_colour_manual(values = c("grey10", "grey40")) +
   labs(
     x = "95% Expected minimum population",
     y = "Management scenario",
@@ -414,7 +420,7 @@ p_empmed_pevo_ls <- ggplot(pvr %>% filter(climate_model == "ACCESS1-0")) +
     )
   ) +
   scale_fill_viridis_d() +
-  scale_colour_manual(values = c("grey40", "grey10")) +
+  scale_colour_manual(values = c("grey10", "grey40")) +
   labs(
     x = "Median minimum population",
     y = "Management scenario",
@@ -438,7 +444,7 @@ p_med_pevo_ls <- ggplot(pvr %>% filter(climate_model == "ACCESS1-0")) +
     )
   ) +
   scale_fill_viridis_d() +
-  scale_colour_manual(values = c("grey40", "grey10")) +
+  scale_colour_manual(values = c("grey10", "grey40")) +
   labs(
     x = "Median population",
     y = "Management scenario",
@@ -462,7 +468,7 @@ p_pex_pevo_ls <- ggplot(pvr %>% filter(climate_model == "ACCESS1-0")) +
     )
   ) +
   scale_fill_viridis_d() +
-  scale_colour_manual(values = c("grey40", "grey10")) +
+  scale_colour_manual(values = c("grey10", "grey40")) +
   labs(
     x = "Probability of persistence",
     y = "Management scenario",
@@ -486,7 +492,7 @@ p_tex_pevo_ls <- ggplot(pvr %>% filter(climate_model == "ACCESS1-0")) +
     )
   ) +
   scale_fill_viridis_d() +
-  scale_colour_manual(values = c("grey40", "grey10")) +
+  scale_colour_manual(values = c("grey10", "grey40")) +
   labs(
     x = "Mean time to extinction\n(if extinct)",
     y = "Management scenario",
@@ -513,7 +519,7 @@ p_demp_pevo_ls <- ggplot(pvr %>% filter(climate_model == "ACCESS1-0")) +
     )
   ) +
   scale_fill_viridis_d() +
-  scale_colour_manual(values = c("grey40", "grey10")) +
+  scale_colour_manual(values = c("grey10", "grey40")) +
   labs(
     x = "Change in Expected minimum population from baseline\n(ongoing harvest)",
     y = "Management scenario",
@@ -538,7 +544,7 @@ p_demp95_pevo_ls <- ggplot(pvr %>% filter(climate_model == "ACCESS1-0")) +
     )
   ) +
   scale_fill_viridis_d() +
-  scale_colour_manual(values = c("grey40", "grey10")) +
+  scale_colour_manual(values = c("grey10", "grey40")) +
   labs(
     x = "Change in 95% Expected minimum population from baseline\n(ongoing harvest",
     y = "Management scenario",
@@ -563,7 +569,7 @@ p_dempmed_pevo_ls <- ggplot(pvr %>% filter(climate_model == "ACCESS1-0")) +
     )
   ) +
   scale_fill_viridis_d() +
-  scale_colour_manual(values = c("grey40", "grey10")) +
+  scale_colour_manual(values = c("grey10", "grey40")) +
   labs(
     x = "Change in median minimum population from baseline\n(ongoing harvest)",
     y = "Management scenario",
@@ -588,14 +594,15 @@ p_dmed_pevo_ls <- ggplot(pvr %>% filter(climate_model == "ACCESS1-0")) +
     )
   ) +
   scale_fill_viridis_d() +
-  scale_colour_manual(values = c("grey40", "grey10")) +
+  scale_colour_manual(values = c("grey10", "grey40")) +
   labs(
     x = "Change in median population from baseline\n(ongoing harvest)",
     y = "Management scenario",
     fill = "Landscape\n& year",
     title = "Greater glider",
     col = "Habitat\nmodel"
-  )
+  ) +
+  facet_grid(habitat~.)
 
 p_dmed_pevo_ls
 ```
@@ -612,7 +619,7 @@ p_dpex_pevo_ls <- ggplot(pvr %>% filter(climate_model == "ACCESS1-0")) +
     )
   ) +
   scale_fill_viridis_d() +
-  scale_colour_manual(values = c("grey40", "grey10")) +
+  scale_colour_manual(values = c("grey10", "grey40")) +
   labs(
     x = "Change in probability of persistence from baseline\n(ongoing harvest)",
     y = "Management scenario",
@@ -637,7 +644,7 @@ p_dtex_pevo_ls <- ggplot(pvr %>% filter(climate_model == "ACCESS1-0")) +
     )
   ) +
   scale_fill_viridis_d() +
-  scale_colour_manual(values = c("grey40", "grey10")) +
+  scale_colour_manual(values = c("grey10", "grey40")) +
   labs(
     x = "Change in mean time to extinction (if extinct)\nfrom baseline (ongoing harvest)",
     y = "Management scenario",
@@ -665,7 +672,7 @@ p_emp_pevo_cm <- ggplot(pvr %>% filter(landscape == "Central Highlands")) +
     )
   ) +
   scale_fill_viridis_d() +
-  scale_colour_manual(values = c("grey40", "grey10")) +
+  scale_colour_manual(values = c("grey10", "grey40")) +
   labs(
     x = "Expected minimum population",
     y = "Management scenario",
@@ -689,7 +696,7 @@ p_emp95_pevo_cm <- ggplot(pvr %>% filter(landscape == "Central Highlands")) +
     )
   ) +
   scale_fill_viridis_d() +
-  scale_colour_manual(values = c("grey40", "grey10")) +
+  scale_colour_manual(values = c("grey10", "grey40")) +
   labs(
     x = "95% Expected minimum population",
     y = "Management scenario",
@@ -713,7 +720,7 @@ p_empmed_pevo_cm <- ggplot(pvr %>% filter(landscape == "Central Highlands")) +
     )
   ) +
   scale_fill_viridis_d() +
-  scale_colour_manual(values = c("grey40", "grey10")) +
+  scale_colour_manual(values = c("grey10", "grey40")) +
   labs(
     x = "Median minimum population",
     y = "Management scenario",
@@ -737,7 +744,7 @@ p_med_pevo_cm <- ggplot(pvr %>% filter(landscape == "Central Highlands")) +
     )
   ) +
   scale_fill_viridis_d() +
-  scale_colour_manual(values = c("grey40", "grey10")) +
+  scale_colour_manual(values = c("grey10", "grey40")) +
   labs(
     x = "Median population",
     y = "Management scenario",
@@ -761,7 +768,7 @@ p_pex_pevo_cm <- ggplot(pvr %>% filter(landscape == "Central Highlands")) +
     )
   ) +
   scale_fill_viridis_d() +
-  scale_colour_manual(values = c("grey40", "grey10")) +
+  scale_colour_manual(values = c("grey10", "grey40")) +
   labs(
     x = "Probability of persistence",
     y = "Management scenario",
@@ -785,7 +792,7 @@ p_tex_pevo_cm <- ggplot(pvr %>% filter(landscape == "Central Highlands")) +
     )
   ) +
   scale_fill_viridis_d() +
-  scale_colour_manual(values = c("grey40", "grey10")) +
+  scale_colour_manual(values = c("grey10", "grey40")) +
   labs(
     x = "Mean time to extinction\n(if extinct)",
     y = "Management scenario",
@@ -812,9 +819,9 @@ p_demp_pevo_cm <- ggplot(pvr %>% filter(landscape == "Central Highlands")) +
     )
   ) +
   scale_fill_viridis_d() +
-  scale_colour_manual(values = c("grey40", "grey10")) +
+  scale_colour_manual(values = c("grey10", "grey40")) +
   labs(
-    x = "Change in Expected minimum population from baseline\n(ongoing harvest)",
+    x = "Change in Expected minimum population from baseline\n(ongoing harvest, ACCESS1-0)",
     y = "Management scenario",
     fill = "Climate model",
     title = "Greater glider",
@@ -837,9 +844,9 @@ p_demp95_pevo_cm <- ggplot(pvr %>% filter(landscape == "Central Highlands")) +
     )
   ) +
   scale_fill_viridis_d() +
-  scale_colour_manual(values = c("grey40", "grey10")) +
+  scale_colour_manual(values = c("grey10", "grey40")) +
   labs(
-    x = "Change in 95% Expected minimum population from baseline\n(ongoing harvest",
+    x = "Change in 95% Expected minimum population from baseline\n(ongoing harvest, ACCESS1-0)",
     y = "Management scenario",
     fill = "Climate model",
     title = "Greater glider",
@@ -862,9 +869,9 @@ p_dempmed_pevo_cm <- ggplot(pvr %>% filter(landscape == "Central Highlands")) +
     )
   ) +
   scale_fill_viridis_d() +
-  scale_colour_manual(values = c("grey40", "grey10")) +
+  scale_colour_manual(values = c("grey10", "grey40")) +
   labs(
-    x = "Change in median minimum population from baseline\n(ongoing harvest)",
+    x = "Change in median minimum population from baseline\n(ongoing harvest, ACCESS1-0)",
     y = "Management scenario",
     fill = "Climate model",
     title = "Greater glider",
@@ -887,9 +894,9 @@ p_dmed_pevo_cm <- ggplot(pvr %>% filter(landscape == "Central Highlands")) +
     )
   ) +
   scale_fill_viridis_d() +
-  scale_colour_manual(values = c("grey40", "grey10")) +
+  scale_colour_manual(values = c("grey10", "grey40")) +
   labs(
-    x = "Change in median population from baseline\n(ongoing harvest)",
+    x = "Change in median population from baseline\n(ongoing harvest, ACCESS1-0)",
     y = "Management scenario",
     fill = "Climate model",
     title = "Greater glider",
@@ -912,9 +919,9 @@ p_dpex_pevo_cm <- ggplot(pvr %>% filter(landscape == "Central Highlands")) +
     )
   ) +
   scale_fill_viridis_d() +
-  scale_colour_manual(values = c("grey40", "grey10")) +
+  scale_colour_manual(values = c("grey10", "grey40")) +
   labs(
-    x = "Change in probability of persistence from baseline\n(ongoing harvest)",
+    x = "Change in probability of persistence from baseline\n(ongoing harvest, ACCESS1-0)",
     y = "Management scenario",
     fill = "Climate model",
     title = "Greater glider",
@@ -937,9 +944,9 @@ p_dtex_pevo_cm <- ggplot(pvr %>% filter(landscape == "Central Highlands")) +
     )
   ) +
   scale_fill_viridis_d() +
-  scale_colour_manual(values = c("grey40", "grey10")) +
+  scale_colour_manual(values = c("grey10", "grey40")) +
   labs(
-    x = "Change in mean time to extinction (if extinct)\nfrom baseline (ongoing harvest)",
+    x = "Change in mean time to extinction (if extinct)\nfrom baseline (ongoing harvest, ACCESS1-0)",
     y = "Management scenario",
     fill = "Climate model",
     title = "Greater glider",
