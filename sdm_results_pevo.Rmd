@@ -26,6 +26,7 @@ library(ggplot2)
 library(raster)
 library(dismo)
 library(gbm)
+library(viridis)
 ```
 
 ```{r}
@@ -91,6 +92,32 @@ cp_ch
 ```
 
 ```{r}
+cp_eg <- cpdat_eg %>%
+  dplyr::select(-climate_projections) %>%
+  pivot_longer(
+    cols = c(-climate_model, -rcp),
+    names_to = "var",
+    values_to = "value",
+  ) %>%
+  unnest(value) %>%
+  mutate(
+    year = rep(2019:2069, 32),
+    rc = case_when(
+      rcp == "rcp45" ~ "4.5",
+      rcp == "rcp85" ~ "8.5"
+    ),
+    variable = case_when(
+      var == "prec_djf" ~ "Summer rainfall",
+      var == "prec_jja" ~ "Winter rainfall",
+      var == "tmax_djf" ~ "Summer max. temp.",
+      var == "tmin_jja" ~ "Winter min. temp."
+    )
+  )
+
+cp_ch
+```
+
+```{r}
 ggplot(cp_ch) +
   geom_line(
     aes(
@@ -114,4 +141,39 @@ ggplot(cp_ch) +
     linetype = "RCP"
   )
 ```
-
+```{r}
+ggplot(cp_eg) +
+  geom_line(
+    aes(
+      x = year,
+      y = value,
+      col = climate_model,
+      linetype = rc
+    )
+  ) +
+  scale_colour_viridis_d() +
+  facet_wrap(
+    facets = ~variable,
+    scales = "free_y",
+    ncol = 2
+  ) +
+  labs(
+    x = "Year",
+    y = "Value (degrees C/mm)",
+    title = "East Gippsland",
+    col = "Climate model",
+    linetype = "RCP"
+  )
+```
+4.5 Access1-0 
+```{r}
+lp(climproj$prec_djf[[1]][[c(1, 25, 51)]])
+```
+4.5 Access1-0 
+```{r}
+lp(climproj$prec_jja[[1]][[c(1, 25, 51)]], zlim = c(0, 250))
+```
+8.5 Access1-0 
+```{r}
+lp(climproj$prec_jja[[2]][[c(1, 25, 51)]], zlim = c(0, 250))
+```

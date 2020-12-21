@@ -1,6 +1,7 @@
 lp <- function(x, twocol = FALSE, zlim = NULL, mm = NULL, ...){
   
   library(rasterVis)
+  library(viridis)
   
   if(!is.null(mm)){
     zlim <- c(min(minValue(x)),
