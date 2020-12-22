@@ -19,7 +19,7 @@ library(dismo)
 load(file = "output/RData/00_controls.RData")
 load(file = "output/RData/01_landscape_variables.RData")
 load(file = "output/RData/07_combined_variables.RData")
-load(file = "output/RData/09_fit_distribution_models_2.RData")
+load(file = "output/RData/09_fit_distribution_models_3.RData")
 
 source.functions("R/functions")
 
@@ -54,7 +54,7 @@ pred <- brtpredict(
 saveRDS(
   object = pred,
   file = sprintf(
-    "%s/pred2_%s_%s.Rds",
+    "%s/pred3_%s_%s.Rds",
     "/data/gpfs/projects/punim0995/rfst/output/spartan_RData/habitat_pred",
     var_set$cscnid[[i]], # NB needs cscnid not scn_id if multiple climate scenarios with each scenario
     sdm_results$sp[[j]]
@@ -74,7 +74,7 @@ agg <- maggregate(
 saveRDS(
   object = agg,
   file = sprintf(
-    "%s/agg2_%s_%s.Rds",
+    "%s/agg3_%s_%s.Rds",
     "/data/gpfs/projects/punim0995/rfst/output/spartan_RData/habitat_pred_aggregated",
     var_set$cscnid[[i]], # NB needs cscnid not scn_id if multiple climate scenarios with each scenario
     sdm_results$sp[[j]]
@@ -168,36 +168,36 @@ disturbance_map <- tsl_agg_ch$tsl_agg5[[l]]
 
 
 #
-habitat_map2 <- habitat_map
+# habitat_map2 <- habitat_map
+# 
+# hab_vals <- getValues(habitat_map2)
+# 
+# dist_vals <- getValues(disturbance_map)
+# 
+# mod_vals <- habitat.upfun(dist_vals)
+# 
+# mod_hab_vals <- mod_vals * hab_vals
+# 
+# habitat_map2[] <- mod_hab_vals
+# 
+# #
+# 
+# habitat_map3 <- habitat_map
+# 
+# hab_vals <- getValues(habitat_map[[1]])
+# 
+# dist_vals <- getValues(disturbance_map)
+# 
+# mod_vals <- habitat.upfun(dist_vals)
+# 
+# mod_hab_vals <- mod_vals * hab_vals
+# 
+# habitat_map3[] <- mod_hab_vals
 
-hab_vals <- getValues(habitat_map2)
-
-dist_vals <- getValues(disturbance_map)
-
-mod_vals <- habitat.upfun(dist_vals)
-
-mod_hab_vals <- mod_vals * hab_vals
-
-habitat_map2[] <- mod_hab_vals
-
-#
-
-habitat_map3 <- habitat_map
-
-hab_vals <- getValues(habitat_map[[1]])
-
-dist_vals <- getValues(disturbance_map)
-
-mod_vals <- habitat.upfun(dist_vals)
-
-mod_hab_vals <- mod_vals * hab_vals
-
-habitat_map3[] <- mod_hab_vals
-
-survival_fecundity_map <- logistic_sf(habitat_map2)
+# survival_fecundity_map <- logistic_sf(habitat_map2)
 
 initial_population <- initpop2(
-  hs = habitat_map2[[1]],
+  hs = habitat_map[[1]],
   popsize = species_dat_pva$popsize[j],
   cc = species_dat_pva$cc[j],
   ss = ss_pevo,
@@ -208,7 +208,7 @@ initial_population <- initpop2(
 
 lsc <- landscape(
   population = initial_population,
-  suitability = habitat_map2,
+  suitability = habitat_map,
   "mortality" = mortality_map,
   #"sf_layer" = survival_fecundity_map,
   carrying_capacity = species_dat_pva$ccfun[[j]]
@@ -327,157 +327,158 @@ pva_proj <- bind_cols(
 saveRDS(
   object = pva_proj,
   file = sprintf(
-    fmt = "%s/pva_proj_%s_%s.Rds",
+    fmt = "%s/pva_proj3_%s_%s.Rds",
     "/data/gpfs/projects/punim0995/rfst/output/spartan_RData/pva",
     vs$cscnid[i],
     vs$sp[i]
   )
 )
 
-rm(simres)
-
-#
-
-lsc <- landscape(
-  population = initial_population,
-  suitability = habitat_map3,
-  "mortality" = mortality_map,
-  #"sf_layer" = survival_fecundity_map,
-  carrying_capacity = species_dat_pva$ccfun[[j]]
-)
-
-prop_dispersing <- c(
-  1,
-  rep(
-    x = 0,
-    times = 2
-  )
-)
-
-# disp <- kernel_dispersal(
-#   dispersal_kernel = exponential_dispersal_kernel(
-#     distance_decay = species_dat_pva$max_disp[j]/2
-#   ),
-#   max_distance = species_dat_pva$max_disp[j],
-#   arrival_probability = "both",
-#   dispersal_proportion = set_proportion_dispersing(
-#     proportions = prop_dispersing
+# rm(simres)
+# 
+# #
+# 
+# lsc <- landscape(
+#   population = initial_population,
+#   suitability = habitat_map3,
+#   "mortality" = mortality_map,
+#   #"sf_layer" = survival_fecundity_map,
+#   carrying_capacity = species_dat_pva$ccfun[[j]]
+# )
+# 
+# prop_dispersing <- c(
+#   1,
+#   rep(
+#     x = 0,
+#     times = 2
 #   )
 # )
-
-
-disp <- cellular_automata_dispersal(
-  max_cells = 80,
-  dispersal_proportion = set_proportion_dispersing(
-    proportions = prop_dispersing
-  ),
-  barriers = NULL,
-  use_suitability = TRUE,
-  carrying_capacity = "carrying_capacity"
-)
-
-grow <- growth(
-  #transition_matrix = species_dat_pva$tm[[j]],
-  transition_matrix = tm_pevo,
-  global_stochasticity = species_dat_pva$stoch[j]#,
-  #transition_function = modified_transition(
-  #  survival_layer = "sf_layer",
-  #  fecundity_layer = "sf_layer"
-  #)
-)
-
-pop_dyn <- population_dynamics(
-  change = grow,
-  dispersal = disp,
-  density_dependence = ceiling_density(),
-  modification = mortality(mortality_layer = "mortality")
-)
-
-
-# simres1 <- simulation(
+# 
+# # disp <- kernel_dispersal(
+# #   dispersal_kernel = exponential_dispersal_kernel(
+# #     distance_decay = species_dat_pva$max_disp[j]/2
+# #   ),
+# #   max_distance = species_dat_pva$max_disp[j],
+# #   arrival_probability = "both",
+# #   dispersal_proportion = set_proportion_dispersing(
+# #     proportions = prop_dispersing
+# #   )
+# # )
+# 
+# 
+# disp <- cellular_automata_dispersal(
+#   max_cells = 80,
+#   dispersal_proportion = set_proportion_dispersing(
+#     proportions = prop_dispersing
+#   ),
+#   barriers = NULL,
+#   use_suitability = TRUE,
+#   carrying_capacity = "carrying_capacity"
+# )
+# 
+# grow <- growth(
+#   #transition_matrix = species_dat_pva$tm[[j]],
+#   transition_matrix = tm_pevo,
+#   global_stochasticity = species_dat_pva$stoch[j]#,
+#   #transition_function = modified_transition(
+#   #  survival_layer = "sf_layer",
+#   #  fecundity_layer = "sf_layer"
+#   #)
+# )
+# 
+# pop_dyn <- population_dynamics(
+#   change = grow,
+#   dispersal = disp,
+#   density_dependence = ceiling_density(),
+#   modification = mortality(mortality_layer = "mortality")
+# )
+# 
+# 
+# # simres1 <- simulation(
+# #   landscape = lsc,
+# #   population_dynamics = pop_dyn,
+# #   demo_stochasticity = "full",
+# #   timesteps = 50,
+# #   replicates = 5,
+# #   verbose = TRUE
+# # )
+# 
+# 
+# 
+# simres <- simulation(
 #   landscape = lsc,
 #   population_dynamics = pop_dyn,
 #   demo_stochasticity = "full",
-#   timesteps = 50,
-#   replicates = 5,
-#   verbose = TRUE
+#   timesteps = ntimesteps,
+#   replicates = nreplicates,
+#   verbose = FALSE
+# )
+# 
+# 
+# simpop <- get_pop_simulation(simres)
+# 
+# pva_emp <- emp(simpop)
+# 
+# pva_emp_all <- emp.all(simpop)
+# 
+# pva_p_extinct <- length(which(pva_emp_all[[1]] == 0))/length(pva_emp_all[[1]])
+# 
+# 
+# med_pop <- med.pop(simpop)
+# 
+# med_pop_all <- med.pop.all(simpop)
+# 
+# pva_dat <- bind_cols(
+#   vs[i,],
+#   species_dat_pva[j,]
+# ) %>%
+#   dplyr::select(-sp...11) %>%
+#   rename(sp = sp...10)
+# 
+# pva_res <- tibble(
+#   pva = list(simpop),
+#   emp = pva_emp,
+#   emp_all = pva_emp_all,
+#   med_pop,
+#   med_pop_all,
+#   p_extinct = pva_p_extinct,
+# ) %>%
+#   mutate(
+#     p_extant = 1 - p_extinct
+#   )
+# 
+# pva_stat <- bind_cols(
+#   pva_dat,
+#   pva_res
+# ) %>%
+#   mutate(
+#     habitat = "static"
+#   )
+# 
+# 
+# saveRDS(
+#   object = pva_stat,
+#   file = sprintf(
+#     fmt = "%s/pva_stat_%s_%s.Rds",
+#     "/data/gpfs/projects/punim0995/rfst/output/spartan_RData/pva",
+#     vs$cscnid[i],
+#     vs$sp[i]
+#   )
+# )
+# 
+# pva <- bind_rows(
+#   pva_stat,
+#   pva_proj
+# )
+# 
+# 
+# saveRDS(
+#   object = pva,
+#   file = sprintf(
+#     fmt = "%s/pva_both_%s_%s.Rds",
+#     "/data/gpfs/projects/punim0995/rfst/output/spartan_RData/pva",
+#     vs$cscnid[i],
+#     vs$sp[i]
+#   )
 # )
 
-
-
-simres <- simulation(
-  landscape = lsc,
-  population_dynamics = pop_dyn,
-  demo_stochasticity = "full",
-  timesteps = ntimesteps,
-  replicates = nreplicates,
-  verbose = FALSE
-)
-
-
-simpop <- get_pop_simulation(simres)
-
-pva_emp <- emp(simpop)
-
-pva_emp_all <- emp.all(simpop)
-
-pva_p_extinct <- length(which(pva_emp_all[[1]] == 0))/length(pva_emp_all[[1]])
-
-
-med_pop <- med.pop(simpop)
-
-med_pop_all <- med.pop.all(simpop)
-
-pva_dat <- bind_cols(
-  vs[i,],
-  species_dat_pva[j,]
-) %>%
-  dplyr::select(-sp...11) %>%
-  rename(sp = sp...10)
-
-pva_res <- tibble(
-  pva = list(simpop),
-  emp = pva_emp,
-  emp_all = pva_emp_all,
-  med_pop,
-  med_pop_all,
-  p_extinct = pva_p_extinct,
-) %>%
-  mutate(
-    p_extant = 1 - p_extinct
-  )
-
-pva_stat <- bind_cols(
-  pva_dat,
-  pva_res
-) %>%
-  mutate(
-    habitat = "static"
-  )
-
-
-saveRDS(
-  object = pva_stat,
-  file = sprintf(
-    fmt = "%s/pva_stat_%s_%s.Rds",
-    "/data/gpfs/projects/punim0995/rfst/output/spartan_RData/pva",
-    vs$cscnid[i],
-    vs$sp[i]
-  )
-)
-
-pva <- bind_rows(
-  pva_stat,
-  pva_proj
-)
-
-
-saveRDS(
-  object = pva,
-  file = sprintf(
-    fmt = "%s/pva_both_%s_%s.Rds",
-    "/data/gpfs/projects/punim0995/rfst/output/spartan_RData/pva",
-    vs$cscnid[i],
-    vs$sp[i]
-  )
-)
