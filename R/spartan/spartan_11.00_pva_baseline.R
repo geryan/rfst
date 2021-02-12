@@ -24,11 +24,11 @@ source.functions("R/functions")
 
 species_dat_pva <- tribble(
   ~sp,    ~popsize, ~cc, ~ccfun, ~stoch,  ~max_disp, ~habfun,
-  "gyle", 10000,     60,  cc_60,  0.05,    2000,      habitat.downupfun,
+  "gyle", 5000,     60,  cc_60,  0.05,    2000,      habitat.downupfun,
   "pevo", 5000,     15,  cc_15,  0.05,    4000,      habitat.upfun,
   "peau", 2000,     3,    cc_3,  0.05,    20000,     habitat.upfun,
-  "smle", 1000,     75,  cc_75,  0.10,    1000,      NA,
-  "tyte", 1000,     2,    cc_2,  0.08,    10000,     habitat.downupfun,
+  "smle", 1000,     75,  cc_75,  0.07,    1000,      NA,
+  "tyte", 1000,     2,    cc_2,  0.07,    100000,     habitat.downupfun,
   "vava", 5000,     25,  cc_25,  0.05,    5000,      NA
 )
 
@@ -37,8 +37,8 @@ species_dat_pva <- tribble(
 tm_gyle <- matrix(
   data = c(
     0.00, 0.00, 0.80,
-    0.50, 0.00, 0.00,
-    0.00, 0.60, 0.76
+    0.52, 0.00, 0.00,
+    0.00, 0.65, 0.76
   ),
   nrow = 3,
   ncol = 3,
@@ -71,10 +71,11 @@ ip_gyle <- initpop2(
   hs = hm_gyle,
   popsize = species_dat_pva$popsize[j_gyle],
   cc = species_dat_pva$cc[j_gyle],
-  ss = ss_gyle
+  ss = ss_gyle,
+  pp = 0.98
 )
 
-ip_gyle <- ipredo
+#ip_gyle <- ipredo
 
 lsc_gyle <- landscape(
   population = ip_gyle,
@@ -84,22 +85,29 @@ lsc_gyle <- landscape(
 )
 
 
-prop_disp_gyle <- c(
-  1,
-  rep(
-    x = 0,
-    times = length(ss_gyle) - 1
-  )
-)
+# prop_disp_gyle <- c(
+#   1,
+#   rep(
+#     x = 0,
+#     times = length(ss_gyle) - 1
+#   )
+# )
+# 
+# disp_gyle <- kernel_dispersal(
+#   dispersal_kernel = exponential_dispersal_kernel(
+#     distance_decay = species_dat_pva$max_disp[j_gyle]/2
+#   ),
+#   max_distance = species_dat_pva$max_disp[j_gyle],
+#   arrival_probability = "both",
+#   dispersal_proportion = set_proportion_dispersing(
+#     proportions = prop_disp_gyle
+#   )
+# )
 
-disp_gyle <- kernel_dispersal(
-  dispersal_kernel = exponential_dispersal_kernel(
-    distance_decay = species_dat_pva$max_disp[j_gyle]/2
-  ),
-  max_distance = species_dat_pva$max_disp[j_gyle],
-  arrival_probability = "both",
+disp_gyle <- cellular_automata_dispersal(
+  max_cells = 40,
   dispersal_proportion = set_proportion_dispersing(
-    proportions = prop_disp_gyle
+    proportions = c(1,0.2,0.2)
   )
 )
 
@@ -123,13 +131,22 @@ simres <- simulation(
   population_dynamics = pop_dyn_gyle,
   demo_stochasticity = "full",
   timesteps = 50,
-  replicates = 5,
+  replicates = 10,
   verbose = TRUE
 )
 
 plot(simres, stages = 0)
 
 plot(simres)
+
+simpop <- get_pop_simulation(simres)
+
+psr(
+  simpop,
+  #ylim = c(0, 2000),
+  stages = 0
+)
+
 
 ipredo <- simres[[1]][[50]]$population
 
@@ -318,13 +335,124 @@ tm_smle <- matrix(
   )
 )
 
+
+ss_smle <- get.stable.states(tm_smle)
+
+rmax(tm_smle)
+
+rmax(altm(tm_smle))
+
+hm_smle <- agg5_ch$aggmap5[[
+  which(
+    agg5_ch$sp == "smle" &
+      agg5_ch$cscnid == "TH00_rcp45_PB_01_ACCESS1-0"
+  )
+]][[1]]
+
+
+
+sf_smle <- logistic_sf(hm_smle, z = 0.2)
+
+j_smle <- which(species_dat_pva$sp == "smle")
+
+ip_smle <- initpop2(
+  hs = hm_smle,
+  popsize = species_dat_pva$popsize[j_smle],
+  cc = species_dat_pva$cc[j_smle],
+  ss = ss_smle,
+  pp = 0.90
+)
+
+
+
+lsc_smle <- landscape(
+  #population = ip_smle,
+  population = ip_smle,
+  suitability = hm_smle,
+  "sf_layer" = sf_smle,
+  carrying_capacity = species_dat_pva$ccfun[[j_smle]]
+)
+
+
+prop_disp_smle <- c(
+  1,
+  rep(
+    x = 0,
+    times = length(ss_smle) - 1
+  )
+)
+
+# disp_smle <- kernel_dispersal(
+#   dispersal_kernel = exponential_dispersal_kernel(
+#     distance_decay = species_dat_pva$max_disp[j_smle]/2
+#   ),
+#   max_distance = species_dat_pva$max_disp[j_smle],
+#   arrival_probability = "suitability",
+#   dispersal_proportion = set_proportion_dispersing(
+#     proportions = prop_disp_smle
+#   )
+# )
+
+disp_smle <- cellular_automata_dispersal(
+  max_cells = 10,
+  dispersal_proportion = set_proportion_dispersing(
+    proportions = c(1,0.7,0.6)
+  )
+)
+
+grow_smle <- growth(
+  transition_matrix = tm_smle,
+  global_stochasticity = species_dat_pva$stoch[j_smle],
+  transition_function = modified_transition(
+    survival_layer = "sf_layer",
+    fecundity_layer = "sf_layer"
+  )
+)
+
+
+pop_dyn_smle <- population_dynamics(
+  change = grow_smle,
+  dispersal = disp_smle,
+  density_dependence = ceiling_density(stages = c(2,3))
+)
+
+#ipredo_smle <- simres[[1]][[50]]$population
+
+simres <- simulation(
+  landscape = lsc_smle,
+  population_dynamics = pop_dyn_smle,
+  demo_stochasticity = "full",
+  timesteps = 50,
+  replicates = 10,
+  verbose = TRUE
+)
+
+#simres_smle_static <- simres
+
+#dev.off()
+
+
+
+
+plot(simres, stages = 0)
+
+simpop <- get_pop_simulation(simres)
+
+psr(
+  simpop,
+  #ylim = c(0, 2000),
+  stages = 0
+)
+
 #####
+
+######### static 
 
 tm_tyte <- matrix(
   data = c(
-    0.00, 0.00, 1.23,
-    0.75, 0.00, 0.00,
-    0.00, 0.90, 0.90 
+    0.00, 0.00, 1.50,
+    0.55, 0.00, 0.00,
+    0.00, 0.70, 0.75 
   ),
   nrow = 3,
   ncol = 3,
@@ -349,6 +477,7 @@ hm_tyte <- agg5_ch$aggmap5[[
   ]][[1]]
 
 
+
 sf_tyte <- logistic_sf(hm_tyte, z = 0.2)
 
 j_tyte <- which(species_dat_pva$sp == "tyte")
@@ -357,13 +486,15 @@ ip_tyte <- initpop2(
   hs = hm_tyte,
   popsize = species_dat_pva$popsize[j_tyte],
   cc = species_dat_pva$cc[j_tyte],
-  ss = ss_tyte
+  ss = ss_tyte,
+  pp = 0.90
 )
+
 
 
 lsc_tyte <- landscape(
   #population = ip_tyte,
-  population = ipredo,
+  population = ip_tyte,
   suitability = hm_tyte,
   "sf_layer" = sf_tyte,
   carrying_capacity = species_dat_pva$ccfun[[j_tyte]]
@@ -390,9 +521,9 @@ prop_disp_tyte <- c(
 # )
 
 disp_tyte <- cellular_automata_dispersal(
-  max_cells = 40,
+  max_cells = 5000,
   dispersal_proportion = set_proportion_dispersing(
-    proportions = c(1,0,0)
+    proportions = c(1,0.6,0.6)
   )
 )
 
@@ -404,6 +535,7 @@ grow_tyte <- growth(
     fecundity_layer = "sf_layer"
   )
 )
+
 
 pop_dyn_tyte <- population_dynamics(
   change = grow_tyte,
@@ -422,7 +554,9 @@ simres <- simulation(
   verbose = TRUE
 )
 
-dev.off()
+#simres_tyte_static <- simres
+
+#dev.off()
 
 plot(simres, stages = 0)
 

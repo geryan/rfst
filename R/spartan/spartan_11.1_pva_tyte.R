@@ -45,16 +45,16 @@ mortality_map <- mort_agg5_ch$mort_agg[[k]]
 disturbance_map <- tsl_agg_ch$tsl_agg5[[l]]
 
 habitat_map2 <- habitat_map
-
-hab_vals <- getValues(habitat_map2)
-
-dist_vals <- getValues(disturbance_map)
-
-mod_vals <- habitat.upfun(dist_vals)
-
-mod_hab_vals <- mod_vals * hab_vals
-
-habitat_map2[] <- mod_hab_vals
+# 
+# hab_vals <- getValues(habitat_map2)
+# 
+# dist_vals <- getValues(disturbance_map)
+# 
+# mod_vals <- habitat.upfun(dist_vals)
+# 
+# mod_hab_vals <- mod_vals * hab_vals
+# 
+# habitat_map2[] <- mod_hab_vals
 
 survival_fecundity_map <- logistic_sf(habitat_map2, z = 0.2)
 
@@ -78,15 +78,16 @@ prop_dispersing <- c(
 )
 
 disp <- cellular_automata_dispersal(
-  max_cells = 40,
+  max_cells =5000,
   dispersal_proportion = set_proportion_dispersing(
-    proportions = c(1,0,0)
+    proportions = c(1,0.6,0.6)
   )
 )
 
 
 grow <- growth(
-  transition_matrix = species_dat_pva$tm[[j]],
+  #transition_matrix = species_dat_pva$tm[[j]],
+  transition_matrix = tm_tyte,
   global_stochasticity = species_dat_pva$stoch[j],
   transition_function = modified_transition(
     survival_layer = "sf_layer",
@@ -111,16 +112,14 @@ simres1 <- simulation(
   verbose = TRUE
 )
 
-
-
-simres <- simulation(
-  landscape = lsc,
-  population_dynamics = pop_dyn,
-  demo_stochasticity = "full",
-  timesteps = ntimesteps,
-  replicates = nreplicates,
-  verbose = FALSE
-)
+# simres <- simulation(
+#   landscape = lsc,
+#   population_dynamics = pop_dyn,
+#   demo_stochasticity = "full",
+#   timesteps = ntimesteps,
+#   replicates = nreplicates,
+#   verbose = FALSE
+# )
 
 
 simpop <- get_pop_simulation(simres)

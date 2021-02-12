@@ -47,7 +47,7 @@ psr <- function(
     
   }
   
-  pop.mn <- round(apply(pop, c(1,2), mean), 0)
+  pop.mn <- round(apply(pop, c(1,2), median), 0)
   
   
   if (is.null(stages)) {

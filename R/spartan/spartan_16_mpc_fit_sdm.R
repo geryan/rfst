@@ -1,4 +1,4 @@
-# 16 fit distribution models for metapopulation capacity models
+# 09 fit distribution models
 
 source("R/spartan/spartan_settings.R")
 
@@ -84,17 +84,16 @@ if(!all(colnames(distribution_model_data_mpc$dist_mod_dat[[1]]) == varlist)){
   stop("Varlist definition and variable layers are different")
 }
 
-sp_sdm_vars <- tribble(
-  ~ sdm_vars,
-  varlist[c(3:8, 10, 12, 17:22, 25, 34:45)]
-)
 
 
+sdm_data <- distribution_model_data_mpc[i,] %>%
+  mutate(
+    sdm_vars = case_when(
+      sp == "grba" ~ varlist[c(6, 15, 17, 20, 25, 34:43)] %>% list,
+      TRUE ~ varlist[c(3:8, 10, 12, 17:22, 25, 34:45)] %>% list
+    )
+  )
 
-sdm_data <- bind_cols(
-  distribution_model_data_mpc[i,],
-  sp_sdm_vars
-)
 
 
 sdm_fit <- sdm_data %>%

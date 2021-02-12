@@ -1,0 +1,152 @@
+---
+title: "plant sdms"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+load("output/RData/16_mpc_fit_sdm.RData")
+load("output/RData/17_mpc_predict_sdm.RData")
+```
+
+```{r}
+sdm_results_mpc_ch %>%
+  filter(sp == "grba") %>%
+  pull(brt.fit) %>%
+  .[[1]] %>%
+  gbm.plot
+```
+
+```{r}
+pred_mpc %>%
+  filter(
+    sp == "grba",
+    cscnid =="TH19_rcp45_PB_01_ACCESS1-0"
+  ) %>%
+  pull(predmaps) %>%
+  .[[1]] %>%
+  .[[c(1, 20, 20, 30, 40, 51)]] %>%
+  plot
+```
+```{r}
+pred_mpc_new %>%
+  filter(
+    sp == "grba",
+    cscnid =="TH19_rcp45_PB_01_ACCESS1-0"
+  ) %>%
+  pull(predmaps) %>%
+  .[[1]] %>%
+  .[[c(1, 20, 20, 30, 40, 51)]] %>%
+  plot
+```
+
+
+```{r}
+sdm_results_mpc_ch %>%
+  filter(sp == "lese") %>%
+  pull(brt.fit) %>%
+  .[[1]] %>%
+  gbm.plot
+```
+
+```{r}
+pred_mpc %>%
+  filter(
+    sp == "lese",
+    cscnid =="TH19_rcp45_PB_01_ACCESS1-0"
+  ) %>%
+  pull(predmaps) %>%
+  .[[1]] %>%
+  .[[c(1, 20, 20, 30, 40, 51)]] %>%
+  plot
+```
+
+```{r}
+sdm_results_mpc_ch %>%
+  filter(sp == "pear") %>%
+  pull(brt.fit) %>%
+  .[[1]] %>%
+  gbm.plot
+```
+
+```{r}
+pred_mpc %>%
+  filter(
+    sp == "pear",
+    cscnid =="TH19_rcp45_PB_01_ACCESS1-0"
+  ) %>%
+  pull(predmaps) %>%
+  .[[1]] %>%
+  .[[c(1, 20, 20, 30, 40, 51)]] %>%
+  plot
+```
+
+
+```{r}
+sdm_results_mpc_ch %>%
+  filter(sp == "phsq") %>%
+  pull(brt.fit) %>%
+  .[[1]] %>%
+  gbm.plot
+```
+
+```{r}
+pred_mpc %>%
+  filter(
+    sp == "phsq",
+    cscnid =="TH19_rcp45_PB_01_ACCESS1-0"
+  ) %>%
+  pull(predmaps) %>%
+  .[[1]] %>%
+  .[[c(1, 20, 20, 30, 40, 51)]] %>%
+  plot
+```
+
+```{r}
+sdm_results_mpc_ch %>%
+  filter(sp == "tesu") %>%
+  pull(brt.fit) %>%
+  .[[1]] %>%
+  gbm.plot
+```
+
+```{r}
+pred_mpc %>%
+  filter(
+    sp == "tesu",
+    cscnid =="TH19_rcp45_PB_01_ACCESS1-0"
+  ) %>%
+  pull(predmaps) %>%
+  .[[1]] %>%
+  .[[c(1, 20, 20, 30, 40, 51)]] %>%
+  plot
+```
+
+```{r}
+sdm_results_mpc_ch %>%
+  filter(sp == "wiva") %>%
+  pull(brt.fit) %>%
+  .[[1]] %>%
+  gbm.plot
+```
+
+```{r}
+pred_mpc %>%
+  filter(
+    sp == "wiva",
+    cscnid =="TH19_rcp45_PB_01_ACCESS1-0"
+  ) %>%
+  pull(predmaps) %>%
+  .[[1]] %>%
+  .[[c(1, 20, 20, 30, 40, 51)]] %>%
+  plot
+```
+
+
+
+
+
+

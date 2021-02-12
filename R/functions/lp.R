@@ -1,4 +1,4 @@
-lp <- function(x, twocol = FALSE, zlim = NULL, mm = NULL, ...){
+lp <- function(x, twocol = FALSE, zlim = NULL, mm = NULL, names.attr = NULL, ...){
   
   library(rasterVis)
   library(viridis)
@@ -10,6 +10,9 @@ lp <- function(x, twocol = FALSE, zlim = NULL, mm = NULL, ...){
     x <- x[[mm]]
   }
   
+  if(is.null(names.attr)){
+    names.attr <- names(x)
+  }
   
   if(twocol){
     if(missing(...)){
@@ -17,14 +20,16 @@ lp <- function(x, twocol = FALSE, zlim = NULL, mm = NULL, ...){
         x,
         col.regions = magma(n = 16)[c(1,11)],
         at = c(0, 0.5, 1),
-        margin = FALSE
+        margin = FALSE,
+        names.attr
       )
     } else {
       z <- levelplot(
         stack(x, ...),
         col.regions = magma(n = 16)[c(1,11)],
         at = c(0, 0.5, 1),
-        margin = FALSE
+        margin = FALSE,
+        names.attr
       )
     }
   } else if(!is.null(zlim)){
@@ -37,7 +42,8 @@ lp <- function(x, twocol = FALSE, zlim = NULL, mm = NULL, ...){
           at = seq(zlim[1], zlim[2], length=16),
           col = magma(16)
         ),
-        margin = FALSE
+        margin = FALSE,
+        names.attr
       )
     } else {
       z <- levelplot(
@@ -48,14 +54,15 @@ lp <- function(x, twocol = FALSE, zlim = NULL, mm = NULL, ...){
           at = seq(zlim[1], zlim[2], length=16),
           col = magma(16)
         ),
-        margin = FALSE
+        margin = FALSE,
+        names.attr
       )
     }
   }else{
     if(missing(...)){
-      z <- levelplot(x, margin = FALSE)
+      z <- levelplot(x, margin = FALSE, names.attr)
     } else {
-      z <- levelplot(stack(x, ...), margin = FALSE)
+      z <- levelplot(stack(x, ...), margin = FALSE, names.attr)
     }  
   }
   
