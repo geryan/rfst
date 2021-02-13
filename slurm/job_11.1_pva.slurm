@@ -12,7 +12,7 @@
 #SBATCH --cpus-per-task=1
 
 # megabytes per process
-#SBATCH --mem=51200
+#SBATCH --mem=25600
 
 # job name from batch
 # output name from batch

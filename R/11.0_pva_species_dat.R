@@ -6,6 +6,7 @@ source("R/spartan/spartan_settings.R")
 
 library(dplyr)
 library(tibble)
+library(purrr)
 
 load(file = "output/RData/00_controls.RData")
 load(file = "output/RData/01_landscape_variables.RData")
@@ -33,7 +34,7 @@ tm_pevo <- matrix(
   data = c(
     0.00, 0.00, 0.50,
     0.50, 0.00, 0.00,
-    0.00, 0.85, 0.90
+    0.00, 0.80, 0.84
   ),
   nrow = 3,
   ncol = 3,
@@ -64,8 +65,8 @@ tm_peau <- matrix(
 tm_smle <- matrix(
   data = c(
     0.00, 4.20, 4.20,
-    0.29, 0.0,  0.00,
-    0.00,  0.05, 0.05
+    0.29, 0.00, 0.00,
+    0.00, 0.05, 0.05
   ),
   nrow = 3,
   ncol = 3,
@@ -95,9 +96,9 @@ tm_smle <- matrix(
 
 tm_tyte <- matrix(
   data = c(
-    0.00, 0.00, 1.23,
-    0.75, 0.00, 0.00,
-    0.00, 0.90, 0.90 
+    0.00, 0.00, 1.50,
+    0.55, 0.00, 0.00,
+    0.00, 0.70, 0.75 
   ),
   nrow = 3,
   ncol = 3,
@@ -127,13 +128,13 @@ tm_vava <- matrix(
 
 
 species_dat_pva <- tribble(
-  ~sp,    ~tm,     ~popsize, ~cc, ~ccfun, ~stoch, ~max_disp, ~habfun,            ~max_cells, ~dp,
-  "gyle", tm_gyle, 3000,     60,  cc_60,  0.05,    2000,      habitat.downupfun,    40,      c(1, 0.2, 0.2),     
-  "pevo", tm_pevo, 5000,     15,  cc_15,  0.05,    4000,      habitat.upfun,
-  "peau", tm_peau, 2000,     3,    cc_3,  0.05,    20000,     habitat.upfun,
-  "smle", tm_smle, 1000,     75,  cc_75,  0.15,    2000,      NA,
-  "tyte", tm_tyte, 1000,     2,    cc_2,  0.10,    20000,     habitat.downupfun,
-  "vava", tm_vava, 5000,     25,  cc_25,  0.05,    5000,      NA
+     ~sp,     ~tm, ~popsize, ~cc, ~ccfun, ~stoch, ~max_disp,           ~habfun, ~max_cells,            ~dp,  ~pp, ~disp,  ~z,
+  "gyle", tm_gyle,     3000,  60,  cc_60,   0.05,      2000, habitat.downupfun,         40, c(1, 0.2, 0.2), 0.98,  "ca", 0.4,
+  "pevo", tm_pevo,     5000,  15,  cc_15,   0.05,      4000,     habitat.upfun,         80, c(1, 0.2, 0.2), 0.95,  "ca", 0.4,
+  "peau", tm_peau,     2000,   3,   cc_3,   0.05,     20000,     habitat.upfun,         NA, c(1, 0.2, 0.2), 0.95,  "ke", 0.4,
+  "smle", tm_smle,     1000,  75,  cc_75,   0.07,      2000,                NA,         10, c(1, 0.7, 0.6), 0.95,  "ca", 0.2,
+  "tyte", tm_tyte,     1000,   2,   cc_2,   0.07,    100000, habitat.downupfun,       1000, c(1, 0.6, 0.6), 0.95,  "ca", 0.2,
+  "vava", tm_vava,     5000,  25,  cc_25,   0.05,      5000,                NA,         NA, c(1, 0.2, 0.2),   NA,  "ke", 0.4,
 ) %>% mutate(
   ss = map(
     .x = tm,

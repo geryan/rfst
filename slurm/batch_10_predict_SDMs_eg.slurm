@@ -8,7 +8,7 @@
 for i in {1..480}
 do
 
-	for j in {1..1}
+	for j in {1,3,4,5}
 	do
 	
 		JOB_NAME="j10_${i}_${j}"
