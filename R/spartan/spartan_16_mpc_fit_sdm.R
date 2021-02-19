@@ -1,4 +1,4 @@
-# 09 fit distribution models
+# 16 fit distribution models pva
 
 source("R/spartan/spartan_settings.R")
 
@@ -84,17 +84,29 @@ if(!all(colnames(distribution_model_data_mpc$dist_mod_dat[[1]]) == varlist)){
   stop("Varlist definition and variable layers are different")
 }
 
-
+# sdm_pars <- tibble::tribble(
+#      ~sp,   ~lr,
+#   "grba", 0.010,
+# )
 
 sdm_data <- distribution_model_data_mpc[i,] %>%
   mutate(
     sdm_vars = case_when(
-      sp == "grba" ~ varlist[c(6, 15, 17, 20, 25, 34:43)] %>% list,
+      sp == "grba" ~ varlist[c(6, 15, 17, 20, 25, 34:45)] %>% list,
       TRUE ~ varlist[c(3:8, 10, 12, 17:22, 25, 34:45)] %>% list
+    ),
+    lr = case_when(
+      sp == "grba" ~ 0.005,
+      sp == "acno" ~ 0.0005,
+      TRUE ~ 0.001
     )
   )
 
-
+# sdm_data <- left_join(
+#   x = sdm_data,
+#   y = sdm_pars,
+#   by = "sp"
+# )
 
 sdm_fit <- sdm_data %>%
   mutate(
@@ -106,11 +118,14 @@ sdm_fit <- sdm_data %>%
     )
   ) %>%
   mutate(
-    brt.fit = map(
-      .x = model_data,
+    brt.fit = pmap(
+      .l = list(
+        data = model_data,
+        learning.rate = lr
+      ),
       .f = gbmstep,
       tree.complexity = 5,
-      learning.rate = 0.001,
+      #learning.rate = 0.001,
       #step.size = 1,
       bag.fraction = 0.5,
       prev.stratify = TRUE,
@@ -125,7 +140,33 @@ sdm_fit <- sdm_data %>%
   unnest(trees)
 
 
-sdm_fit
+# sdm_fit
+# 
+# predi <- brtpredict(
+#   variables = varset_mpc$all_vars[[1]],
+#   model = sdm_fit$brt.fit[[1]],
+#   scn_id = "TH19_rcp45_PB_01_ACCESS1-0_init",
+#   varset = "",
+#   species = "test",
+#   initial = TRUE
+# )
+# 
+# plot(predi)
+# 
+# predf <- brtpredict(
+#   variables = varset_mpc$all_vars[[1]][c(1, 10, 50)],
+#   model = sdm_fit$brt.fit[[1]],
+#   out_path = "/data/gpfs/projects/punim0995/rfst/output/",
+#   scn_id = "TH19_rcp45_PB_01_ACCESS1-0",
+#   varset = "",
+#   species = "test",
+#   initial = FALSE,
+#   pll = FALSE,
+#   ncores = 1
+# )
+# 
+# plot(predf)
+
 
 saveRDS(
   object = sdm_fit,

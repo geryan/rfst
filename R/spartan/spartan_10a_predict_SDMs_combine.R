@@ -18,9 +18,15 @@ load(file = "output/RData/09_fit_distribution_models.RData")
 source.functions("R/functions")
 
 
-a_list <- list.files("output/spartan_RData/habitat_pred_aggregated/")
+a_list <- list.files(
+  path = "output/spartan_RData/habitat_pred_aggregated/",
+  pattern = "agg_"
+)
 
-p_list <- list.files("output/spartan_RData/habitat_pred/")
+p_list <- list.files(
+  path = "output/spartan_RData/habitat_pred/",
+  pattern = "pred_"
+)
 
 
 
@@ -169,13 +175,16 @@ agg_set <- full_join(
 )
 
 
+# pred_set <- pred_set %>%
+#   filter(sp != "pevo") %>%
+#   bind_rows(pred_set3)
+# 
+# agg_set <- agg_set %>%
+#   filter(sp != "pevo") %>%
+#   bind_rows(agg_set3)
+
 save(
   pred_set,
   agg_set,
   file = "output/RData/10_predict_SDMs.RData"
-) 
-
-save(
-  agg_set,
-  file = "output/RData/10_predict_SDMs_agg.RData"
 ) 

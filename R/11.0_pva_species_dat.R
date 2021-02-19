@@ -113,9 +113,9 @@ tm_tyte <- matrix(
 tm_vava <- matrix(
   data = c(
     0.00, 0.00, 0.00, 2.69,
-    0.37, 0.00, 0.00, 0.00, 
-    0.00, 0.37, 0.00, 0.00,
-    0.00, 0.00, 0.37, 0.93
+    0.36, 0.00, 0.00, 0.00, 
+    0.00, 0.36, 0.00, 0.00,
+    0.00, 0.00, 0.36, 0.93
   ),
   nrow = 4,
   ncol = 4,
@@ -129,12 +129,12 @@ tm_vava <- matrix(
 
 species_dat_pva <- tribble(
      ~sp,     ~tm, ~popsize, ~cc, ~ccfun, ~stoch, ~max_disp,           ~habfun, ~max_cells,            ~dp,  ~pp, ~disp,  ~z,
-  "gyle", tm_gyle,     3000,  60,  cc_60,   0.05,      2000, habitat.downupfun,         40, c(1, 0.2, 0.2), 0.98,  "ca", 0.4,
-  "pevo", tm_pevo,     5000,  15,  cc_15,   0.05,      4000,     habitat.upfun,         80, c(1, 0.2, 0.2), 0.95,  "ca", 0.4,
-  "peau", tm_peau,     2000,   3,   cc_3,   0.05,     20000,     habitat.upfun,         NA, c(1, 0.2, 0.2), 0.95,  "ke", 0.4,
-  "smle", tm_smle,     1000,  75,  cc_75,   0.07,      2000,                NA,         10, c(1, 0.7, 0.6), 0.95,  "ca", 0.2,
-  "tyte", tm_tyte,     1000,   2,   cc_2,   0.07,    100000, habitat.downupfun,       1000, c(1, 0.6, 0.6), 0.95,  "ca", 0.2,
-  "vava", tm_vava,     5000,  25,  cc_25,   0.05,      5000,                NA,         NA, c(1, 0.2, 0.2),   NA,  "ke", 0.4,
+  "gyle", tm_gyle,     3000,  60,  cc_60,   0.05,      2000, habitat.downupfun,         40,  c(1, 0.2, 0.2), 0.98,  "ca", 0.4,
+  "pevo", tm_pevo,     5000,  15,  cc_15,   0.05,      4000,     habitat.upfun,         80,  c(1, 0.2, 0.2), 0.95,  "ca", 0.4,
+  "peau", tm_peau,     2000,   3,   cc_3,   0.05,     20000,     habitat.upfun,         NA,  c(1, 0.2, 0.2), 0.95,  "ke", 0.4,
+  "smle", tm_smle,     1000,  75,  cc_75,   0.07,      2000,                NA,         10,  c(1, 0.7, 0.6), 0.95,  "ca", 0.2,
+  "tyte", tm_tyte,     1000,   2,   cc_2,   0.07,    100000, habitat.downupfun,       1000,  c(1, 0.6, 0.6), 0.95,  "ca", 0.2,
+  "vava", tm_vava,     5000,  25,  cc_25,   0.05,      5000,                NA,         80, c(1, 1, 1, 0.3),   NA,  "ke", 0.4,
 ) %>% mutate(
   ss = map(
     .x = tm,

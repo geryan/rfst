@@ -84,8 +84,8 @@ if(!all(colnames(distribution_model_data$dist_mod_dat[[1]]) == varlist)){
 sp_sdm_vars <- tribble(
   ~sp, ~ sdm_vars,
   "gyle", varlist[c(3:8, 10, 12, 17:22, 25, 34:45)],
-  "pevo", varlist[c(7, 10, 12, 25, 34:45)],
-  "peau", varlist[c(3:8, 10, 12, 17:22, 25, 34:45)],
+  "pevo", varlist[c(7, 10, 12, 25, 34:43)],
+  "peau", varlist[c(3:8, 10, 12, 17:22, 25, 34:43)],
   "smle", varlist[c(3:8, 10, 12, 17:22, 25, 34:45)],
   "tyte", varlist[c(3:8, 10, 12, 17:22, 25, 34:45)],
   "vava", varlist[c(3:8, 10, 12, 17:22, 25, 34:45)]
@@ -95,30 +95,30 @@ sdm_data <- full_join(
   x = distribution_model_data,
   y = sp_sdm_vars,
   by = "sp"
-) %>%
-  mutate(
-    weights = map(
-      .x = pa_dat,
-      .f = function(x){
-        z <- x %>%
-          group_by(PA) %>%
-          mutate(
-            npa = n()
-          ) %>%
-          ungroup %>%
-          mutate(
-            sump = length(which(PA == 1))
-          ) %>%
-          mutate(
-            weight = sump/npa
-          )
-        
-        result <- z$weight
-        
-        return(result)
-      }
-    )
-  )
+)# %>%
+  # mutate(
+  #   weights = map(
+  #     .x = pa_dat,
+  #     .f = function(x){
+  #       z <- x %>%
+  #         group_by(PA) %>%
+  #         mutate(
+  #           npa = n()
+  #         ) %>%
+  #         ungroup %>%
+  #         mutate(
+  #           sump = length(which(PA == 1))
+  #         ) %>%
+  #         mutate(
+  #           weight = sump/npa
+  #         )
+  #       
+  #       result <- z$weight
+  #       
+  #       return(result)
+  #     }
+  #   )
+  # )
 
 
 # LBP -----------------
@@ -154,26 +154,7 @@ sdm_gyle <- sdm_data %>%
   unnest(trees)
 
 
-pi_pevo <- brtpredict(
-  variables = var_set$all_vars[[1]],
-  model = sdm_pevo$brt.fit[[1]],
-  scn_id = "TH19_rcp45_PB_01_ACCESS1-0_init",
-  varset = "",
-  species = "pevo",
-  initial = TRUE
-)
 
-pp_pevo <- brtpredict(
-  variables = var_set$all_vars[[1]],
-  model = sdm_pevo$brt.fit[[1]],
-  out_path = "/data/gpfs/projects/punim0995/rfst/output/",
-  scn_id = "TH19_rcp45_PB_01_ACCESS1-0",
-  varset = "",
-  species = "pevo",
-  initial = FALSE,
-  pll = FALSE,
-  ncores = 1
-)
 
 
 # GG  -----------------
@@ -185,33 +166,33 @@ sdm_pevo <- sdm_data %>%
       .y = sdm_vars,
       .f = clean.model.data,
       na.omit = TRUE
-    ),
-    model_data = map(
-      .x = model_data,
-      .f = function(x){
-        
-        z <- x %>%
-          group_by(PA) %>%
-          mutate(
-            npa = n()
-          ) %>%
-          ungroup %>%
-          mutate(
-            sump = length(which(PA == 1))
-          ) %>%
-          mutate(
-            site.weights = sump/npa
-          ) %>%
-          dplyr::select(
-            -npa,
-            -sump
-          )  %>%
-          as.data.frame
-        
-        return(z) 
-      
-      }
-    )
+    )#,
+    # model_data = map(
+    #   .x = model_data,
+    #   .f = function(x){
+    #     
+    #     z <- x %>%
+    #       group_by(PA) %>%
+    #       mutate(
+    #         npa = n()
+    #       ) %>%
+    #       ungroup %>%
+    #       mutate(
+    #         sump = length(which(PA == 1))
+    #       ) %>%
+    #       mutate(
+    #         site.weights = sump/npa
+    #       ) %>%
+    #       dplyr::select(
+    #         -npa,
+    #         -sump
+    #       )  %>%
+    #       as.data.frame
+    #     
+    #     return(z) 
+    #   
+    #   }
+    # )
   ) %>%
   mutate(
     brt.fit = map(
@@ -231,10 +212,6 @@ sdm_pevo <- sdm_data %>%
   unnest(auc) %>%
   mutate(trees = map(.x = brt.fit, .f = ~ .$gbm.call$best.trees)) %>%
   unnest(trees)
-
-
-
-
 
 
 # YBG -----------------
@@ -266,6 +243,7 @@ sdm_peau <- sdm_data %>%
   unnest(auc) %>%
   mutate(trees = map(.x = brt.fit, .f = ~ .$gbm.call$best.trees)) %>%
   unnest(trees)
+
 
 # WFD -----------------
 sdm_smle <- sdm_data %>%
@@ -360,24 +338,26 @@ sdm_vava <- sdm_data %>%
 # -----------
 
 sdm_results <- bind_rows(
-  #sdm_gyle,
-  sdm_pevo#,
-  #sdm_peau,
-  #sdm_smle,
-  #sdm_tyte,
-  #sdm_vava
+  sdm_gyle,
+  sdm_pevo,
+  sdm_peau,
+  sdm_smle,
+  sdm_tyte,
+  sdm_vava
 )
 
-# 
-# sdm_results <- sdm_results %>%
-#   filter(sp != "pevo") %>%
-#   bind_rows(
-#     sdm_pevo
-#   ) %>%
-#   arrange(sp)
+
+sdm_results <- sdm_results %>%
+  filter(sp != "peau") %>%
+  filter(sp != "pevo") %>%
+  bind_rows(
+    sdm_peau %>% dplyr::select(-weights),
+    sdm_results_pevo  %>% dplyr::select(-weights)
+  ) %>%
+  arrange(sp)
 
 # -----------
 save(
   sdm_results,
-  file = "output/RData/09_fit_distribution_models_3.RData"
+  file = "output/RData/09_fit_distribution_models.RData"
 )

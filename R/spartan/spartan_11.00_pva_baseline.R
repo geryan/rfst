@@ -318,6 +318,106 @@ tm_peau <- matrix(
   )
 )
 
+
+
+ss_peau <- get.stable.states(tm_peau)
+
+rmax(tm_peau)
+
+rmax(altm(tm_peau))
+
+hm_peau <- agg5_ch$aggmap5[[
+  which(
+    agg5_ch$sp == "peau" &
+      agg5_ch$cscnid == "TH00_rcp45_PB_01_ACCESS1-0"
+  )
+]][[1]]
+
+
+sf_peau <- logistic_sf(hm_peau)
+
+j_peau <- which(species_dat_pva$sp == "peau")
+
+ip_peau <- initpop2(
+  hs = hm_peau,
+  popsize = species_dat_pva$popsize[j_peau],
+  cc = species_dat_pva$cc[j_peau],
+  ss = ss_peau,
+  pp = 0.995
+)
+
+#ip_peau <- ipredo
+
+lsc_peau <- landscape(
+  population = ip_peau,
+  suitability = hm_peau,
+  "sf_layer" = sf_peau,
+  carrying_capacity = species_dat_pva$ccfun[[j_peau]]
+)
+
+
+# prop_disp_peau <- c(
+#   1,
+#   rep(
+#     x = 0,
+#     times = length(ss_peau) - 1
+#   )
+# )
+# 
+# disp_peau <- kernel_dispersal(
+#   dispersal_kernel = exponential_dispersal_kernel(
+#     distance_decay = species_dat_pva$max_disp[j_peau]/2
+#   ),
+#   max_distance = species_dat_pva$max_disp[j_peau],
+#   arrival_probability = "both",
+#   dispersal_proportion = set_proportion_dispersing(
+#     proportions = prop_disp_peau
+#   )
+# )
+
+disp_peau <- cellular_automata_dispersal(
+  max_cells = 80,
+  dispersal_proportion = density_dependence_dispersing(
+    maximum_proportions = c(1, 1, 1, 0.3)
+  )
+)
+
+
+grow_peau <- growth(
+  transition_matrix = tm_peau,
+  global_stochasticity = species_dat_pva$stoch[j_peau],
+  transition_function = modified_transition(
+    survival_layer = "sf_layer",
+    fecundity_layer = "sf_layer"
+  )
+)
+
+pop_dyn_peau <- population_dynamics(
+  change = grow_peau,
+  dispersal = disp_peau
+)
+
+simres <- simulation(
+  landscape = lsc_peau,
+  population_dynamics = pop_dyn_peau,
+  demo_stochasticity = "full",
+  timesteps = 50,
+  replicates = 10,
+  verbose = TRUE
+)
+
+plot(simres, stages = 0)
+
+plot(simres)
+
+simpop <- get_pop_simulation(simres)
+
+psr(
+  simpop,
+  #ylim = c(0, 2000),
+  stages = 0
+)
+
 #####
 
 tm_smle <- matrix(
@@ -581,9 +681,9 @@ ip_tyte <- brick("output/initpop/ip_tyte_ch.grd")
 tm_vava <- matrix(
   data = c(
     0.00, 0.00, 0.00, 2.69,
-    0.37, 0.00, 0.00, 0.00, 
-    0.00, 0.37, 0.00, 0.00,
-    0.00, 0.00, 0.37, 0.93
+    0.36, 0.00, 0.00, 0.00, 
+    0.00, 0.36, 0.00, 0.00,
+    0.00, 0.00, 0.36, 0.93
   ),
   nrow = 4,
   ncol = 4,
@@ -597,6 +697,103 @@ tm_vava <- matrix(
 
 
 
+ss_vava <- get.stable.states(tm_vava)
+
+rmax(tm_vava)
+
+rmax(altm(tm_vava))
+
+hm_vava <- agg5_ch$aggmap5[[
+  which(
+    agg5_ch$sp == "vava" &
+      agg5_ch$cscnid == "TH00_rcp45_PB_01_ACCESS1-0"
+  )
+]][[1]]
+
+
+sf_vava <- logistic_sf(hm_vava)
+
+j_vava <- which(species_dat_pva$sp == "vava")
+
+ip_vava <- initpop2(
+  hs = hm_vava,
+  popsize = species_dat_pva$popsize[j_vava],
+  cc = species_dat_pva$cc[j_vava],
+  ss = ss_vava,
+  pp = 0.995
+)
+
+#ip_vava <- ipredo
+
+lsc_vava <- landscape(
+  population = ip_vava,
+  suitability = hm_vava,
+  "sf_layer" = sf_vava,
+  carrying_capacity = species_dat_pva$ccfun[[j_vava]]
+)
+
+
+# prop_disp_vava <- c(
+#   1,
+#   rep(
+#     x = 0,
+#     times = length(ss_vava) - 1
+#   )
+# )
+# 
+# disp_vava <- kernel_dispersal(
+#   dispersal_kernel = exponential_dispersal_kernel(
+#     distance_decay = species_dat_pva$max_disp[j_vava]/2
+#   ),
+#   max_distance = species_dat_pva$max_disp[j_vava],
+#   arrival_probability = "both",
+#   dispersal_proportion = set_proportion_dispersing(
+#     proportions = prop_disp_vava
+#   )
+# )
+
+disp_vava <- cellular_automata_dispersal(
+  max_cells = 80,
+  dispersal_proportion = density_dependence_dispersing(
+    maximum_proportions = c(1, 1, 1, 0.3)
+  )
+)
+
+
+grow_vava <- growth(
+  transition_matrix = tm_vava,
+  global_stochasticity = species_dat_pva$stoch[j_vava],
+  transition_function = modified_transition(
+    survival_layer = "sf_layer",
+    fecundity_layer = "sf_layer"
+  )
+)
+
+pop_dyn_vava <- population_dynamics(
+  change = grow_vava,
+  dispersal = disp_vava
+)
+
+simres <- simulation(
+  landscape = lsc_vava,
+  population_dynamics = pop_dyn_vava,
+  demo_stochasticity = "full",
+  timesteps = 50,
+  replicates = 10,
+  verbose = TRUE
+)
+
+plot(simres, stages = 0)
+
+plot(simres)
+
+simpop <- get_pop_simulation(simres)
+
+psr(
+  simpop,
+  #ylim = c(0, 2000),
+  stages = 0
+)
 
 
 
