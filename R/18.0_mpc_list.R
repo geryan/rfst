@@ -41,7 +41,7 @@ dispersal_dist <- tribble(
   ~sp, ~ddist,
   "acno", 10000,
   "cipu", 2000,
-  "grba", 200,
+  "grba", 50,
   "isob", 500,
   "lese", 400,
   "lois", 10000,

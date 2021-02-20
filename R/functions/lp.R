@@ -8,6 +8,7 @@ lp <- function(x, twocol = FALSE, zlim = NULL, mm = NULL, names.attr = NULL, ...
              max(maxValue(x)))
     
     x <- x[[mm]]
+    
   }
   
   if(is.null(names.attr)){
@@ -21,7 +22,7 @@ lp <- function(x, twocol = FALSE, zlim = NULL, mm = NULL, names.attr = NULL, ...
         col.regions = magma(n = 16)[c(1,11)],
         at = c(0, 0.5, 1),
         margin = FALSE,
-        names.attr
+        names.attr = names.attr
       )
     } else {
       z <- levelplot(
@@ -29,7 +30,7 @@ lp <- function(x, twocol = FALSE, zlim = NULL, mm = NULL, names.attr = NULL, ...
         col.regions = magma(n = 16)[c(1,11)],
         at = c(0, 0.5, 1),
         margin = FALSE,
-        names.attr
+        names.attr = names.attr
       )
     }
   } else if(!is.null(zlim)){
@@ -43,7 +44,7 @@ lp <- function(x, twocol = FALSE, zlim = NULL, mm = NULL, names.attr = NULL, ...
           col = magma(16)
         ),
         margin = FALSE,
-        names.attr
+        names.attr = names.attr
       )
     } else {
       z <- levelplot(
@@ -55,14 +56,14 @@ lp <- function(x, twocol = FALSE, zlim = NULL, mm = NULL, names.attr = NULL, ...
           col = magma(16)
         ),
         margin = FALSE,
-        names.attr
+        names.attr = names.attr
       )
     }
-  }else{
-    if(missing(...)){
-      z <- levelplot(x, margin = FALSE, names.attr)
+  } else {
+    if (missing(...)){
+      z <- levelplot(x, margin = FALSE, names.attr = names.attr)
     } else {
-      z <- levelplot(stack(x, ...), margin = FALSE, names.attr)
+      z <- levelplot(stack(x, ...), margin = FALSE, names.attr = names.attr)
     }  
   }
   
