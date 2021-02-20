@@ -17,7 +17,7 @@ source.functions("R/functions")
 tm_polo <- matrix(
   data = c(
     0.00, 1.00,
-    0.37, 0.65
+    0.37, 0.64
   ),
   nrow = 2,
   ncol = 2,
@@ -112,12 +112,12 @@ tm_vava <- matrix(
 
 species_dat_pva_eg <- tribble(
      ~sp,     ~tm, ~popsize, ~cc, ~ccfun, ~stoch, ~max_disp,           ~habfun, ~max_cells,            ~dp,  ~pp, ~disp,  ~z,
-  "polo", tm_polo,     1500,   8,   cc_8,   0.05,      2000,                NA,         20,       c(1, 0.2),  0.98,  "ca", 0.4,
+  "polo", tm_polo,     1500,   8,   cc_8,   0.05,      2000,                NA,         20,       c(1, 0.2),  0.99,  "ca", 0.4,
   "pevo", tm_pevo,     5000,  15,  cc_15,   0.05,      4000,     habitat.upfun,         80,  c(1, 0.2, 0.2),  0.95,  "ca", 0.4,
-  "peau", tm_peau,     2000,   3,   cc_3,   0.05,     20000,     habitat.upfun,         NA,  c(1, 0.2, 0.2), 0.995,  "ke", 0.4,
+  "peau", tm_peau,     2000,   3,   cc_3,   0.05,     20000,     habitat.upfun,        500,    c(1, 1, 0.5), 0.991,  "ca", 0.4,
   "smle", tm_smle,     1000,  75,  cc_75,   0.07,      2000,                NA,         10,  c(1, 0.7, 0.6),  0.95,  "ca", 0.2,
-  "tyte", tm_tyte,     1000,   2,   cc_2,   0.07,    100000, habitat.downupfun,       1000,  c(1, 0.6, 0.6),  0.95,  "ca", 0.2,
-  "vava", tm_vava,     5000,  25,  cc_25,   0.05,      5000,                NA,         80, c(1, 1, 1, 0.3),    NA,  "ke", 0.4,
+  "tyte", tm_tyte,     1000,   2,   cc_2,   0.07,    100000, habitat.downupfun,     100000,  c(1, 0.6, 0.6),  0.95,  "ca", 0.2,
+  "vava", tm_vava,     5000,  25,  cc_25,   0.05,      5000,                NA,        100, c(1, 1, 1, 0.3), 0.995,  "ca", 0.4,
 ) %>% mutate(
   ss = map(
     .x = tm,
@@ -141,7 +141,7 @@ egf20 <- aggregate(eg_fire_20, fact = 2, fun = min)
 
 
 save(
-  species_dat_pva,
+  species_dat_pva_eg,
   egf20,
   file = "output/RData/11.0_pva_species_dat_eg.RData"
 )
