@@ -24,6 +24,8 @@ source.functions("R/functions")
 agg_set_eg <- agg_set_eg %>%
   filter(sp != "pevo")
 
+nreplicates <- 50
+
 command_args <- commandArgs(trailingOnly = TRUE)
 
 i <- as.numeric(command_args[1])

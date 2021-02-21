@@ -334,7 +334,7 @@ hm_peau <- agg5_ch$aggmap5[[
 ]][[1]]
 
 
-sf_peau <- logistic_sf(hm_peau)
+sf_peau <- logistic_sf(hm_peau, z = 0.1)
 
 j_peau <- which(species_dat_pva$sp == "peau")
 
@@ -343,7 +343,7 @@ ip_peau <- initpop2(
   popsize = species_dat_pva$popsize[j_peau],
   cc = species_dat_pva$cc[j_peau],
   ss = ss_peau,
-  pp = 0.995
+  pp = 0.992
 )
 
 #ip_peau <- ipredo
@@ -376,9 +376,9 @@ lsc_peau <- landscape(
 # )
 
 disp_peau <- cellular_automata_dispersal(
-  max_cells = 80,
+  max_cells = 400,
   dispersal_proportion = density_dependence_dispersing(
-    maximum_proportions = c(1, 1, 1, 0.3)
+    maximum_proportions = c(1, 1, 0.5)
   )
 )
 
@@ -753,7 +753,7 @@ lsc_vava <- landscape(
 # )
 
 disp_vava <- cellular_automata_dispersal(
-  max_cells = 80,
+  max_cells = 100,
   dispersal_proportion = density_dependence_dispersing(
     maximum_proportions = c(1, 1, 1, 0.3)
   )

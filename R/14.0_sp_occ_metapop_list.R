@@ -2021,8 +2021,6 @@ pa_list_eg <- tibble(
 
 
 save(
-  vba_dat_ch,
-  vba_dat_eg,
   pa_list_ch,
   pa_list_eg,
   species_list,
@@ -2031,6 +2029,8 @@ save(
   sm_list,
   sm_list_ch,
   sm_list_eg,
+  vba_dat_ch,
+  vba_dat_eg,
   file = "output/RData/14.0_sp_occ_metapop_list.RData"
 )
 
