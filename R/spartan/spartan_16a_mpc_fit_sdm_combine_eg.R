@@ -43,5 +43,5 @@ sdm_results_mpc_eg <- bind_rows(fit_list)
 
 save(
   sdm_results_mpc_eg,
-  file = "/data/gpfs/projects/punim0995/rfst/output/RData/16_mpc_fit_sdm_.RData"
+  file = "/data/gpfs/projects/punim0995/rfst/output/RData/16_mpc_fit_sdm_eg.RData"
 )
