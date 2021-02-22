@@ -158,9 +158,28 @@ var_set_eg <- varset %>%
     )
   )
 
-var_set$cscnid <- sprintf("%s_%s", var_set$scn_id, var_set$climate_model)
+var_set_eg$cscnid <- sprintf(
+  "%s_%s",
+  var_set_eg$scn_id,
+  var_set_eg$climate_model
+)
+
+var_set_eg$ycscnid <- sprintf(
+  "%s_%s",
+  var_set_eg$yscn_id,
+  var_set_eg$climate_model
+)
 
 save(
-  var_set,
-  file = "output/RData/07_combined_variables.RData"
+  var_set_eg,
+  file = "output/RData/07_combined_variables_eg.RData"
+)
+
+
+varset_mpc_eg <- var_set_eg %>%
+  filter(climate_model == "ACCESS1-0")
+
+save(
+  varset_mpc_eg,
+  file = "output/RData/07a_varset_mpc_eg.RData"
 )

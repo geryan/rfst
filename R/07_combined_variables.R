@@ -152,3 +152,12 @@ save(
   var_set,
   file = "output/RData/07_combined_variables.RData"
 )
+
+varset_mpc <- var_set %>%
+  filter(climate_model == "ACCESS1-0")
+
+save(
+  varset_mpc,
+  file = "output/RData/07a_varset_mpc.RData"
+)
+

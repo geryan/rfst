@@ -12,7 +12,9 @@ library(dplyr)
 
 load(file = "output/RData/00_controls_eg.RData")
 load(file = "output/RData/01_landscape_variables_eg.RData")
-load(file = "output/RData/14.0_sp_occ_metapop_list.RData")
+load(file = "output/RData/14.0_sp_occ_metapop_list_eg.RData")
+
+eg_grid <- readRDS(file = "output/RData/14.00_grid_eg.Rds")
 
 source.functions("R/functions")
 
@@ -27,7 +29,9 @@ pad <- buff.sample.pa(
   cellsize = 200,
   buff.dist = 500,
   species = pa_list_eg$species[i],
-  survey_method = pa_list_ch$survey_methods[i]
+  survey_method = pa_list_eg$survey_methods[i],
+  sg = eg_grid
+  
 )
 
 

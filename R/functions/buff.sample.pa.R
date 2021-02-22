@@ -5,7 +5,8 @@ buff.sample.pa <- function(
   cellsize = 500,
   buff.dist = 500,
   species = NA,
-  survey_method = NA
+  survey_method = NA,
+  sg = NULL
 ){
   
   z <- add.buffered(
@@ -19,7 +20,8 @@ buff.sample.pa <- function(
   result <- sample.pa(
     z = z,
     rfa = rfa,
-    cellsize = cellsize
+    cellsize = cellsize,
+    sg = sg
   )
   
   return(result)
