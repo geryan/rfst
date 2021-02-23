@@ -2,14 +2,13 @@
 
 source("R/spartan/spartan_settings.R")
 
-
+library(magrittr)
 library(dplyr)
 library(purrr)
 library(tibble)
 library(tidyr)
 library(raster)
 library(sp)
-library(magrittr)
 library(steps)
 
 load(file = "output/RData/00_controls.RData")
@@ -21,6 +20,10 @@ load(file = "output/RData/11.0_pva_species_dat.RData")
 
 source.functions("R/functions")
 
+nreplicates <- 50
+
+agg5_ch <- agg5_ch %>%
+  filter(sp == "vava")
 
 command_args <- commandArgs(trailingOnly = TRUE)
 
@@ -107,7 +110,7 @@ pop_dyn <- population_dynamics(
 #   landscape = lsc,
 #   population_dynamics = pop_dyn,
 #   demo_stochasticity = "full",
-#   timesteps = 5,
+#   timesteps = 50,
 #   replicates = 3,
 #   verbose = TRUE
 # )
@@ -153,7 +156,7 @@ pva_res <- tibble(
   med_pop,
   med_pop_all,
   p_extinct = pva_p_extinct,
-  lcc = list(lcc)
+  lcc
 ) %>%
   mutate(
     p_extant = 1 - p_extinct

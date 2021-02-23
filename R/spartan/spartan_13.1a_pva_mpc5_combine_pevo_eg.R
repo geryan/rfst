@@ -8,15 +8,15 @@ library(tibble)
 library(tidyr)
 
 
-load(file = "output/RData/00_controls.RData")
-load(file = "output/RData/01_landscape_variables.RData")
+load(file = "output/RData/00_controls_eg.RData")
+load(file = "output/RData/01_landscape_variables_eg.RData")
 
 source.functions("R/functions")
 
 
 file_list <- list.files(
   path = "/data/gpfs/projects/punim1340/rfst_eg/output/spartan_RData/mpc_pva/",
-  pattern = "mpc_pvap5"
+  pattern = "mpc_pva5"
 )
 
 
@@ -35,13 +35,13 @@ mpc_pva_list <- lapply(
   }
 )
 
-mpc_results_pevo_eg <- bind_rows(mpc_pva_list)
+mpc_results_pva5_eg <- bind_rows(mpc_pva_list)
 
 
 
 save(
-  mpc_results_pevo_eg,
-  file = "/data/gpfs/projects/punim0995/rfst/output/RData/13.1_pva_pevo_eg.RData"
+  mpc_results_pva5_eg,
+  file = "/data/gpfs/projects/punim0995/rfst/output/RData/13.1_pva_mpc5_eg.RData"
 )
 
 

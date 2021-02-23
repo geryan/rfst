@@ -6,7 +6,7 @@
 #SBATCH --output="/data/gpfs/projects/punim0995/rfst/slurm/slurm_output/batch_11.1.out"
 
 
-for i in {1..720}
+for i in {1..240}
 do
 
 	JOB_NAME="j11.1_${i}"

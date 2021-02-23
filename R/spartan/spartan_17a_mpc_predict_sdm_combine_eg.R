@@ -13,14 +13,17 @@ library(gbm)
 library(dismo)
 library(sf)
 
-load(file = "output/RData/00_controls.RData")
-load(file = "output/RData/01_landscape_variables.RData")
-load(file = "output/RData/07a_varset_mpc.RData")
-load(file = "output/RData/14.1_sp_occ_metapop.RData")
+load(file = "output/RData/00_controls_eg.RData")
+load(file = "output/RData/01_landscape_variables_eg.RData")
+load(file = "output/RData/07a_varset_mpc_eg.RData")
+load(file = "output/RData/14.1_sp_occ_metapop_eg.RData")
 
 source.functions("R/functions")
 
-p_list <- list.files("/data/gpfs/projects/punim0995/rfst/output/spartan_RData/mpc_pred/")
+p_list <- list.files(
+  path = "/data/gpfs/projects/punim1340/rfst_eg/output/spartan_RData/mpc_pred/",
+  pattern = "pred_mpc"
+)
 
 p_id <- sub(
   pattern = "pred_mpc_",
@@ -40,13 +43,13 @@ p_sp <- sub(
 )
 
 
-p_csn <- strsplit(
+p_ycscn <- strsplit(
   x = p_id,
   split = "_"
 ) %>%
   lapply(
     FUN = function(x){
-      x[1:5]
+      x[2:7]
     }
   ) %>%
   sapply(
@@ -60,7 +63,7 @@ p_maps <- lapply(
   FUN = function(x){
     z <- readRDS(
       file = sprintf(
-        "/data/gpfs/projects/punim0995/rfst/output/spartan_RData/mpc_pred/%s",
+        "/data/gpfs/projects/punim1340/rfst_eg/output/spartan_RData/mpc_pred/%s",
         x
       )
     )
@@ -71,36 +74,47 @@ p_maps <- lapply(
 )
 
 preds <- tibble(
-  cscnid = p_csn,
+  ycscnid = p_ycscn,
   sp =  p_sp,
   predmaps = p_maps
 )
 
 
-pred_mpc <- full_join(
-  x = varset_mpc %>%
+pred_mpc_eg <- full_join(
+  x = varset_mpc_eg %>%
     dplyr::select(
       "scenario",
       "scenario_replicate",
       "rcp",
       "climate_model",
+      "yearid",
       "harvest_scenario",
       "plan_burn",
+      "yscn_id",
       "scn_id",
       "th",
       "rc",
       "pb",
       "scn_no",
-      "cscnid"
+      "cscnid",
+      "ycscnid"
     ),
   y = preds,
-  by = "cscnid"
-)
+  by = "ycscnid"
+) %>% 
+  filter(!is.na(sp))
 
 
 save(
-  pred_mpc,
-  file =  "/data/gpfs/projects/punim0995/rfst/output/RData/17_mpc_predict_sdm.RData"
+  pred_mpc_eg,
+  file =  "/data/gpfs/projects/punim0995/rfst/output/RData/17_mpc_predict_sdm_eg.RData"
 )
+
+
+
+
+
+
+
 
 

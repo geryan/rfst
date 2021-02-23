@@ -22,6 +22,9 @@ load(file = "output/RData/18.0_mpc_list.RData")
 source.functions("R/functions")
 
 
+mpc_dat <- mpc_dat %>%
+  filter(sp == "grba" | sp == "lese" | sp == "pear" | sp == "wiva")
+
 command_args <- commandArgs(trailingOnly = TRUE)
 
 i <- as.numeric(command_args[1])
