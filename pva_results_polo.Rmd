@@ -6,8 +6,8 @@ output:
 ---
 
 ```{r}
-spti <- "Greater glider"
-spfil <- "pevo"
+spti <- "Long-footed potoroo"
+spfil <- "polo"
 ```
 
 
@@ -41,10 +41,11 @@ library(cowplot)
 ```{r}
 load(file = "output/RData/00_controls.RData")
 load(file = "output/RData/01_landscape_variables.RData")
-load(file = "output/RData/02_species_occurrences.RData")
-load(file = "output/RData/11.1_pva.RData")
+#load(file = "output/RData/02_species_occurrences.RData")
+load(file = "output/RData/02.1_species_occurrence_eg.RData")
+#load(file = "output/RData/11.1_pva.RData")
 load(file = "output/RData/11.1_pva_eg.RData")
-load(file = "output/RData/11.2_pva_cc.RData")
+#load(file = "output/RData/11.2_pva_cc.RData")
 load(file = "output/RData/11.2_pva_cc_eg.RData")
 ```
 
@@ -81,43 +82,10 @@ peau_pva_eg <- pva_results5_eg %>%
 peau_pva_eg
 ```
 
-```{r}
-peau_pva_ch <- pva_results5_ch %>%
-  dplyr::select(
-    -aggmap5,
-    -lcc
-    ) %>%
-  full_join(
-    aggcc_ch,
-    by = c(
-      "scenario",
-      "scenario_replicate",
-      "rcp",
-      "climate_model",
-      "harvest_scenario",
-      "plan_burn",
-      "scn_id",
-      "cscnid",
-      "sp")
-  ) %>%
-  mutate(
-    yscn_id = NA,
-    ycscnid = NA,
-    yearid = "CH",
-    yscenario = NA,
-    year = "2019",
-    landscape = "Central Highlands",
-    init_pop = NA
-  ) %>%
-  dplyr::select(names(peau_pva_eg)) %>%
-  filter(sp == spfil)
-
-peau_pva_ch
-```
 
 ```{r}
 peau_pva <- bind_rows(
-  peau_pva_ch,
+  #peau_pva_ch,
   peau_pva_eg
 )
 
@@ -126,11 +94,11 @@ peau_pva
 
 
 ```{r}
-species_names_pva <- pa_data %>%
+species_names_pva <- pa_data_eg %>%
   dplyr::select(species, sp) %>%
   mutate(
     species_com = case_when(
-      sp == "gyle" ~ "Leadbeater's possum",
+      sp == "polo" ~ "Long-footed potoroo",
       sp == "peau" ~ "Yellow-bellied glider",
       sp == "pevo" ~ "Greater glider",
       sp == "smle" ~ "White-footed dunnart",
@@ -142,7 +110,7 @@ species_names_pva <- pa_data %>%
     species_com = factor(
       x = species_com,
       levels = c(
-        "Leadbeater's possum",
+        "Long-footed potoroo",
         "Yellow-bellied glider",
         "Greater glider",
         "White-footed dunnart",
@@ -293,179 +261,6 @@ pvr
 # Trajectory plots
 ```{r}
 knitr::opts_chunk$set(fig.width=6, fig.height=4, echo = FALSE, message = FALSE)
-```
-
-### CH
-
-No harvest no planned burning RCP4.5
-
-```{r}
-pvr %>%
-  filter(
-    yearid == "CH",
-    cscnid == "TH00_rcp45_NB_01_ACCESS1-0"
-  ) %>%
-  dopvaplot
-```
-
-```{r}
-pvr %>%
-  filter(
-    yearid == "CH",
-    cscnid == "TH00_rcp45_NB_01_ACCESS1-0"
-  ) %>%
-  dopvaplot(cc = TRUE)
-```
-
-```{r}
-pvr %>%
-  filter(
-    yearid == "CH",
-    cscnid == "TH00_rcp45_NB_01_ACCESS1-0"
-  ) %>%
-  doccplot
-```
-
-No harvest RCP4.5  
-
-```{r}
-pvr %>%
-  filter(
-    yearid == "CH",
-    cscnid == "TH00_rcp45_PB_01_ACCESS1-0"
-  ) %>%
-  dopvaplot
-```
-
-```{r}
-pvr %>%
-  filter(
-    yearid == "CH",
-    cscnid == "TH00_rcp45_PB_01_ACCESS1-0"
-  ) %>%
-  dopvaplot(cc = TRUE)
-```
-
-```{r}
-pvr %>%
-  filter(
-    yearid == "CH",
-    cscnid == "TH00_rcp45_PB_01_ACCESS1-0"
-  ) %>%
-  doccplot
-```
-
-Stop harvest 2030 RCP4.5 
-
-```{r}
-pvr %>%
-  filter(
-    yearid == "CH",
-    cscnid == "TH30_rcp45_PB_01_ACCESS1-0"
-  ) %>%
-  dopvaplot
-```
-
-```{r}
-pvr %>%
-  filter(
-    yearid == "CH",
-    cscnid == "TH30_rcp45_PB_01_ACCESS1-0"
-  ) %>%
-  dopvaplot(cc = TRUE)
-```
-
-```{r}
-pvr %>%
-  filter(
-    yearid == "CH",
-    cscnid == "TH30_rcp45_PB_01_ACCESS1-0"
-  ) %>%
-  doccplot
-```
-
-Ongoing harvest RCP4.5
-```{r}
-pvr %>%
-  filter(
-    yearid == "CH",
-    cscnid == "TH19_rcp45_PB_01_ACCESS1-0"
-  ) %>%
-  dopvaplot
-```
-
-```{r}
-pvr %>%
-  filter(
-    yearid == "CH",
-    cscnid == "TH19_rcp45_PB_01_ACCESS1-0"
-  ) %>%
-  dopvaplot(cc = TRUE)
-```
-
-```{r}
-pvr %>%
-  filter(
-    yearid == "CH",
-    cscnid == "TH19_rcp45_PB_01_ACCESS1-0"
-  ) %>%
-  doccplot
-```
-
-No harvest RCP8.5                   
-```{r}
-pvr %>%
-  filter(
-    yearid == "CH",
-    cscnid == "TH00_rcp85_PB_01_ACCESS1-0"
-  ) %>%
-  dopvaplot
-```
-
-```{r}
-pvr %>%
-  filter(
-    yearid == "CH",
-    cscnid == "TH00_rcp85_PB_01_ACCESS1-0"
-  ) %>%
-  dopvaplot(cc = TRUE)
-```
-
-```{r}
-pvr %>%
-  filter(
-    yearid == "CH",
-    cscnid == "TH00_rcp45_PB_01_ACCESS1-0"
-  ) %>%
-  doccplot
-```
-
-Stop harvest 2030 RCP8.5            
-```{r}
-pvr %>%
-  filter(
-    yearid == "CH",
-    cscnid == "TH30_rcp85_PB_01_ACCESS1-0"
-  ) %>%
-  dopvaplot
-```
-
-```{r}
-pvr %>%
-  filter(
-    yearid == "CH",
-    cscnid == "TH30_rcp85_PB_01_ACCESS1-0"
-  ) %>%
-  dopvaplot(cc = TRUE)
-```
-
-```{r}
-pvr %>%
-  filter(
-    yearid == "CH",
-    cscnid == "TH30_rcp85_PB_01_ACCESS1-0"
-  ) %>%
-  doccplot
 ```
 
 

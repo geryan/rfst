@@ -1,13 +1,13 @@
 ---
-title: "PVA Results Greater glider"
+title: "PVA Results Lace monitor"
 output:
   word_document: default
   html_document: default
 ---
 
 ```{r}
-spti <- "Greater glider"
-spfil <- "pevo"
+spti <- "Lace monitor"
+spfil <- "vava"
 ```
 
 

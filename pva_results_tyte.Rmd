@@ -1,13 +1,13 @@
 ---
-title: "PVA Results Greater glider"
+title: "PVA Results Sooty Owl"
 output:
   word_document: default
   html_document: default
 ---
 
 ```{r}
-spti <- "Greater glider"
-spfil <- "pevo"
+spti <- "Sooty Owl"
+spfil <- "tyte"
 ```
 
 

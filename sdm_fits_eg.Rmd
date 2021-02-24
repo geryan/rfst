@@ -1,0 +1,91 @@
+---
+title: "sdm fits central highlands"
+output:
+  word_document: default
+  html_document: default
+---
+
+```{r}
+knitr::opts_chunk$set(fig.width=6, fig.height=4)
+```
+
+
+
+```{r}
+source("R/spartan/spartan_settings.R")
+```
+
+
+```{r}
+library(dplyr)
+library(purrr)
+#library(tibble)
+library(tidyr)
+#library(magrittr)
+library(ggplot2)
+library(raster)
+library(dismo)
+library(gbm)
+```
+
+```{r}
+load(file = "output/RData/00_controls_eg.RData")
+load(file = "output/RData/01_landscape_variables_eg.RData")
+load(file = "output/RData/09_fit_distribution_models_eg.RData")
+```
+
+```{r}
+source.functions("R/functions")
+```
+
+
+## LFP
+```{r}
+summary(sdm_results_eg$brt.fit[[1]])
+```
+
+
+```{r}
+gbm.plot(sdm_results_eg$brt.fit[[1]])
+```
+
+## GG
+```{r}
+summary(sdm_results_eg$brt.fit[[2]])
+```
+
+
+```{r}
+gbm.plot(sdm_results_eg$brt.fit[[2]])
+```
+
+## YBG
+```{r}
+summary(sdm_results_eg$brt.fit[[3]])
+```
+
+
+```{r}
+gbm.plot(sdm_results_eg$brt.fit[[3]])
+```
+
+## SO
+```{r}
+summary(sdm_results_eg$brt.fit[[4]])
+```
+
+
+```{r}
+gbm.plot(sdm_results_eg$brt.fit[[4]])
+```
+
+## LM
+```{r}
+summary(sdm_results_eg$brt.fit[[5]])
+```
+
+
+```{r}
+gbm.plot(sdm_results_eg$brt.fit[[5]])
+```
+

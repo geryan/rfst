@@ -1,10 +1,12 @@
 ---
 title: "Landacape variable projections"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, dpi = 300)
 ```
 
 ```{r}
@@ -13,28 +15,25 @@ source("R/spartan/spartan_settings.R")
 
 
 ```{r}
-.libPaths("/data/gpfs/projects/punim0995/gr_lib")
+#.libPaths("/data/gpfs/projects/punim0995/gr_lib")
 ```
 
 ```{r}
 library(raster)
 library(dplyr)
-library(sf)
-library(lubridate)
 library(purrr)
-library(tibble)
-#library(future)
-#library(furrr)
+#library(tibble)
 library(tidyr)
-#library(future.apply)
 library(dismo)
 library(gbm)
+library(rasterVis)
 ```
 
 ```{r}
 load(file = "output/RData/00_controls.RData")
 load(file = "output/RData/01_landscape_variables.RData")
 load(file = "output/RData/02_species_occurrences.RData")
+load(file = "output/RData/05_geophys_vars.RData")
 load(file = "output/RData/07_combined_variables.RData")
 load(file = "output/RData/08_distribution_model_data.RData")
 ```
@@ -44,36 +43,40 @@ source.functions("R/functions")
 ```
 
 ```{r}
-var_set
+#var_set
 ```
+
+
+Max age - 
+
 Midstorey species - proportion of biomass
 `lbm_prop`
+
 ```{r}
 var_set %>%
-  filter(cscnid == "TH19_rcp45_PB_01_ACCESS1-0") %>%
+  filter(cscnid == "TH00_rcp45_PB_01_ACCESS1-0") %>%
   pull(all_vars) %>%
   .[[1]] %>%
   lxtract("lbm_prop") %>%
   .[[c(1, 10, 20, 30, 40, 50)]] %>%
-  #lp(zlim = c(0, 1))
-  levelplot(
+  lp(
     zlim = c(0, 1),
     names.attr = c(2019, 2029, 2039, 2049, 2059, 2069) %>% as.character
   )
   
 ```
+
 Midstorey species - total biomass
-`lbm_bionm`
+`lbm_biom`
+
 ```{r}
 var_set %>%
-  filter(cscnid == "TH19_rcp45_PB_01_ACCESS1-0") %>%
+  filter(cscnid == "TH00_rcp45_PB_01_ACCESS1-0") %>%
   pull(all_vars) %>%
   .[[1]] %>%
   lxtract("lbm_biom") %>%
   .[[c(1, 10, 20, 30, 40, 50)]] %>%
-  #lp(zlim = c(0, 1))
-  levelplot(
-    #zlim = c(0, 1),
+  lp(
     names.attr = c(2019, 2029, 2039, 2049, 2059, 2069) %>% as.character
   )
   
@@ -81,15 +84,15 @@ var_set %>%
 
 Acacia species - proportion of biomass
 `ac_prop`
+
 ```{r}
 var_set %>%
-  filter(cscnid == "TH19_rcp45_PB_01_ACCESS1-0") %>%
+  filter(cscnid == "TH00_rcp45_PB_01_ACCESS1-0") %>%
   pull(all_vars) %>%
   .[[1]] %>%
   lxtract("ac_prop") %>%
   .[[c(1, 10, 20, 30, 40, 50)]] %>%
-  #lp(zlim = c(0, 1))
-  levelplot(
+  lp(
     zlim = c(0, 1),
     names.attr = c(2019, 2029, 2039, 2049, 2059, 2069) %>% as.character
   )
@@ -97,17 +100,16 @@ var_set %>%
 ```
 
 Acacia species - total biomass
-`lbm_prop`
+`ac_prop`
+
 ```{r}
 var_set %>%
-  filter(cscnid == "TH19_rcp45_PB_01_ACCESS1-0") %>%
+  filter(cscnid == "TH00_rcp45_PB_01_ACCESS1-0") %>%
   pull(all_vars) %>%
   .[[1]] %>%
   lxtract("ac_biom") %>%
   .[[c(1, 10, 20, 30, 40, 50)]] %>%
-  #lp(zlim = c(0, 1))
-  levelplot(
-    #zlim = c(0, 1),
+  lp(
     names.attr = c(2019, 2029, 2039, 2049, 2059, 2069) %>% as.character
   )
   
@@ -115,15 +117,15 @@ var_set %>%
 
 Greater glider feed tree species - proportion of biomass
 `ggf_prop`
+
 ```{r}
 var_set %>%
-  filter(cscnid == "TH19_rcp45_PB_01_ACCESS1-0") %>%
+  filter(cscnid == "TH00_rcp45_PB_01_ACCESS1-0") %>%
   pull(all_vars) %>%
   .[[1]] %>%
   lxtract("ggf_prop") %>%
   .[[c(1, 10, 20, 30, 40, 50)]] %>%
-  #lp(zlim = c(0, 1))
-  levelplot(
+  lp(
     zlim = c(0, 1),
     names.attr = c(2019, 2029, 2039, 2049, 2059, 2069) %>% as.character
   )
@@ -132,31 +134,30 @@ var_set %>%
 
 Greater glider feed tree species - total biomass
 `ggf_biom`
+
 ```{r}
 var_set %>%
-  filter(cscnid == "TH19_rcp45_PB_01_ACCESS1-0") %>%
+  filter(cscnid == "TH00_rcp45_PB_01_ACCESS1-0") %>%
   pull(all_vars) %>%
   .[[1]] %>%
   lxtract("ggf_biom") %>%
   .[[c(1, 10, 20, 30, 40, 50)]] %>%
-  #lp(zlim = c(0, 1))
-  levelplot(
-    zlim = c(0, 1),
+  lp(
     names.attr = c(2019, 2029, 2039, 2049, 2059, 2069) %>% as.character
   )
   
 ```
 
-Greater glider den tree species - proportion of biomass
-`ggd_prop`
+Greater glider den tree species >150 years old - proportion of biomass
+`ggd_prop_og`
+
 ```{r}
-aa <- var_set %>%
-  filter(cscnid == "TH19_rcp45_PB_01_ACCESS1-0") %>%
+var_set %>%
+  filter(cscnid == "TH00_rcp45_PB_01_ACCESS1-0") %>%
   pull(all_vars) %>%
   .[[1]] %>%
-  lxtract("ggd_prop") %>%
+  lxtract("ggd_prop_og") %>%
   .[[c(1, 10, 20, 30, 40, 50)]] %>%
-  #lp(zlim = c(0, 1))
   lp(
     zlim = c(0, 1),
     names.attr = c(2019, 2029, 2039, 2049, 2059, 2069) %>% as.character
@@ -164,206 +165,207 @@ aa <- var_set %>%
   
 ```
 
-Greater glider den tree species - 
-`lbm_prop`
+Greater glider den tree species >150 years old - total biomass
+`ggd_biom_og`
+
 ```{r}
 var_set %>%
-  filter(cscnid == "TH19_rcp45_PB_01_ACCESS1-0") %>%
+  filter(cscnid == "TH00_rcp45_PB_01_ACCESS1-0") %>%
   pull(all_vars) %>%
   .[[1]] %>%
-  lxtract("lbm_prop") %>%
+  lxtract("ggd_biom_og") %>%
   .[[c(1, 10, 20, 30, 40, 50)]] %>%
-  #lp(zlim = c(0, 1))
-  levelplot(
+  lp(
+    names.attr = c(2019, 2029, 2039, 2049, 2059, 2069) %>% as.character
+  )
+  
+```
+Old growth Eucalypts (>150 years) - proportion of biomass
+`prop_oge`
+
+```{r}
+var_set %>%
+  filter(cscnid == "TH00_rcp45_PB_01_ACCESS1-0") %>%
+  pull(all_vars) %>%
+  .[[1]] %>%
+  lxtract("prop_oge") %>%
+  .[[c(1, 10, 20, 30, 40, 50)]] %>%
+  lp(
     zlim = c(0, 1),
     names.attr = c(2019, 2029, 2039, 2049, 2059, 2069) %>% as.character
   )
   
 ```
 
-Proportion midstorey species
-`lbm_prop`
+Old growth Eucalypts (>150 years) - mean proportion of biomass in 3x3 ha window
+`prop_oge`
+
 ```{r}
 var_set %>%
-  filter(cscnid == "TH19_rcp45_PB_01_ACCESS1-0") %>%
+  filter(cscnid == "TH00_rcp45_PB_01_ACCESS1-0") %>%
   pull(all_vars) %>%
   .[[1]] %>%
-  lxtract("lbm_prop") %>%
+  lxtract("prop_oge_3h") %>%
   .[[c(1, 10, 20, 30, 40, 50)]] %>%
-  #lp(zlim = c(0, 1))
-  levelplot(
+  lp(
     zlim = c(0, 1),
     names.attr = c(2019, 2029, 2039, 2049, 2059, 2069) %>% as.character
   )
   
 ```
 
-Proportion midstorey species
-`lbm_prop`
+Old growth Eucalypts (>150 years) - mean proportion of biomass in 1km radius window
+`prop_oge`
+
 ```{r}
 var_set %>%
-  filter(cscnid == "TH19_rcp45_PB_01_ACCESS1-0") %>%
+  filter(cscnid == "TH00_rcp45_PB_01_ACCESS1-0") %>%
   pull(all_vars) %>%
   .[[1]] %>%
-  lxtract("lbm_prop") %>%
+  lxtract("prop_oge_1k") %>%
   .[[c(1, 10, 20, 30, 40, 50)]] %>%
-  #lp(zlim = c(0, 1))
-  levelplot(
+  lp(
     zlim = c(0, 1),
     names.attr = c(2019, 2029, 2039, 2049, 2059, 2069) %>% as.character
   )
   
 ```
 
-Proportion midstorey species
-`lbm_prop`
+
+Old growth Eucalypts (>150 years) - biomass
+`prop_oge`
+
 ```{r}
 var_set %>%
-  filter(cscnid == "TH19_rcp45_PB_01_ACCESS1-0") %>%
+  filter(cscnid == "TH00_rcp45_PB_01_ACCESS1-0") %>%
   pull(all_vars) %>%
   .[[1]] %>%
-  lxtract("lbm_prop") %>%
+  lxtract("biom_oge") %>%
   .[[c(1, 10, 20, 30, 40, 50)]] %>%
-  #lp(zlim = c(0, 1))
-  levelplot(
-    zlim = c(0, 1),
+  lp(
     names.attr = c(2019, 2029, 2039, 2049, 2059, 2069) %>% as.character
   )
   
 ```
 
-Proportion midstorey species
-`lbm_prop`
+Old growth Eucalypts (>150 years) - mean biomass in 3x3 ha window
+`prop_oge`
+
 ```{r}
 var_set %>%
-  filter(cscnid == "TH19_rcp45_PB_01_ACCESS1-0") %>%
+  filter(cscnid == "TH00_rcp45_PB_01_ACCESS1-0") %>%
   pull(all_vars) %>%
   .[[1]] %>%
-  lxtract("lbm_prop") %>%
+  lxtract("biom_oge_3h") %>%
   .[[c(1, 10, 20, 30, 40, 50)]] %>%
-  #lp(zlim = c(0, 1))
-  levelplot(
-    zlim = c(0, 1),
+  lp(
+    names.attr = c(2019, 2029, 2039, 2049, 2059, 2069) %>% as.character
+  )
+  
+
+
+```
+
+Summer rainfall (mm)
+`prec_djf`
+
+```{r}
+var_set %>%
+  filter(cscnid == "TH00_rcp45_PB_01_ACCESS1-0") %>%
+  pull(all_vars) %>%
+  .[[1]] %>%
+  lxtract(y =32 ) %>%
+  .[[c(1, 10, 20, 30, 40, 50)]] %>%
+  lp(
     names.attr = c(2019, 2029, 2039, 2049, 2059, 2069) %>% as.character
   )
   
 ```
 
-Proportion midstorey species
-`lbm_prop`
+Winter rainfall (mm)
+`prec_jja`
+
 ```{r}
 var_set %>%
-  filter(cscnid == "TH19_rcp45_PB_01_ACCESS1-0") %>%
+  filter(cscnid == "TH00_rcp45_PB_01_ACCESS1-0") %>%
   pull(all_vars) %>%
   .[[1]] %>%
-  lxtract("lbm_prop") %>%
+  lxtract(y = 33) %>%
   .[[c(1, 10, 20, 30, 40, 50)]] %>%
-  #lp(zlim = c(0, 1))
-  levelplot(
-    zlim = c(0, 1),
+  lp(
     names.attr = c(2019, 2029, 2039, 2049, 2059, 2069) %>% as.character
   )
   
 ```
 
-Proportion midstorey species
-`lbm_prop`
+Summer maximum temperature - mean (c)
+`tmax_djf`
+
 ```{r}
 var_set %>%
-  filter(cscnid == "TH19_rcp45_PB_01_ACCESS1-0") %>%
+  filter(cscnid == "TH00_rcp45_PB_01_ACCESS1-0") %>%
   pull(all_vars) %>%
   .[[1]] %>%
-  lxtract("lbm_prop") %>%
+  lxtract(y = 34) %>%
   .[[c(1, 10, 20, 30, 40, 50)]] %>%
-  #lp(zlim = c(0, 1))
-  levelplot(
-    zlim = c(0, 1),
+  lp(
     names.attr = c(2019, 2029, 2039, 2049, 2059, 2069) %>% as.character
   )
   
 ```
 
-Proportion midstorey species
-`lbm_prop`
+Winter minimum temperature - mean (c)
+`prec_djf`
+
 ```{r}
 var_set %>%
-  filter(cscnid == "TH19_rcp45_PB_01_ACCESS1-0") %>%
+  filter(cscnid == "TH00_rcp45_PB_01_ACCESS1-0") %>%
   pull(all_vars) %>%
   .[[1]] %>%
-  lxtract("lbm_prop") %>%
+  lxtract(y = 35) %>%
   .[[c(1, 10, 20, 30, 40, 50)]] %>%
-  #lp(zlim = c(0, 1))
-  levelplot(
-    zlim = c(0, 1),
+  lp(
     names.attr = c(2019, 2029, 2039, 2049, 2059, 2069) %>% as.character
   )
-  
+```
+Log-vertical distance from any waterway
+`lvdaw`
+
+```{r}
+lp(geo_vars[["lvdaw"]])
 ```
 
-Proportion midstorey species
-`lbm_prop`
+Log-vertical distance from major waterway
+`lvdma`
+
 ```{r}
-var_set %>%
-  filter(cscnid == "TH19_rcp45_PB_01_ACCESS1-0") %>%
-  pull(all_vars) %>%
-  .[[1]] %>%
-  lxtract("lbm_prop") %>%
-  .[[c(1, 10, 20, 30, 40, 50)]] %>%
-  #lp(zlim = c(0, 1))
-  levelplot(
-    zlim = c(0, 1),
-    names.attr = c(2019, 2029, 2039, 2049, 2059, 2069) %>% as.character
-  )
-  
+lp(geo_vars[["lvdma"]])
 ```
 
-Proportion midstorey species
-`lbm_prop`
+
+Log-vertical distance from minor waterway
+`lvdmi`
+
 ```{r}
-var_set %>%
-  filter(cscnid == "TH19_rcp45_PB_01_ACCESS1-0") %>%
-  pull(all_vars) %>%
-  .[[1]] %>%
-  lxtract("lbm_prop") %>%
-  .[[c(1, 10, 20, 30, 40, 50)]] %>%
-  #lp(zlim = c(0, 1))
-  levelplot(
-    zlim = c(0, 1),
-    names.attr = c(2019, 2029, 2039, 2049, 2059, 2069) %>% as.character
-  )
-  
+lp(geo_vars[["lvdmi"]])
 ```
 
-Proportion midstorey species
-`lbm_prop`
+Log-vertical distance above saline waterway
+`lvdsw`
+
 ```{r}
-var_set %>%
-  filter(cscnid == "TH19_rcp45_PB_01_ACCESS1-0") %>%
-  pull(all_vars) %>%
-  .[[1]] %>%
-  lxtract("lbm_prop") %>%
-  .[[c(1, 10, 20, 30, 40, 50)]] %>%
-  #lp(zlim = c(0, 1))
-  levelplot(
-    zlim = c(0, 1),
-    names.attr = c(2019, 2029, 2039, 2049, 2059, 2069) %>% as.character
-  )
-  
+lp(geo_vars[["lvdsw"]])
 ```
 
-Proportion midstorey species
-`lbm_prop`
+Thorium
+
 ```{r}
-var_set %>%
-  filter(cscnid == "TH19_rcp45_PB_01_ACCESS1-0") %>%
-  pull(all_vars) %>%
-  .[[1]] %>% names
-  lxtract("prec_dj") %>%
-  .[[c(1, 10, 20, 30, 40, 50)]] %>%
-  #lp(zlim = c(0, 1))
-  levelplot(
-    zlim = c(0, 1),
-    names.attr = c(2019, 2029, 2039, 2049, 2059, 2069) %>% as.character
-  )
-  
+lp(geo_vars[["tho"]])
 ```
+
+Anisotronic heating x ruggedness
+
+```{r}
+lp(geo_vars[["ahr"]])
+```
+

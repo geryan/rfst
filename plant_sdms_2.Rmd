@@ -1,11 +1,19 @@
 ---
 title: "plant sdms"
-output: html_document
+output:
+  pdf_document: default
+  html_document: default
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+```{r setup, echo = FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE)
 ```
+
+```{r}
+source("R/spartan/spartan_settings.R")
+```
+
+
 
 ```{r}
 library(dplyr)
@@ -20,6 +28,8 @@ load("output/RData/16_mpc_fit_sdm.RData")
 load("output/RData/17_mpc_predict_sdm.RData")
 ```
 
+*Grevillea barklyana*
+
 ```{r}
 sdm_results_mpc_ch %>%
   filter(sp == "grba") %>%
@@ -28,11 +38,13 @@ sdm_results_mpc_ch %>%
   gbm.plot
 ```
 
+rename layers and fix sequence
+
 ```{r}
 pred_mpc %>%
   filter(
     sp == "grba",
-    cscnid =="TH19_rcp45_PB_01_ACCESS1-0"
+    cscnid =="TH00_rcp45_PB_01_ACCESS1-0"
   ) %>%
   pull(predmaps) %>%
   .[[1]] %>%
@@ -41,6 +53,7 @@ pred_mpc %>%
 ```
 
 
+*Leionema bilobum serrulatum*
 
 ```{r}
 sdm_results_mpc_ch %>%
@@ -54,13 +67,15 @@ sdm_results_mpc_ch %>%
 pred_mpc %>%
   filter(
     sp == "lese",
-    cscnid =="TH19_rcp45_PB_01_ACCESS1-0"
+    cscnid =="TH00_rcp45_PB_01_ACCESS1-0"
   ) %>%
   pull(predmaps) %>%
   .[[1]] %>%
   .[[c(1, 20, 20, 30, 40, 51)]] %>%
   plot
 ```
+
+*Persoonia arborea*
 
 ```{r}
 sdm_results_mpc_ch %>%
@@ -74,7 +89,7 @@ sdm_results_mpc_ch %>%
 pred_mpc %>%
   filter(
     sp == "pear",
-    cscnid =="TH19_rcp45_PB_01_ACCESS1-0"
+    cscnid =="TH00_rcp45_PB_01_ACCESS1-0"
   ) %>%
   pull(predmaps) %>%
   .[[1]] %>%
@@ -83,45 +98,7 @@ pred_mpc %>%
 ```
 
 
-```{r}
-sdm_results_mpc_ch %>%
-  filter(sp == "phsq") %>%
-  pull(brt.fit) %>%
-  .[[1]] %>%
-  gbm.plot
-```
-
-```{r}
-pred_mpc %>%
-  filter(
-    sp == "phsq",
-    cscnid =="TH19_rcp45_PB_01_ACCESS1-0"
-  ) %>%
-  pull(predmaps) %>%
-  .[[1]] %>%
-  .[[c(1, 20, 20, 30, 40, 51)]] %>%
-  plot
-```
-
-```{r}
-sdm_results_mpc_ch %>%
-  filter(sp == "tesu") %>%
-  pull(brt.fit) %>%
-  .[[1]] %>%
-  gbm.plot
-```
-
-```{r}
-pred_mpc %>%
-  filter(
-    sp == "tesu",
-    cscnid =="TH19_rcp45_PB_01_ACCESS1-0"
-  ) %>%
-  pull(predmaps) %>%
-  .[[1]] %>%
-  .[[c(1, 20, 20, 30, 40, 51)]] %>%
-  plot
-```
+*Wittsteinia vacciniacea*
 
 ```{r}
 sdm_results_mpc_ch %>%
@@ -135,7 +112,7 @@ sdm_results_mpc_ch %>%
 pred_mpc %>%
   filter(
     sp == "wiva",
-    cscnid =="TH19_rcp45_PB_01_ACCESS1-0"
+    cscnid =="TH00_rcp45_PB_01_ACCESS1-0"
   ) %>%
   pull(predmaps) %>%
   .[[1]] %>%

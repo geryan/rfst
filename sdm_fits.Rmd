@@ -1,5 +1,5 @@
 ---
-title: "sdm results central highlands"
+title: "sdm fits central highlands"
 output:
   word_document: default
   html_document: default

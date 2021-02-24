@@ -1,13 +1,13 @@
 ---
-title: "PVA Results Greater glider"
+title: "PVA Results Leadbeater's possum"
 output:
   word_document: default
   html_document: default
 ---
 
 ```{r}
-spti <- "Greater glider"
-spfil <- "pevo"
+spti <- "Leadbeater's possum"
+spfil <- "gyle"
 ```
 
 
@@ -43,9 +43,9 @@ load(file = "output/RData/00_controls.RData")
 load(file = "output/RData/01_landscape_variables.RData")
 load(file = "output/RData/02_species_occurrences.RData")
 load(file = "output/RData/11.1_pva.RData")
-load(file = "output/RData/11.1_pva_eg.RData")
+#load(file = "output/RData/11.1_pva_eg.RData")
 load(file = "output/RData/11.2_pva_cc.RData")
-load(file = "output/RData/11.2_pva_cc_eg.RData")
+#load(file = "output/RData/11.2_pva_cc_eg.RData")
 ```
 
 ```{r}
@@ -53,33 +53,6 @@ source.functions("R/functions")
 ```
 
 
-```{r}
-peau_pva_eg <- pva_results5_eg %>%
-  dplyr::select(
-    -aggmaps,
-    -lcc,
-  ) %>%
-  full_join(
-    aggcc_eg
-  ) %>%
-  mutate(
-    year = ifelse(
-      yearid == "EG19",
-      "2019",
-      "2020"
-    ),
-    landscape = "East Gippsland",
-    yscenario = scenario,
-    scenario = sub(
-      pattern = "...._",
-      replacement = "",
-      x = scenario
-    )
-  ) %>%
-  filter(sp == spfil)
-
-peau_pva_eg
-```
 
 ```{r}
 peau_pva_ch <- pva_results5_ch %>%
@@ -109,7 +82,7 @@ peau_pva_ch <- pva_results5_ch %>%
     landscape = "Central Highlands",
     init_pop = NA
   ) %>%
-  dplyr::select(names(peau_pva_eg)) %>%
+  #dplyr::select(names(peau_pva_eg)) %>%
   filter(sp == spfil)
 
 peau_pva_ch
@@ -117,8 +90,8 @@ peau_pva_ch
 
 ```{r}
 peau_pva <- bind_rows(
-  peau_pva_ch,
-  peau_pva_eg
+  peau_pva_ch#,
+  #peau_pva_eg
 )
 
 peau_pva
@@ -469,401 +442,7 @@ pvr %>%
 ```
 
 
-### EG19
 
-No harvest no planned burning RCP4.5
-
-```{r}
-pvr %>%
-  filter(
-    yearid == "EG19",
-    cscnid == "TH00_rcp45_NB_01_ACCESS1-0"
-  ) %>%
-  dopvaplot
-```
-
-```{r}
-pvr %>%
-  filter(
-    yearid == "EG19",
-    cscnid == "TH00_rcp45_NB_01_ACCESS1-0"
-  ) %>%
-  dopvaplot(cc = TRUE)
-```
-
-```{r}
-pvr %>%
-  filter(
-    yearid == "EG19",
-    cscnid == "TH00_rcp45_NB_01_ACCESS1-0"
-  ) %>%
-  doccplot
-```
-
-No harvest RCP4.5  
-
-```{r}
-pvr %>%
-  filter(
-    yearid == "EG19",
-    cscnid == "TH00_rcp45_PB_01_ACCESS1-0"
-  ) %>%
-  dopvaplot
-```
-
-```{r}
-pvr %>%
-  filter(
-    yearid == "EG19",
-    cscnid == "TH00_rcp45_PB_01_ACCESS1-0"
-  ) %>%
-  dopvaplot(cc = TRUE)
-```
-
-```{r}
-pvr %>%
-  filter(
-    yearid == "EG19",
-    cscnid == "TH00_rcp45_PB_01_ACCESS1-0"
-  ) %>%
-  doccplot
-```
-
-Stop harvest 2030 RCP4.5 
-
-```{r}
-pvr %>%
-  filter(
-    yearid == "EG19",
-    cscnid == "TH30_rcp45_PB_01_ACCESS1-0"
-  ) %>%
-  dopvaplot
-```
-
-```{r}
-pvr %>%
-  filter(
-    yearid == "EG19",
-    cscnid == "TH30_rcp45_PB_01_ACCESS1-0"
-  ) %>%
-  dopvaplot(cc = TRUE)
-```
-
-```{r}
-pvr %>%
-  filter(
-    yearid == "EG19",
-    cscnid == "TH30_rcp45_PB_01_ACCESS1-0"
-  ) %>%
-  doccplot
-```
-
-Ongoing harvest RCP4.5
-```{r}
-pvr %>%
-  filter(
-    yearid == "EG19",
-    cscnid == "TH19_rcp45_PB_01_ACCESS1-0"
-  ) %>%
-  dopvaplot
-```
-
-```{r}
-pvr %>%
-  filter(
-    yearid == "EG19",
-    cscnid == "TH19_rcp45_PB_01_ACCESS1-0"
-  ) %>%
-  dopvaplot(cc = TRUE)
-```
-
-```{r}
-pvr %>%
-  filter(
-    yearid == "EG19",
-    cscnid == "TH19_rcp45_PB_01_ACCESS1-0"
-  ) %>%
-  doccplot
-```
-
-No harvest RCP8.5                   
-```{r}
-pvr %>%
-  filter(
-    yearid == "EG19",
-    cscnid == "TH00_rcp85_PB_01_ACCESS1-0"
-  ) %>%
-  dopvaplot
-```
-
-```{r}
-pvr %>%
-  filter(
-    yearid == "EG19",
-    cscnid == "TH00_rcp85_PB_01_ACCESS1-0"
-  ) %>%
-  dopvaplot(cc = TRUE)
-```
-
-```{r}
-pvr %>%
-  filter(
-    yearid == "EG19",
-    cscnid == "TH00_rcp45_PB_01_ACCESS1-0"
-  ) %>%
-  doccplot
-```
-
-Stop harvest 2030 RCP8.5            
-```{r}
-pvr %>%
-  filter(
-    yearid == "EG19",
-    cscnid == "TH30_rcp85_PB_01_ACCESS1-0"
-  ) %>%
-  dopvaplot
-```
-
-```{r}
-pvr %>%
-  filter(
-    yearid == "EG19",
-    cscnid == "TH30_rcp85_PB_01_ACCESS1-0"
-  ) %>%
-  dopvaplot(cc = TRUE)
-```
-
-```{r}
-pvr %>%
-  filter(
-    yearid == "EG19",
-    cscnid == "TH30_rcp85_PB_01_ACCESS1-0"
-  ) %>%
-  doccplot
-```
-
-
-### EG20
-
-No harvest no planned burning RCP4.5
-
-```{r}
-pvr %>%
-  filter(
-    yearid == "EG20",
-    cscnid == "TH00_rcp45_NB_01_ACCESS1-0"
-  ) %>%
-  dopvaplot
-```
-
-```{r}
-pvr %>%
-  filter(
-    yearid == "EG20",
-    cscnid == "TH00_rcp45_NB_01_ACCESS1-0"
-  ) %>%
-  dopvaplot(cc = TRUE)
-```
-
-```{r}
-pvr %>%
-  filter(
-    yearid == "EG20",
-    cscnid == "TH00_rcp45_NB_01_ACCESS1-0"
-  ) %>%
-  doccplot
-```
-
-No harvest RCP4.5  
-
-```{r}
-pvr %>%
-  filter(
-    yearid == "EG20",
-    cscnid == "TH00_rcp45_PB_01_ACCESS1-0"
-  ) %>%
-  dopvaplot
-```
-
-```{r}
-pvr %>%
-  filter(
-    yearid == "EG20",
-    cscnid == "TH00_rcp45_PB_01_ACCESS1-0"
-  ) %>%
-  dopvaplot(cc = TRUE)
-```
-
-```{r}
-pvr %>%
-  filter(
-    yearid == "EG20",
-    cscnid == "TH00_rcp45_PB_01_ACCESS1-0"
-  ) %>%
-  doccplot
-```
-
-Stop harvest 2030 RCP4.5 
-
-```{r}
-pvr %>%
-  filter(
-    yearid == "EG20",
-    cscnid == "TH30_rcp45_PB_01_ACCESS1-0"
-  ) %>%
-  dopvaplot
-```
-
-```{r}
-pvr %>%
-  filter(
-    yearid == "EG20",
-    cscnid == "TH30_rcp45_PB_01_ACCESS1-0"
-  ) %>%
-  dopvaplot(cc = TRUE)
-```
-
-```{r}
-pvr %>%
-  filter(
-    yearid == "EG20",
-    cscnid == "TH30_rcp45_PB_01_ACCESS1-0"
-  ) %>%
-  doccplot
-```
-
-Ongoing harvest RCP4.5
-```{r}
-pvr %>%
-  filter(
-    yearid == "EG20",
-    cscnid == "TH19_rcp45_PB_01_ACCESS1-0"
-  ) %>%
-  dopvaplot
-```
-
-```{r}
-pvr %>%
-  filter(
-    yearid == "EG20",
-    cscnid == "TH19_rcp45_PB_01_ACCESS1-0"
-  ) %>%
-  dopvaplot(cc = TRUE)
-```
-
-```{r}
-pvr %>%
-  filter(
-    yearid == "EG20",
-    cscnid == "TH19_rcp45_PB_01_ACCESS1-0"
-  ) %>%
-  doccplot
-```
-
-No harvest RCP8.5                   
-```{r}
-pvr %>%
-  filter(
-    yearid == "EG20",
-    cscnid == "TH00_rcp85_PB_01_ACCESS1-0"
-  ) %>%
-  dopvaplot
-```
-
-```{r}
-pvr %>%
-  filter(
-    yearid == "EG20",
-    cscnid == "TH00_rcp85_PB_01_ACCESS1-0"
-  ) %>%
-  dopvaplot(cc = TRUE)
-```
-
-```{r}
-pvr %>%
-  filter(
-    yearid == "EG20",
-    cscnid == "TH00_rcp45_PB_01_ACCESS1-0"
-  ) %>%
-  doccplot
-```
-
-Stop harvest 2030 RCP8.5            
-```{r}
-pvr %>%
-  filter(
-    yearid == "EG20",
-    cscnid == "TH30_rcp85_PB_01_ACCESS1-0"
-  ) %>%
-  dopvaplot
-```
-
-```{r}
-pvr %>%
-  filter(
-    yearid == "EG20",
-    cscnid == "TH30_rcp85_PB_01_ACCESS1-0"
-  ) %>%
-  dopvaplot(cc = TRUE)
-```
-
-```{r}
-pvr %>%
-  filter(
-    yearid == "EG20",
-    cscnid == "TH30_rcp85_PB_01_ACCESS1-0"
-  ) %>%
-  doccplot
-```
-
-All carrying capacity
-
-```{r}
-pvr %>%
-  mutate(yr = list(0:50)) %>%
-  unnest(lcc, yr) %>%
-  mutate(
-    id = case_when(
-      is.na(ycscnid) ~ paste0(yearid, "_", cscnid),
-      TRUE ~ ycscnid
-    )
-  ) %>%
-  ggplot() +
-  ylim(0, NA) +
-  geom_line(
-    aes(
-      x = yr,
-      y = lcc,
-      group = id,
-      colour = scn
-    ),
-    size = 0.3,
-    alpha = 0.3
-  ) +
-  cowplot::theme_cowplot() +
-  cowplot::panel_border(remove = TRUE) +
-  theme(
-    legend.position = "bottom",
-    strip.background = element_blank(),
-    #strip.text = element_text(hjust = 0, face = "bold"),
-    axis.text.x = element_text(size = 8),
-    legend.text = element_text(size = 7)
-  ) +
-  facet_wrap(
-    facets = ~ yearid,
-    nrow = 3,
-    strip.position = "right",
-    scales = "free_y"
-  ) +
-  #scale_colour_viridis_d(option = "magma") +
-  labs(
-    title = spti,
-    x = "Year",
-    y = "Carrying capacity",
-    colour = ""
-  )
-  
-```
 
 # All climate models
 ```{r}

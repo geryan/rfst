@@ -1,0 +1,173 @@
+---
+title: "sdm fits central highlands"
+output:
+  word_document: default
+  html_document: default
+---
+
+```{r}
+knitr::opts_chunk$set(fig.width=6, fig.height=4)
+```
+
+
+
+```{r}
+source("R/spartan/spartan_settings.R")
+```
+
+
+```{r}
+library(dplyr)
+library(purrr)
+#library(tibble)
+library(tidyr)
+#library(magrittr)
+library(ggplot2)
+library(raster)
+library(dismo)
+library(gbm)
+```
+
+```{r}
+load(file = "output/RData/00_controls_eg.RData")
+load(file = "output/RData/01_landscape_variables_eg.RData")
+load(file = "output/RData/10_predict_SDMs_agg_eg.RData")
+```
+
+```{r}
+source.functions("R/functions")
+```
+
+
+## LFP
+```{r}
+agg_set_eg %>%
+  filter(
+    sp == "polo",
+    ycscnid =="EG20_TH00_rcp45_PB_01_ACCESS1-0"
+  ) %>%
+  pull(aggmaps) %>%
+  .[[1]] %>%
+  .[[c(1)]] %>%
+  lp()
+```
+
+
+```{r}
+agg_set_eg %>%
+  filter(
+    sp == "polo",
+    ycscnid =="EG20_TH00_rcp45_PB_01_ACCESS1-0"
+  ) %>%
+  pull(aggmaps) %>%
+  .[[1]] %>%
+  .[[c(1, 10, 20, 30, 40, 51)]] %>%
+  lp(names.attr = c("2019", "2029", "2039", "2049", "2059", "2069"), zlim = c(0, 1))
+```
+
+## GG
+
+```{r}
+agg_set_eg %>%
+  filter(
+    sp == "pevo",
+    ycscnid =="EG20_TH00_rcp45_PB_01_ACCESS1-0"
+  ) %>%
+  pull(aggmaps) %>%
+  .[[1]] %>%
+  .[[c(1)]] %>%
+  lp()
+```
+
+
+```{r}
+agg_set_eg %>%
+  filter(
+    sp == "pevo",
+    ycscnid =="EG20_TH00_rcp45_PB_01_ACCESS1-0"
+  ) %>%
+  pull(aggmaps) %>%
+  .[[1]] %>%
+  .[[c(1, 10, 20, 30, 40, 51)]] %>%
+  lp(names.attr = c("2019", "2029", "2039", "2049", "2059", "2069"), zlim = c(0, 1))
+```
+
+## YBG
+
+```{r}
+agg_set_eg %>%
+  filter(
+    sp == "peau",
+    ycscnid =="EG20_TH00_rcp45_PB_01_ACCESS1-0"
+  ) %>%
+  pull(aggmaps) %>%
+  .[[1]] %>%
+  .[[c(1)]] %>%
+  lp()
+```
+
+
+```{r}
+agg_set_eg %>%
+  filter(
+    sp == "peau",
+    ycscnid =="EG20_TH00_rcp45_PB_01_ACCESS1-0"
+  ) %>%
+  pull(aggmaps) %>%
+  .[[1]] %>%
+  .[[c(1, 10, 20, 30, 40, 51)]] %>%
+  lp(names.attr = c("2019", "2029", "2039", "2049", "2059", "2069"), zlim = c(0, 1))
+```
+## SO
+
+```{r}
+agg_set_eg %>%
+  filter(
+    sp == "tyte",
+    ycscnid =="EG20_TH00_rcp45_PB_01_ACCESS1-0"
+  ) %>%
+  pull(aggmaps) %>%
+  .[[1]] %>%
+  .[[c(1)]] %>%
+  lp()
+```
+
+
+```{r}
+agg_set_eg %>%
+  filter(
+    sp == "tyte",
+    ycscnid =="EG20_TH00_rcp45_PB_01_ACCESS1-0"
+  ) %>%
+  pull(aggmaps) %>%
+  .[[1]] %>%
+  .[[c(1, 10, 20, 30, 40, 51)]] %>%
+  lp(names.attr = c("2019", "2029", "2039", "2049", "2059", "2069"), zlim = c(0, 1))
+```
+
+## LM
+```{r}
+agg_set_eg %>%
+  filter(
+    sp == "vava",
+    ycscnid =="EG20_TH00_rcp45_PB_01_ACCESS1-0"
+  ) %>%
+  pull(aggmaps) %>%
+  .[[1]] %>%
+  .[[c(1)]] %>%
+  lp()
+```
+
+
+```{r}
+agg_set_eg %>%
+  filter(
+    sp == "vava",
+    ycscnid =="EG20_TH00_rcp45_PB_01_ACCESS1-0"
+  ) %>%
+  pull(aggmaps) %>%
+  .[[1]] %>%
+  .[[c(1, 10, 20, 30, 40, 51)]] %>%
+  lp(names.attr = c("2019", "2029", "2039", "2049", "2059", "2069"), zlim = c(0, 1))
+```
+
