@@ -33,7 +33,7 @@ simset <- do_pva(
   index = 1,
   static = FALSE,
   ip_raster = FALSE,
-  mod_habitat = TRUE
+  mod_habitat = FALSE
 )
 
 simpop <- get_pop_simulation(simset$simres)
@@ -78,7 +78,7 @@ pva <- bind_cols(
 saveRDS(
   object = pva,
   file = sprintf(
-    fmt = "%s/pva_cdmh_%s_%s.Rds",
+    fmt = "%s/pva_cdnh_%s_%s.Rds",
     "/data/gpfs/projects/punim0995/rfst/output/spartan_RData/pva",
     hab_set$cscnid[i],
     hab_set$sp[i]

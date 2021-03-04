@@ -72,7 +72,7 @@ pvaplot <- function(
       if(!is.na(p0)){
         pop0 <- tibble(
           year = 0,
-          replicate = 1:dim(popmat)[3] %>% as_factor,
+          replicate = 1:dim(popmat)[3] %>% as.factor,
           population = p0
         )
         
@@ -83,26 +83,30 @@ pvaplot <- function(
     
     medpop <- pop %>%
       group_by(year) %>%
-      summarise(population = median(population))
+      summarise(population = median(population)) %>%
+      ungroup
     
     cipop <- pop %>%
       group_by(year) %>%
       summarise(
         lo = quantile(population, probs = 0.025),
         hi = quantile(population, probs = 0.975)
-      )
+      ) %>%
+      ungroup
   } else{
     
     medpop <- pop %>%
       group_by(year, stage) %>%
-      summarise(population = median(population))
+      summarise(population = median(population)) %>%
+      ungroup
     
     cipop <- pop %>%
       group_by(year, stage) %>%
       summarise(
         lo = quantile(population, probs = 0.025),
         hi = quantile(population, probs = 0.975)
-      )
+      ) %>%
+      ungroup
   }
   
     p <- ggplot() +
