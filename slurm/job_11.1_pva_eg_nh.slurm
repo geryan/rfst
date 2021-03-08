@@ -12,13 +12,13 @@
 #SBATCH --cpus-per-task=1
 
 # megabytes per process
-#SBATCH --mem=25600
+#SBATCH --mem=38400
 
 # job name from batch
 # output name from batch
 
 # days-hours:mins:sec
-#SBATCH --time=0-03:00:00
+#SBATCH --time=0-03:30:00
 
 # commands from batch
 i=$1
@@ -39,5 +39,5 @@ module load r/3.6.2
 cd /data/gpfs/projects/punim0995/rfst
 
 # Commands
-Rscript --vanilla R/spartan/spartan_11.1_pva.R $i
+Rscript --vanilla R/spartan/spartan_11.1_pva_eg_nh.R $i
 

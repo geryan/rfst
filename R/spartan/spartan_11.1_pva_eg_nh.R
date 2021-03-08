@@ -12,9 +12,9 @@ library(sp)
 library(magrittr)
 library(steps)
 
-load(file = "output/RData/00_controls.RData")
-load(file = "output/RData/01_landscape_variables.RData")
-load(file = "output/RData/11.0.1_hab_set.RData")
+load(file = "output/RData/00_controls_eg.RData")
+load(file = "output/RData/01_landscape_variables_eg.RData")
+load(file = "output/RData/11.0.1_hab_set_eg.RData")
 
 source.functions("R/functions")
 
@@ -27,13 +27,15 @@ i <- as.numeric(command_args[1])
 
 
 simset <- do_pva(
-  hab = hab_set[i,],
+  hab = hab_set_eg[i,],
   ntimresteps = ntimesteps,
   nreps = nreplicates,
   index = 1,
   static = FALSE,
   ip_raster = FALSE,
-  mod_habitat = TRUE
+  mod_habitat = FALSE,
+  eg = TRUE,
+  fire_scar = egf20
 )
 
 simpop <- get_pop_simulation(simset$simres)
@@ -70,7 +72,7 @@ pva_res <- tibble(
   )
 
 pva <- bind_cols(
-  hab_set[i,],
+  hab_set_eg[i,],
   pva_res
 )
 
@@ -79,9 +81,9 @@ saveRDS(
   object = pva,
   file = sprintf(
     fmt = "%s/pva_cdmh_%s_%s.Rds",
-    "/data/gpfs/projects/punim0995/rfst/output/spartan_RData/pva",
-    hab_set$cscnid[i],
-    hab_set$sp[i]
+    "/data/gpfs/projects/punim1340/rfst_eg/output/spartan_RData/pva",
+    hab_set_eg$ycscnid[i],
+    hab_set_eg$sp[i]
   )
 )
 

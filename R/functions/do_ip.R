@@ -9,7 +9,7 @@ do_ip <- function(
   habitat_map <- hab$hab_map[[index]]
   
   if(mod_habitat){
-    if(!is.na(hab$habfun)){
+    if(!is.na(hab$habfun[[index]])){
       habitat_map <- modify_habitat(
         habitat_map,
         disturbance_map = hab$dist_map[[index]],

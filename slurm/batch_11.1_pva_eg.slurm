@@ -2,11 +2,11 @@
 
 
 # Always edit
-#SBATCH --job-name="batch_11.1"
-#SBATCH --output="/data/gpfs/projects/punim0995/rfst/slurm/slurm_output/batch_11.1.out"
+#SBATCH --job-name="batch_11.1_eg"
+#SBATCH --output="/data/gpfs/projects/punim0995/rfst/slurm/slurm_output/batch_11.1_eg.out"
 
 
-for i in {1..1920}
+for i in {1..2400}
 do
 
 	JOB_NAME="j11.1_${i}_eg"

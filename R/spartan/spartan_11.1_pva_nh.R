@@ -19,7 +19,7 @@ load(file = "output/RData/11.0.1_hab_set.RData")
 source.functions("R/functions")
 
 
-nreplicates <- 20
+#nreplicates <- 20
 
 command_args <- commandArgs(trailingOnly = TRUE)
 

@@ -355,8 +355,8 @@ species_dat_pva <- tribble(
      ~sp,     ~tm, ~popsize, ~cc,  ~ccfun, ~stoch, ~max_disp,           ~habfun, ~max_cells,             ~dp,   ~pp, ~disp,  ~z, ~scale, ~threshold,
   "gyle", tm_gyle,     3000,  50, cc_gyle,   0.05,      2000, habitat.downupfun,         40,  c(1, 0.2, 0.0),  0.98,  "ca", 0.5,    500,      0.347,
   "pevo", tm_pevo,     5000,  10, cc_pevo,   0.05,      4000,     habitat.upfun,         80,  c(1, 0.2, 0.0),  0.95,  "ca", 0.4,    500,        0.2,
-  "peau", tm_peau,     1500,   3, cc_peau,   0.05,     20000,     habitat.upfun,        100,  c(1, 0.5, 0.0),  0.90,  "ca", 0.3,   1000,      0.117,
-  "smle", tm_smle,     1000,  75, cc_smle,   0.07,      2000,                NA,         10,  c(1, 0.7, 0.0),  0.99,  "ca", 0.5,    500,      0.041,
+  "peau", tm_peau,     3000,   3, cc_peau,   0.05,     20000,     habitat.upfun,        100,  c(1, 0.5, 0.0),  0.90,  "ca", 0.3,   1000,      0.117,
+  "smle", tm_smle,     1000,  75, cc_smle,   0.07,      2000,                NA,         10,  c(1, 0.0, 0.0),  0.99,  "ca", 0.5,    500,      0.041,
   "tyte", tm_tyte,     1000,   3, cc_tyte,   0.07,    100000, habitat.downupfun,        200,  c(1, 0.6, 0.0),  0.95,  "ca", 0.2,   1000,      0.141,
   "vava", tm_vava,     5000,  25, cc_vava,   0.05,      5000,                NA,         20, c(1, 0.5, 0.2, 0.0), 0.99,  "ca", 0.5,    500,      0.086
 ) %>% mutate(

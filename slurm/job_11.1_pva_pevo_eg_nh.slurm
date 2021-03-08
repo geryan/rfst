@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Never edit
-#SBATCH --account="punim0995"
+#SBATCH --account="punim1340"
 #SBATCH --mail-user=ryange@unimelb.edu.au
 #SBATCH --mail-type=ALL
 
@@ -12,7 +12,7 @@
 #SBATCH --cpus-per-task=1
 
 # megabytes per process
-#SBATCH --mem=25600
+#SBATCH --mem=38400
 
 # job name from batch
 # output name from batch
@@ -22,6 +22,7 @@
 
 # commands from batch
 i=$1
+
 
 # modules
 module load gcccore/8.3.0
@@ -39,5 +40,5 @@ module load r/3.6.2
 cd /data/gpfs/projects/punim0995/rfst
 
 # Commands
-Rscript --vanilla R/spartan/spartan_11.1_pva.R $i
+Rscript --vanilla R/spartan/spartan_11.1_pva_pevo_eg_nh.R $i
 

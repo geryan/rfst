@@ -5,7 +5,9 @@ do_pva <- function(
   index = 1,
   static = FALSE,
   ip_raster = FALSE,
-  mod_habitat = FALSE
+  mod_habitat = FALSE,
+  eg = FALSE,
+  fire_scar = NULL
 ){
   
   
@@ -27,7 +29,7 @@ do_pva <- function(
   
   
   if(mod_habitat){
-    if(!is.na(hab$habfun)){
+    if(!is.na(hab$habfun[[index]])){
       habitat_map <- modify_habitat(
         habitat_map,
         disturbance_map = hab$dist_map[[index]],
@@ -45,6 +47,13 @@ do_pva <- function(
     pp = hab$pp[[index]],
     z = hab$z[[index]]
   )
+  
+  
+  if(eg){
+    if(hab$yearid[[index]] == "EG20"){
+      initial_population <- initial_population*fire_scar
+    }
+  }
   
   
   lsc <- landscape(
