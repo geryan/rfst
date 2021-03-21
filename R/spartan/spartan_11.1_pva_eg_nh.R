@@ -14,12 +14,14 @@ library(steps)
 
 load(file = "output/RData/00_controls_eg.RData")
 load(file = "output/RData/01_landscape_variables_eg.RData")
+load(file = "output/RData/11.0_pva_species_dat_eg.RData")
 load(file = "output/RData/11.0.1_hab_set_eg.RData")
 
 source.functions("R/functions")
 
+#i <- 2400
 
-#nreplicates <- 20
+#nreplicates <- 2
 
 command_args <- commandArgs(trailingOnly = TRUE)
 
@@ -80,7 +82,7 @@ pva <- bind_cols(
 saveRDS(
   object = pva,
   file = sprintf(
-    fmt = "%s/pva_cdmh_%s_%s.Rds",
+    fmt = "%s/pva_cdnh_%s_%s.Rds",
     "/data/gpfs/projects/punim1340/rfst_eg/output/spartan_RData/pva",
     hab_set_eg$ycscnid[i],
     hab_set_eg$sp[i]

@@ -339,8 +339,8 @@ rst.op <- function(
   }
   
   names(out) <- layernames
-  out <- mask(x = out, mask = proj_mask, filename = filename, overwrite = TRUE)
   
+  out <- mask(x = out, mask = proj_mask, filename = filename, overwrite = TRUE)
   
   return(out)
   

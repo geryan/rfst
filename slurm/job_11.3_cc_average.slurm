@@ -12,18 +12,19 @@
 #SBATCH --cpus-per-task=1
 
 # megabytes per process
-#SBATCH --mem=51200
+#SBATCH --mem=12800
 
-# job name from batch
-# output name from batch
+# Always edit
+#SBATCH --job-name="job_11.3_cc_average"
+#SBATCH --output="/data/gpfs/projects/punim0995/rfst/slurm/slurm_output/job_11.3_cc_average.out"
 
 # days-hours:mins:sec
-#SBATCH --time=0-04:30:00
+#SBATCH --time=0-4:00:00
 
-# commands from batch
-i=$1
+# Location to run job from
+cd /data/gpfs/projects/punim0995/rfst/
 
-# modules
+# Modules
 module load gcccore/8.3.0
 module load gcc/8.3.0
 module load openmpi/3.1.4
@@ -35,9 +36,5 @@ module load gdal/3.0.2-python-3.7.4
 module load rgdal/1.4-4-r-3.6.0
 module load r/3.6.2
 
-# 
-cd /data/gpfs/projects/punim0995/rfst
-
 # Commands
-Rscript --vanilla R/spartan/spartan_11.1_pva_eg_nh.R $i
-
+Rscript --vanilla R/spartan/spartan_11.3_cc_average.R
