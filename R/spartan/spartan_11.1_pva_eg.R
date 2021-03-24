@@ -35,7 +35,7 @@ simset <- do_pva(
   index = 1,
   static = FALSE,
   ip_raster = FALSE,
-  mod_habitat = TRUE,
+  mod_habitat = FALSE,
   eg = TRUE,
   fire_scar = egf20
 )
@@ -82,7 +82,7 @@ pva <- bind_cols(
 saveRDS(
   object = pva,
   file = sprintf(
-    fmt = "%s/pva_cdmh_%s_%s.Rds",
+    fmt = "%s/pva_cdnh_%s_%s.Rds",
     "/data/gpfs/projects/punim1340/rfst_eg/output/spartan_RData/pva",
     hab_set_eg$ycscnid[i],
     hab_set_eg$sp[i]

@@ -37,42 +37,8 @@ pva_list <- lapply(
 
 pva_results_eg <- bind_rows(pva_list)
 
-pva_results_eg_nh <- pva_results_eg
-
-#
-
-# load(file = "/data/gpfs/projects/punim0995/rfst/output/RData/11.1_pva_pevo_egb.RData")
-# 
-# 
-# pva_results5_eg <- bind_rows(
-#   pva_results5_eg %>%
-#     dplyr::select(
-#       -tm,
-#       -max_cells,
-#       -dp,
-#       -pp,
-#       -disp,
-#       -z,
-#       -ss,
-#       -stages
-#     ) %>%
-#     dplyr::select(
-#       everything(),
-#       lcc,
-#       init_pop
-#     ),
-#   pva_results_pevo_proj_egb %>%
-#     dplyr::select(-habitat) %>%
-#     mutate(
-#       lcc = NA,
-#       init_pop = NA
-#     )
-# )
-
-
-#
 
 save(
-  pva_results_eg_nh,
-  file = "/data/gpfs/projects/punim0995/rfst/output/RData/11.1_pva_eg_nh.RData"
+  pva_results_eg,
+  file = "/data/gpfs/projects/punim0995/rfst/output/RData/11.1_pva_eg.RData"
 )

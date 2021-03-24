@@ -63,7 +63,7 @@ cc_set_eg <- hab_set_eg %>%
   dplyr::select(ycscnid, sp, cc_mean)
 
 
-saveRDS(
+save(
   object = cc_set_eg,
   file = "/data/gpfs/projects/punim0995/rfst/output/RData/11.3_cc_average_eg.RData"
 )
