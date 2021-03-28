@@ -1,0 +1,1261 @@
+---
+title: "baseline_pva_testing.Rmd"
+output: html_document
+---
+
+```{r}
+source("R/spartan/spartan_settings.R")
+
+library(magrittr)
+library(tibble)
+library(tidyr)
+library(ggplot2)
+library(dplyr)
+library(purrr)
+library(raster)
+library(sp)
+library(steps)
+
+load(file = "output/RData/00_controls.RData")
+load(file = "output/RData/01_landscape_variables.RData")
+load(file = "output/RData/04.1_mortality_aggregated5.RData")
+load(file = "output/RData/04.1_mortality_aggregated.RData")
+load(file = "output/RData/04.3_tsl_aggregated.RData")
+load(file = "output/RData/10.1_aggregate_sdm.RData")
+load(file = "output/RData/10_predict_SDMs_agg.RData")
+load(file = "output/RData/11.0_pva_species_dat.RData")
+
+source.functions("R/functions")
+
+```
+
+
+```{r}
+hab_set <- full_join(
+  agg_set,
+  agg5_ch,
+  by = colnames(agg_set)[1:9]
+) %>%
+  full_join(
+    y = species_dat_pva,
+    by = "sp"
+  ) %>%
+  mutate(
+    hab_map = pmap(
+      .l = list(
+        scale,
+        aggmaps,
+        aggmap5
+      ),
+      .f = function(
+        scale,
+        aggmaps,
+        aggmap5
+      ){
+        if(scale == 1000){
+          return(aggmaps)
+        } else if(scale == 500){
+          return(aggmap5)
+        }
+      }
+    )
+  ) %>%
+  full_join(
+    y = mort_agg_ch,
+    by = "scn_id"
+  ) %>%
+  full_join(
+    y = mort_agg5_ch,
+    by = "scn_id"
+  ) %>%
+  mutate(
+    mort_map = pmap(
+      .l = list(
+        scale,
+        mort_agg.x,
+        mort_agg.y
+      ),
+      .f = function(
+        scale,
+        mort_agg.x,
+        mort_agg.y
+      ){
+        if(scale == 1000){
+          return(mort_agg.x)
+        } else if(scale == 500){
+          return(mort_agg.y)
+        }
+      }
+    )
+  ) %>%
+  full_join(
+    y = tsl_agg_ch,
+    by = "scn_id"
+  ) %>%
+  mutate(
+    dist_map = pmap(
+      .l = list(
+        scale,
+        tsl_agg,
+        tsl_agg5
+      ),
+      .f = function(
+        scale,
+        tsl_agg,
+        tsl_agg5
+      ){
+        if(scale == 1000){
+          return(tsl_agg)
+        } else if(scale == 500){
+          return(tsl_agg5)
+        }
+      }
+    )
+  ) %>%
+  dplyr::select(-aggmaps, - aggmap5, -mort_agg.x, -mort_agg.y, -tsl_agg, -tsl_agg5)
+
+hab_set
+```
+
+# Yellow-bellied glider
+
+```{r}
+hab_peau <- hab_set %>%
+    filter(
+      sp == "peau",
+      cscnid == "TH00_rcp45_NB_01_ACCESS1-0"
+    )
+hab_peau
+```
+
+### CC and initial population
+
+
+```{r}
+lp(hab_peau$hab_map[[1]][[1]], zlim = c(0,1))
+```
+```{r}
+hab_peau$hab_map[[1]][[1]] %>%
+  modify_habitat(
+    disturbance_map = hab_peau$dist_map[[1]][[1]],
+    habfun = hab_peau$habfun[[1]]
+  ) %>%
+  lp(zlim = c(0,1))
+```
+```{r}
+#cc_raster_peau <- hab_peau$hab_map[[1]][[1]]
+
+cc_raster_peau <- hab_peau$hab_map[[1]][[1]] %>%
+  modify_habitat(
+    disturbance_map = hab_peau$dist_map[[1]][[1]],
+    habfun = hab_peau$habfun[[1]]
+  )
+
+cc_val_peau <- getValues(cc_raster_peau) %>%
+  do_cc_fun(hab_peau)
+
+cc_raster_peau[] <- cc_val_peau
+
+sum(cc_val_peau, na.rm = TRUE)
+```
+
+```{r}
+tibble(
+  x = seq(
+    from = 0,
+    to = 1,
+    by = 0.01
+  )
+) %>%
+  mutate(
+    y = map(
+      .x = x,
+      .f = do_cc_fun,
+      hab = hab_peau
+    ) %>%
+      unlist
+  ) %>%
+  ggplot() +
+  geom_line(
+    aes(
+      x = x,
+      y = y
+    )
+  )
+```
+```{r}
+ip_peau <- hab_peau %>%
+  do_ip(
+    ip_raster = TRUE,
+    mod_habitat = TRUE
+  )
+
+ip_peau
+```
+
+```{r}
+ip_peau %>%
+  getValues %>%
+  sum(na.rm = TRUE)
+```
+
+```{r}
+ip_peau %>%
+  sum %>%
+  getValues %>%
+  table
+```
+
+```{r}
+ip_peau %>%
+  lp
+```
+```{r}
+ip_peau %>%
+  sum %>%
+  lp
+```
+
+
+
+
+
+```{r}
+lp(cc_raster_peau)
+```
+
+
+## static
+```{r}
+peau_st <- do_pva(
+  hab = hab_peau,
+  ntimresteps = 50,
+  nreps = 10,
+  index = 1,
+  static = TRUE,
+  ip_raster = FALSE,
+  mod_habitat = TRUE
+)
+```
+
+```{r}
+simpop_peau_st <- get_pop_simulation(peau_st$simres)
+simcc_peau_st <- get_lcc_simulation(peau_st$simres)
+```
+
+```{r}
+pvaplot(
+  popmat = simpop_peau_st,
+  p0 = peau_st$ip
+)
+```
+
+```{r}
+pvaplot(
+  popmat = simpop_peau_st,
+  p0 = peau_st$ip,
+  cc = simcc_peau_st
+)
+```
+
+## dynamic
+```{r}
+peau_dy <- do_pva(
+  hab = hab_peau,
+  ntimresteps = 50,
+  nreps = 10,
+  index = 1,
+  static = FALSE,
+  ip_raster = FALSE,
+  mod_habitat = TRUE
+)
+```
+
+```{r}
+simpop_peau_dy <- get_pop_simulation(peau_dy$simres)
+simcc_peau_dy <- get_lcc_simulation(peau_dy$simres)
+```
+
+```{r}
+pvaplot(
+  popmat = simpop_peau_dy,
+  p0 = peau_dy$ip
+)
+```
+
+```{r}
+pvaplot(
+  popmat = simpop_peau_dy,
+  p0 = peau_dy$ip,
+  cc = simcc_peau_dy
+)
+```
+
+```{r}
+lp(
+  stack(
+    peau_dy$simres[[1]][[1]]$carrying_capacity,
+    peau_dy$simres[[1]][[25]]$carrying_capacity,
+    peau_dy$simres[[1]][[50]]$carrying_capacity
+  )
+)
+```
+
+
+
+# Greater glider
+
+```{r}
+hab_pevo <- hab_set %>%
+    filter(
+      sp == "pevo",
+      cscnid == "TH00_rcp45_NB_01_ACCESS1-0"
+    )
+hab_pevo
+```
+
+### CC and initial population
+
+
+```{r}
+lp(hab_pevo$hab_map[[1]][[1]], zlim = c(0,1))
+```
+
+```{r}
+hab_pevo$hab_map[[1]][[1]] %>%
+  modify_habitat(
+    disturbance_map = hab_pevo$dist_map[[1]][[1]],
+    habfun = hab_pevo$habfun[[1]]
+  ) %>%
+  lp(zlim = c(0,1))
+```
+
+```{r}
+#cc_raster_pevo <- hab_pevo$hab_map[[1]][[1]]
+
+cc_raster_pevo <- hab_pevo$hab_map[[1]][[1]] %>%
+  modify_habitat(
+    disturbance_map = hab_pevo$dist_map[[1]][[1]],
+    habfun = hab_pevo$habfun[[1]]
+  )
+
+cc_val_pevo <- getValues(cc_raster_pevo) %>%
+  do_cc_fun(hab_pevo)
+
+cc_raster_pevo[] <- cc_val_pevo
+
+sum(cc_val_pevo, na.rm = TRUE)
+```
+
+```{r}
+tibble(
+  x = seq(
+    from = 0,
+    to = 1,
+    by = 0.01
+  )
+) %>%
+  mutate(
+    y = map(
+      .x = x,
+      .f = do_cc_fun,
+      hab = hab_pevo
+    ) %>%
+      unlist
+  ) %>%
+  ggplot() +
+  geom_line(
+    aes(
+      x = x,
+      y = y
+    )
+  )
+```
+
+```{r}
+ip_pevo <- hab_pevo %>%
+  do_ip(
+    ip_raster = TRUE,
+    mod_habitat = TRUE
+  )
+
+ip_pevo
+```
+
+```{r}
+ip_pevo %>%
+  getValues %>%
+  sum(na.rm = TRUE)
+```
+
+```{r}
+ip_pevo %>%
+  sum %>%
+  getValues %>%
+  table
+```
+
+```{r}
+ip_pevo %>%
+  lp
+```
+
+```{r}
+ip_pevo %>%
+  sum %>%
+  lp
+```
+
+
+
+
+
+```{r}
+lp(cc_raster_pevo)
+```
+
+
+## static
+```{r}
+pevo_st <- do_pva(
+  hab = hab_pevo,
+  ntimresteps = 50,
+  nreps = 5,
+  index = 1,
+  static = TRUE,
+  ip_raster = FALSE,
+  mod_habitat = TRUE
+)
+```
+
+```{r}
+simpop_pevo_st <- get_pop_simulation(pevo_st$simres)
+simcc_pevo_st <- get_lcc_simulation(pevo_st$simres)
+```
+
+```{r}
+pvaplot(
+  popmat = simpop_pevo_st,
+  p0 = pevo_st$ip
+)
+```
+
+```{r}
+pvaplot(
+  popmat = simpop_pevo_st,
+  p0 = pevo_st$ip,
+  cc = simcc_pevo_st
+)
+```
+
+## dynamic
+```{r}
+pevo_dy <- do_pva(
+  hab = hab_pevo,
+  ntimresteps = 50,
+  nreps = 5,
+  index = 1,
+  static = FALSE,
+  ip_raster = FALSE,
+  mod_habitat = TRUE
+)
+```
+
+```{r}
+simpop_pevo_dy <- get_pop_simulation(pevo_dy$simres)
+simcc_pevo_dy <- get_lcc_simulation(pevo_dy$simres)
+```
+
+```{r}
+pvaplot(
+  popmat = simpop_pevo_dy,
+  p0 = pevo_dy$ip
+)
+```
+
+```{r}
+pvaplot(
+  popmat = simpop_pevo_dy,
+  p0 = pevo_dy$ip,
+  cc = simcc_pevo_dy
+)
+```
+
+```{r}
+lp(
+  stack(
+    pevo_dy$simres[[1]][[1]]$carrying_capacity,
+    pevo_dy$simres[[1]][[25]]$carrying_capacity,
+    pevo_dy$simres[[1]][[50]]$carrying_capacity
+  )
+)
+```
+
+
+
+# Leadbeater's possum
+
+```{r}
+hab_gyle <- hab_set %>%
+    filter(
+      sp == "gyle",
+      cscnid == "TH00_rcp45_NB_01_ACCESS1-0"
+    )
+hab_gyle
+```
+
+### CC and initial population
+
+
+```{r}
+lp(hab_gyle$hab_map[[1]][[1]], zlim = c(0,1))
+```
+
+```{r}
+hab_gyle$hab_map[[1]][[1]] %>%
+  modify_habitat(
+    disturbance_map = hab_gyle$dist_map[[1]][[1]],
+    habfun = hab_gyle$habfun[[1]]
+  ) %>%
+  lp(zlim = c(0,1))
+```
+
+```{r}
+#cc_raster_gyle <- hab_gyle$hab_map[[1]][[1]]
+
+cc_raster_gyle <- hab_gyle$hab_map[[1]][[1]] %>%
+  modify_habitat(
+    disturbance_map = hab_gyle$dist_map[[1]][[1]],
+    habfun = hab_gyle$habfun[[1]]
+  )
+
+cc_val_gyle <- getValues(cc_raster_gyle) %>%
+  do_cc_fun(hab_gyle)
+
+cc_raster_gyle[] <- cc_val_gyle
+
+sum(cc_val_gyle, na.rm = TRUE)
+```
+
+```{r}
+tibble(
+  x = seq(
+    from = 0,
+    to = 1,
+    by = 0.01
+  )
+) %>%
+  mutate(
+    y = map(
+      .x = x,
+      .f = do_cc_fun,
+      hab = hab_gyle
+    ) %>%
+      unlist
+  ) %>%
+  ggplot() +
+  geom_line(
+    aes(
+      x = x,
+      y = y
+    )
+  )
+```
+
+```{r}
+ip_gyle <- hab_gyle %>%
+  do_ip(
+    ip_raster = TRUE,
+    mod_habitat = TRUE
+  )
+
+ip_gyle
+```
+
+```{r}
+ip_gyle %>%
+  getValues %>%
+  sum(na.rm = TRUE)
+```
+
+```{r}
+ip_gyle %>%
+  sum %>%
+  getValues %>%
+  table
+```
+
+```{r}
+ip_gyle %>%
+  lp
+```
+
+```{r}
+ip_gyle %>%
+  sum %>%
+  lp
+```
+
+
+
+
+
+```{r}
+lp(cc_raster_gyle)
+```
+
+
+## static
+```{r}
+gyle_st <- do_pva(
+  hab = hab_gyle,
+  ntimresteps = 50,
+  nreps = 3,
+  index = 1,
+  static = TRUE,
+  ip_raster = FALSE,
+  mod_habitat = TRUE
+)
+```
+
+```{r}
+simpop_gyle_st <- get_pop_simulation(gyle_st$simres)
+simcc_gyle_st <- get_lcc_simulation(gyle_st$simres)
+```
+
+```{r}
+pvaplot(
+  popmat = simpop_gyle_st,
+  p0 = gyle_st$ip
+)
+```
+
+```{r}
+pvaplot(
+  popmat = simpop_gyle_st,
+  p0 = gyle_st$ip,
+  cc = simcc_gyle_st
+)
+```
+
+## dynamic
+```{r}
+gyle_dy <- do_pva(
+  hab = hab_gyle,
+  ntimresteps = 50,
+  nreps = 5,
+  index = 1,
+  static = FALSE,
+  ip_raster = FALSE,
+  mod_habitat = TRUE
+)
+```
+
+```{r}
+simpop_gyle_dy <- get_pop_simulation(gyle_dy$simres)
+simcc_gyle_dy <- get_lcc_simulation(gyle_dy$simres)
+```
+
+```{r}
+pvaplot(
+  popmat = simpop_gyle_dy,
+  p0 = gyle_dy$ip
+)
+```
+
+```{r}
+pvaplot(
+  popmat = simpop_gyle_dy,
+  p0 = gyle_dy$ip,
+  cc = simcc_gyle_dy
+)
+```
+
+```{r}
+lp(
+  stack(
+    gyle_dy$simres[[1]][[1]]$carrying_capacity,
+    gyle_dy$simres[[1]][[25]]$carrying_capacity,
+    gyle_dy$simres[[1]][[50]]$carrying_capacity
+  )
+)
+```
+
+
+
+# White-footed dunnart
+
+```{r}
+hab_smle <- hab_set %>%
+    filter(
+      sp == "smle",
+      cscnid == "TH00_rcp45_NB_01_ACCESS1-0"
+    )
+hab_smle
+```
+
+### CC and initial population
+
+
+```{r}
+lp(hab_smle$hab_map[[1]][[1]], zlim = c(0,1))
+```
+
+```{r}
+# hab_smle$hab_map[[1]][[1]] %>%
+#   modify_habitat(
+#     disturbance_map = hab_smle$dist_map[[1]][[1]],
+#     habfun = hab_smle$habfun[[1]]
+#   ) %>%
+#   lp(zlim = c(0,1))
+```
+
+```{r}
+cc_raster_smle <- hab_smle$hab_map[[1]][[1]]
+
+# cc_raster_smle <- hab_smle$hab_map[[1]][[1]] %>%
+#   modify_habitat(
+#     disturbance_map = hab_smle$dist_map[[1]][[1]],
+#     habfun = hab_smle$habfun[[1]]
+#   )
+
+cc_val_smle <- getValues(cc_raster_smle) %>%
+  do_cc_fun(hab_smle)
+
+cc_raster_smle[] <- cc_val_smle
+
+sum(cc_val_smle, na.rm = TRUE)
+```
+
+```{r}
+tibble(
+  x = seq(
+    from = 0,
+    to = 1,
+    by = 0.01
+  )
+) %>%
+  mutate(
+    y = map(
+      .x = x,
+      .f = do_cc_fun,
+      hab = hab_smle
+    ) %>%
+      unlist
+  ) %>%
+  ggplot() +
+  geom_line(
+    aes(
+      x = x,
+      y = y
+    )
+  )
+```
+
+```{r}
+ip_smle <- hab_smle %>%
+  do_ip(
+    ip_raster = TRUE,
+    mod_habitat = TRUE
+  )
+
+ip_smle
+```
+
+```{r}
+ip_smle %>%
+  getValues %>%
+  sum(na.rm = TRUE)
+```
+
+```{r}
+ip_smle %>%
+  sum %>%
+  getValues %>%
+  table
+```
+
+```{r}
+ip_smle %>%
+  lp
+```
+
+```{r}
+ip_smle %>%
+  sum %>%
+  lp
+```
+
+
+```{r}
+lp(cc_raster_smle)
+```
+
+
+## static
+```{r}
+smle_st <- do_pva(
+  hab = hab_smle,
+  ntimresteps = 50,
+  nreps = 10,
+  index = 1,
+  static = TRUE,
+  ip_raster = FALSE,
+  mod_habitat = TRUE
+)
+```
+
+```{r}
+simpop_smle_st <- get_pop_simulation(smle_st$simres)
+simcc_smle_st <- get_lcc_simulation(smle_st$simres)
+```
+
+```{r}
+pvaplot(
+  popmat = simpop_smle_st,
+  p0 = smle_st$ip
+)
+```
+
+```{r}
+pvaplot(
+  popmat = simpop_smle_st,
+  p0 = smle_st$ip,
+  cc = simcc_smle_st
+)
+```
+
+## dynamic
+```{r}
+smle_dy <- do_pva(
+  hab = hab_smle,
+  ntimresteps = 50,
+  nreps = 10,
+  index = 1,
+  static = FALSE,
+  ip_raster = FALSE,
+  mod_habitat = TRUE
+)
+```
+
+```{r}
+simpop_smle_dy <- get_pop_simulation(smle_dy$simres)
+simcc_smle_dy <- get_lcc_simulation(smle_dy$simres)
+```
+
+```{r}
+pvaplot(
+  popmat = simpop_smle_dy,
+  p0 = smle_dy$ip
+)
+```
+
+```{r}
+pvaplot(
+  popmat = simpop_smle_dy,
+  p0 = smle_dy$ip,
+  cc = simcc_smle_dy
+)
+```
+
+```{r}
+lp(
+  stack(
+    smle_dy$simres[[1]][[1]]$carrying_capacity,
+    smle_dy$simres[[1]][[25]]$carrying_capacity,
+    smle_dy$simres[[1]][[50]]$carrying_capacity
+  )
+)
+```
+
+
+# Sooty Owl
+
+```{r}
+hab_tyte <- hab_set %>%
+    filter(
+      sp == "tyte",
+      cscnid == "TH00_rcp45_NB_01_ACCESS1-0"
+    )
+hab_tyte
+```
+
+### CC and initial population
+
+
+```{r}
+lp(hab_tyte$hab_map[[1]][[1]], zlim = c(0,1))
+```
+
+```{r}
+hab_tyte$hab_map[[1]][[1]] %>%
+  modify_habitat(
+    disturbance_map = hab_tyte$dist_map[[1]][[1]],
+    habfun = hab_tyte$habfun[[1]]
+  ) %>%
+  lp(zlim = c(0,1))
+```
+
+```{r}
+#cc_raster_tyte <- hab_tyte$hab_map[[1]][[1]]
+
+cc_raster_tyte <- hab_tyte$hab_map[[1]][[1]] %>%
+  modify_habitat(
+    disturbance_map = hab_tyte$dist_map[[1]][[1]],
+    habfun = hab_tyte$habfun[[1]]
+  )
+
+cc_val_tyte <- getValues(cc_raster_tyte) %>%
+  do_cc_fun(hab_tyte)
+
+cc_raster_tyte[] <- cc_val_tyte
+
+sum(cc_val_tyte, na.rm = TRUE)
+```
+
+```{r}
+tibble(
+  x = seq(
+    from = 0,
+    to = 1,
+    by = 0.01
+  )
+) %>%
+  mutate(
+    y = map(
+      .x = x,
+      .f = do_cc_fun,
+      hab = hab_tyte
+    ) %>%
+      unlist
+  ) %>%
+  ggplot() +
+  geom_line(
+    aes(
+      x = x,
+      y = y
+    )
+  )
+```
+
+```{r}
+ip_tyte <- hab_tyte %>%
+  do_ip(
+    ip_raster = TRUE,
+    mod_habitat = TRUE
+  )
+
+ip_tyte
+```
+
+```{r}
+ip_tyte %>%
+  getValues %>%
+  sum(na.rm = TRUE)
+```
+
+```{r}
+ip_tyte %>%
+  sum %>%
+  getValues %>%
+  table
+```
+
+```{r}
+ip_tyte %>%
+  lp
+```
+
+```{r}
+ip_tyte %>%
+  sum %>%
+  lp
+```
+
+
+
+```{r}
+lp(cc_raster_tyte)
+```
+```{r}
+table(cc_val_tyte)
+```
+
+```{r}
+which(cc_val_tyte < getValues(sum(ip_tyte)))
+```
+
+
+## static
+```{r}
+tyte_st <- do_pva(
+  hab = hab_tyte,
+  ntimresteps = 50,
+  nreps = 5,
+  index = 1,
+  static = TRUE,
+  ip_raster = FALSE,
+  mod_habitat = TRUE
+)
+```
+
+```{r}
+simpop_tyte_st <- get_pop_simulation(tyte_st$simres)
+simcc_tyte_st <- get_lcc_simulation(tyte_st$simres)
+```
+
+
+```{r}
+pvaplot(
+  popmat = simpop_tyte_st,
+  p0 = tyte_st$ip
+)
+```
+
+```{r}
+pvaplot(
+  popmat = simpop_tyte_st,
+  p0 = tyte_st$ip,
+  cc = simcc_tyte_st
+)
+```
+
+## dynamic
+```{r}
+tyte_dy <- do_pva(
+  hab = hab_tyte,
+  ntimresteps = 50,
+  nreps = 10,
+  index = 1,
+  static = FALSE,
+  ip_raster = FALSE,
+  mod_habitat = TRUE
+)
+```
+
+```{r}
+simpop_tyte_dy <- get_pop_simulation(tyte_dy$simres)
+simcc_tyte_dy <- get_lcc_simulation(tyte_dy$simres)
+```
+
+```{r}
+pvaplot(
+  popmat = simpop_tyte_dy,
+  p0 = tyte_dy$ip
+)
+```
+
+```{r}
+pvaplot(
+  popmat = simpop_tyte_dy,
+  p0 = tyte_dy$ip,
+  cc = simcc_tyte_dy
+)
+```
+
+```{r}
+lp(
+  stack(
+    tyte_dy$simres[[1]][[1]]$carrying_capacity,
+    tyte_dy$simres[[1]][[25]]$carrying_capacity,
+    tyte_dy$simres[[1]][[50]]$carrying_capacity
+  )
+)
+```
+
+
+
+# Lace monitor
+
+```{r}
+hab_vava <- hab_set %>%
+    filter(
+      sp == "vava",
+      cscnid == "TH00_rcp45_NB_01_ACCESS1-0"
+    )
+hab_vava
+```
+
+### CC and initial population
+
+
+```{r}
+lp(hab_vava$hab_map[[1]][[1]], zlim = c(0,1))
+```
+
+```{r}
+# hab_vava$hab_map[[1]][[1]] %>%
+#   modify_habitat(
+#     disturbance_map = hab_vava$dist_map[[1]][[1]],
+#     habfun = hab_vava$habfun[[1]]
+#   ) %>%
+#   lp(zlim = c(0,1))
+```
+
+```{r}
+cc_raster_vava <- hab_vava$hab_map[[1]][[1]]
+
+# cc_raster_vava <- hab_vava$hab_map[[1]][[1]] %>%
+#   modify_habitat(
+#     disturbance_map = hab_vava$dist_map[[1]][[1]],
+#     habfun = hab_vava$habfun[[1]]
+#   )
+
+cc_val_vava <- getValues(cc_raster_vava) %>%
+  do_cc_fun(hab_vava)
+
+cc_raster_vava[] <- cc_val_vava
+
+sum(cc_val_vava, na.rm = TRUE)
+```
+
+```{r}
+tibble(
+  x = seq(
+    from = 0,
+    to = 1,
+    by = 0.01
+  )
+) %>%
+  mutate(
+    y = map(
+      .x = x,
+      .f = do_cc_fun,
+      hab = hab_vava
+    ) %>%
+      unlist
+  ) %>%
+  ggplot() +
+  geom_line(
+    aes(
+      x = x,
+      y = y
+    )
+  )
+```
+
+```{r}
+ip_vava <- hab_vava %>%
+  do_ip(
+    ip_raster = TRUE,
+    mod_habitat = TRUE
+  )
+
+ip_vava
+```
+
+```{r}
+ip_vava %>%
+  getValues %>%
+  sum(na.rm = TRUE)
+```
+
+```{r}
+ip_vava %>%
+  sum %>%
+  getValues %>%
+  table
+```
+
+```{r}
+ip_vava %>%
+  lp
+```
+
+```{r}
+ip_vava %>%
+  sum %>%
+  lp
+```
+
+
+
+
+
+```{r}
+lp(cc_raster_vava)
+```
+
+
+## static
+```{r}
+vava_st <- do_pva(
+  hab = hab_vava,
+  ntimresteps = 50,
+  nreps = 10,
+  index = 1,
+  static = TRUE,
+  ip_raster = FALSE,
+  mod_habitat = TRUE
+)
+```
+
+```{r}
+simpop_vava_st <- get_pop_simulation(vava_st$simres)
+simcc_vava_st <- get_lcc_simulation(vava_st$simres)
+```
+
+```{r}
+pvaplot(
+  popmat = simpop_vava_st,
+  p0 = vava_st$ip,
+  ageClassNames = c('Hatchling','Juvenile', "Sub-adult",'Adult')
+)
+```
+
+```{r}
+pvaplot(
+  popmat = simpop_vava_st,
+  p0 = vava_st$ip,
+  cc = simcc_vava_st,
+  ageClassNames = c('Hatchling','Juvenile', "Sub-adult",'Adult')
+)
+```
+
+## dynamic
+```{r}
+vava_dy <- do_pva(
+  hab = hab_vava,
+  ntimresteps = 50,
+  nreps = 5,
+  index = 1,
+  static = FALSE,
+  ip_raster = FALSE,
+  mod_habitat = TRUE
+)
+```
+
+```{r}
+simpop_vava_dy <- get_pop_simulation(vava_dy$simres)
+simcc_vava_dy <- get_lcc_simulation(vava_dy$simres)
+```
+
+```{r}
+pvaplot(
+  popmat = simpop_vava_dy,
+  p0 = vava_dy$ip,
+  ageClassNames = c('Hatchling','Juvenile', "Sub-adult",'Adult')
+)
+```
+
+```{r}
+pvaplot(
+  popmat = simpop_vava_dy,
+  p0 = vava_dy$ip,
+  cc = simcc_vava_dy,
+  ageClassNames = c('Hatchling','Juvenile', "Sub-adult",'Adult')
+)
+```
+
+```{r}
+lp(
+  stack(
+    vava_dy$simres[[1]][[1]]$carrying_capacity,
+    vava_dy$simres[[1]][[25]]$carrying_capacity,
+    vava_dy$simres[[1]][[50]]$carrying_capacity
+  )
+)
+```
+
+
+

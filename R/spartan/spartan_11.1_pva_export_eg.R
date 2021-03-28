@@ -12,16 +12,16 @@ library(sp)
 library(magrittr)
 library(steps)
 
-load(file = "output/RData/00_controls.RData")
-load(file = "output/RData/01_landscape_variables.RData")
-load(file = "output/RData/11.0.1_hab_set.RData")
+load(file = "output/RData/00_controls_eg.RData")
+load(file = "output/RData/01_landscape_variables_eg.RData")
+load(file = "output/RData/11.0_pva_species_dat_eg.RData")
+load(file = "output/RData/11.0.1_hab_set_eg.RData")
 
 source.functions("R/functions")
 
-hab_set <- hab_set %>%
-  filter(scenario == "TH00_rcp45_PB" | scenario == "TH30_rcp45_PB") %>%
-  filter(climate_model == "ACCESS1-0", rcp =="rcp45") %>%
-  filter(sp == "tyte" | sp == "peau")
+hab_set_eg <- hab_set_eg %>%
+  filter(scenario == "EG20_TH00_rcp45_PB" | scenario == "EG20_TH30_rcp45_PB") %>%
+  filter(yearid != "EG19", climate_model == "ACCESS1-0", rcp =="rcp45")
 
 nreplicates <- 20
 
@@ -31,7 +31,7 @@ i <- as.numeric(command_args[1])
 
 
 simset <- do_pva(
-  hab = hab_set[i,],
+  hab = hab_set_eg[i,],
   ntimresteps = ntimesteps,
   nreps = nreplicates,
   index = 1,
@@ -42,9 +42,11 @@ simset <- do_pva(
 
 
 temp_mask <- raster::aggregate(
-  x = ch_mask,
-  fact = hab_set$scale[i]/100
+  x = eg_mask,
+  fact = 2
 ) # generalise
+
+#temp_mask <- eg_mask_agg
 
 ipsum <- sum(simset$ip_raster)
 
@@ -53,17 +55,17 @@ rst_pop <- export_pop_rasters(
   initial_pops = simset$ip_raster
 ) %>%
   write_pop_rasters(
-    path = "/data/gpfs/projects/punim0995/rfst/output/pva_pops",
-    id = hab_set$cscnid[i],
-    sp = hab_set$sp[i],
+    path = "/data/gpfs/projects/punim1340/rfst_eg/output/pva_pops",
+    id = hab_set_eg$ycscnid[i],
+    sp = hab_set_eg$sp[i],
     proj_mask = temp_mask
   )
 
 
-cc_raster <- hab_set$hab_map[[1]][[1]]
+cc_raster <- hab_set_eg$hab_map[[1]][[1]]
 
 cc_val <- getValues(cc_raster) %>%
-  do_cc_fun(hab_set[i,])
+  do_cc_fun(hab_set_eg[i,])
 
 cc_raster[] <- cc_val
 
@@ -78,9 +80,9 @@ rst_k <- export_k_rasters(
     proj_mask = temp_mask,
     filename = sprintf(
       fmt = "%s/pva_k_%s_%s.grd",
-      "/data/gpfs/projects/punim0995/rfst/output/pva_k",
-      hab_set$cscnid[i],
-      hab_set$sp[i]
+      "/data/gpfs/projects/punim1340/rfst_eg/output/pva_k",
+      hab_set_eg$ycscnid[i],
+      hab_set_eg$sp[i]
     ),
     layernames = sprintf(
       "k%s",
@@ -125,7 +127,7 @@ pva_res <- tibble(
   )
 
 pva <- bind_cols(
-  hab_set[i,],
+  hab_set_eg[i,],
   pva_res
 )
 
@@ -133,10 +135,10 @@ pva <- bind_cols(
 saveRDS(
   object = pva,
   file = sprintf(
-    fmt = "%s/pva_exp_%s_%s.Rds",
-    "/data/gpfs/projects/punim0995/rfst/output/spartan_RData/pva",
-    hab_set$cscnid[i],
-    hab_set$sp[i]
+    fmt = "%s/pva_exp_%s_%s_eg.Rds",
+    "/data/gpfs/projects/punim1340/rfst_eg/output/spartan_RData/pva",
+    hab_set_eg$ycscnid[i],
+    hab_set_eg$sp[i]
   )
 )
 

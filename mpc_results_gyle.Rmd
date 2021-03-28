@@ -1,13 +1,13 @@
 ---
-title: "Metapopulation capacity results: Greater glider"
+title: "Metapopulation capacity results: Leadbeater's possum"
 output:
   word_document: default
   html_document: default
 ---
 
 ```{r}
-spti <- "Greater glider"
-spfil <- "pevo"
+spti <- "Leadbeater's possum"
+spfil <- "gyle"
 ```
 
 
@@ -276,8 +276,6 @@ p_pmss_med_pevo
 
 
 ## East Gippsland pre and post fire comparison
-
-## RCP 4.5 ACCESS1-0 EG20 and CH only
 
 ```{r}
 knitr::opts_chunk$set(fig.width=6, fig.height=4, echo = FALSE, message = FALSE)

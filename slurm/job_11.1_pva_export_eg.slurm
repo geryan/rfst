@@ -12,7 +12,7 @@
 #SBATCH --cpus-per-task=1
 
 # megabytes per process
-#SBATCH --mem=6400
+#SBATCH --mem=12800
 
 # job name from batch
 # output name from batch
@@ -39,5 +39,5 @@ module load r/3.6.2
 cd /data/gpfs/projects/punim0995/rfst
 
 # Commands
-Rscript --vanilla R/spartan/spartan_11.1_pva_export.R $i
+Rscript --vanilla R/spartan/spartan_11.1_pva_export_eg.R $i
 

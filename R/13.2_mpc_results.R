@@ -130,7 +130,7 @@ mpc_res_summary <- mpc_r  %>%
     scn,
     species_com,
     landscape,
-    year,
+    #year,
     yearid
   ) %>%
   summarise(
@@ -147,7 +147,8 @@ mpc_res_summary
 
 mpc_rs <- mpc_res_summary %>%
   group_by(
-    yearid
+    yearid,
+    sp
   ) %>%
   mutate(
     r_min = median(mpc_min[scenario == "TH19_rcp45_PB" & climate_model == "ACCESS1-0"]),
@@ -172,7 +173,8 @@ mpc_rs
 mpc_cs <- mpc_res_summary %>%
   group_by(
     yearid,
-    climate_model
+    climate_model,
+    sp
   ) %>%
   mutate(
     r_min = median(mpc_min[scenario == "TH19_rcp45_PB"]),

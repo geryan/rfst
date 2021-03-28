@@ -42,6 +42,14 @@ rst.op <- function(
   }
   
   
+  if(missing(proj_mask)){
+    print("No mask, creating from layer")
+    
+    proj_mask <- input1[[1]]
+    proj_mask[!is.na(proj_mask)] <- 1
+    
+  }
+  
   if(op == "writeBrick"){
     nl <- nlayers(input1)
     

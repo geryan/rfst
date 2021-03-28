@@ -1,8 +1,9 @@
 ---
 title: "Landacape variable projections"
 output:
-  pdf_document: default
+  word_document: default
   html_document: default
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -32,10 +33,10 @@ library(rasterVis)
 ```{r}
 load(file = "output/RData/00_controls.RData")
 load(file = "output/RData/01_landscape_variables.RData")
-load(file = "output/RData/02_species_occurrences.RData")
+#load(file = "output/RData/02_species_occurrences.RData")
 load(file = "output/RData/05_geophys_vars.RData")
 load(file = "output/RData/07_combined_variables.RData")
-load(file = "output/RData/08_distribution_model_data.RData")
+#load(file = "output/RData/08_distribution_model_data.RData")
 ```
 
 ```{r}
@@ -47,7 +48,22 @@ source.functions("R/functions")
 ```
 
 
-Max age - 
+Maximum age
+`max_age`
+```{r}
+var_set %>%
+  filter(cscnid == "TH00_rcp45_PB_01_ACCESS1-0") %>%
+  pull(all_vars) %>%
+  .[[1]] %>%
+  lxtract("max_age") %>%
+  .[[c(1, 10, 20, 30, 40, 50)]] %>%
+  lp(
+    names.attr = c(2019, 2029, 2039, 2049, 2059, 2069) %>% as.character
+  )
+```
+
+
+
 
 Midstorey species - proportion of biomass
 `lbm_prop`

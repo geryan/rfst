@@ -1,0 +1,255 @@
+---
+title: "Landacape variable projections"
+output:
+  word_document: default
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, message = FALSE, dpi = 300)
+```
+
+```{r}
+source("R/spartan/spartan_settings.R")
+```
+
+
+```{r}
+#.libPaths("/data/gpfs/projects/punim0995/gr_lib")
+```
+
+```{r}
+library(raster)
+library(dplyr)
+library(purrr)
+#library(tibble)
+library(tidyr)
+library(dismo)
+library(gbm)
+library(rasterVis)
+```
+
+```{r}
+load(file = "output/RData/00_controls_eg.RData")
+load(file = "output/RData/01_landscape_variables_eg.RData")
+#load(file = "output/RData/02_species_occurrences_eg.RData")
+load(file = "output/RData/05_geophys_vars_eg.RData")
+load(file = "output/RData/07_combined_variables_eg.RData")
+#load(file = "output/RData/08_distribution_model_data_eg.RData.RData")
+```
+
+```{r}
+source.functions("R/functions")
+```
+
+```{r}
+#var_set_eg
+```
+
+
+Maximum age
+`max_age`
+```{r}
+var_set_eg %>%
+  filter(ycscnid == "EG20_TH00_rcp45_PB_01_ACCESS1-0") %>%
+  pull(all_vars) %>%
+  .[[1]] %>%
+  lxtract("max_age") %>%
+  .[[c(1, 10, 20, 30, 40, 50)]] %>%
+  lp(
+    names.attr = c(2019, 2029, 2039, 2049, 2059, 2069) %>% as.character
+  )
+```
+
+
+
+Old growth Eucalypts (>150 years) - proportion of biomass
+`prop_oge`
+
+```{r}
+var_set_eg %>%
+  filter(ycscnid == "EG20_TH00_rcp45_PB_01_ACCESS1-0") %>%
+  pull(all_vars) %>%
+  .[[1]] %>%
+  lxtract("prop_oge") %>%
+  .[[c(1, 10, 20, 30, 40, 50)]] %>%
+  lp(
+    zlim = c(0, 1),
+    names.attr = c(2019, 2029, 2039, 2049, 2059, 2069) %>% as.character
+  )
+  
+```
+
+Old growth Eucalypts (>150 years) - mean proportion of biomass in 3x3 ha window
+`prop_oge`
+
+```{r}
+var_set_eg %>%
+  filter(ycscnid == "EG20_TH00_rcp45_PB_01_ACCESS1-0") %>%
+  pull(all_vars) %>%
+  .[[1]] %>%
+  lxtract("prop_oge_3h") %>%
+  .[[c(1, 10, 20, 30, 40, 50)]] %>%
+  lp(
+    zlim = c(0, 1),
+    names.attr = c(2019, 2029, 2039, 2049, 2059, 2069) %>% as.character
+  )
+  
+```
+
+Old growth Eucalypts (>150 years) - mean proportion of biomass in 1km radius window
+`prop_oge`
+
+```{r}
+var_set_eg %>%
+  filter(ycscnid == "EG20_TH00_rcp45_PB_01_ACCESS1-0") %>%
+  pull(all_vars) %>%
+  .[[1]] %>%
+  lxtract("prop_oge_1k") %>%
+  .[[c(1, 10, 20, 30, 40, 50)]] %>%
+  lp(
+    zlim = c(0, 1),
+    names.attr = c(2019, 2029, 2039, 2049, 2059, 2069) %>% as.character
+  )
+  
+```
+
+
+Old growth Eucalypts (>150 years) - biomass
+`prop_oge`
+
+```{r}
+var_set_eg %>%
+  filter(ycscnid == "EG20_TH00_rcp45_PB_01_ACCESS1-0") %>%
+  pull(all_vars) %>%
+  .[[1]] %>%
+  lxtract("biom_oge") %>%
+  .[[c(1, 10, 20, 30, 40, 50)]] %>%
+  lp(
+    names.attr = c(2019, 2029, 2039, 2049, 2059, 2069) %>% as.character
+  )
+  
+```
+
+Old growth Eucalypts (>150 years) - mean biomass in 3x3 ha window
+`prop_oge`
+
+```{r}
+var_set_eg %>%
+  filter(ycscnid == "EG20_TH00_rcp45_PB_01_ACCESS1-0") %>%
+  pull(all_vars) %>%
+  .[[1]] %>%
+  lxtract("biom_oge_3h") %>%
+  .[[c(1, 10, 20, 30, 40, 50)]] %>%
+  lp(
+    names.attr = c(2019, 2029, 2039, 2049, 2059, 2069) %>% as.character
+  )
+  
+
+
+```
+
+Summer rainfall (mm)
+`prec_djf`
+
+```{r}
+var_set_eg %>%
+  filter(ycscnid == "EG20_TH00_rcp45_PB_01_ACCESS1-0") %>%
+  pull(all_vars) %>%
+  .[[1]] %>%
+  lxtract(y = 21) %>%
+  .[[c(1, 10, 20, 30, 40, 50)]] %>%
+  lp(
+    names.attr = c(2019, 2029, 2039, 2049, 2059, 2069) %>% as.character
+  )
+  
+```
+
+Winter rainfall (mm)
+`prec_jja`
+
+```{r}
+var_set_eg %>%
+  filter(ycscnid == "EG20_TH00_rcp45_PB_01_ACCESS1-0") %>%
+  pull(all_vars) %>%
+  .[[1]] %>%
+  lxtract(y = 22) %>%
+  .[[c(1, 10, 20, 30, 40, 50)]] %>%
+  lp(
+    names.attr = c(2019, 2029, 2039, 2049, 2059, 2069) %>% as.character
+  )
+  
+```
+
+Summer maximum temperature - mean (c)
+`tmax_djf`
+
+```{r}
+var_set_eg %>%
+  filter(ycscnid == "EG20_TH00_rcp45_PB_01_ACCESS1-0") %>%
+  pull(all_vars) %>%
+  .[[1]] %>%
+  lxtract(y = 23) %>%
+  .[[c(1, 10, 20, 30, 40, 50)]] %>%
+  lp(
+    names.attr = c(2019, 2029, 2039, 2049, 2059, 2069) %>% as.character
+  )
+  
+```
+
+Winter minimum temperature - mean (c)
+`prec_djf`
+
+```{r}
+var_set_eg %>%
+  filter(ycscnid == "EG20_TH00_rcp45_PB_01_ACCESS1-0") %>%
+  pull(all_vars) %>%
+  .[[1]] %>%
+  lxtract(y = 24) %>%
+  .[[c(1, 10, 20, 30, 40, 50)]] %>%
+  lp(
+    names.attr = c(2019, 2029, 2039, 2049, 2059, 2069) %>% as.character
+  )
+```
+Log-vertical distance from any waterway
+`lvdaw`
+
+```{r}
+lp(geo_vars_eg[["lvdaw"]])
+```
+
+Log-vertical distance from major waterway
+`lvdma`
+
+```{r}
+lp(geo_vars_eg[["lvdma"]])
+```
+
+
+Log-vertical distance from minor waterway
+`lvdmi`
+
+```{r}
+lp(geo_vars_eg[["lvdmi"]])
+```
+
+Log-vertical distance above saline waterway
+`lvdsw`
+
+```{r}
+lp(geo_vars_eg[["lvdsw"]])
+```
+
+Thorium
+
+```{r}
+lp(geo_vars_eg[["tho"]])
+```
+
+Anisotronic heating x ruggedness
+
+```{r}
+lp(geo_vars_eg[["ahr"]])
+```
+

@@ -3,6 +3,7 @@ title: "PVA Results Sooty Owl"
 output:
   word_document: default
   html_document: default
+  pdf_document: default
 ---
 
 ```{r}
@@ -30,264 +31,25 @@ library(tidyr)
 library(raster)
 library(sp)
 library(sf)
-
 library(ggplot2)
 library(forcats)
-
 library(patchwork)
 library(cowplot)
 ```
 
 ```{r}
 load(file = "output/RData/00_controls.RData")
-load(file = "output/RData/01_landscape_variables.RData")
-load(file = "output/RData/02_species_occurrences.RData")
-load(file = "output/RData/11.1_pva.RData")
-load(file = "output/RData/11.1_pva_eg.RData")
-load(file = "output/RData/11.2_pva_cc.RData")
-load(file = "output/RData/11.2_pva_cc_eg.RData")
+load(file = "output/RData/11.4_pva_results.R")
 ```
 
 ```{r}
 source.functions("R/functions")
 ```
 
-
 ```{r}
-peau_pva_eg <- pva_results5_eg %>%
-  dplyr::select(
-    -aggmaps,
-    -lcc,
-  ) %>%
-  full_join(
-    aggcc_eg
-  ) %>%
-  mutate(
-    year = ifelse(
-      yearid == "EG19",
-      "2019",
-      "2020"
-    ),
-    landscape = "East Gippsland",
-    yscenario = scenario,
-    scenario = sub(
-      pattern = "...._",
-      replacement = "",
-      x = scenario
-    )
-  ) %>%
+pvr_r <- pvr %>%
   filter(sp == spfil)
-
-peau_pva_eg
 ```
-
-```{r}
-peau_pva_ch <- pva_results5_ch %>%
-  dplyr::select(
-    -aggmap5,
-    -lcc
-    ) %>%
-  full_join(
-    aggcc_ch,
-    by = c(
-      "scenario",
-      "scenario_replicate",
-      "rcp",
-      "climate_model",
-      "harvest_scenario",
-      "plan_burn",
-      "scn_id",
-      "cscnid",
-      "sp")
-  ) %>%
-  mutate(
-    yscn_id = NA,
-    ycscnid = NA,
-    yearid = "CH",
-    yscenario = NA,
-    year = "2019",
-    landscape = "Central Highlands",
-    init_pop = NA
-  ) %>%
-  dplyr::select(names(peau_pva_eg)) %>%
-  filter(sp == spfil)
-
-peau_pva_ch
-```
-
-```{r}
-peau_pva <- bind_rows(
-  peau_pva_ch,
-  peau_pva_eg
-)
-
-peau_pva
-```
-
-
-```{r}
-species_names_pva <- pa_data %>%
-  dplyr::select(species, sp) %>%
-  mutate(
-    species_com = case_when(
-      sp == "gyle" ~ "Leadbeater's possum",
-      sp == "peau" ~ "Yellow-bellied glider",
-      sp == "pevo" ~ "Greater glider",
-      sp == "smle" ~ "White-footed dunnart",
-      sp == "tyte" ~ "Sooty Owl",
-      sp == "vava" ~ "Lace monitor"
-    )
-  ) %>%
-  mutate(
-    species_com = factor(
-      x = species_com,
-      levels = c(
-        "Leadbeater's possum",
-        "Yellow-bellied glider",
-        "Greater glider",
-        "White-footed dunnart",
-        "Sooty Owl",
-        "Lace monitor"
-      )
-    )
-  ) %>%
-  filter(!is.na(species_com))
-
-species_names_pva
-```
-
-
-```{r}
-scenario_names <- tribble(
-  ~scenario,       ~scn,
-  "TH30_rcp85_PB", "Stop harvest 2030 RCP8.5",
-  "TH00_rcp85_PB", "No harvest RCP8.5",
-  "TH19_rcp45_PB", "Ongoing harvest RCP4.5",
-  "TH30_rcp45_PB", "Stop harvest 2030 RCP4.5",
-  "TH00_rcp45_PB", "No harvest RCP4.5",
-  "TH00_rcp45_NB", "No harvest no planned burning RCP4.5"
-) %>%
-  mutate(
-    scn = factor(
-      x = scn,
-      levels = c(
-        "Stop harvest 2030 RCP8.5",
-        "No harvest RCP8.5",
-        "Ongoing harvest RCP4.5",
-        "Stop harvest 2030 RCP4.5",
-        "No harvest RCP4.5",
-        "No harvest no planned burning RCP4.5"
-      )
-    )
-  )
-
-scenario_names
-```
-
-
-
-```{r}
-exminpop <- emp
-
-pvr <- peau_pva %>%
-  left_join(
-    y = species_names_pva,
-    by = "sp"
-  ) %>%
-  left_join(
-    y = scenario_names,
-    by = "scenario"
-  ) %>%
-  mutate(
-    scenario = fct_reorder(
-      .f = scenario,
-      .x = as.numeric(scn)
-    ),
-    sp = fct_reorder(
-      .f = sp,
-      .x = as.numeric(species_com)
-    ),
-    species = fct_reorder(
-      .f = species,
-      .x = as.numeric(species_com)
-    )
-  ) %>%
-  mutate(
-    emp_med = map(
-      .x = emp_all,
-      .f = median
-    ) %>%
-      unlist,
-    med_pop = map(
-      .x = pva,
-      .f = med.pop
-    ) %>%
-      unlist,
-    emp_95 = map(
-      .x = pva,
-      .f = exminpop,
-      q = 0.05
-    ) %>%
-      unlist,
-    prop_extinct = map(
-      .x = pva,
-      .f = nex,
-      p = TRUE
-    ) %>%
-      unlist,
-    prop_extant = 1 - prop_extinct,
-    tt_ex = map(
-      .x = pva,
-      .f = ttex
-    ),
-    mean_tt_ex = map(
-      .x = tt_ex,
-      .f = mean,
-      na.rm = TRUE
-    ) %>%
-      unlist
-  ) %>%
-  group_by(
-    #landscape,
-    #habitat,
-    #year,
-    yearid,
-    climate_model
-  ) %>%
-  mutate(
-    # ref_emp = median(emp[scenario == "TH19_rcp45_PB" & climate_model == "ACCESS1-0"]),
-    # ref_emp_95 = median(emp_95[scenario == "TH19_rcp45_PB" & climate_model == "ACCESS1-0"]),
-    # ref_emp_med = median(emp_med[scenario == "TH19_rcp45_PB" & climate_model == "ACCESS1-0"]),
-    # ref_med_pop = median(med_pop[scenario == "TH19_rcp45_PB" & climate_model == "ACCESS1-0"]),
-    # ref_prop_extant = median(prop_extant[scenario == "TH19_rcp45_PB" & climate_model == "ACCESS1-0"]),
-    # ref_mean_tt_ex = median(mean_tt_ex[scenario == "TH19_rcp45_PB" & climate_model == "ACCESS1-0"])
-    ref_emp = median(emp[scenario == "TH19_rcp45_PB"]),
-    ref_emp_95 = median(emp_95[scenario == "TH19_rcp45_PB"]),
-    ref_emp_med = median(emp_med[scenario == "TH19_rcp45_PB"]),
-    ref_med_pop = median(med_pop[scenario == "TH19_rcp45_PB"]),
-    ref_prop_extant = median(prop_extant[scenario == "TH19_rcp45_PB"]),
-    ref_mean_tt_ex = median(mean_tt_ex[scenario == "TH19_rcp45_PB"])
-  ) %>%
-  ungroup %>%
-  mutate(
-    delta_emp = emp - ref_emp,
-    delta_emp_95 = emp_95 - ref_emp_95,
-    delta_emp_med = emp_med - ref_emp_med,
-    delta_med_pop = med_pop - ref_med_pop,
-    delta_prop_extant = prop_extant - ref_prop_extant,
-    delta_mean_tt_ex = mean_tt_ex - ref_mean_tt_ex
-  )
-
-pvr
-```
-
-```{r}
-# save(
-#   pvr,
-#   file = "output/RData/pva_summary_peau3.RData"
-# )
-```
-
 
 
 # Trajectory plots
@@ -296,11 +58,10 @@ knitr::opts_chunk$set(fig.width=6, fig.height=4, echo = FALSE, message = FALSE)
 ```
 
 ### CH
-
 No harvest no planned burning RCP4.5
 
 ```{r}
-pvr %>%
+pvr_r %>%
   filter(
     yearid == "CH",
     cscnid == "TH00_rcp45_NB_01_ACCESS1-0"
@@ -309,7 +70,7 @@ pvr %>%
 ```
 
 ```{r}
-pvr %>%
+pvr_r %>%
   filter(
     yearid == "CH",
     cscnid == "TH00_rcp45_NB_01_ACCESS1-0"
@@ -318,7 +79,7 @@ pvr %>%
 ```
 
 ```{r}
-pvr %>%
+pvr_r %>%
   filter(
     yearid == "CH",
     cscnid == "TH00_rcp45_NB_01_ACCESS1-0"
@@ -329,7 +90,7 @@ pvr %>%
 No harvest RCP4.5  
 
 ```{r}
-pvr %>%
+pvr_r %>%
   filter(
     yearid == "CH",
     cscnid == "TH00_rcp45_PB_01_ACCESS1-0"
@@ -338,7 +99,7 @@ pvr %>%
 ```
 
 ```{r}
-pvr %>%
+pvr_r %>%
   filter(
     yearid == "CH",
     cscnid == "TH00_rcp45_PB_01_ACCESS1-0"
@@ -347,7 +108,7 @@ pvr %>%
 ```
 
 ```{r}
-pvr %>%
+pvr_r %>%
   filter(
     yearid == "CH",
     cscnid == "TH00_rcp45_PB_01_ACCESS1-0"
@@ -358,7 +119,7 @@ pvr %>%
 Stop harvest 2030 RCP4.5 
 
 ```{r}
-pvr %>%
+pvr_r %>%
   filter(
     yearid == "CH",
     cscnid == "TH30_rcp45_PB_01_ACCESS1-0"
@@ -367,7 +128,7 @@ pvr %>%
 ```
 
 ```{r}
-pvr %>%
+pvr_r %>%
   filter(
     yearid == "CH",
     cscnid == "TH30_rcp45_PB_01_ACCESS1-0"
@@ -376,7 +137,7 @@ pvr %>%
 ```
 
 ```{r}
-pvr %>%
+pvr_r %>%
   filter(
     yearid == "CH",
     cscnid == "TH30_rcp45_PB_01_ACCESS1-0"
@@ -386,7 +147,7 @@ pvr %>%
 
 Ongoing harvest RCP4.5
 ```{r}
-pvr %>%
+pvr_r %>%
   filter(
     yearid == "CH",
     cscnid == "TH19_rcp45_PB_01_ACCESS1-0"
@@ -395,7 +156,7 @@ pvr %>%
 ```
 
 ```{r}
-pvr %>%
+pvr_r %>%
   filter(
     yearid == "CH",
     cscnid == "TH19_rcp45_PB_01_ACCESS1-0"
@@ -404,7 +165,7 @@ pvr %>%
 ```
 
 ```{r}
-pvr %>%
+pvr_r %>%
   filter(
     yearid == "CH",
     cscnid == "TH19_rcp45_PB_01_ACCESS1-0"
@@ -414,7 +175,7 @@ pvr %>%
 
 No harvest RCP8.5                   
 ```{r}
-pvr %>%
+pvr_r %>%
   filter(
     yearid == "CH",
     cscnid == "TH00_rcp85_PB_01_ACCESS1-0"
@@ -423,7 +184,7 @@ pvr %>%
 ```
 
 ```{r}
-pvr %>%
+pvr_r %>%
   filter(
     yearid == "CH",
     cscnid == "TH00_rcp85_PB_01_ACCESS1-0"
@@ -432,7 +193,7 @@ pvr %>%
 ```
 
 ```{r}
-pvr %>%
+pvr_r %>%
   filter(
     yearid == "CH",
     cscnid == "TH00_rcp45_PB_01_ACCESS1-0"
@@ -442,7 +203,7 @@ pvr %>%
 
 Stop harvest 2030 RCP8.5            
 ```{r}
-pvr %>%
+pvr_r %>%
   filter(
     yearid == "CH",
     cscnid == "TH30_rcp85_PB_01_ACCESS1-0"
@@ -451,7 +212,7 @@ pvr %>%
 ```
 
 ```{r}
-pvr %>%
+pvr_r %>%
   filter(
     yearid == "CH",
     cscnid == "TH30_rcp85_PB_01_ACCESS1-0"
@@ -460,7 +221,7 @@ pvr %>%
 ```
 
 ```{r}
-pvr %>%
+pvr_r %>%
   filter(
     yearid == "CH",
     cscnid == "TH30_rcp85_PB_01_ACCESS1-0"
@@ -474,7 +235,7 @@ pvr %>%
 No harvest no planned burning RCP4.5
 
 ```{r}
-pvr %>%
+pvr_r %>%
   filter(
     yearid == "EG19",
     cscnid == "TH00_rcp45_NB_01_ACCESS1-0"
@@ -483,7 +244,7 @@ pvr %>%
 ```
 
 ```{r}
-pvr %>%
+pvr_r %>%
   filter(
     yearid == "EG19",
     cscnid == "TH00_rcp45_NB_01_ACCESS1-0"
@@ -492,7 +253,7 @@ pvr %>%
 ```
 
 ```{r}
-pvr %>%
+pvr_r %>%
   filter(
     yearid == "EG19",
     cscnid == "TH00_rcp45_NB_01_ACCESS1-0"
@@ -503,7 +264,7 @@ pvr %>%
 No harvest RCP4.5  
 
 ```{r}
-pvr %>%
+pvr_r %>%
   filter(
     yearid == "EG19",
     cscnid == "TH00_rcp45_PB_01_ACCESS1-0"
@@ -512,7 +273,7 @@ pvr %>%
 ```
 
 ```{r}
-pvr %>%
+pvr_r %>%
   filter(
     yearid == "EG19",
     cscnid == "TH00_rcp45_PB_01_ACCESS1-0"
@@ -521,7 +282,7 @@ pvr %>%
 ```
 
 ```{r}
-pvr %>%
+pvr_r %>%
   filter(
     yearid == "EG19",
     cscnid == "TH00_rcp45_PB_01_ACCESS1-0"
@@ -532,7 +293,7 @@ pvr %>%
 Stop harvest 2030 RCP4.5 
 
 ```{r}
-pvr %>%
+pvr_r %>%
   filter(
     yearid == "EG19",
     cscnid == "TH30_rcp45_PB_01_ACCESS1-0"
@@ -541,7 +302,7 @@ pvr %>%
 ```
 
 ```{r}
-pvr %>%
+pvr_r %>%
   filter(
     yearid == "EG19",
     cscnid == "TH30_rcp45_PB_01_ACCESS1-0"
@@ -550,7 +311,7 @@ pvr %>%
 ```
 
 ```{r}
-pvr %>%
+pvr_r %>%
   filter(
     yearid == "EG19",
     cscnid == "TH30_rcp45_PB_01_ACCESS1-0"
@@ -560,7 +321,7 @@ pvr %>%
 
 Ongoing harvest RCP4.5
 ```{r}
-pvr %>%
+pvr_r %>%
   filter(
     yearid == "EG19",
     cscnid == "TH19_rcp45_PB_01_ACCESS1-0"
@@ -569,7 +330,7 @@ pvr %>%
 ```
 
 ```{r}
-pvr %>%
+pvr_r %>%
   filter(
     yearid == "EG19",
     cscnid == "TH19_rcp45_PB_01_ACCESS1-0"
@@ -578,7 +339,7 @@ pvr %>%
 ```
 
 ```{r}
-pvr %>%
+pvr_r %>%
   filter(
     yearid == "EG19",
     cscnid == "TH19_rcp45_PB_01_ACCESS1-0"
@@ -588,7 +349,7 @@ pvr %>%
 
 No harvest RCP8.5                   
 ```{r}
-pvr %>%
+pvr_r %>%
   filter(
     yearid == "EG19",
     cscnid == "TH00_rcp85_PB_01_ACCESS1-0"
@@ -597,7 +358,7 @@ pvr %>%
 ```
 
 ```{r}
-pvr %>%
+pvr_r %>%
   filter(
     yearid == "EG19",
     cscnid == "TH00_rcp85_PB_01_ACCESS1-0"
@@ -606,7 +367,7 @@ pvr %>%
 ```
 
 ```{r}
-pvr %>%
+pvr_r %>%
   filter(
     yearid == "EG19",
     cscnid == "TH00_rcp45_PB_01_ACCESS1-0"
@@ -616,7 +377,7 @@ pvr %>%
 
 Stop harvest 2030 RCP8.5            
 ```{r}
-pvr %>%
+pvr_r %>%
   filter(
     yearid == "EG19",
     cscnid == "TH30_rcp85_PB_01_ACCESS1-0"
@@ -625,7 +386,7 @@ pvr %>%
 ```
 
 ```{r}
-pvr %>%
+pvr_r %>%
   filter(
     yearid == "EG19",
     cscnid == "TH30_rcp85_PB_01_ACCESS1-0"
@@ -634,7 +395,7 @@ pvr %>%
 ```
 
 ```{r}
-pvr %>%
+pvr_r %>%
   filter(
     yearid == "EG19",
     cscnid == "TH30_rcp85_PB_01_ACCESS1-0"
@@ -648,7 +409,7 @@ pvr %>%
 No harvest no planned burning RCP4.5
 
 ```{r}
-pvr %>%
+pvr_r %>%
   filter(
     yearid == "EG20",
     cscnid == "TH00_rcp45_NB_01_ACCESS1-0"
@@ -657,7 +418,7 @@ pvr %>%
 ```
 
 ```{r}
-pvr %>%
+pvr_r %>%
   filter(
     yearid == "EG20",
     cscnid == "TH00_rcp45_NB_01_ACCESS1-0"
@@ -666,7 +427,7 @@ pvr %>%
 ```
 
 ```{r}
-pvr %>%
+pvr_r %>%
   filter(
     yearid == "EG20",
     cscnid == "TH00_rcp45_NB_01_ACCESS1-0"
@@ -677,7 +438,7 @@ pvr %>%
 No harvest RCP4.5  
 
 ```{r}
-pvr %>%
+pvr_r %>%
   filter(
     yearid == "EG20",
     cscnid == "TH00_rcp45_PB_01_ACCESS1-0"
@@ -686,7 +447,7 @@ pvr %>%
 ```
 
 ```{r}
-pvr %>%
+pvr_r %>%
   filter(
     yearid == "EG20",
     cscnid == "TH00_rcp45_PB_01_ACCESS1-0"
@@ -695,7 +456,7 @@ pvr %>%
 ```
 
 ```{r}
-pvr %>%
+pvr_r %>%
   filter(
     yearid == "EG20",
     cscnid == "TH00_rcp45_PB_01_ACCESS1-0"
@@ -706,7 +467,7 @@ pvr %>%
 Stop harvest 2030 RCP4.5 
 
 ```{r}
-pvr %>%
+pvr_r %>%
   filter(
     yearid == "EG20",
     cscnid == "TH30_rcp45_PB_01_ACCESS1-0"
@@ -715,7 +476,7 @@ pvr %>%
 ```
 
 ```{r}
-pvr %>%
+pvr_r %>%
   filter(
     yearid == "EG20",
     cscnid == "TH30_rcp45_PB_01_ACCESS1-0"
@@ -724,7 +485,7 @@ pvr %>%
 ```
 
 ```{r}
-pvr %>%
+pvr_r %>%
   filter(
     yearid == "EG20",
     cscnid == "TH30_rcp45_PB_01_ACCESS1-0"
@@ -734,7 +495,7 @@ pvr %>%
 
 Ongoing harvest RCP4.5
 ```{r}
-pvr %>%
+pvr_r %>%
   filter(
     yearid == "EG20",
     cscnid == "TH19_rcp45_PB_01_ACCESS1-0"
@@ -743,7 +504,7 @@ pvr %>%
 ```
 
 ```{r}
-pvr %>%
+pvr_r %>%
   filter(
     yearid == "EG20",
     cscnid == "TH19_rcp45_PB_01_ACCESS1-0"
@@ -752,7 +513,7 @@ pvr %>%
 ```
 
 ```{r}
-pvr %>%
+pvr_r %>%
   filter(
     yearid == "EG20",
     cscnid == "TH19_rcp45_PB_01_ACCESS1-0"
@@ -762,7 +523,7 @@ pvr %>%
 
 No harvest RCP8.5                   
 ```{r}
-pvr %>%
+pvr_r %>%
   filter(
     yearid == "EG20",
     cscnid == "TH00_rcp85_PB_01_ACCESS1-0"
@@ -771,7 +532,7 @@ pvr %>%
 ```
 
 ```{r}
-pvr %>%
+pvr_r %>%
   filter(
     yearid == "EG20",
     cscnid == "TH00_rcp85_PB_01_ACCESS1-0"
@@ -780,7 +541,7 @@ pvr %>%
 ```
 
 ```{r}
-pvr %>%
+pvr_r %>%
   filter(
     yearid == "EG20",
     cscnid == "TH00_rcp45_PB_01_ACCESS1-0"
@@ -790,7 +551,7 @@ pvr %>%
 
 Stop harvest 2030 RCP8.5            
 ```{r}
-pvr %>%
+pvr_r %>%
   filter(
     yearid == "EG20",
     cscnid == "TH30_rcp85_PB_01_ACCESS1-0"
@@ -799,7 +560,7 @@ pvr %>%
 ```
 
 ```{r}
-pvr %>%
+pvr_r %>%
   filter(
     yearid == "EG20",
     cscnid == "TH30_rcp85_PB_01_ACCESS1-0"
@@ -808,7 +569,7 @@ pvr %>%
 ```
 
 ```{r}
-pvr %>%
+pvr_r %>%
   filter(
     yearid == "EG20",
     cscnid == "TH30_rcp85_PB_01_ACCESS1-0"
@@ -816,54 +577,754 @@ pvr %>%
   doccplot
 ```
 
-All carrying capacity
+
+# Only Access 1 RCP 4.5 CH and EG 20
 
 ```{r}
-pvr %>%
-  mutate(yr = list(0:50)) %>%
-  unnest(lcc, yr) %>%
-  mutate(
-    id = case_when(
-      is.na(ycscnid) ~ paste0(yearid, "_", cscnid),
-      TRUE ~ ycscnid
-    )
-  ) %>%
-  ggplot() +
-  ylim(0, NA) +
-  geom_line(
-    aes(
-      x = yr,
-      y = lcc,
-      group = id,
-      colour = scn
-    ),
-    size = 0.3,
-    alpha = 0.3
-  ) +
-  cowplot::theme_cowplot() +
-  cowplot::panel_border(remove = TRUE) +
-  theme(
-    legend.position = "bottom",
-    strip.background = element_blank(),
-    #strip.text = element_text(hjust = 0, face = "bold"),
-    axis.text.x = element_text(size = 8),
-    legend.text = element_text(size = 7)
-  ) +
-  facet_wrap(
-    facets = ~ yearid,
-    nrow = 3,
-    strip.position = "right",
-    scales = "free_y"
-  ) +
-  #scale_colour_viridis_d(option = "magma") +
-  labs(
-    title = spti,
-    x = "Year",
-    y = "Carrying capacity",
-    colour = ""
-  )
-  
+knitr::opts_chunk$set(fig.width=6, fig.height=4, echo = FALSE, message = FALSE)
 ```
+
+```{r}
+pvr_ra <- pvr_r %>% 
+  filter(
+    climate_model == "ACCESS1-0",
+    rcp == "rcp45",
+    yearid != "EG19"
+  )
+
+pvr_ra
+```
+
+## By Landscape 
+
+### raw
+
+```{r}
+p_emp_peau_ls <- ggplot(pvr_ra)+# %>% filter(climate_model == "ACCESS1-0", habitat == "projected")) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = emp#,
+      #fill = yearid#,
+      #col = habitat
+    )
+  ) +
+  geom_point(
+    aes(
+      x = emp,
+      y = scn
+    )
+  ) +
+  scale_fill_viridis_d() +
+  scale_colour_manual(values = c("grey10", "grey40")) +
+  labs(
+    x = "Expected minimum population",
+    y = "Management scenario",
+    #fill = "Landscape\n& year",
+    title = spti#,
+    #col = "Habitat\nmodel"
+  )+
+  facet_grid(.~yearid, scales = "free_x") +
+  theme(legend.position = "bottom", axis.text.x = element_text(angle = 270)) +
+  xlim(0, NA)
+
+p_emp_peau_ls
+```
+
+```{r}
+p_emp95_peau_ls <- ggplot(pvr_ra)+# %>% filter(climate_model == "ACCESS1-0", habitat == "projected")) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = emp_95#,
+      #fill = yearid#,
+      #col = habitat
+    )
+  ) +
+  geom_point(
+    aes(
+      x = emp_95,
+      y = scn
+    )
+  ) +
+  scale_fill_viridis_d() +
+  scale_colour_manual(values = c("grey10", "grey40")) +
+  labs(
+    x = "Expected minimum population",
+    y = "Management scenario",
+    #fill = "Landscape\n& year",
+    title = spti#,
+    #col = "Habitat\nmodel"
+  )+
+  facet_grid(.~yearid, scales = "free_x") +
+  theme(legend.position = "bottom", axis.text.x = element_text(angle = 270)) +
+  xlim(0, NA)
+
+p_emp95_peau_ls
+```
+
+```{r}
+p_empmed_peau_ls <- ggplot(pvr_ra)+# %>% filter(climate_model == "ACCESS1-0", habitat == "projected")) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = emp_med,
+      #fill = yearid#,
+      #col = habitat
+    )
+  ) +
+  geom_point(
+    aes(
+      x = emp_med,
+      y = scn
+    )
+  ) +
+  scale_fill_viridis_d() +
+  scale_colour_manual(values = c("grey10", "grey40")) +
+  labs(
+    x = "Median minimum population",
+    y = "Management scenario",
+    #fill = "Landscape\n& year",
+    title = spti#,
+    #col = "Habitat\nmodel"
+  )+
+  facet_grid(.~yearid, scales = "free_x") +
+  theme(legend.position = "bottom", axis.text.x = element_text(angle = 270)) +
+  xlim(0, NA)
+
+p_empmed_peau_ls
+```
+
+```{r}
+p_med_peau_ls <- ggplot(pvr_ra)+# %>% filter(climate_model == "ACCESS1-0", habitat == "projected")) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = med_pop,
+      #fill = yearid#,
+      #col = habitat
+    )
+  ) +
+  geom_point(
+    aes(
+      x = med_pop,
+      y = scn
+    )
+  ) +
+  scale_fill_viridis_d() +
+  scale_colour_manual(values = c("grey10", "grey40")) +
+  labs(
+    x = "Median population",
+    y = "Management scenario",
+    #fill = "Landscape\n& year",
+    title = spti#,
+    #col = "Habitat\nmodel"
+  )+
+  facet_grid(.~yearid, scales = "free_x") +
+  theme(legend.position = "bottom", axis.text.x = element_text(angle = 270)) +
+  xlim(0, NA)
+
+p_med_peau_ls
+```
+
+```{r}
+p_pex_peau_ls <- ggplot(pvr_ra)+# %>% filter(climate_model == "ACCESS1-0", habitat == "projected")) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = prop_extant,
+      #fill = yearid#,
+      #col = habitat
+    )
+  ) +
+  geom_point(
+    aes(
+      x = prop_extant,
+      y = scn
+    )
+  ) +
+  scale_fill_viridis_d() +
+  scale_colour_manual(values = c("grey10", "grey40")) +
+  labs(
+    x = "Probability of persistence",
+    y = "Management scenario",
+    #fill = "Landscape\n& year",
+    title = spti#,
+    #col = "Habitat\nmodel"
+  )+
+  facet_grid(.~yearid, scales = "free_x") +
+  theme(legend.position = "bottom", axis.text.x = element_text(angle = 270)) +
+  xlim(NA, 1)
+
+
+p_pex_peau_ls
+```
+
+```{r}
+p_tex_peau_ls <- ggplot(pvr_ra)+# %>% filter(climate_model == "ACCESS1-0", habitat == "projected")) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = mean_tt_ex#,
+      #fill = yearid#,
+      #col = habitat
+    )
+  ) +
+  geom_point(
+    aes(
+      x = mean_tt_ex,
+      y = scn
+    )
+  ) +
+  scale_fill_viridis_d() +
+  scale_colour_manual(values = c("grey10", "grey40")) +
+  labs(
+    x = "Mean time to extinction\n(if extinct)",
+    y = "Management scenario",
+    #fill = "Landscape\n& year",
+    title = spti#,
+    #col = "Habitat\nmodel"
+  ) +
+  facet_grid(.~yearid, scales = "free_x") +
+  theme(legend.position = "bottom", axis.text.x = element_text(angle = 270)) 
+
+p_tex_peau_ls
+```
+
+### delta
+
+```{r}
+p_demp_peau_ls <- ggplot(pvr_ra) +# %>% filter(climate_model == "ACCESS1-0", habitat == "projected")) +
+  geom_vline(xintercept = 0) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = delta_emp#,
+      #fill = yearid#,
+      #col = habitat
+    )
+  ) +
+  geom_point(
+    aes(
+      x = delta_emp,
+      y = scn
+    )
+  ) +
+  scale_fill_viridis_d() +
+  scale_colour_manual(values = c("grey10", "grey40")) +
+  labs(
+    x = "Change in expected minimum population from baseline\n(ongoing harvest)",
+    y = "Management scenario",
+    #fill = "Landscape\n& year",
+    title = spti#,
+    #col = "Habitat\nmodel"
+  )+
+  facet_grid(.~yearid, scales = "free_x") +
+  theme(legend.position = "bottom", axis.text.x = element_text(angle = 270)) 
+
+p_demp_peau_ls
+```
+
+```{r}
+p_demp95_peau_ls <- ggplot(pvr_ra)+# %>% filter(climate_model == "ACCESS1-0", habitat == "projected")) +
+  geom_vline(xintercept = 0) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = delta_emp_95#,
+      #fill = yearid#,
+      #col = habitat
+    )
+  ) +
+  geom_point(
+    aes(
+      x = delta_emp_95,
+      y = scn
+    )
+  ) +
+  scale_fill_viridis_d() +
+  scale_colour_manual(values = c("grey10", "grey40")) +
+  labs(
+    x = "Change in expected minimum population from baseline\n(ongoing harvest)",
+    y = "Management scenario",
+    #fill = "Landscape\n& year",
+    title = spti#,
+    #col = "Habitat\nmodel"
+  ) +
+  facet_grid(.~yearid, scales = "free_x") +
+  theme(legend.position = "bottom", axis.text.x = element_text(angle = 270)) 
+
+p_demp95_peau_ls
+```
+
+```{r}
+p_dempmed_peau_ls <- ggplot(pvr_ra)+# %>% filter(climate_model == "ACCESS1-0", habitat == "projected")) +
+  geom_vline(xintercept = 0) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = delta_emp_med#,
+      #fill = yearid#,
+      #col = habitat
+    )
+  ) +
+  geom_point(
+    aes(
+      x = delta_emp_med,
+      y = scn
+    )
+  ) +
+  scale_fill_viridis_d() +
+  scale_colour_manual(values = c("grey10", "grey40")) +
+  labs(
+    x = "Change in median minimum population from baseline\n(ongoing harvest)",
+    y = "Management scenario",
+    #fill = "Landscape\n& year",
+    title = spti#,
+    #col = "Habitat\nmodel"
+  )+
+  facet_grid(.~yearid, scales = "free_x") +
+  theme(legend.position = "bottom", axis.text.x = element_text(angle = 270)) 
+
+p_dempmed_peau_ls
+```
+
+```{r}
+p_dmed_peau_ls <- ggplot(pvr_ra)+# %>% filter(climate_model == "ACCESS1-0", habitat == "projected")) +
+  geom_vline(xintercept = 0) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = delta_med_pop#,
+      #fill = yearid#,
+      #col = habitat
+    )
+  ) +
+  geom_point(
+    aes(
+      x = delta_med_pop,
+      y = scn
+    )
+  ) +
+  scale_fill_viridis_d() +
+  scale_colour_manual(values = c("grey10", "grey40")) +
+  labs(
+    x = "Change in median population from baseline\n(ongoing harvest)",
+    y = "Management scenario",
+    #fill = "Landscape\n& year",
+    title = spti#,
+    #col = "Habitat\nmodel"
+  )+
+  facet_grid(.~yearid, scales = "free_x") +
+  theme(legend.position = "bottom", axis.text.x = element_text(angle = 270)) 
+
+p_dmed_peau_ls
+```
+
+```{r}
+p_dpex_peau_ls <- ggplot(pvr_ra)+# %>% filter(climate_model == "ACCESS1-0", habitat == "projected")) +
+  geom_vline(xintercept = 0) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = delta_prop_extant#,
+      #fill = yearid#,
+      #col = habitat
+    )
+  ) +
+  geom_point(
+    aes(
+      x = delta_prop_extant,
+      y = scn
+    )
+  ) +
+  scale_fill_viridis_d() +
+  scale_colour_manual(values = c("grey10", "grey40")) +
+  labs(
+    x = "Change in probability of persistence from baseline\n(ongoing harvest)",
+    y = "Management scenario",
+    #fill = "Landscape\n& year",
+    title = spti#,
+    #col = "Habitat\nmodel"
+  )+
+  facet_grid(.~yearid, scales = "free_x") +
+  theme(legend.position = "bottom", axis.text.x = element_text(angle = 270)) 
+
+p_dpex_peau_ls
+```
+
+```{r}
+p_dtex_peau_ls <- ggplot(pvr_ra)+# %>% filter(climate_model == "ACCESS1-0", habitat == "projected")) +
+  geom_vline(xintercept = 0) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = delta_mean_tt_ex#,
+      #fill = yearid#,
+      #col = habitat
+    )
+  ) +
+  geom_point(
+    aes(
+      x = delta_mean_tt_ex,
+      y = scn
+    )
+  ) +
+  scale_fill_viridis_d() +
+  scale_colour_manual(values = c("grey10", "grey40")) +
+  labs(
+    x = "Change in mean time to extinction (if extinct)\nfrom baseline (ongoing harvest)",
+    y = "Management scenario",
+    #fill = "Landscape\n& year",
+    title = spti#,
+    #col = "Habitat\nmodel"
+  )+
+  facet_grid(.~yearid, scales = "free_x") +
+  theme(legend.position = "bottom", axis.text.x = element_text(angle = 270)) 
+
+p_dtex_peau_ls
+```
+
+# East Gippsland comparison Only Access 1 RCP 4.5 CH and EG 20
+
+```{r}
+knitr::opts_chunk$set(fig.width=6, fig.height=4, echo = FALSE, message = FALSE)
+```
+
+```{r}
+pvr_eg <- pvr_r %>% 
+  filter(
+    climate_model == "ACCESS1-0",
+    rcp == "rcp45",
+    landscape == "East Gippsland"
+  )
+
+pvr_eg
+```
+
+## By Landscape 
+
+### raw
+
+```{r}
+p_emp_peau_ls <- ggplot(pvr_eg)+# %>% filter(climate_model == "ACCESS1-0", habitat == "projected")) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = emp,
+      fill = yearid#,
+      #col = habitat
+    )
+  ) +
+  scale_fill_viridis_d(begin = 0.5) +
+  scale_colour_manual(values = c("grey10", "grey40")) +
+  labs(
+    x = "Expected minimum population",
+    y = "Management scenario",
+    fill = "Landscape\n& year",
+    title = spti#,
+    #col = "Habitat\nmodel"
+  )+
+  #facet_grid(.~yearid, scales = "free_x") +
+  theme(legend.position = "bottom", axis.text.x = element_text(angle = 270)) +
+  xlim(0, NA)
+
+p_emp_peau_ls
+```
+
+```{r}
+p_emp95_peau_ls <- ggplot(pvr_eg)+# %>% filter(climate_model == "ACCESS1-0", habitat == "projected")) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = emp_95,
+      fill = yearid#,
+      #col = habitat
+    )
+  ) +
+  scale_fill_viridis_d(begin = 0.5) +
+  scale_colour_manual(values = c("grey10", "grey40")) +
+  labs(
+    x = "Expected minimum population",
+    y = "Management scenario",
+    fill = "Landscape\n& year",
+    title = spti#,
+    #col = "Habitat\nmodel"
+  )+
+  #facet_grid(.~yearid, scales = "free_x") +
+  theme(legend.position = "bottom", axis.text.x = element_text(angle = 270)) +
+  xlim(0, NA)
+
+p_emp95_peau_ls
+```
+
+```{r}
+p_empmed_peau_ls <- ggplot(pvr_eg)+# %>% filter(climate_model == "ACCESS1-0", habitat == "projected")) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = emp_med,
+      fill = yearid#,
+      #col = habitat
+    )
+  ) +
+  scale_fill_viridis_d(begin = 0.5) +
+  scale_colour_manual(values = c("grey10", "grey40")) +
+  labs(
+    x = "Median minimum population",
+    y = "Management scenario",
+    fill = "Landscape\n& year",
+    title = spti#,
+    #col = "Habitat\nmodel"
+  )+
+  #facet_grid(.~yearid, scales = "free_x") +
+  theme(legend.position = "bottom", axis.text.x = element_text(angle = 270)) +
+  xlim(0, NA)
+
+p_empmed_peau_ls
+```
+
+```{r}
+p_med_peau_ls <- ggplot(pvr_eg)+# %>% filter(climate_model == "ACCESS1-0", habitat == "projected")) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = med_pop,
+      fill = yearid#,
+      #col = habitat
+    )
+  ) +
+  scale_fill_viridis_d(begin = 0.5) +
+  scale_colour_manual(values = c("grey10", "grey40")) +
+  labs(
+    x = "Median population",
+    y = "Management scenario",
+    fill = "Landscape\n& year",
+    title = spti#,
+    #col = "Habitat\nmodel"
+  ) +
+  #facet_grid(.~yearid, scales = "free_x") +
+  theme(legend.position = "bottom", axis.text.x = element_text(angle = 270)) +
+  xlim(0, NA)
+
+p_med_peau_ls
+```
+
+```{r}
+p_pex_peau_ls <- ggplot(pvr_eg)+# %>% filter(climate_model == "ACCESS1-0", habitat == "projected")) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = prop_extant,
+      fill = yearid#,
+      #col = habitat
+    )
+  ) +
+  scale_fill_viridis_d(begin = 0.5) +
+  scale_colour_manual(values = c("grey10", "grey40")) +
+  labs(
+    x = "Probability of persistence",
+    y = "Management scenario",
+    fill = "Landscape\n& year",
+    title = spti#,
+    #col = "Habitat\nmodel"
+  ) +
+  #facet_grid(.~yearid, scales = "free_x") +
+  theme(legend.position = "bottom", axis.text.x = element_text(angle = 270)) +
+  xlim(NA, 1)
+
+
+p_pex_peau_ls
+```
+
+```{r}
+p_tex_peau_ls <- ggplot(pvr_eg)+# %>% filter(climate_model == "ACCESS1-0", habitat == "projected")) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = mean_tt_ex,
+      fill = yearid#,
+      #col = habitat
+    )
+  ) +
+  scale_fill_viridis_d(begin = 0.5) +
+  scale_colour_manual(values = c("grey10", "grey40")) +
+  labs(
+    x = "Mean time to extinction\n(if extinct)",
+    y = "Management scenario",
+    fill = "Landscape\n& year",
+    title = spti#,
+    #col = "Habitat\nmodel"
+  ) +
+  #facet_grid(.~yearid, scales = "free_x") +
+  theme(legend.position = "bottom", axis.text.x = element_text(angle = 270)) 
+
+p_tex_peau_ls
+```
+
+### delta
+
+```{r}
+p_demp_peau_ls <- ggplot(pvr_eg)+# %>% filter(climate_model == "ACCESS1-0", habitat == "projected")) +
+  geom_vline(xintercept = 0) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = delta_emp,
+      fill = yearid#,
+      #col = habitat
+    )
+  ) +
+  scale_fill_viridis_d(begin = 0.5) +
+  scale_colour_manual(values = c("grey10", "grey40")) +
+  labs(
+    x = "Change in expected minimum population from baseline\n(ongoing harvest)",
+    y = "Management scenario",
+    fill = "Landscape\n& year",
+    title = spti#,
+    #col = "Habitat\nmodel"
+  )+
+  #facet_grid(.~yearid, scales = "free_x") +
+  theme(legend.position = "bottom", axis.text.x = element_text(angle = 270)) 
+
+p_demp_peau_ls
+```
+
+```{r}
+p_demp95_peau_ls <- ggplot(pvr_eg)+# %>% filter(climate_model == "ACCESS1-0", habitat == "projected")) +
+  geom_vline(xintercept = 0) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = delta_emp_95,
+      fill = yearid#,
+      #col = habitat
+    )
+  ) +
+  scale_fill_viridis_d(begin = 0.5) +
+  scale_colour_manual(values = c("grey10", "grey40")) +
+  labs(
+    x = "Change in expected minimum population from baseline\n(ongoing harvest)",
+    y = "Management scenario",
+    fill = "Landscape\n& year",
+    title = spti#,
+    #col = "Habitat\nmodel"
+  )+
+  #facet_grid(.~yearid, scales = "free_x") +
+  theme(legend.position = "bottom", axis.text.x = element_text(angle = 270)) 
+
+p_demp95_peau_ls
+```
+
+```{r}
+p_dempmed_peau_ls <- ggplot(pvr_eg)+# %>% filter(climate_model == "ACCESS1-0", habitat == "projected")) +
+  geom_vline(xintercept = 0) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = delta_emp_med,
+      fill = yearid#,
+      #col = habitat
+    )
+  ) +
+  scale_fill_viridis_d(begin = 0.5) +
+  scale_colour_manual(values = c("grey10", "grey40")) +
+  labs(
+    x = "Change in median minimum population from baseline\n(ongoing harvest)",
+    y = "Management scenario",
+    fill = "Landscape\n& year",
+    title = spti#,
+    #col = "Habitat\nmodel"
+  )+
+  #facet_grid(.~yearid, scales = "free_x") +
+  theme(legend.position = "bottom", axis.text.x = element_text(angle = 270)) 
+
+p_dempmed_peau_ls
+```
+
+```{r}
+p_dmed_peau_ls <- ggplot(pvr_eg)+# %>% filter(climate_model == "ACCESS1-0", habitat == "projected")) +
+  geom_vline(xintercept = 0) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = delta_med_pop,
+      fill = yearid#,
+      #col = habitat
+    )
+  ) +
+  scale_fill_viridis_d(begin = 0.5) +
+  scale_colour_manual(values = c("grey10", "grey40")) +
+  labs(
+    x = "Change in median population from baseline\n(ongoing harvest)",
+    y = "Management scenario",
+    fill = "Landscape\n& year",
+    title = spti#,
+    #col = "Habitat\nmodel"
+  )+
+  #facet_grid(.~yearid, scales = "free_x") +
+  theme(legend.position = "bottom", axis.text.x = element_text(angle = 270)) 
+
+p_dmed_peau_ls
+```
+
+```{r}
+p_dpex_peau_ls <- ggplot(pvr_eg)+# %>% filter(climate_model == "ACCESS1-0", habitat == "projected")) +
+  geom_vline(xintercept = 0) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = delta_prop_extant,
+      fill = yearid#,
+      #col = habitat
+    )
+  ) +
+  scale_fill_viridis_d(begin = 0.5) +
+  scale_colour_manual(values = c("grey10", "grey40")) +
+  labs(
+    x = "Change in probability of persistence from baseline\n(ongoing harvest)",
+    y = "Management scenario",
+    fill = "Landscape\n& year",
+    title = spti#,
+    #col = "Habitat\nmodel"
+  )+
+  #facet_grid(.~yearid, scales = "free_x") +
+  theme(legend.position = "bottom", axis.text.x = element_text(angle = 270)) 
+
+p_dpex_peau_ls
+```
+
+```{r}
+p_dtex_peau_ls <- ggplot(pvr_eg)+# %>% filter(climate_model == "ACCESS1-0", habitat == "projected")) +
+  geom_vline(xintercept = 0) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = delta_mean_tt_ex,
+      fill = yearid#,
+      #col = habitat
+    )
+  ) +
+  scale_fill_viridis_d(begin = 0.5) +
+  scale_colour_manual(values = c("grey10", "grey40")) +
+  labs(
+    x = "Change in mean time to extinction (if extinct)\nfrom baseline (ongoing harvest)",
+    y = "Management scenario",
+    fill = "Landscape\n& year",
+    title = spti#,
+    #col = "Habitat\nmodel"
+  )+
+  #facet_grid(.~yearid, scales = "free_x") +
+  theme(legend.position = "bottom", axis.text.x = element_text(angle = 270)) 
+
+p_dtex_peau_ls
+```
+
+
+
+
+
+
 
 # All climate models
 ```{r}
@@ -875,7 +1336,7 @@ knitr::opts_chunk$set(fig.width=6, fig.height=8, echo = FALSE, message = FALSE)
 ### raw
 
 ```{r}
-p_emp_peau_ls <- ggplot(pvr)+# %>% filter(climate_model == "ACCESS1-0", habitat == "projected")) +
+p_emp_peau_ls <- ggplot(pvr_r)+# %>% filter(climate_model == "ACCESS1-0", habitat == "projected")) +
   geom_boxplot(
     aes(
       y = scn,
@@ -901,7 +1362,7 @@ p_emp_peau_ls
 ```
 
 ```{r}
-p_emp95_peau_ls <- ggplot(pvr)+# %>% filter(climate_model == "ACCESS1-0", habitat == "projected")) +
+p_emp95_peau_ls <- ggplot(pvr_r)+# %>% filter(climate_model == "ACCESS1-0", habitat == "projected")) +
   geom_boxplot(
     aes(
       y = scn,
@@ -927,7 +1388,7 @@ p_emp95_peau_ls
 ```
 
 ```{r}
-p_empmed_peau_ls <- ggplot(pvr)+# %>% filter(climate_model == "ACCESS1-0", habitat == "projected")) +
+p_empmed_peau_ls <- ggplot(pvr_r)+# %>% filter(climate_model == "ACCESS1-0", habitat == "projected")) +
   geom_boxplot(
     aes(
       y = scn,
@@ -953,7 +1414,7 @@ p_empmed_peau_ls
 ```
 
 ```{r}
-p_med_peau_ls <- ggplot(pvr)+# %>% filter(climate_model == "ACCESS1-0", habitat == "projected")) +
+p_med_peau_ls <- ggplot(pvr_r)+# %>% filter(climate_model == "ACCESS1-0", habitat == "projected")) +
   geom_boxplot(
     aes(
       y = scn,
@@ -979,7 +1440,7 @@ p_med_peau_ls
 ```
 
 ```{r}
-p_pex_peau_ls <- ggplot(pvr)+# %>% filter(climate_model == "ACCESS1-0", habitat == "projected")) +
+p_pex_peau_ls <- ggplot(pvr_r)+# %>% filter(climate_model == "ACCESS1-0", habitat == "projected")) +
   geom_boxplot(
     aes(
       y = scn,
@@ -1006,7 +1467,7 @@ p_pex_peau_ls
 ```
 
 ```{r}
-p_tex_peau_ls <- ggplot(pvr)+# %>% filter(climate_model == "ACCESS1-0", habitat == "projected")) +
+p_tex_peau_ls <- ggplot(pvr_r)+# %>% filter(climate_model == "ACCESS1-0", habitat == "projected")) +
   geom_boxplot(
     aes(
       y = scn,
@@ -1033,7 +1494,7 @@ p_tex_peau_ls
 ### delta
 
 ```{r}
-p_demp_peau_ls <- ggplot(pvr)+# %>% filter(climate_model == "ACCESS1-0", habitat == "projected")) +
+p_demp_peau_ls <- ggplot(pvr_r)+# %>% filter(climate_model == "ACCESS1-0", habitat == "projected")) +
   geom_vline(xintercept = 0) +
   geom_boxplot(
     aes(
@@ -1059,7 +1520,7 @@ p_demp_peau_ls
 ```
 
 ```{r}
-p_demp95_peau_ls <- ggplot(pvr)+# %>% filter(climate_model == "ACCESS1-0", habitat == "projected")) +
+p_demp95_peau_ls <- ggplot(pvr_r)+# %>% filter(climate_model == "ACCESS1-0", habitat == "projected")) +
   geom_vline(xintercept = 0) +
   geom_boxplot(
     aes(
@@ -1085,7 +1546,7 @@ p_demp95_peau_ls
 ```
 
 ```{r}
-p_dempmed_peau_ls <- ggplot(pvr)+# %>% filter(climate_model == "ACCESS1-0", habitat == "projected")) +
+p_dempmed_peau_ls <- ggplot(pvr_r)+# %>% filter(climate_model == "ACCESS1-0", habitat == "projected")) +
   geom_vline(xintercept = 0) +
   geom_boxplot(
     aes(
@@ -1111,7 +1572,7 @@ p_dempmed_peau_ls
 ```
 
 ```{r}
-p_dmed_peau_ls <- ggplot(pvr)+# %>% filter(climate_model == "ACCESS1-0", habitat == "projected")) +
+p_dmed_peau_ls <- ggplot(pvr_r)+# %>% filter(climate_model == "ACCESS1-0", habitat == "projected")) +
   geom_vline(xintercept = 0) +
   geom_boxplot(
     aes(
@@ -1137,7 +1598,7 @@ p_dmed_peau_ls
 ```
 
 ```{r}
-p_dpex_peau_ls <- ggplot(pvr)+# %>% filter(climate_model == "ACCESS1-0", habitat == "projected")) +
+p_dpex_peau_ls <- ggplot(pvr_r)+# %>% filter(climate_model == "ACCESS1-0", habitat == "projected")) +
   geom_vline(xintercept = 0) +
   geom_boxplot(
     aes(
@@ -1163,7 +1624,7 @@ p_dpex_peau_ls
 ```
 
 ```{r}
-p_dtex_peau_ls <- ggplot(pvr)+# %>% filter(climate_model == "ACCESS1-0", habitat == "projected")) +
+p_dtex_peau_ls <- ggplot(pvr_r)+# %>% filter(climate_model == "ACCESS1-0", habitat == "projected")) +
   geom_vline(xintercept = 0) +
   geom_boxplot(
     aes(
@@ -1183,341 +1644,6 @@ p_dtex_peau_ls <- ggplot(pvr)+# %>% filter(climate_model == "ACCESS1-0", habitat
     #col = "Habitat\nmodel"
   )+
   facet_grid(climate_model~yearid, scales = "free_x") +
-  theme(legend.position = "bottom", axis.text.x = element_text(angle = 270)) 
-
-p_dtex_peau_ls
-```
-
-
-# Only Access 1 RCP 4.5
-
-```{r}
-knitr::opts_chunk$set(fig.width=6, fig.height=4, echo = FALSE, message = FALSE)
-```
-
-```{r}
-pvra <- pvr %>% 
-  filter(
-    climate_model == "ACCESS1-0",
-    rcp == "rcp45"
-  )
-
-pvra
-```
-
-## By Landscape 
-
-### raw
-
-```{r}
-p_emp_peau_ls <- ggplot(pvra)+# %>% filter(climate_model == "ACCESS1-0", habitat == "projected")) +
-  geom_boxplot(
-    aes(
-      y = scn,
-      x = emp,
-      fill = yearid#,
-      #col = habitat
-    )
-  ) +
-  scale_fill_viridis_d() +
-  scale_colour_manual(values = c("grey10", "grey40")) +
-  labs(
-    x = "Expected minimum population",
-    y = "Management scenario",
-    fill = "Landscape\n& year",
-    title = spti#,
-    #col = "Habitat\nmodel"
-  )+
-  facet_grid(.~yearid, scales = "free_x") +
-  theme(legend.position = "bottom", axis.text.x = element_text(angle = 270)) +
-  xlim(0, NA)
-
-p_emp_peau_ls
-```
-
-```{r}
-p_emp95_peau_ls <- ggplot(pvra)+# %>% filter(climate_model == "ACCESS1-0", habitat == "projected")) +
-  geom_boxplot(
-    aes(
-      y = scn,
-      x = emp_95,
-      fill = yearid#,
-      #col = habitat
-    )
-  ) +
-  scale_fill_viridis_d() +
-  scale_colour_manual(values = c("grey10", "grey40")) +
-  labs(
-    x = "Expected minimum population",
-    y = "Management scenario",
-    fill = "Landscape\n& year",
-    title = spti#,
-    #col = "Habitat\nmodel"
-  )+
-  facet_grid(.~yearid, scales = "free_x") +
-  theme(legend.position = "bottom", axis.text.x = element_text(angle = 270)) +
-  xlim(0, NA)
-
-p_emp95_peau_ls
-```
-
-```{r}
-p_empmed_peau_ls <- ggplot(pvra)+# %>% filter(climate_model == "ACCESS1-0", habitat == "projected")) +
-  geom_boxplot(
-    aes(
-      y = scn,
-      x = emp_med,
-      fill = yearid#,
-      #col = habitat
-    )
-  ) +
-  scale_fill_viridis_d() +
-  scale_colour_manual(values = c("grey10", "grey40")) +
-  labs(
-    x = "Median minimum population",
-    y = "Management scenario",
-    fill = "Landscape\n& year",
-    title = spti#,
-    #col = "Habitat\nmodel"
-  )+
-  facet_grid(.~yearid, scales = "free_x") +
-  theme(legend.position = "bottom", axis.text.x = element_text(angle = 270)) +
-  xlim(0, NA)
-
-p_empmed_peau_ls
-```
-
-```{r}
-p_med_peau_ls <- ggplot(pvra)+# %>% filter(climate_model == "ACCESS1-0", habitat == "projected")) +
-  geom_boxplot(
-    aes(
-      y = scn,
-      x = med_pop,
-      fill = yearid#,
-      #col = habitat
-    )
-  ) +
-  scale_fill_viridis_d() +
-  scale_colour_manual(values = c("grey10", "grey40")) +
-  labs(
-    x = "Median population",
-    y = "Management scenario",
-    fill = "Landscape\n& year",
-    title = spti#,
-    #col = "Habitat\nmodel"
-  )+
-  facet_grid(.~yearid, scales = "free_x") +
-  theme(legend.position = "bottom", axis.text.x = element_text(angle = 270)) +
-  xlim(0, NA)
-
-p_med_peau_ls
-```
-
-```{r}
-p_pex_peau_ls <- ggplot(pvra)+# %>% filter(climate_model == "ACCESS1-0", habitat == "projected")) +
-  geom_boxplot(
-    aes(
-      y = scn,
-      x = prop_extant,
-      fill = yearid#,
-      #col = habitat
-    )
-  ) +
-  scale_fill_viridis_d() +
-  scale_colour_manual(values = c("grey10", "grey40")) +
-  labs(
-    x = "Probability of persistence",
-    y = "Management scenario",
-    fill = "Landscape\n& year",
-    title = spti#,
-    #col = "Habitat\nmodel"
-  )+
-  facet_grid(.~yearid, scales = "free_x") +
-  theme(legend.position = "bottom", axis.text.x = element_text(angle = 270)) +
-  xlim(NA, 1)
-
-
-p_pex_peau_ls
-```
-
-```{r}
-p_tex_peau_ls <- ggplot(pvra)+# %>% filter(climate_model == "ACCESS1-0", habitat == "projected")) +
-  geom_boxplot(
-    aes(
-      y = scn,
-      x = mean_tt_ex,
-      fill = yearid#,
-      #col = habitat
-    )
-  ) +
-  scale_fill_viridis_d() +
-  scale_colour_manual(values = c("grey10", "grey40")) +
-  labs(
-    x = "Mean time to extinction\n(if extinct)",
-    y = "Management scenario",
-    fill = "Landscape\n& year",
-    title = spti#,
-    #col = "Habitat\nmodel"
-  )+
-  facet_grid(.~yearid, scales = "free_x") +
-  theme(legend.position = "bottom", axis.text.x = element_text(angle = 270)) 
-
-p_tex_peau_ls
-```
-
-### delta
-
-```{r}
-p_demp_peau_ls <- ggplot(pvra)+# %>% filter(climate_model == "ACCESS1-0", habitat == "projected")) +
-  geom_vline(xintercept = 0) +
-  geom_boxplot(
-    aes(
-      y = scn,
-      x = delta_emp,
-      fill = yearid#,
-      #col = habitat
-    )
-  ) +
-  scale_fill_viridis_d() +
-  scale_colour_manual(values = c("grey10", "grey40")) +
-  labs(
-    x = "Change in expected minimum population from baseline\n(ongoing harvest)",
-    y = "Management scenario",
-    fill = "Landscape\n& year",
-    title = spti#,
-    #col = "Habitat\nmodel"
-  )+
-  facet_grid(.~yearid, scales = "free_x") +
-  theme(legend.position = "bottom", axis.text.x = element_text(angle = 270)) 
-
-p_demp_peau_ls
-```
-
-```{r}
-p_demp95_peau_ls <- ggplot(pvra)+# %>% filter(climate_model == "ACCESS1-0", habitat == "projected")) +
-  geom_vline(xintercept = 0) +
-  geom_boxplot(
-    aes(
-      y = scn,
-      x = delta_emp_95,
-      fill = yearid#,
-      #col = habitat
-    )
-  ) +
-  scale_fill_viridis_d() +
-  scale_colour_manual(values = c("grey10", "grey40")) +
-  labs(
-    x = "Change in expected minimum population from baseline\n(ongoing harvest)",
-    y = "Management scenario",
-    fill = "Landscape\n& year",
-    title = spti#,
-    #col = "Habitat\nmodel"
-  )+
-  facet_grid(.~yearid, scales = "free_x") +
-  theme(legend.position = "bottom", axis.text.x = element_text(angle = 270)) 
-
-p_demp95_peau_ls
-```
-
-```{r}
-p_dempmed_peau_ls <- ggplot(pvra)+# %>% filter(climate_model == "ACCESS1-0", habitat == "projected")) +
-  geom_vline(xintercept = 0) +
-  geom_boxplot(
-    aes(
-      y = scn,
-      x = delta_emp_med,
-      fill = yearid#,
-      #col = habitat
-    )
-  ) +
-  scale_fill_viridis_d() +
-  scale_colour_manual(values = c("grey10", "grey40")) +
-  labs(
-    x = "Change in median minimum population from baseline\n(ongoing harvest)",
-    y = "Management scenario",
-    fill = "Landscape\n& year",
-    title = spti#,
-    #col = "Habitat\nmodel"
-  )+
-  facet_grid(.~yearid, scales = "free_x") +
-  theme(legend.position = "bottom", axis.text.x = element_text(angle = 270)) 
-
-p_dempmed_peau_ls
-```
-
-```{r}
-p_dmed_peau_ls <- ggplot(pvra)+# %>% filter(climate_model == "ACCESS1-0", habitat == "projected")) +
-  geom_vline(xintercept = 0) +
-  geom_boxplot(
-    aes(
-      y = scn,
-      x = delta_med_pop,
-      fill = yearid#,
-      #col = habitat
-    )
-  ) +
-  scale_fill_viridis_d() +
-  scale_colour_manual(values = c("grey10", "grey40")) +
-  labs(
-    x = "Change in median population from baseline\n(ongoing harvest)",
-    y = "Management scenario",
-    fill = "Landscape\n& year",
-    title = spti#,
-    #col = "Habitat\nmodel"
-  )+
-  facet_grid(.~yearid, scales = "free_x") +
-  theme(legend.position = "bottom", axis.text.x = element_text(angle = 270)) 
-
-p_dmed_peau_ls
-```
-
-```{r}
-p_dpex_peau_ls <- ggplot(pvra)+# %>% filter(climate_model == "ACCESS1-0", habitat == "projected")) +
-  geom_vline(xintercept = 0) +
-  geom_boxplot(
-    aes(
-      y = scn,
-      x = delta_prop_extant,
-      fill = yearid#,
-      #col = habitat
-    )
-  ) +
-  scale_fill_viridis_d() +
-  scale_colour_manual(values = c("grey10", "grey40")) +
-  labs(
-    x = "Change in probability of persistence from baseline\n(ongoing harvest)",
-    y = "Management scenario",
-    fill = "Landscape\n& year",
-    title = spti#,
-    #col = "Habitat\nmodel"
-  )+
-  facet_grid(.~yearid, scales = "free_x") +
-  theme(legend.position = "bottom", axis.text.x = element_text(angle = 270)) 
-
-p_dpex_peau_ls
-```
-
-```{r}
-p_dtex_peau_ls <- ggplot(pvra)+# %>% filter(climate_model == "ACCESS1-0", habitat == "projected")) +
-  geom_vline(xintercept = 0) +
-  geom_boxplot(
-    aes(
-      y = scn,
-      x = delta_mean_tt_ex,
-      fill = yearid#,
-      #col = habitat
-    )
-  ) +
-  scale_fill_viridis_d() +
-  scale_colour_manual(values = c("grey10", "grey40")) +
-  labs(
-    x = "Change in mean time to extinction (if extinct)\nfrom baseline (ongoing harvest)",
-    y = "Management scenario",
-    fill = "Landscape\n& year",
-    title = spti#,
-    #col = "Habitat\nmodel"
-  )+
-  facet_grid(.~yearid, scales = "free_x") +
   theme(legend.position = "bottom", axis.text.x = element_text(angle = 270)) 
 
 p_dtex_peau_ls

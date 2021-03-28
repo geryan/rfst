@@ -1,0 +1,495 @@
+---
+title: "Metapopulation capacity results"
+output:
+  word_document: default
+  html_document: default
+---
+
+```{r}
+knitr::opts_chunk$set(fig.width=8, fig.height=4, echo = FALSE, message = FALSE)
+```
+
+
+```{r}
+source("R/spartan/spartan_settings.R")
+```
+
+
+```{r}
+library(purrr)
+library(tibble)
+library(tidyr)
+library(magrittr)
+library(dplyr)
+library(ggplot2)
+library(raster)
+library(patchwork)
+```
+
+```{r}
+load(file = "output/RData/00_controls.RData")
+load(file = "output/RData/01_landscape_variables.RData")
+load(file = "output/RData/19_mpc_results_summary.RData")
+```
+
+```{r}
+source.functions("R/functions")
+```
+
+
+```{r, include = FALSE}
+mpc_rs <- mpc_rs %>%
+  mutate(
+    l_delta_median = case_when(
+      delta_median > 0 ~ log10(delta_median),
+      delta_median < 0 ~ -log10(-delta_median),
+      delta_median == 0 ~ 0
+    ),
+    l_delta_min = case_when(
+      delta_min > 0 ~ log10(delta_min),
+      delta_min < 0 ~ -log10(-delta_min),
+      delta_min == 0 ~ 0
+    )
+  )
+
+mpc_rs
+```
+
+```{r}
+scenario_names <- tribble(
+  ~scenario,       ~scn,
+  "TH30_rcp85_PB", "Stop harvest 2030 RCP8.5",
+  "TH00_rcp85_PB", "No harvest RCP8.5",
+  "TH19_rcp45_PB", "Ongoing harvest RCP4.5",
+  "TH30_rcp45_PB", "Stop harvest 2030 RCP4.5",
+  "TH00_rcp45_PB", "No harvest RCP4.5",
+  "TH00_rcp45_NB", "No harvest no planned burning RCP4.5"
+) %>%
+  mutate(
+    scn = factor(
+      x = scn,
+      levels = c(
+        "Stop harvest 2030 RCP8.5",
+        "No harvest RCP8.5",
+        "Ongoing harvest RCP4.5",
+        "Stop harvest 2030 RCP4.5",
+        "No harvest RCP4.5",
+        "No harvest no planned burning RCP4.5"
+      )
+    )
+  )
+
+scenario_names
+```
+
+```{r}
+mpc_rs <- mpc_rs %>%
+  dplyr::select(-scn) %>%
+  left_join(
+    y = scenario_names,
+    by = "scenario"
+  )
+
+mpc_rs
+```
+
+
+```{r}
+mpc_rank <- mpc_rs %>%
+  filter(rcp == "rcp45") %>%
+  filter(climate_model == "ACCESS1-0") %>%
+  group_by(sp, scenario_replicate) %>%
+  mutate(
+    min_rank = rank(mpc_min),
+    med_rank = rank(mpc_median)
+  )
+
+mpc_rank
+```
+
+```{r}
+knitr::opts_chunk$set(fig.width=8, fig.height=4, echo = FALSE, message = FALSE)
+```
+
+```{r}
+p_pmss_min_mpc <- ggplot(data = mpc_rs %>% filter(sp_group == "MPC", rcp == "rcp45")) +
+  geom_vline(xintercept = 0 ) +
+  geom_boxplot(
+    aes(
+      #fill =species_com,
+      y = scn,
+      x = dp_min
+    )
+  ) +
+  labs(
+    x = "Proportional change in minimum metapopulation capacity from baseline\n(ongoing harvest)",
+    y = "Management scenario",
+    title = "MPC species"#,
+    #fill ="Species"
+  ) +
+  scale_fill_viridis_d() +
+  theme(
+    #axis.text.x = element_text(size = 6)
+    axis.text.x = element_blank()
+  )
+
+p_pmss_min_mpc
+```
+
+```{r}
+p_pmss_med_mpc <- ggplot(data = mpc_rs %>% filter(sp_group == "MPC", rcp == "rcp45")) +
+  geom_vline(xintercept = 0 ) +
+  geom_boxplot(
+    aes(
+      #fill =species_com,
+      y = scn,
+      x = dp_median
+    )
+  ) +
+  labs(
+    x = "Proportional change in median metapopulation capacity from baseline\n(ongoing harvest)",
+    y = "Management scenario",
+    title = "MPC species"#,
+    #fill ="Species"
+  ) +
+  scale_fill_viridis_d() +
+  theme(
+    axis.text.x = element_text(size = 6)
+    #axis.text.x = element_blank()
+  ) 
+
+p_pmss_med_mpc
+```
+
+```{r}
+p_dmss_min_mpc <- ggplot(data = mpc_rs %>% filter(sp_group == "MPC", rcp == "rcp45")) +
+  geom_vline(xintercept = 0 ) +
+  geom_boxplot(
+    aes(
+      #fill =species_com,
+      y = scn,
+      x = delta_min
+    )
+  ) +
+  labs(
+    x = "Change in minimum metapopulation capacity from baseline\n(ongoing harvest)",
+    y = "Management scenario",
+    title = "MPC species"#,
+    #fill ="Species"
+  ) +
+  scale_fill_viridis_d() +
+  theme(
+    #axis.text.x = element_text(size = 6)
+    axis.text.x = element_blank()
+  )
+
+p_dmss_min_mpc
+```
+
+```{r}
+p_dmss_med_mpc <- ggplot(data = mpc_rs %>% filter(sp_group == "MPC", rcp == "rcp45")) +
+  geom_vline(xintercept = 0 ) +
+  geom_boxplot(
+    aes(
+      #fill =species_com,
+      y = scn,
+      x = delta_median
+    )
+  ) +
+  labs(
+    x = "Change in median metapopulation capacity from baseline\n(ongoing harvest)",
+    y = "Management scenario",
+    title = "MPC species"#,
+    #fill ="Species"
+  ) +
+  scale_fill_viridis_d() +
+  theme(
+    #axis.text.x = element_text(size = 6)
+    axis.text.x = element_blank()
+  )
+
+
+p_dmss_med_mpc
+```
+
+```{r}
+p_rank_min <- ggplot(data = mpc_rank) +
+  geom_boxplot(
+    aes(
+      #fill =species_com,
+      y = scn,
+      x = min_rank
+    )
+  ) +
+  labs(
+    x = "Rank order of minimum\nmetapopulation capacity",
+    y = "Management scenario"#,
+    #title = "MPC species"#,
+    #fill ="Species"
+  ) +
+  scale_fill_viridis_d() +
+  theme(
+    axis.text.x = element_text(size = 6)#,
+    #axis.text.x = element_blank()
+    #axis.title.x = element_text(size = 8)
+  )
+
+p_rank_min
+```
+
+```{r}
+p_rank_med <- ggplot(data = mpc_rank) +
+  geom_boxplot(
+    aes(
+      #fill =species_com,
+      y = scn,
+      x = med_rank
+    )
+  ) +
+  labs(
+    x = "Rank order of median\nmetapopulation capacity",
+    y = "Management scenario"#,
+    #title = "MPC species"#,
+    #fill ="Species"
+  ) +
+  scale_fill_viridis_d() +
+  theme(
+    axis.text.x = element_text(size = 6)#,
+    #axis.text.x = element_blank()
+    #axis.title.x = element_text(size = 8)
+  )
+
+
+p_rank_med
+```
+```{r}
+p_rank_med <- ggplot(data = mpc_rank) +
+  geom_histogram(
+    aes(
+      #fill =species_com,
+      #y = scn,
+      x = med_rank,
+    ),
+    binwidth = 1
+  ) +
+  labs(
+    x = "Rank order of median\nmetapopulation capacity",
+    y = "Management scenario"#,
+    #title = "MPC species"#,
+    #fill ="Species"
+  ) +
+  facet_grid(scn~.) +
+  scale_fill_viridis_d() +
+  theme(
+    axis.text.x = element_text(size = 6)#,
+    #axis.text.x = element_blank()
+    #axis.title.x = element_text(size = 8)
+  )
+
+
+p_rank_med
+```
+
+
+```{r}
+p_rank_min + theme(axis.title.x = element_text(size = 9)) + p_rank_med + theme(axis.text.y = element_blank(), axis.title.x = element_text(size = 9)) + labs(y = element_blank())
+```
+
+```{r}
+knitr::opts_chunk$set(fig.width=8, fig.height=8, echo = FALSE, message = FALSE)
+```
+## MPC Species
+###  RAW
+```{r}
+p_mss_min_mpc <- ggplot(data = mpc_rs %>% filter(sp_group == "MPC", rcp == "rcp45")) +
+  geom_boxplot(
+    aes(
+      ##fill =species_com,
+      y = scn,
+      x = mpc_min
+    )
+  ) +
+  labs(
+    x = "Minimum metapopulation capacity",
+    y = "Management scenario",
+    title = "MPC species"#,
+    ##fill ="Species"
+  ) +
+  scale_fill_viridis_d() +
+  facet_wrap(
+    ~ species,
+    ncol = 2,
+    scales = "free_x"
+  ) +
+  theme(
+    #axis.text.x = element_text(size = 6)
+    axis.text.x = element_blank()
+  )
+
+p_mss_min_mpc
+```
+
+```{r}
+p_mss_med_mpc <- ggplot(data = mpc_rs %>% filter(sp_group == "MPC", rcp == "rcp45")) +
+  geom_boxplot(
+    aes(
+      #fill =species_com,
+      y = scn,
+      x = mpc_median
+    )
+  ) +
+  labs(
+    x = "Median metapopulation capacity",
+    y = "Management scenario",
+    title = "MPC species"#,
+    #fill ="Species"
+  ) +
+  scale_fill_viridis_d() +
+  facet_wrap(
+    ~ species,
+    ncol = 2,
+    scales = "free_x"
+  ) +
+  theme(
+    #axis.text.x = element_text(size = 6)
+    axis.text.x = element_blank()
+  )
+p_mss_med_mpc
+```
+
+
+
+###  delta
+```{r}
+p_dmss_min_mpc <- ggplot(data = mpc_rs %>% filter(sp_group == "MPC", rcp == "rcp45")) +
+  geom_vline(xintercept = 0 ) +
+  geom_boxplot(
+    aes(
+      #fill =species_com,
+      y = scn,
+      x = delta_min
+    )
+  ) +
+  labs(
+    x = "Change in minimum metapopulation capacity from baseline\n(ongoing harvest)",
+    y = "Management scenario",
+    title = "MPC species"#,
+    #fill ="Species"
+  ) +
+  scale_fill_viridis_d() +
+  facet_wrap(
+    ~ species,
+    ncol = 2,
+    scales = "free_x"
+  ) +
+  theme(
+    #axis.text.x = element_text(size = 6)
+    axis.text.x = element_blank()
+  )
+
+p_dmss_min_mpc
+```
+
+```{r}
+p_dmss_med_mpc <- ggplot(data = mpc_rs %>% filter(sp_group == "MPC", rcp == "rcp45")) +
+  geom_vline(xintercept = 0 ) +
+  geom_boxplot(
+    aes(
+      #fill =species_com,
+      y = scn,
+      x = delta_median
+    )
+  ) +
+  labs(
+    x = "Change in median metapopulation capacity from baseline\n(ongoing harvest)",
+    y = "Management scenario",
+    title = "MPC species"#,
+    #fill ="Species"
+  ) +
+  scale_fill_viridis_d() +
+  facet_wrap(
+    ~ species,
+    ncol = 2,
+    scales = "free_x"
+  ) +
+  theme(
+    #axis.text.x = element_text(size = 6)
+    axis.text.x = element_blank()
+  ) +
+  facet_wrap(
+    ~ species,
+    ncol = 2,
+    scales = "free_x"
+  ) +
+  theme(
+    #axis.text.x = element_text(size = 6)
+    axis.text.x = element_blank()
+  )
+
+
+p_dmss_med_mpc
+```
+
+
+### delta proportional
+```{r}
+p_pmss_min_mpc <- ggplot(data = mpc_rs %>% filter(sp_group == "MPC", rcp == "rcp45")) +
+  geom_vline(xintercept = 0 ) +
+  geom_boxplot(
+    aes(
+      #fill =species_com,
+      y = scn,
+      x = dp_min
+    )
+  ) +
+  labs(
+    x = "Proportional change in minimum metapopulation capacity from baseline\n(ongoing harvest)",
+    y = "Management scenario",
+    title = "MPC species"#,
+    #fill ="Species"
+  ) +
+  scale_fill_viridis_d() +
+  facet_wrap(
+    ~ species,
+    ncol = 2,
+    scales = "free_x"
+  ) +
+  theme(
+    #axis.text.x = element_text(size = 6)
+    axis.text.x = element_blank()
+  )
+
+p_pmss_min_mpc
+```
+
+```{r}
+p_pmss_med_mpc <- ggplot(data = mpc_rs %>% filter(sp_group == "MPC", rcp == "rcp45")) +
+  geom_vline(xintercept = 0 ) +
+  geom_boxplot(
+    aes(
+      #fill =species_com,
+      y = scn,
+      x = dp_median
+    )
+  ) +
+  labs(
+    x = "Proportional change in median metapopulation capacity from baseline\n(ongoing harvest)",
+    y = "Management scenario",
+    title = "MPC species"#,
+    #fill ="Species"
+  ) +
+  scale_fill_viridis_d() +
+  facet_wrap(
+    ~ species,
+    ncol = 2,
+    scales = "free_x"
+  ) +
+  theme(
+    #axis.text.x = element_text(size = 6)
+    axis.text.x = element_blank()
+  )
+
+p_pmss_med_mpc
+```
+
+

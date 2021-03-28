@@ -1,0 +1,391 @@
+---
+title: "PVA Results Greater Glider"
+output:
+  word_document: default
+  html_document: default
+  pdf_document: default
+---
+
+
+```{r}
+knitr::opts_chunk$set(fig.width=8, fig.height=4, echo = FALSE, message = FALSE)
+```
+
+
+```{r}
+source("R/spartan/spartan_settings.R")
+```
+
+
+```{r}
+library(magrittr)
+library(tibble)
+library(dplyr)
+library(purrr)
+library(tidyr)
+library(raster)
+library(sp)
+library(sf)
+library(ggplot2)
+library(forcats)
+library(patchwork)
+library(cowplot)
+```
+
+```{r}
+load(file = "output/RData/00_controls.RData")
+load(file = "output/RData/11.4_pva_results.R")
+load(file = "output/RData/13.2_mpc_results.RData")
+load(file = "output/RData/19_mpc_results_summary.RData")
+```
+
+```{r}
+source.functions("R/functions")
+```
+
+
+# Only Access 1 RCP 4.5 CH and EG 20
+
+```{r}
+knitr::opts_chunk$set(fig.width=8, fig.height=4, echo = FALSE, message = FALSE)
+```
+
+```{r}
+pvr_ra <- pvr %>% 
+  filter(
+    climate_model == "ACCESS1-0",
+    rcp == "rcp45",
+    yearid != "EG19"
+  )
+
+pvr_ra
+```
+
+
+```{r}
+p_emp95_gyle_ls <- ggplot(pvr_ra %>% filter(sp == "gyle")) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = emp_95#,
+      #fill = yearid#,
+      #col = habitat
+    )
+  ) +
+  geom_point(
+    aes(
+      x = emp_95,
+      y = scn
+    )
+  ) +
+  scale_fill_viridis_d() +
+  scale_colour_manual(values = c("grey10", "grey40")) +
+  labs(
+    x = "Expected minimum population",
+    y = "Management scenario"#,
+    #fill = "Landscape\n& year",
+    #title = spti#,
+    #col = "Habitat\nmodel"
+  )+
+  facet_grid(.~yearid, scales = "free_x") +
+  theme(legend.position = "bottom", axis.text.x = element_text(angle = 270)) +
+  xlim(0, NA)
+
+p_emp95_gyle_ls
+```
+
+```{r}
+p_emp95_pevo_ls <- ggplot(pvr_ra %>% filter(sp == "pevo")) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = emp_95#,
+      #fill = yearid#,
+      #col = habitat
+    ),
+    fill = viridis::magma(3)[2]
+  ) +
+  geom_point(
+    aes(
+      x = emp_95,
+      y = scn
+    )
+  ) +
+  scale_fill_viridis_d() +
+  scale_colour_manual(values = c("grey10", "grey40")) +
+  labs(
+    x = "Expected minimum population",
+    y = "Management scenario"#,
+    #fill = "Landscape\n& year",
+    #title = spti#,
+    #col = "Habitat\nmodel"
+  )+
+  facet_grid(.~yearid, scales = "free_x") +
+  theme(legend.position = "bottom", axis.text.x = element_text(angle = 270)) +
+  xlim(0, NA)
+
+p_emp95_pevo_ls
+```
+
+```{r}
+(p_emp95_gyle_ls + labs(x = "EMP: Leadbeater's\npossum")) +
+  (p_emp95_pevo_ls +theme(axis.text.y = element_blank(), axis.title.y = element_blank())  + labs(x = "EMP: Greater glider")) +
+  plot_layout(widths = c(1,2))
+```
+```{r}
+pvr_eg <- pvr %>% 
+  filter(
+    climate_model == "ACCESS1-0",
+    rcp == "rcp45",
+    landscape == "East Gippsland"
+  )
+
+pvr_eg
+```
+
+```{r}
+p_pex_polo_ls <- ggplot(pvr_eg %>% filter(sp == "polo")) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = prop_extant,
+      fill = yearid#,
+      #col = habitat
+    )
+  ) +
+  scale_fill_viridis_d(begin = 0.5) +
+  scale_colour_manual(values = c("grey10", "grey40")) +
+  labs(
+    x = "Probability of\npersistence",
+    y = "Management scenario",
+    fill = "Landscape\n& year"#,
+    #col = "Habitat\nmodel"
+  ) +
+  #facet_grid(.~yearid, scales = "free_x") +
+  theme(legend.position = "bottom", axis.text.x = element_text(angle = 270)) +
+  xlim(NA, 1)
+
+
+p_pex_polo_ls
+```
+
+```{r}
+p_emp95_polo_ls <- ggplot(pvr_eg %>% filter(sp == "polo")) +
+  geom_boxplot(
+    aes(
+      y = scn,
+      x = emp_95,
+      fill = yearid#,
+      #col = habitat
+    )
+  ) +
+  scale_fill_viridis_d(begin = 0.5) +
+  scale_colour_manual(values = c("grey10", "grey40")) +
+  labs(
+    x = "Expected minimum\npopulation",
+    y = "Management scenario",
+    fill = "Landscape\n& year"#,
+    #title = spti#,
+    #col = "Habitat\nmodel"
+  )+
+  #facet_grid(.~yearid, scales = "free_x") +
+  theme(legend.position = "bottom", axis.text.x = element_text(angle = 270)) +
+  xlim(0, NA)
+
+p_emp95_polo_ls
+```
+```{r}
+((p_pex_polo_ls) + #labs(x = "EMP: Leadbeater's\npossum")) +
+  (p_emp95_polo_ls +theme(axis.text.y = element_blank(), axis.title.y = element_blank()))   #labs(x = "EMP: Greater glider")) +
+  ) /guide_area() +plot_layout(widths = c(1,1), heights = c(10,1), guides = 'collect')
+```
+
+```{r}
+pvmpc <- left_join(
+  x = pvr,
+  y = mpc_res_summary
+)
+
+pvmpc
+```
+
+
+
+```{r}
+cc_list_peau <- pvr %>%
+  filter(sp == "peau", climate_model == "ACCESS1-0", plan_burn == "PB", harvest_scenario == "TH00") %>%
+  filter((yearid == "EG20" & rcp == "rcp85") | (yearid == "CH" & rcp == "rcp45")) %>%
+  dplyr::select(scn, scn_id, scenario_replicate, rcp, lcc) %>%
+  mutate(
+    yr = list(1:50),
+    RCP = ifelse(rcp == "rcp45", "RCP 4.5\nCentral Highlands", "RCP 8.5\nEast Gippsland")
+  ) %>%
+  unnest(cols = c(lcc, yr))
+
+cc_list_peau
+```
+
+```{r}
+ggplot(cc_list_peau) +
+  geom_line(
+    aes(
+      x = yr,
+      y = lcc,
+      col = RCP,
+      group = scn_id
+    )
+  ) +
+  scale_colour_viridis_d(end = 0.66) +
+  labs(
+    x = "Year",
+    y = "Landscape Carrying Capacity",
+    col = "Representative Concentration\nPathway & Landscape"
+  )
+```
+
+
+
+
+```{r}
+cc_list_pevo <- pvr %>%
+  filter(sp == "pevo", climate_model == "ACCESS1-0", plan_burn == "PB", rcp == "rcp45", yearid == "CH") %>%
+  filter(harvest_scenario == "TH00" | harvest_scenario == "TH19") %>%
+  dplyr::select(scn, scn_id, scenario_replicate, rcp, lcc) %>%
+  mutate(
+    yr = list(1:50)
+  ) %>%
+  unnest(cols = c(lcc, yr))
+
+cc_list_pevo
+```
+
+```{r}
+ggplot(cc_list_pevo) +
+  geom_line(
+    aes(
+      x = yr,
+      y = lcc,
+      col = scn,
+      group = scn_id
+    )
+  ) +
+  scale_colour_viridis_d(end = 0.66) +
+  labs(
+    x = "Year",
+    y = "Landscape Carrying Capacity",
+    col = "Management scenario"
+  )
+```
+
+
+
+
+```{r}
+cc_list_tyte <- pvr %>%
+  filter(sp == "tyte", climate_model == "ACCESS1-0", plan_burn == "PB", rcp == "rcp45", yearid == "CH") %>%
+  filter(harvest_scenario == "TH00" | harvest_scenario == "TH19") %>%
+  dplyr::select(scn, scn_id, scenario_replicate, rcp, lcc) %>%
+  mutate(
+    yr = list(1:50)
+  ) %>%
+  unnest(cols = c(lcc, yr))
+
+cc_list_tyte
+```
+
+```{r}
+ggplot(cc_list_tyte) +
+  geom_line(
+    aes(
+      x = yr,
+      y = lcc,
+      col = scn,
+      group = scn_id
+    )
+  ) +
+  scale_colour_viridis_d(end = 0.66) +
+  labs(
+    x = "Year",
+    y = "Landscape Carrying Capacity",
+    col = "Management scenario"
+  )
+```
+
+
+
+```{r}
+cc_list_polo <- pvr %>%
+  filter(sp == "polo", climate_model == "ACCESS1-0", plan_burn == "PB", rcp == "rcp45", yearid == "EG20") %>%
+  filter(harvest_scenario == "TH00" | harvest_scenario == "TH19") %>%
+  dplyr::select(scn, scn_id, scenario_replicate, rcp, lcc) %>%
+  mutate(
+    yr = list(1:50)
+  ) %>%
+  unnest(cols = c(lcc, yr))
+
+cc_list_polo
+```
+
+```{r}
+ggplot(cc_list_polo) +
+  geom_line(
+    aes(
+      x = yr,
+      y = lcc,
+      col = scn,
+      group = scn_id
+    )
+  ) +
+  scale_colour_viridis_d(end = 0.66) +
+  labs(
+    x = "Year",
+    y = "Landscape Carrying Capacity",
+    col = "Management scenario"
+  )
+```
+
+```{r}
+pvmpc_bw <- pvmpc %>%
+  dplyr::select(scenario, scenario_replicate, rcp, climate_model, yearid, harvest_scenario, plan_burn, scn_id, cscnid, sp, landscape, species_com, scn, emp_95, emp_med, mpc_median, mpc_min) %>%
+  filter(sp == "polo" | sp == "pevo") %>%
+  filter(landscape == "East Gippsland")
+
+pvmpc_bw
+```
+
+
+```{r}
+write.csv(
+  x = pvmpc_bw,
+  file = "output/pva_mpc_bw.csv"
+)
+```
+
+
+```{r}
+pvmpc_bw_ch <- pvmpc %>%
+  dplyr::select(scenario, scenario_replicate, rcp, climate_model, yearid, harvest_scenario, plan_burn, scn_id, cscnid, sp, landscape, species_com, scn, emp_95, emp_med, mpc_median, mpc_min) %>%
+  filter(sp == "gyle" | sp == "pevo") %>%
+  filter(landscape == "Central Highlands")
+
+pvmpc_bw_ch
+```
+
+
+
+```{r}
+write.csv(
+  x = pvmpc_bw_ch,
+  file = "output/pva_mpc_bw_ch.csv"
+)
+```
+
+
+```{r}
+write.csv(
+  x = pvmpc %>%
+  dplyr::select(scenario, scenario_replicate, rcp, climate_model, yearid, harvest_scenario, plan_burn, scn_id, cscnid, ycscnid, yearid, sp, landscape, species_com, scn, emp_95, emp_med, mpc_median, mpc_min),
+  file = "output/pva_mpc_bw_all.csv"
+)
+```
+

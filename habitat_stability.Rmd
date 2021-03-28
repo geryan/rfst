@@ -1,0 +1,185 @@
+---
+title: "Carrying Capacity Stability"
+output:
+  word_document: default
+  html_document: default
+---
+
+```{r}
+knitr::opts_chunk$set(fig.width=8, fig.height=4, echo = FALSE, message = FALSE)
+```
+
+
+```{r}
+source("R/spartan/spartan_settings.R")
+```
+
+
+```{r}
+library(purrr)
+library(tibble)
+library(tidyr)
+library(magrittr)
+library(dplyr)
+library(ggplot2)
+library(raster)
+library(patchwork)
+library(rasterVis)
+```
+
+```{r}
+load(file = "output/RData/00_controls.RData")
+load(file = "output/RData/11.5_pva_results_pop_stability.R")
+```
+
+```{r}
+source.functions("R/functions")
+```
+
+# By landscape
+
+```{r}
+ls_stab %>% 
+  filter(landscape == "Central Highlands") %>%
+  pull(pop_stability) %>%
+  .[[1]] %>%
+  lp
+```
+
+```{r}
+ls_stab %>% 
+  filter(landscape == "East Gippsland") %>%
+  pull(pop_stability) %>%
+  .[[1]] %>%
+  lp
+```
+
+```{r}
+ls_stab %>% 
+  filter(landscape == "Central Highlands") %>%
+  pull(pop_stability_zero) %>%
+  .[[1]] %>%
+  lp
+```
+
+```{r}
+ls_stab %>% 
+  filter(landscape == "East Gippsland") %>%
+  pull(pop_stability_zero) %>%
+  .[[1]] %>%
+  lp
+```
+
+# By species 
+
+## Greater Glider
+
+### Central Highlands
+```{r}
+pop_stab %>% 
+  filter(sp == "pevo", landscape == "Central Highlands") %>%
+  pull(pop_stability) %>%
+  .[[1]] %>%
+  lp
+```
+
+### East Gippsland 2020
+```{r}
+pop_stab %>% 
+  filter(sp == "pevo", landscape == "East Gippsland") %>%
+  pull(pop_stability) %>%
+  .[[1]] %>%
+  lp
+```
+## Yellow-bellied Glider
+
+### Central Highlands
+```{r}
+pop_stab %>% 
+  filter(sp == "peau", landscape == "Central Highlands") %>%
+  pull(pop_stability) %>%
+  .[[1]] %>%
+  lp
+```
+
+### East Gippsland 2020
+```{r}
+pop_stab %>% 
+  filter(sp == "peau", landscape == "East Gippsland") %>%
+  pull(pop_stability) %>%
+  .[[1]] %>%
+  lp
+```
+
+## Sooty Owl
+
+### Central Highlands
+```{r}
+pop_stab %>% 
+  filter(sp == "tyte", landscape == "Central Highlands") %>%
+  pull(pop_stability) %>%
+  .[[1]] %>%
+  lp
+```
+
+### East Gippsland 2020
+```{r}
+pop_stab %>% 
+  filter(sp == "tyte", landscape == "East Gippsland") %>%
+  pull(pop_stability) %>%
+  .[[1]] %>%
+  lp
+```
+
+## Lace monitor
+
+### Central Highlands
+```{r}
+pop_stab %>% 
+  filter(sp == "vava", landscape == "Central Highlands") %>%
+  pull(pop_stability) %>%
+  .[[1]] %>%
+  lp
+```
+
+### East Gippsland 2020
+```{r}
+pop_stab %>% 
+  filter(sp == "vava", landscape == "East Gippsland") %>%
+  pull(pop_stability) %>%
+  .[[1]] %>%
+  lp
+```
+
+## Leadbeater's possum
+
+### Central Highlands
+```{r}
+pop_stab %>% 
+  filter(sp == "gyle", landscape == "Central Highlands") %>%
+  pull(pop_stability) %>%
+  .[[1]] %>%
+  lp
+```
+
+## White-footed dunnart
+
+### Central Highlands
+```{r}
+pop_stab %>% 
+  filter(sp == "smle", landscape == "Central Highlands") %>%
+  pull(pop_stability) %>%
+  .[[1]] %>%
+  lp
+```
+
+## Long-footed potoroo
+
+### East Gippsland 2020
+```{r}
+pop_stab %>% 
+  filter(sp == "polo", landscape == "East Gippsland") %>%
+  pull(pop_stability) %>%
+  .[[1]] %>%
+  lp
+```

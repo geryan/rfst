@@ -1,13 +1,13 @@
 ---
-title: "Metapopulation capacity results: Greater glider"
+title: "Metapopulation capacity results: Long-footed potoroo"
 output:
   word_document: default
   html_document: default
 ---
 
 ```{r}
-spti <- "Greater glider"
-spfil <- "pevo"
+spti <- "Long-footed potoroo"
+spfil <- "polo"
 ```
 
 
