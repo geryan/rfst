@@ -1,0 +1,290 @@
+---
+title: "pva_mpc_results.Rmd"
+output:
+  word_document: default
+  html_document: default
+---
+
+```{r}
+knitr::opts_chunk$set(fig.width=8, fig.height=7, echo = FALSE, message = FALSE)
+```
+
+
+```{r}
+source("R/spartan/spartan_settings.R")
+```
+
+
+```{r}
+#library(magrittr)
+library(purrr)
+library(tibble)
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+library(raster)
+library(forcats)
+```
+
+```{r}
+load(file = "output/RData/00_controls.RData")
+load(file = "output/RData/20_pva_mpc_cc_year1_start.RData")
+```
+
+```{r}
+source.functions("R/functions")
+```
+
+```{r}
+full_res_plot <- full_res_plot %>%
+  filter(scenario == "TH00_rcp45_PB" | scenario == "TH19_rcp45_PB") %>%
+  filter(yearid != "EG19", climate_model == "ACCESS1-0", rcp =="rcp45")
+
+full_res_plot_median <- full_res_plot_median %>%
+  filter(scenario == "TH00_rcp45_PB" | scenario == "TH19_rcp45_PB") %>%
+  filter(yearid != "EG19", climate_model == "ACCESS1-0", rcp =="rcp45")
+```
+
+
+## Greater Glider
+
+```{r}
+ggplot(data = full_res_plot %>% filter(sp == "pevo")) +
+  geom_line(
+    aes(
+      x = yr,
+      y = value0,
+      colour = scn,
+      linetype = metric,
+      group = idm
+    ),
+    alpha = 0.2
+  ) +
+  geom_line(
+    data = full_res_plot_median %>% filter(sp == "pevo"),
+    aes(
+      x = yr,
+      y = value0,
+      colour = scn,
+      linetype = metric
+    ),
+    size = 0.75
+  ) +
+  scale_colour_viridis_d(end = 0.66) +
+  scale_linetype_manual(values = c(2,3,1)) +
+  labs(
+    x = "Year",
+    y = "Relative value",
+    colour = "Management scenario",
+    linetype = "Metric"
+  ) +
+  facet_grid(landscape ~.)
+```
+
+## Yellow-bellied Glider
+```{r}
+ggplot(data = full_res_plot %>% filter(sp == "peau")) +
+  geom_line(
+    aes(
+      x = yr,
+      y = value0,
+      colour = scn,
+      linetype = metric,
+      group = idm
+    ),
+    alpha = 0.2
+  ) +
+  geom_line(
+    data = full_res_plot_median %>% filter(sp == "peau"),
+    aes(
+      x = yr,
+      y = value0,
+      colour = scn,
+      linetype = metric
+    ),
+    size = 0.75
+  ) +
+  scale_colour_viridis_d(end = 0.66) +
+  scale_linetype_manual(values = c(2,3,1)) +
+  labs(
+    x = "Year",
+    y = "Relative value",
+    colour = "Management scenario",
+    linetype = "Metric"
+  ) +
+  facet_grid(landscape ~.)
+```
+
+## Sooty Owl
+```{r}
+ggplot(data = full_res_plot %>% filter(sp == "tyte")) +
+  geom_line(
+    aes(
+      x = yr,
+      y = value0,
+      colour = scn,
+      linetype = metric,
+      group = idm
+    ),
+    alpha = 0.2
+  ) +
+  geom_line(
+    data = full_res_plot_median %>% filter(sp == "tyte"),
+    aes(
+      x = yr,
+      y = value0,
+      colour = scn,
+      linetype = metric
+    ),
+    size = 0.75
+  ) +
+  scale_colour_viridis_d(end = 0.66) +
+  scale_linetype_manual(values = c(2,3,1)) +
+  labs(
+    x = "Year",
+    y = "Relative value",
+    colour = "Management scenario",
+    linetype = "Metric"
+  ) +
+  facet_grid(landscape ~.)
+```
+
+## Lace monitor
+```{r}
+ggplot(data = full_res_plot %>% filter(sp == "vava")) +
+  geom_line(
+    aes(
+      x = yr,
+      y = value0,
+      colour = scn,
+      linetype = metric,
+      group = idm
+    ),
+    alpha = 0.2
+  ) +
+  geom_line(
+    data = full_res_plot_median %>% filter(sp == "vava"),
+    aes(
+      x = yr,
+      y = value0,
+      colour = scn,
+      linetype = metric
+    ),
+    size = 0.75
+  ) +
+  scale_colour_viridis_d(end = 0.66) +
+  scale_linetype_manual(values = c(2,3,1)) +
+  labs(
+    x = "Year",
+    y = "Relative value",
+    colour = "Management scenario",
+    linetype = "Metric"
+  ) +
+  facet_grid(landscape ~.)
+```
+
+```{r}
+knitr::opts_chunk$set(fig.width=8, fig.height=4, echo = FALSE, message = FALSE)
+```
+
+## Leadbeater's possum
+```{r}
+ggplot(data = full_res_plot %>% filter(sp == "gyle")) +
+  geom_line(
+    aes(
+      x = yr,
+      y = value0,
+      colour = scn,
+      linetype = metric,
+      group = idm
+    ),
+    alpha = 0.2
+  ) +
+  geom_line(
+    data = full_res_plot_median %>% filter(sp == "gyle"),
+    aes(
+      x = yr,
+      y = value0,
+      colour = scn,
+      linetype = metric
+    ),
+    size = 0.75
+  ) +
+  scale_colour_viridis_d(end = 0.66) +
+  scale_linetype_manual(values = c(2,3,1)) +
+  labs(
+    x = "Year",
+    y = "Relative value",
+    colour = "Management scenario",
+    linetype = "Metric"
+  ) +
+  facet_grid(landscape ~.)
+```
+
+## White-footed dunnart
+```{r}
+ggplot(data = full_res_plot %>% filter(sp == "smle")) +
+  geom_line(
+    aes(
+      x = yr,
+      y = value0,
+      colour = scn,
+      linetype = metric,
+      group = idm
+    ),
+    alpha = 0.2
+  ) +
+  geom_line(
+    data = full_res_plot_median %>% filter(sp == "smle"),
+    aes(
+      x = yr,
+      y = value0,
+      colour = scn,
+      linetype = metric
+    ),
+    size = 0.75
+  ) +
+  scale_colour_viridis_d(end = 0.66) +
+  scale_linetype_manual(values = c(2,3,1)) +
+  labs(
+    x = "Year",
+    y = "Relative value",
+    colour = "Management scenario",
+    linetype = "Metric"
+  ) +
+  facet_grid(landscape ~.)
+```
+
+## Long-footed potoroo
+```{r}
+ggplot(data = full_res_plot %>% filter(sp == "polo")) +
+  geom_line(
+    aes(
+      x = yr,
+      y = value0,
+      colour = scn,
+      linetype = metric,
+      group = idm
+    ),
+    alpha = 0.2
+  ) +
+  geom_line(
+    data = full_res_plot_median %>% filter(sp == "polo"),
+    aes(
+      x = yr,
+      y = value0,
+      colour = scn,
+      linetype = metric
+    ),
+    size = 0.75
+  ) +
+  scale_colour_viridis_d(end = 0.66) +
+  scale_linetype_manual(values = c(2,3,1)) +
+  labs(
+    x = "Year",
+    y = "Relative value",
+    colour = "Management scenario",
+    linetype = "Metric"
+  ) +
+  facet_grid(landscape ~.)
+```

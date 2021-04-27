@@ -1,0 +1,439 @@
+---
+title: "pva_mpc_results.Rmd"
+output:
+  word_document: default
+  html_document: default
+---
+
+```{r}
+knitr::opts_chunk$set(fig.width=8, fig.height=4, echo = FALSE, message = FALSE)
+```
+
+
+```{r}
+source("R/spartan/spartan_settings.R")
+```
+
+
+```{r}
+#library(magrittr)
+library(purrr)
+library(tibble)
+library(tidyr)
+library(dplyr)
+library(ggplot2)
+library(raster)
+library(forcats)
+```
+
+```{r}
+load(file = "output/RData/00_controls.RData")
+load(file = "output/RData/20_pva_mpc_cc_year1_start.RData")
+```
+
+```{r}
+source.functions("R/functions")
+```
+
+```{r}
+full_res_plot <- full_res_plot %>%
+  filter(scenario == "TH00_rcp45_PB" | scenario == "TH19_rcp45_PB")
+
+full_res_plot_median <- full_res_plot_median %>%
+  filter(scenario == "TH00_rcp45_PB" | scenario == "TH19_rcp45_PB")
+```
+
+
+## Greater Glider
+
+### Central Highlands
+```{r}
+ggplot(data = full_res_plot %>% filter(sp == "pevo", climate_model == "ACCESS1-0", rcp == "rcp45", yearid == "CH")) +
+  geom_line(
+    aes(
+      x = yr,
+      y = value0,
+      colour = scn,
+      linetype = metric,
+      group = idm
+    ),
+    alpha = 0.2
+  ) +
+  geom_line(
+    data = full_res_plot_median %>% filter(sp == "pevo", climate_model == "ACCESS1-0", rcp == "rcp45", yearid == "CH"),
+    aes(
+      x = yr,
+      y = value0,
+      colour = scn,
+      linetype = metric
+    ),
+    size = 0.75
+  ) +
+  scale_colour_viridis_d(end = 0.66) +
+  scale_linetype_manual(values = c(2,3,1)) +
+  labs(
+    x = "Year",
+    y = "Relative value",
+    colour = "Management scenario",
+    linetype = "Metric"
+  )
+```
+
+### East Gippsland 2020
+
+```{r}
+ggplot(data = full_res_plot %>% filter(sp == "pevo", climate_model == "ACCESS1-0", rcp == "rcp45", yearid == "EG20")) +
+  geom_line(
+    aes(
+      x = yr,
+      y = value0,
+      colour = scn,
+      linetype = metric,
+      group = idm
+    ),
+    alpha = 0.2
+  ) +
+  geom_line(
+    data = full_res_plot_median %>% filter(sp == "pevo", climate_model == "ACCESS1-0", rcp == "rcp45", yearid == "EG20"),
+    aes(
+      x = yr,
+      y = value0,
+      colour = scn,
+      linetype = metric
+    ),
+    size = 0.75
+  ) +
+  scale_colour_viridis_d(end = 0.66) +
+  scale_linetype_manual(values = c(2,3,1)) +
+  labs(
+    x = "Year",
+    y = "Relative value",
+    colour = "Management scenario",
+    linetype = "Metric"
+  )
+```
+
+## Yellow-bellied Glider
+
+### Central Highlands
+```{r}
+ggplot(data = full_res_plot %>% filter(sp == "peau", climate_model == "ACCESS1-0", rcp == "rcp45", yearid == "CH")) +
+  geom_line(
+    aes(
+      x = yr,
+      y = value0,
+      colour = scn,
+      linetype = metric,
+      group = idm
+    ),
+    alpha = 0.2
+  ) +
+  geom_line(
+    data = full_res_plot_median %>% filter(sp == "peau", climate_model == "ACCESS1-0", rcp == "rcp45", yearid == "CH"),
+    aes(
+      x = yr,
+      y = value0,
+      colour = scn,
+      linetype = metric
+    ),
+    size = 0.75
+  ) +
+  scale_colour_viridis_d(end = 0.66) +
+  scale_linetype_manual(values = c(2,3,1)) +
+  labs(
+    x = "Year",
+    y = "Relative value",
+    colour = "Management scenario",
+    linetype = "Metric"
+  )
+```
+
+### East Gippsland 2020
+
+```{r}
+ggplot(data = full_res_plot %>% filter(sp == "peau", climate_model == "ACCESS1-0", rcp == "rcp45", yearid == "EG20")) +
+  geom_line(
+    aes(
+      x = yr,
+      y = value0,
+      colour = scn,
+      linetype = metric,
+      group = idm
+    ),
+    alpha = 0.2
+  ) +
+  geom_line(
+    data = full_res_plot_median %>% filter(sp == "peau", climate_model == "ACCESS1-0", rcp == "rcp45", yearid == "EG20"),
+    aes(
+      x = yr,
+      y = value0,
+      colour = scn,
+      linetype = metric
+    ),
+    size = 0.75
+  ) +
+  scale_colour_viridis_d(end = 0.66) +
+  scale_linetype_manual(values = c(2,3,1)) +
+  labs(
+    x = "Year",
+    y = "Relative value",
+    colour = "Management scenario",
+    linetype = "Metric"
+  )
+```
+
+
+
+## Sooty Owl
+
+### Central Highlands
+```{r}
+ggplot(data = full_res_plot %>% filter(sp == "tyte", climate_model == "ACCESS1-0", rcp == "rcp45", yearid == "CH")) +
+  geom_line(
+    aes(
+      x = yr,
+      y = value0,
+      colour = scn,
+      linetype = metric,
+      group = idm
+    ),
+    alpha = 0.2
+  ) +
+  geom_line(
+    data = full_res_plot_median %>% filter(sp == "tyte", climate_model == "ACCESS1-0", rcp == "rcp45", yearid == "CH"),
+    aes(
+      x = yr,
+      y = value0,
+      colour = scn,
+      linetype = metric
+    ),
+    size = 0.75
+  ) +
+  scale_colour_viridis_d(end = 0.66) +
+  scale_linetype_manual(values = c(2,3,1)) +
+  labs(
+    x = "Year",
+    y = "Relative value",
+    colour = "Management scenario",
+    linetype = "Metric"
+  )
+```
+
+### East Gippsland 2020
+
+```{r}
+ggplot(data = full_res_plot %>% filter(sp == "tyte", climate_model == "ACCESS1-0", rcp == "rcp45", yearid == "EG20")) +
+  geom_line(
+    aes(
+      x = yr,
+      y = value0,
+      colour = scn,
+      linetype = metric,
+      group = idm
+    ),
+    alpha = 0.2
+  ) +
+  geom_line(
+    data = full_res_plot_median %>% filter(sp == "tyte", climate_model == "ACCESS1-0", rcp == "rcp45", yearid == "EG20"),
+    aes(
+      x = yr,
+      y = value0,
+      colour = scn,
+      linetype = metric
+    ),
+    size = 0.75
+  ) +
+  scale_colour_viridis_d(end = 0.66) +
+  scale_linetype_manual(values = c(2,3,1)) +
+  labs(
+    x = "Year",
+    y = "Relative value",
+    colour = "Management scenario",
+    linetype = "Metric"
+  )
+```
+
+
+
+## Lace monitor
+
+### Central Highlands
+```{r}
+ggplot(data = full_res_plot %>% filter(sp == "vava", climate_model == "ACCESS1-0", rcp == "rcp45", yearid == "CH")) +
+  geom_line(
+    aes(
+      x = yr,
+      y = value0,
+      colour = scn,
+      linetype = metric,
+      group = idm
+    ),
+    alpha = 0.2
+  ) +
+  geom_line(
+    data = full_res_plot_median %>% filter(sp == "vava", climate_model == "ACCESS1-0", rcp == "rcp45", yearid == "CH"),
+    aes(
+      x = yr,
+      y = value0,
+      colour = scn,
+      linetype = metric
+    ),
+    size = 0.75
+  ) +
+  scale_colour_viridis_d(end = 0.66) +
+  scale_linetype_manual(values = c(2,3,1)) +
+  labs(
+    x = "Year",
+    y = "Relative value",
+    colour = "Management scenario",
+    linetype = "Metric"
+  )
+```
+
+### East Gippsland 2020
+
+```{r}
+ggplot(data = full_res_plot %>% filter(sp == "vava", climate_model == "ACCESS1-0", rcp == "rcp45", yearid == "EG20")) +
+  geom_line(
+    aes(
+      x = yr,
+      y = value0,
+      colour = scn,
+      linetype = metric,
+      group = idm
+    ),
+    alpha = 0.2
+  ) +
+  geom_line(
+    data = full_res_plot_median %>% filter(sp == "vava", climate_model == "ACCESS1-0", rcp == "rcp45", yearid == "EG20"),
+    aes(
+      x = yr,
+      y = value0,
+      colour = scn,
+      linetype = metric
+    ),
+    size = 0.75
+  ) +
+  scale_colour_viridis_d(end = 0.66) +
+  scale_linetype_manual(values = c(2,3,1)) +
+  labs(
+    x = "Year",
+    y = "Relative value",
+    colour = "Management scenario",
+    linetype = "Metric"
+  )
+```
+
+
+
+
+## Leadbeater's possum
+
+### Central Highlands
+```{r}
+ggplot(data = full_res_plot %>% filter(sp == "gyle", climate_model == "ACCESS1-0", rcp == "rcp45", yearid == "CH")) +
+  geom_line(
+    aes(
+      x = yr,
+      y = value0,
+      colour = scn,
+      linetype = metric,
+      group = idm
+    ),
+    alpha = 0.2
+  ) +
+  geom_line(
+    data = full_res_plot_median %>% filter(sp == "gyle", climate_model == "ACCESS1-0", rcp == "rcp45", yearid == "CH"),
+    aes(
+      x = yr,
+      y = value0,
+      colour = scn,
+      linetype = metric
+    ),
+    size = 0.75
+  ) +
+  scale_colour_viridis_d(end = 0.66) +
+  scale_linetype_manual(values = c(2,3,1)) +
+  labs(
+    x = "Year",
+    y = "Relative value",
+    colour = "Management scenario",
+    linetype = "Metric"
+  )
+```
+
+
+
+## White-footed dunnart
+
+### Central Highlands
+```{r}
+ggplot(data = full_res_plot %>% filter(sp == "smle", climate_model == "ACCESS1-0", rcp == "rcp45", yearid == "CH")) +
+  geom_line(
+    aes(
+      x = yr,
+      y = value0,
+      colour = scn,
+      linetype = metric,
+      group = idm
+    ),
+    alpha = 0.2
+  ) +
+  geom_line(
+    data = full_res_plot_median %>% filter(sp == "smle", climate_model == "ACCESS1-0", rcp == "rcp45", yearid == "CH"),
+    aes(
+      x = yr,
+      y = value0,
+      colour = scn,
+      linetype = metric
+    ),
+    size = 0.75
+  ) +
+  scale_colour_viridis_d(end = 0.66) +
+  scale_linetype_manual(values = c(2,3,1)) +
+  labs(
+    x = "Year",
+    y = "Relative value",
+    colour = "Management scenario",
+    linetype = "Metric"
+  )
+```
+
+
+
+## Long-footed potoroo
+
+### East Gippsland 2020
+
+```{r}
+ggplot(data = full_res_plot %>% filter(sp == "polo", climate_model == "ACCESS1-0", rcp == "rcp45", yearid == "EG20")) +
+  geom_line(
+    aes(
+      x = yr,
+      y = value0,
+      colour = scn,
+      linetype = metric,
+      group = idm
+    ),
+    alpha = 0.2
+  ) +
+  geom_line(
+    data = full_res_plot_median %>% filter(sp == "polo", climate_model == "ACCESS1-0", rcp == "rcp45", yearid == "EG20"),
+    aes(
+      x = yr,
+      y = value0,
+      colour = scn,
+      linetype = metric
+    ),
+    size = 0.75
+  ) +
+  scale_colour_viridis_d(end = 0.66) +
+  scale_linetype_manual(values = c(2,3,1)) +
+  labs(
+    x = "Year",
+    y = "Relative value",
+    colour = "Management scenario",
+    linetype = "Metric"
+  )
+```
+
